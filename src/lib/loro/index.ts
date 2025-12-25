@@ -1,0 +1,52 @@
+/**
+ * Loro CRDT storage layer for Ephemera
+ */
+
+// Store
+export { LoroDocStore } from './store';
+
+// Schema
+export {
+  OBJECTS_MAP_KEY,
+  TYPES_MAP_KEY,
+  CONTENT_PREFIX,
+  getContentKey,
+  getObjectsMap,
+  getTypesMap,
+  getContentText,
+  serializeObject,
+  deserializeObject,
+  serializeType,
+  deserializeType,
+  SCHEMA_VERSION,
+  initializeDocument,
+  getSchemaVersion,
+} from './schema';
+
+// Objects (CRUD)
+export {
+  ObjectStore,
+  ObjectNotFoundError,
+  ValidationError,
+  createObjectStore,
+} from './objects';
+
+// Relations
+export type { Backlink } from './relations';
+export {
+  getRelationIds,
+  isRelationProperty,
+  getRelationProperties,
+  RelationHelper,
+  createRelationHelper,
+} from './relations';
+
+// Queries
+export type {
+  SortDirection,
+  SortConfig,
+  FilterOperator,
+  FilterCondition,
+  QueryConfig,
+} from './queries';
+export { executeQuery, QueryBuilder, query } from './queries';
