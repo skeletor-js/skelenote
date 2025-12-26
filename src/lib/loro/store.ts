@@ -1,6 +1,7 @@
 import { LoroDoc } from 'loro-crdt';
 import { appDataDir, join } from '@tauri-apps/api/path';
 import { exists, mkdir, readFile, writeFile } from '@tauri-apps/plugin-fs';
+import type { SyncClient } from '../sync';
 
 /**
  * LoroDocStore manages Loro CRDT documents with persistence to the local file system.
@@ -10,6 +11,9 @@ export class LoroDocStore {
   private documents: Map<string, LoroDoc> = new Map();
   private dataPath: string | null = null;
   private initialized = false;
+  private syncClient: SyncClient | null = null;
+  private onRemoteChangeCallback: (() => void) | null = null;
+  private isImporting = false; // Flag to prevent sync loops
 
   /**
    * Initialize the store by setting up the data directory
@@ -109,8 +113,9 @@ export class LoroDocStore {
 
   /**
    * Save all documents to disk
+   * @param broadcast - If true, also broadcast snapshot to connected devices
    */
-  async save(): Promise<void> {
+  async save(broadcast = false): Promise<void> {
     if (!this.initialized || !this.dataPath) {
       throw new Error('LoroDocStore not initialized');
     }
@@ -119,6 +124,18 @@ export class LoroDocStore {
     const filePath = await join(this.dataPath, 'store.loro');
 
     await writeFile(filePath, data);
+
+    // Optionally broadcast to other devices
+    if (broadcast && this.syncClient) {
+      this.syncClient.sendUpdate(data);
+    }
+  }
+
+  /**
+   * Check if sync client is connected
+   */
+  isSyncConnected(): boolean {
+    return this.syncClient?.getStatus() === 'connected';
   }
 
   /**
@@ -152,5 +169,77 @@ export class LoroDocStore {
    */
   clear(): void {
     this.documents.clear();
+  }
+
+  /**
+   * Set the sync client for cross-device synchronization
+   */
+  setSyncClient(client: SyncClient): void {
+    this.syncClient = client;
+
+    // Handle incoming updates from other devices
+    client.onUpdate((data: Uint8Array) => {
+      this.handleRemoteUpdate(data);
+    });
+
+    // Handle snapshot requests from other devices
+    client.onSnapshotRequest(() => {
+      return this.exportAll();
+    });
+  }
+
+  /**
+   * Set callback for when remote changes are received
+   */
+  setOnRemoteChange(callback: () => void): void {
+    this.onRemoteChangeCallback = callback;
+  }
+
+  /**
+   * Send a local update to other connected devices
+   */
+  sendUpdate(update: Uint8Array): void {
+    if (this.syncClient && !this.isImporting) {
+      this.syncClient.sendUpdate(update);
+    }
+  }
+
+  /**
+   * Handle an update received from another device
+   */
+  private handleRemoteUpdate(data: Uint8Array): void {
+    this.isImporting = true;
+    try {
+      // Try to import as a full snapshot first (contains all documents)
+      this.importAll(data);
+
+      // Notify listeners that remote data has changed
+      if (this.onRemoteChangeCallback) {
+        this.onRemoteChangeCallback();
+      }
+    } catch {
+      // If it fails, it might be a single document update
+      // For now, we only sync full snapshots
+      console.warn('[LoroDocStore] Failed to import remote update');
+    } finally {
+      this.isImporting = false;
+    }
+  }
+
+  /**
+   * Request a full snapshot from another connected device
+   */
+  requestSnapshot(): void {
+    this.syncClient?.requestSnapshot();
+  }
+
+  /**
+   * Broadcast current state to all connected devices
+   */
+  broadcastSnapshot(): void {
+    if (this.syncClient) {
+      const snapshot = this.exportAll();
+      this.syncClient.sendSnapshot(snapshot);
+    }
   }
 }
