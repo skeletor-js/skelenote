@@ -1,0 +1,60 @@
+import { type ReactNode, useEffect } from 'react';
+import './Layout.css';
+import { Sidebar } from './Sidebar';
+import { useSidebar } from '@/contexts';
+
+interface LayoutProps {
+  children: ReactNode;
+  inboxCount?: number;
+}
+
+export function Layout({ children, inboxCount = 0 }: LayoutProps) {
+  const { isCollapsed, setCollapsed, toggleCollapsed } = useSidebar();
+
+  // Handle responsive collapse
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+
+    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches) {
+        setCollapsed(true);
+      }
+    };
+
+    // Check initial state
+    handleChange(mediaQuery);
+
+    // Listen for changes
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [setCollapsed]);
+
+  return (
+    <div
+      className={`layout ${isCollapsed ? 'layout--sidebar-collapsed' : ''}`}
+    >
+      <Sidebar inboxCount={inboxCount} />
+      <main className="layout__main">
+        {/* Show menu button when sidebar is collapsed */}
+        {isCollapsed && (
+          <button
+            className="layout__menu-btn"
+            onClick={toggleCollapsed}
+            aria-label="Open sidebar"
+          >
+            ☰
+          </button>
+        )}
+        <div className="layout__content">{children}</div>
+      </main>
+      {/* Overlay for mobile when sidebar is open */}
+      {!isCollapsed && (
+        <div
+          className="layout__overlay"
+          onClick={() => setCollapsed(true)}
+          aria-hidden="true"
+        />
+      )}
+    </div>
+  );
+}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import { Layout } from '@/components/layout';
 import { LoroDocStore } from '@/lib/loro/store';
 
 function App() {
@@ -55,14 +56,10 @@ function App() {
   }
 
   return (
-    <div
-      style={{
-        padding: 'var(--spacing-xl)',
-        maxWidth: '600px',
-        margin: '0 auto',
-      }}
-    >
-      <h1 style={{ marginBottom: 'var(--spacing-lg)' }}>Ephemera</h1>
+    <Layout inboxCount={12}>
+      <h1 className="font-ui" style={{ marginBottom: 'var(--spacing-lg)' }}>
+        Ephemera
+      </h1>
 
       <section
         style={{
@@ -73,7 +70,10 @@ function App() {
           border: '1px solid var(--border-subtle)',
         }}
       >
-        <h2 style={{ marginBottom: 'var(--spacing-md)', fontSize: '1rem' }}>
+        <h2
+          className="font-ui"
+          style={{ marginBottom: 'var(--spacing-md)', fontSize: '0.875rem' }}
+        >
           Tauri Command Test
         </h2>
         <button onClick={testTauriCommand}>Test Tauri Command</button>
@@ -97,7 +97,10 @@ function App() {
           border: '1px solid var(--border-subtle)',
         }}
       >
-        <h2 style={{ marginBottom: 'var(--spacing-md)', fontSize: '1rem' }}>
+        <h2
+          className="font-ui"
+          style={{ marginBottom: 'var(--spacing-md)', fontSize: '0.875rem' }}
+        >
           Loro CRDT Test
         </h2>
         <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
@@ -113,7 +116,7 @@ function App() {
           Status: {loroStatus}
         </p>
       </section>
-    </div>
+    </Layout>
   );
 }
 
