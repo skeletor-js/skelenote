@@ -39,6 +39,22 @@
 .command-palette__search-icon {
   color: var(--text-muted);
   font-size: var(--font-size-base);
+  flex-shrink: 0;
+}
+
+.command-palette__search-icon--active {
+  color: var(--text-primary);
+}
+
+.command-palette__loading {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 
 .command-palette__input {

@@ -1,14 +1,22 @@
 /**
  * CommandPalette - Cmd+K command palette for navigation and actions
+ * Includes integrated search mode for full-text search across objects
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigation, useObjects, useTypeRegistry } from '@/contexts';
-import { useLinkToDaily } from '@/hooks';
-import { getStaticActions, filterActions, type PaletteAction, QUICK_CAPTURE_ACTION_ID } from '@/lib/palette/actions';
+import { useLinkToDaily, useSearch } from '@/hooks';
+import {
+  getStaticActions,
+  filterActions,
+  type PaletteAction,
+  QUICK_CAPTURE_ACTION_ID,
+  SEARCH_ACTION_ID,
+} from '@/lib/palette/actions';
 import { searchObjects, sortByRelevance } from '@/lib/palette/search';
 import { PaletteItem } from './PaletteItem';
+import { SearchResultItem } from '@/components/search';
 import './CommandPalette.css';
 
 interface CommandPaletteProps {
@@ -22,9 +30,21 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { linkToDaily } = useLinkToDaily();
+
+  // Normal palette state
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Search mode state
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const {
+    query: searchQuery,
+    setQuery: setSearchQuery,
+    results: searchResults,
+    isSearching,
+    clear: clearSearch,
+  } = useSearch({ limit: 10 });
 
   // Get all available static actions
   const staticActions = useMemo(() => getStaticActions(), []);
@@ -35,7 +55,7 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
     return sortByRelevance(store.getAll());
   }, [store]);
 
-  // Filter and combine results
+  // Filter and combine results (normal mode)
   const filteredActions = useMemo(() => {
     // Filter static actions
     const filteredStatic = filterActions(staticActions, query);
@@ -47,23 +67,52 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
     return [...filteredStatic, ...objectResults];
   }, [staticActions, allObjects, typeRegistry, query]);
 
-  // Focus input when palette opens
+  // Items to display (depends on mode)
+  const displayItemCount = isSearchMode ? searchResults.length : filteredActions.length;
+
+  // Reset state when palette opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
       setQuery('');
       setSelectedIndex(0);
+      setIsSearchMode(false);
+      clearSearch();
     }
-  }, [isOpen]);
+  }, [isOpen, clearSearch]);
 
-  // Reset selection when filtered results change
+  // Reset selection when results change
   useEffect(() => {
     setSelectedIndex(0);
-  }, [filteredActions.length]);
+  }, [displayItemCount]);
 
-  // Execute action
+  // Enter search mode
+  const enterSearchMode = useCallback(() => {
+    setIsSearchMode(true);
+    setSearchQuery('');
+    setSelectedIndex(0);
+    // Focus will be handled by the input
+    setTimeout(() => inputRef.current?.focus(), 0);
+  }, [setSearchQuery]);
+
+  // Exit search mode
+  const exitSearchMode = useCallback(() => {
+    setIsSearchMode(false);
+    setQuery('');
+    setSelectedIndex(0);
+    clearSearch();
+    setTimeout(() => inputRef.current?.focus(), 0);
+  }, [clearSearch]);
+
+  // Execute action (normal mode)
   const executeAction = useCallback(
     (action: PaletteAction) => {
+      // Search action - enter search mode
+      if (action.id === SEARCH_ACTION_ID) {
+        enterSearchMode();
+        return;
+      }
+
       // Quick Capture action - special handling
       if (action.id === QUICK_CAPTURE_ACTION_ID) {
         onClose();
@@ -100,34 +149,69 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
       }
       onClose();
     },
-    [navigateToView, navigateToObject, store, linkToDaily, refreshData, onClose, onQuickCapture]
+    [navigateToView, navigateToObject, store, linkToDaily, refreshData, onClose, onQuickCapture, enterSearchMode]
+  );
+
+  // Navigate to search result
+  const selectSearchResult = useCallback(
+    (index: number) => {
+      const result = searchResults[index];
+      if (result) {
+        navigateToObject(result.item.id);
+        onClose();
+      }
+    },
+    [searchResults, navigateToObject, onClose]
   );
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          setSelectedIndex((prev) => Math.min(prev + 1, filteredActions.length - 1));
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          setSelectedIndex((prev) => Math.max(prev - 1, 0));
-          break;
-        case 'Enter':
-          e.preventDefault();
-          if (filteredActions[selectedIndex]) {
-            executeAction(filteredActions[selectedIndex]);
-          }
-          break;
-        case 'Escape':
-          e.preventDefault();
-          onClose();
-          break;
+      if (isSearchMode) {
+        // Search mode keyboard handling
+        switch (e.key) {
+          case 'ArrowDown':
+            e.preventDefault();
+            setSelectedIndex((prev) => Math.min(prev + 1, searchResults.length - 1));
+            break;
+          case 'ArrowUp':
+            e.preventDefault();
+            setSelectedIndex((prev) => Math.max(prev - 1, 0));
+            break;
+          case 'Enter':
+            e.preventDefault();
+            selectSearchResult(selectedIndex);
+            break;
+          case 'Escape':
+            e.preventDefault();
+            exitSearchMode();
+            break;
+        }
+      } else {
+        // Normal mode keyboard handling
+        switch (e.key) {
+          case 'ArrowDown':
+            e.preventDefault();
+            setSelectedIndex((prev) => Math.min(prev + 1, filteredActions.length - 1));
+            break;
+          case 'ArrowUp':
+            e.preventDefault();
+            setSelectedIndex((prev) => Math.max(prev - 1, 0));
+            break;
+          case 'Enter':
+            e.preventDefault();
+            if (filteredActions[selectedIndex]) {
+              executeAction(filteredActions[selectedIndex]);
+            }
+            break;
+          case 'Escape':
+            e.preventDefault();
+            onClose();
+            break;
+        }
       }
     },
-    [filteredActions, selectedIndex, executeAction, onClose]
+    [isSearchMode, filteredActions, searchResults, selectedIndex, executeAction, selectSearchResult, exitSearchMode, onClose]
   );
 
   // Handle backdrop click
@@ -148,36 +232,76 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
         className="command-palette"
         role="dialog"
         aria-modal="true"
-        aria-label="Command Palette"
+        aria-label={isSearchMode ? 'Search' : 'Command Palette'}
       >
         {/* Search input */}
         <div className="command-palette__search">
-          <span className="command-palette__search-icon">🔍</span>
-          <input
-            ref={inputRef}
-            type="text"
-            className="command-palette__input"
-            placeholder="Type a command or search..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
+          {isSearchMode ? (
+            <>
+              <span className="command-palette__search-icon command-palette__search-icon--active">🔎</span>
+              <input
+                ref={inputRef}
+                type="text"
+                className="command-palette__input"
+                placeholder="Search objects..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+              {isSearching && (
+                <span className="command-palette__loading">...</span>
+              )}
+            </>
+          ) : (
+            <>
+              <span className="command-palette__search-icon">🔍</span>
+              <input
+                ref={inputRef}
+                type="text"
+                className="command-palette__input"
+                placeholder="Type a command or search..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+            </>
+          )}
         </div>
 
         {/* Results */}
         <div className="command-palette__results" role="listbox">
-          {filteredActions.length === 0 ? (
-            <div className="command-palette__empty">No results found</div>
+          {isSearchMode ? (
+            // Search mode results
+            searchQuery.trim() === '' ? (
+              <div className="command-palette__empty">Type to search...</div>
+            ) : searchResults.length === 0 && !isSearching ? (
+              <div className="command-palette__empty">No results found</div>
+            ) : (
+              searchResults.map((result, index) => (
+                <SearchResultItem
+                  key={result.item.id}
+                  result={result}
+                  isSelected={index === selectedIndex}
+                  onClick={() => selectSearchResult(index)}
+                  onMouseEnter={() => setSelectedIndex(index)}
+                />
+              ))
+            )
           ) : (
-            filteredActions.map((action, index) => (
-              <PaletteItem
-                key={action.id}
-                action={action}
-                isSelected={index === selectedIndex}
-                onClick={() => executeAction(action)}
-                onMouseEnter={() => setSelectedIndex(index)}
-              />
-            ))
+            // Normal mode results
+            filteredActions.length === 0 ? (
+              <div className="command-palette__empty">No results found</div>
+            ) : (
+              filteredActions.map((action, index) => (
+                <PaletteItem
+                  key={action.id}
+                  action={action}
+                  isSelected={index === selectedIndex}
+                  onClick={() => executeAction(action)}
+                  onMouseEnter={() => setSelectedIndex(index)}
+                />
+              ))
+            )
           )}
         </div>
 
@@ -190,7 +314,7 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
             <kbd>↵</kbd> Select
           </span>
           <span className="command-palette__hint">
-            <kbd>esc</kbd> Close
+            <kbd>esc</kbd> {isSearchMode ? 'Back' : 'Close'}
           </span>
         </div>
       </div>
