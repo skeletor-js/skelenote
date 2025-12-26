@@ -36,6 +36,8 @@ export interface CreateObjectInput {
   withContent?: boolean;
   /** Override the default inboxed state (defaults to true) */
   inboxed?: boolean;
+  /** Optional custom ID (defaults to auto-generated UUID) */
+  id?: string;
 }
 
 /**
