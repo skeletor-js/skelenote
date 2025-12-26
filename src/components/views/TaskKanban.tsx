@@ -25,10 +25,13 @@ interface TaskKanbanProps {
 export function TaskKanban({
   tasks,
   groupBy,
-  onToggleComplete,
+  onToggleComplete: _onToggleComplete,
   onMoveTask,
   emptyMessage = 'No tasks',
 }: TaskKanbanProps) {
+  // Note: onToggleComplete is available but not used in kanban view
+  // Cards navigate to detail view on click instead
+  void _onToggleComplete;
   const { navigateToObject } = useNavigation();
   const { store } = useObjects();
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);

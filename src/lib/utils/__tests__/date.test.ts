@@ -7,7 +7,6 @@ import {
   isToday,
   isOverdue,
   isThisWeekAfterToday,
-  isBeyondThisWeek,
   addDays,
   addMonths,
   addYears,
@@ -180,11 +179,8 @@ describe('Date Utilities', () => {
   });
 
   describe('formatRelativeDate', () => {
-    let originalDate: typeof Date;
-
     beforeEach(() => {
       // Mock Date to control "today"
-      originalDate = global.Date;
       const mockDate = new Date('2024-12-25T12:00:00Z');
       vi.useFakeTimers();
       vi.setSystemTime(mockDate);

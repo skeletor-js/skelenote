@@ -6,7 +6,7 @@
 import { useCallback } from 'react';
 import type { EphemeraObject } from '@/lib/types';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
-import { useObjects, useTypeRegistry } from '@/contexts';
+import { useObjects } from '@/contexts';
 import { Tag, type TagColor } from '@/components/ui';
 import './TaskRow.css';
 
@@ -21,7 +21,6 @@ interface TaskRowProps {
 
 export function TaskRow({ task, onToggleComplete, onClick }: TaskRowProps) {
   const { store } = useObjects();
-  const typeRegistry = useTypeRegistry();
 
   const isComplete = task.properties.status === 'done';
   const priority = task.properties.priority as string | null;
