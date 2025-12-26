@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 import './ObjectDetailView.css';
 import { ObjectHeader } from './ObjectHeader';
+import { PropertyList } from './PropertyList';
+import type { PropertyValue } from '@/lib/types';
 import {
   useObjects,
   useNavigation,
@@ -26,6 +28,15 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
       // Determine which property holds the title
       const titlePropertyId = object.properties.title !== undefined ? 'title' : 'name';
       store.setProperty(objectId, titlePropertyId, newTitle);
+      refreshData();
+    },
+    [store, objectId, refreshData]
+  );
+
+  const handlePropertyChange = useCallback(
+    (propertyId: string, value: PropertyValue) => {
+      if (!store) return;
+      store.setProperty(objectId, propertyId, value);
       refreshData();
     },
     [store, objectId, refreshData]
@@ -85,31 +96,12 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
         onTitleChange={handleTitleChange}
       />
 
-      {/* Properties Section - will be replaced with PropertyList component */}
-      <section className="object-detail__properties">
-        <h2 className="object-detail__section-title">Properties</h2>
-        <div className="object-detail__property-list">
-          {typeDef.schema
-            .filter((prop) => prop.id !== 'title' && prop.id !== 'name')
-            .map((propDef) => {
-              const value = object.properties[propDef.id];
-              return (
-                <div key={propDef.id} className="object-detail__property">
-                  <span className="object-detail__property-label">
-                    {propDef.name}
-                  </span>
-                  <span className="object-detail__property-value">
-                    {value === null || value === undefined
-                      ? '—'
-                      : Array.isArray(value)
-                        ? `[${value.length} items]`
-                        : String(value)}
-                  </span>
-                </div>
-              );
-            })}
-        </div>
-      </section>
+      {/* Properties Section */}
+      <PropertyList
+        object={object}
+        typeDef={typeDef}
+        onPropertyChange={handlePropertyChange}
+      />
 
       {/* Content Section - will be replaced with Editor component */}
       {typeDef.hasContent && (
