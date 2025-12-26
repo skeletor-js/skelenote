@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigation, useObjects, useTypeRegistry } from '@/contexts';
+import { useLinkToDaily } from '@/hooks';
 import { getStaticActions, filterActions, type PaletteAction, QUICK_CAPTURE_ACTION_ID } from '@/lib/palette/actions';
 import { searchObjects, sortByRelevance } from '@/lib/palette/search';
 import { PaletteItem } from './PaletteItem';
@@ -20,6 +21,7 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
   const { navigateToView, navigateToObject } = useNavigation();
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
+  const { linkToDaily } = useLinkToDaily();
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -89,6 +91,10 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
           typeId: action.typeId,
           properties,
         });
+        // Link to today's daily note for task, note, or link types
+        if (['task', 'note', 'link'].includes(action.typeId)) {
+          linkToDaily(newObject);
+        }
         refreshData();
         navigateToObject(newObject.id);
       } else if (action.action) {
@@ -96,7 +102,7 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
       }
       onClose();
     },
-    [navigateToView, navigateToObject, store, refreshData, onClose, onQuickCapture]
+    [navigateToView, navigateToObject, store, linkToDaily, refreshData, onClose, onQuickCapture]
   );
 
   // Handle keyboard navigation
