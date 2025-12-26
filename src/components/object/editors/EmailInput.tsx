@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { open } from '@tauri-apps/plugin-shell';
 import './editors.css';
 
@@ -17,6 +17,11 @@ export function EmailInput({
 }: EmailInputProps) {
   const [localValue, setLocalValue] = useState(value ?? '');
   const [isValid, setIsValid] = useState(true);
+
+  // Sync local state when prop value changes
+  useEffect(() => {
+    setLocalValue(value ?? '');
+  }, [value]);
 
   const validateEmail = (email: string): boolean => {
     if (!email) return true;

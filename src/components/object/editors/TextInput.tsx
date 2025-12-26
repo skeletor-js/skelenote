@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import './editors.css';
 
 interface TextInputProps {
@@ -15,6 +15,11 @@ export function TextInput({
   placeholder = 'Enter text...',
 }: TextInputProps) {
   const [localValue, setLocalValue] = useState(value ?? '');
+
+  // Sync local state when prop value changes
+  useEffect(() => {
+    setLocalValue(value ?? '');
+  }, [value]);
 
   const handleBlur = useCallback(() => {
     if (localValue !== (value ?? '')) {

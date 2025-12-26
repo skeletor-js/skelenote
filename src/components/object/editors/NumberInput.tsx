@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import './editors.css';
 
 interface NumberInputProps {
@@ -21,6 +21,11 @@ export function NumberInput({
   placeholder = 'Enter number...',
 }: NumberInputProps) {
   const [localValue, setLocalValue] = useState(value?.toString() ?? '');
+
+  // Sync local state when prop value changes
+  useEffect(() => {
+    setLocalValue(value?.toString() ?? '');
+  }, [value]);
 
   const handleBlur = useCallback(() => {
     if (localValue === '') {

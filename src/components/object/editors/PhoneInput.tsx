@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { open } from '@tauri-apps/plugin-shell';
 import './editors.css';
 
@@ -16,6 +16,11 @@ export function PhoneInput({
   placeholder = '+1 (555) 123-4567',
 }: PhoneInputProps) {
   const [localValue, setLocalValue] = useState(value ?? '');
+
+  // Sync local state when prop value changes
+  useEffect(() => {
+    setLocalValue(value ?? '');
+  }, [value]);
 
   const handleBlur = useCallback(() => {
     const trimmed = localValue.trim();
