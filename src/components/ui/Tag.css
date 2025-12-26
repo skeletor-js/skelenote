@@ -1,0 +1,72 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  background: transparent;
+  transition: background var(--transition-fast);
+}
+
+.tag--sm {
+  font-size: var(--font-size-xs);
+  padding: 1px var(--spacing-xs);
+}
+
+.tag--md {
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.tag--clickable {
+  cursor: pointer;
+}
+
+.tag--clickable:hover {
+  background: var(--surface-hover);
+}
+
+.tag__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tag--sm .tag__dot {
+  width: 6px;
+  height: 6px;
+}
+
+.tag__name {
+  color: var(--text-secondary);
+}
+
+/* Color variants */
+.tag--gray .tag__dot {
+  background: var(--tag-gray);
+}
+.tag--red .tag__dot {
+  background: var(--tag-red);
+}
+.tag--orange .tag__dot {
+  background: var(--tag-orange);
+}
+.tag--yellow .tag__dot {
+  background: var(--tag-yellow);
+}
+.tag--green .tag__dot {
+  background: var(--tag-green);
+}
+.tag--blue .tag__dot {
+  background: var(--tag-blue);
+}
+.tag--purple .tag__dot {
+  background: var(--tag-purple);
+}
+.tag--pink .tag__dot {
+  background: var(--tag-pink);
+}
