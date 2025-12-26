@@ -27,8 +27,24 @@
 }
 
 .sidebar__tag-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
   padding: var(--spacing-xs) var(--spacing-md);
   padding-left: calc(var(--spacing-md) + var(--spacing-lg));
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.sidebar__tag-item:hover {
+  background: var(--surface-hover);
+}
+
+.sidebar__tag-item--selected {
+  background: var(--surface-active);
 }
 
 .sidebar__empty-text {

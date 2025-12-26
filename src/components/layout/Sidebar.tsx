@@ -12,7 +12,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ inboxCount = 0 }: SidebarProps) {
-  const { isCollapsed, toggleCollapsed } = useSidebar();
+  const { isCollapsed, toggleCollapsed, selectedItem, setSelectedItem } = useSidebar();
   const { navigateToView, navigateToObject } = useNavigation();
   const { store } = useObjects();
   const { theme, toggleTheme } = useTheme();
@@ -134,16 +134,22 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
           {tags.length === 0 ? (
             <div className="sidebar__empty-text">No tags yet</div>
           ) : (
-            tags.map((tag) => (
-              <div key={tag.id} className="sidebar__tag-item">
-                <Tag
-                  name={tag.name}
-                  color={tag.color}
-                  size="sm"
-                  onClick={() => navigateToObject(tag.id)}
-                />
-              </div>
-            ))
+            tags.map((tag) => {
+              const tagItemId = `tag-${tag.id}`;
+              const isSelected = selectedItem === tagItemId;
+              return (
+                <button
+                  key={tag.id}
+                  className={`sidebar__tag-item ${isSelected ? 'sidebar__tag-item--selected' : ''}`}
+                  onClick={() => {
+                    setSelectedItem(tagItemId);
+                    navigateToObject(tag.id);
+                  }}
+                >
+                  <Tag name={tag.name} color={tag.color} size="sm" />
+                </button>
+              );
+            })
           )}
         </SidebarSection>
       </div>
