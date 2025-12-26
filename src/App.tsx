@@ -73,6 +73,31 @@ function PlaceholderView({ view }: { view: ViewType }) {
     navigateToObject(link.id);
   };
 
+  const handleCreateTestProject = () => {
+    if (!store) return;
+    const project = store.create({
+      typeId: 'project',
+      properties: {
+        name: `Test Project ${Date.now()}`,
+        status: 'active',
+      },
+    });
+    refreshData();
+    navigateToObject(project.id);
+  };
+
+  const handleCreateTestTag = () => {
+    if (!store) return;
+    const tag = store.create({
+      typeId: 'tag',
+      properties: {
+        name: `test-tag-${Date.now()}`,
+      },
+    });
+    refreshData();
+    navigateToObject(tag.id);
+  };
+
   // Get all objects for testing
   const allObjects = store?.getAll() ?? [];
 
@@ -124,6 +149,8 @@ function PlaceholderView({ view }: { view: ViewType }) {
           <button onClick={handleCreateTestTask}>Create Task</button>
           <button onClick={handleCreateTestPerson}>Create Person</button>
           <button onClick={handleCreateTestLink}>Create Link</button>
+          <button onClick={handleCreateTestProject}>Create Project</button>
+          <button onClick={handleCreateTestTag}>Create Tag</button>
         </div>
 
         {allObjects.length > 0 && (

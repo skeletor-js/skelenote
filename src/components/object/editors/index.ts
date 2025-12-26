@@ -7,3 +7,6 @@ export { Select } from './Select';
 export { UrlInput } from './UrlInput';
 export { EmailInput } from './EmailInput';
 export { PhoneInput } from './PhoneInput';
+export { RelationPicker } from './RelationPicker';
+export { RelationChip } from './RelationChip';
+export { ObjectSearchModal } from './ObjectSearchModal';

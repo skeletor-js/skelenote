@@ -24,6 +24,12 @@ export const ProjectStatusOptions = ['active', 'on-hold', 'completed', 'archived
 export type ProjectStatus = (typeof ProjectStatusOptions)[number];
 
 /**
+ * Tag color options (maps to CSS variables like --tag-red, --tag-blue, etc.)
+ */
+export const TagColorOptions = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'pink'] as const;
+export type TagColor = (typeof TagColorOptions)[number];
+
+/**
  * Task type definition
  * Properties: title, status, dueDate, priority, project, note, tags, recurrence
  */
@@ -346,9 +352,12 @@ export const TagType: TypeDefinition = {
     {
       id: 'color',
       name: 'Color',
-      type: 'text',
+      type: 'select',
       required: false,
       multiple: false,
+      config: {
+        options: [...TagColorOptions],
+      },
     },
     {
       id: 'description',

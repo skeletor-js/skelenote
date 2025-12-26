@@ -8,6 +8,7 @@ import {
   UrlInput,
   EmailInput,
   PhoneInput,
+  RelationPicker,
 } from './editors';
 
 interface PropertyEditorProps {
@@ -96,12 +97,19 @@ export function PropertyEditor({
 
     case 'relation':
       return (
-        <div style={placeholderStyle} id={id}>
-          {formatValue(value)}{' '}
-          <span style={{ opacity: 0.6 }}>
-            (relation to: {config?.targetTypeIds?.join(', ') ?? 'any'})
-          </span>
-        </div>
+        <RelationPicker
+          id={id}
+          value={
+            Array.isArray(value)
+              ? (value as string[])
+              : typeof value === 'string'
+                ? value
+                : null
+          }
+          targetTypeIds={config?.targetTypeIds}
+          multiple={definition.multiple}
+          onChange={onChange}
+        />
       );
 
     case 'url':
