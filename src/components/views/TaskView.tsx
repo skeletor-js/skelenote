@@ -1,6 +1,6 @@
 /**
  * TaskView - main container for task views
- * Displays tasks in a list format with drag and drop reordering
+ * Displays tasks in a list format
  */
 
 import { useTasks } from '@/hooks/useTasks';
@@ -26,9 +26,7 @@ const EMPTY_MESSAGES: Record<TaskFilter, string> = {
 };
 
 export function TaskView({ filter, title }: TaskViewProps) {
-  const { tasks, isLoading, toggleComplete, reorderTask } = useTasks({
-    filter,
-  });
+  const { tasks, isLoading, toggleComplete } = useTasks({ filter });
 
   if (isLoading) {
     return (
@@ -51,8 +49,6 @@ export function TaskView({ filter, title }: TaskViewProps) {
           tasks={tasks}
           onToggleComplete={toggleComplete}
           emptyMessage={EMPTY_MESSAGES[filter]}
-          enableReorder
-          onReorder={reorderTask}
         />
       </div>
     </div>
