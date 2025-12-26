@@ -32,7 +32,7 @@ export function TaskView({ filter, title }: TaskViewProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [groupBy, setGroupBy] = useState<'status' | 'project'>('status');
 
-  const { tasks, isLoading, toggleComplete, updateStatus } = useTasks({
+  const { tasks, isLoading, toggleComplete, updateStatus, reorderTask } = useTasks({
     filter,
     groupBy: viewMode === 'kanban' ? groupBy : undefined,
   });
@@ -73,6 +73,8 @@ export function TaskView({ filter, title }: TaskViewProps) {
             tasks={tasks}
             onToggleComplete={toggleComplete}
             emptyMessage={EMPTY_MESSAGES[filter]}
+            enableReorder
+            onReorder={reorderTask}
           />
         ) : (
           <TaskKanban

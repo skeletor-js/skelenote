@@ -34,6 +34,8 @@ export interface UseTasksResult {
   updateTask: (taskId: string, properties: Record<string, PropertyValue>) => void;
   /** Update task status (for drag and drop) */
   updateStatus: (taskId: string, status: string) => void;
+  /** Reorder a task relative to another task */
+  reorderTask: (taskId: string, targetId: string, position: 'above' | 'below') => void;
 }
 
 /**
@@ -71,7 +73,26 @@ export function useTasks(options: UseTasksOptions): UseTasksResult {
     const sortConfig = getDefaultSort(options.filter);
 
     const filtered = allTasks.filter(filterFn);
-    return sortTasks(filtered, sortConfig);
+    let sorted = sortTasks(filtered, sortConfig);
+
+    // Apply secondary sort by sortOrder if present
+    // Tasks with sortOrder come first (in order), then unsorted tasks
+    sorted = sorted.sort((a, b) => {
+      const orderA = a.properties.sortOrder as number | null;
+      const orderB = b.properties.sortOrder as number | null;
+
+      // If both have sortOrder, sort by it
+      if (orderA !== null && orderB !== null) {
+        return orderA - orderB;
+      }
+      // If only one has sortOrder, it comes first
+      if (orderA !== null) return -1;
+      if (orderB !== null) return 1;
+      // Neither has sortOrder, keep original order
+      return 0;
+    });
+
+    return sorted;
   }, [store, options.filter]);
 
   // Group tasks if requested
@@ -137,6 +158,47 @@ export function useTasks(options: UseTasksOptions): UseTasksResult {
     [store, refreshData]
   );
 
+  // Reorder task relative to another task
+  const reorderTask = useCallback(
+    (taskId: string, targetId: string, position: 'above' | 'below') => {
+      if (!store) return;
+      if (taskId === targetId) return;
+
+      // Find current task order in the list
+      const taskIndex = tasks.findIndex((t) => t.id === taskId);
+      const targetIndex = tasks.findIndex((t) => t.id === targetId);
+
+      if (taskIndex === -1 || targetIndex === -1) return;
+
+      // Calculate new sort orders
+      // We'll assign sort orders to all visible tasks to ensure consistent ordering
+      const newOrder: { id: string; sortOrder: number }[] = [];
+      let insertIndex = position === 'above' ? targetIndex : targetIndex + 1;
+
+      // Adjust insert index if moving forward (account for removal of task)
+      if (taskIndex < insertIndex) {
+        insertIndex -= 1;
+      }
+
+      // Build new order by removing task and inserting at new position
+      const tasksWithoutDragged = tasks.filter((t) => t.id !== taskId);
+      tasksWithoutDragged.splice(insertIndex, 0, tasks[taskIndex]);
+
+      // Assign new sort orders (use index * 1000 to leave room for future insertions)
+      tasksWithoutDragged.forEach((task, index) => {
+        newOrder.push({ id: task.id, sortOrder: (index + 1) * 1000 });
+      });
+
+      // Update all tasks with new sort orders
+      for (const item of newOrder) {
+        store.setProperty(item.id, 'sortOrder', item.sortOrder);
+      }
+
+      refreshData();
+    },
+    [store, tasks, refreshData]
+  );
+
   return {
     tasks,
     groupedTasks,
@@ -144,5 +206,6 @@ export function useTasks(options: UseTasksOptions): UseTasksResult {
     toggleComplete,
     updateTask,
     updateStatus,
+    reorderTask,
   };
 }

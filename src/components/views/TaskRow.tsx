@@ -1,9 +1,9 @@
 /**
  * TaskRow component for list view display
- * Shows: checkbox, title, due date, priority, project, tags
+ * Shows: drag handle, checkbox, title, due date, priority, project, tags
  */
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import type { EphemeraObject } from '@/lib/types';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
 import { useObjects } from '@/contexts';
@@ -17,10 +17,37 @@ interface TaskRowProps {
   onToggleComplete: (taskId: string) => void;
   /** Callback when row is clicked (navigates to detail) */
   onClick: () => void;
+  /** Whether drag and drop is enabled */
+  isDraggable?: boolean;
+  /** Current drag state */
+  isDragOver?: 'above' | 'below' | null;
+  /** Callback when drag starts */
+  onDragStart?: (taskId: string) => void;
+  /** Callback when drag ends */
+  onDragEnd?: () => void;
+  /** Callback when dragging over this row */
+  onDragOver?: (taskId: string, position: 'above' | 'below') => void;
+  /** Callback when dragging leaves this row */
+  onDragLeave?: () => void;
+  /** Callback when dropping on this row */
+  onDrop?: (taskId: string) => void;
 }
 
-export function TaskRow({ task, onToggleComplete, onClick }: TaskRowProps) {
+export function TaskRow({
+  task,
+  onToggleComplete,
+  onClick,
+  isDraggable = false,
+  isDragOver = null,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+}: TaskRowProps) {
   const { store } = useObjects();
+  const rowRef = useRef<HTMLDivElement>(null);
+  const wasDragging = useRef(false);
 
   const isComplete = task.properties.status === 'done';
   const priority = task.properties.priority as string | null;
@@ -67,18 +94,96 @@ export function TaskRow({ task, onToggleComplete, onClick }: TaskRowProps) {
     [onToggleComplete, task.id]
   );
 
+  // Handle drag start
+  const handleDragStart = useCallback(
+    (e: React.DragEvent) => {
+      wasDragging.current = true;
+      e.dataTransfer.setData('text/plain', task.id);
+      e.dataTransfer.effectAllowed = 'move';
+      onDragStart?.(task.id);
+    },
+    [task.id, onDragStart]
+  );
+
+  // Handle drag end
+  const handleDragEnd = useCallback(() => {
+    setTimeout(() => {
+      wasDragging.current = false;
+    }, 0);
+    onDragEnd?.();
+  }, [onDragEnd]);
+
+  // Handle drag over
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+
+      // Determine if cursor is in top or bottom half
+      if (rowRef.current) {
+        const rect = rowRef.current.getBoundingClientRect();
+        const midpoint = rect.top + rect.height / 2;
+        const position = e.clientY < midpoint ? 'above' : 'below';
+        onDragOver?.(task.id, position);
+      }
+    },
+    [task.id, onDragOver]
+  );
+
+  // Handle drag leave
+  const handleDragLeave = useCallback(() => {
+    onDragLeave?.();
+  }, [onDragLeave]);
+
+  // Handle drop
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      onDrop?.(task.id);
+    },
+    [task.id, onDrop]
+  );
+
+  // Handle click - prevent if was dragging
+  const handleClick = useCallback(() => {
+    if (!wasDragging.current) {
+      onClick();
+    }
+  }, [onClick]);
+
+  // Build class names
+  const classNames = ['task-row'];
+  if (isComplete) classNames.push('task-row--complete');
+  if (isDraggable) classNames.push('task-row--draggable');
+  if (isDragOver === 'above') classNames.push('task-row--drag-over-above');
+  if (isDragOver === 'below') classNames.push('task-row--drag-over-below');
+
   return (
     <div
-      className={`task-row ${isComplete ? 'task-row--complete' : ''}`}
-      onClick={onClick}
+      ref={rowRef}
+      className={classNames.join(' ')}
+      onClick={handleClick}
       role="button"
       tabIndex={0}
+      draggable={isDraggable}
+      onDragStart={isDraggable ? handleDragStart : undefined}
+      onDragEnd={isDraggable ? handleDragEnd : undefined}
+      onDragOver={isDraggable ? handleDragOver : undefined}
+      onDragLeave={isDraggable ? handleDragLeave : undefined}
+      onDrop={isDraggable ? handleDrop : undefined}
       onKeyDown={(e) => {
         if (e.key === 'Enter' && e.target === e.currentTarget) {
           onClick();
         }
       }}
     >
+      {/* Drag handle */}
+      {isDraggable && (
+        <span className="task-row__drag-handle" aria-hidden="true">
+          ⋮⋮
+        </span>
+      )}
+
       {/* Checkbox */}
       <button
         className={`task-row__checkbox ${isComplete ? 'task-row__checkbox--checked' : ''}`}

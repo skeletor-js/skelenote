@@ -111,6 +111,13 @@ export const TaskType: TypeDefinition = {
       required: false,
       multiple: false,
     },
+    {
+      id: 'sortOrder',
+      name: 'Sort Order',
+      type: 'number',
+      required: false,
+      multiple: false,
+    },
   ],
 };
 
