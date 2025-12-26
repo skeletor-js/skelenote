@@ -91,10 +91,8 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
           typeId: action.typeId,
           properties,
         });
-        // Link to today's daily note for task, note, or link types
-        if (['task', 'note', 'link'].includes(action.typeId)) {
-          linkToDaily(newObject);
-        }
+        // Link to today's daily note
+        linkToDaily(newObject);
         refreshData();
         navigateToObject(newObject.id);
       } else if (action.action) {

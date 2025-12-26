@@ -42,9 +42,6 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
     }));
   }, [typeRegistry]);
 
-  // Types that should be linked to daily notes
-  const dailyLinkableTypes: string[] = [BuiltInTypeIds.TASK, BuiltInTypeIds.NOTE, BuiltInTypeIds.LINK];
-
   // Handle creating a new object of the selected type
   const handleCreateObject = useCallback(
     (typeId: string) => {
@@ -56,10 +53,8 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
         properties: defaultProps,
       });
 
-      // Link to today's daily note for task, note, or link types
-      if (dailyLinkableTypes.includes(typeId)) {
-        linkToDaily(newObject);
-      }
+      // Link to today's daily note
+      linkToDaily(newObject);
 
       refreshData();
       setShowTypeSelector(false);

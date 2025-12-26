@@ -52,6 +52,28 @@ function createMentionBlock(object: EphemeraObject): MentionBlock {
 }
 
 /**
+ * Check if a block is empty (no content or only empty content)
+ */
+function isEmptyBlock(block: unknown): boolean {
+  if (!block || typeof block !== 'object') return true;
+  const b = block as { type?: string; content?: unknown[] };
+  if (b.type === 'paragraph') {
+    // Empty if no content array or content is empty/only whitespace
+    if (!b.content || !Array.isArray(b.content) || b.content.length === 0) {
+      return true;
+    }
+    // Check if content is only whitespace text
+    if (b.content.length === 1) {
+      const item = b.content[0] as { type?: string; text?: string };
+      if (item.type === 'text' && (!item.text || item.text.trim() === '')) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
  * Append a mention to the daily note's content
  */
 function appendMentionToContent(
@@ -73,7 +95,11 @@ function appendMentionToContent(
     try {
       const parsed = JSON.parse(existingContent);
       if (Array.isArray(parsed)) {
+        // Filter out trailing empty blocks to prevent extra line breaks
         blocks = parsed;
+        while (blocks.length > 0 && isEmptyBlock(blocks[blocks.length - 1])) {
+          blocks.pop();
+        }
       }
     } catch {
       // Invalid content, start fresh
