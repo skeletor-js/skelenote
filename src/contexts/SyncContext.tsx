@@ -149,3 +149,11 @@ export function useSyncContext(): SyncContextValue {
   }
   return context;
 }
+
+/**
+ * Safe hook that returns null if SyncProvider is not available.
+ * Use this when the component may render outside of SyncProvider.
+ */
+export function useSyncContextSafe(): SyncContextValue | null {
+  return useContext(SyncContext);
+}

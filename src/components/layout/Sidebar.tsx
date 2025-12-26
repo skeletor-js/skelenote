@@ -2,7 +2,7 @@ import { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import './Sidebar.css';
 import { SidebarSection } from './SidebarSection';
 import { SidebarItem } from './SidebarItem';
-import { Tag, type TagColor } from '@/components/ui';
+import { Tag, type TagColor, SyncIndicator } from '@/components/ui';
 import { useSidebar, useNavigation, useObjects, useTypeRegistry, type ViewType } from '@/contexts';
 import { useTheme, useLinkToDaily } from '@/hooks';
 import { BuiltInTypeIds, type PropertyValue } from '@/lib/types';
@@ -240,6 +240,8 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
             </div>
           )}
         </div>
+
+        <SyncIndicator />
 
         <div className="sidebar__controls">
           <button
