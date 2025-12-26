@@ -1,0 +1,105 @@
+/* Editor container styles */
+.editor-container {
+  width: 100%;
+  min-height: 200px;
+  background: var(--bg-base);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* Override BlockNote theme variables to match our design system */
+.editor-container .bn-editor {
+  --bn-colors-editor-background: var(--bg-base);
+  --bn-colors-editor-text: var(--text-primary);
+  --bn-colors-menu-background: var(--bg-raised);
+  --bn-colors-menu-text: var(--text-primary);
+  --bn-colors-tooltip-background: var(--bg-raised);
+  --bn-colors-tooltip-text: var(--text-primary);
+  --bn-colors-hovered-background: var(--surface-hover);
+  --bn-colors-hovered-text: var(--text-primary);
+  --bn-colors-selected-background: var(--surface-active);
+  --bn-colors-selected-text: var(--text-primary);
+  --bn-colors-disabled-background: var(--bg-sunken);
+  --bn-colors-disabled-text: var(--text-muted);
+  --bn-colors-shadow: rgba(0, 0, 0, 0.2);
+  --bn-colors-border: var(--border-subtle);
+  --bn-colors-side-menu: var(--text-secondary);
+  --bn-font-family: var(--font-body);
+
+  font-family: var(--font-body);
+  padding: var(--spacing-sm);
+}
+
+/* Placeholder styling */
+.editor-container .bn-editor .bn-block-content[data-content-type="paragraph"]::before {
+  color: var(--text-muted);
+}
+
+/* Link styling */
+.editor-container .bn-editor a {
+  color: var(--tag-blue);
+  text-decoration: underline;
+}
+
+/* Code block styling */
+.editor-container .bn-editor pre {
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+}
+
+/* Inline code styling */
+.editor-container .bn-editor code {
+  background: var(--bg-sunken);
+  padding: 0.1em 0.3em;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* Heading styles */
+.editor-container .bn-editor h1 {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+}
+
+.editor-container .bn-editor h2 {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-xs);
+}
+
+.editor-container .bn-editor h3 {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-xs);
+}
+
+/* List styling */
+.editor-container .bn-editor ul,
+.editor-container .bn-editor ol {
+  padding-left: var(--spacing-lg);
+}
+
+/* Checkbox list styling */
+.editor-container .bn-editor [data-content-type="checkListItem"] input[type="checkbox"] {
+  accent-color: var(--text-primary);
+}
+
+/* Saving indicator */
+.editor-container[data-saving="true"]::after {
+  content: "Saving...";
+  position: absolute;
+  top: var(--spacing-xs);
+  right: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}

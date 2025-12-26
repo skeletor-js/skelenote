@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import './ObjectDetailView.css';
 import { ObjectHeader } from './ObjectHeader';
 import { PropertyList } from './PropertyList';
+import { Editor } from '@/components/editor';
 import type { PropertyValue } from '@/lib/types';
 import {
   useObjects,
@@ -41,6 +42,25 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
     },
     [store, objectId, refreshData]
   );
+
+  const handleContentChange = useCallback(
+    (content: string) => {
+      if (!store) return;
+      store.setContent(objectId, content);
+      // Don't call refreshData here - editor handles its own state
+    },
+    [store, objectId]
+  );
+
+  // Get current content for the editor
+  const currentContent = useMemo(() => {
+    if (!store) return null;
+    try {
+      return store.getContent(objectId);
+    } catch {
+      return null;
+    }
+  }, [store, objectId]);
 
   if (isLoading || !store) {
     return (
@@ -103,13 +123,15 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
         onPropertyChange={handlePropertyChange}
       />
 
-      {/* Content Section - will be replaced with Editor component */}
+      {/* Content Section with BlockNote Editor */}
       {typeDef.hasContent && (
         <section className="object-detail__content">
           <h2 className="object-detail__section-title">Content</h2>
-          <div className="object-detail__editor-placeholder">
-            <p>Editor will be added in Commit 8</p>
-          </div>
+          <Editor
+            objectId={objectId}
+            initialContent={currentContent}
+            onContentChange={handleContentChange}
+          />
         </section>
       )}
 
