@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Layout } from '@/components/layout';
 import { ObjectDetailView } from '@/components/object';
-import { TaskView, InboxView } from '@/components/views';
+import { TaskView, InboxView, DailyNotesView } from '@/components/views';
 import { CommandPalette } from '@/components/palette';
 import { QuickCapture } from '@/components/capture';
 import { useNavigation, useObjects, type ViewType } from '@/contexts';
@@ -260,6 +260,11 @@ function MainContent() {
   // Inbox view
   if (currentView === 'inbox') {
     return <InboxView />;
+  }
+
+  // Daily Notes view
+  if (currentView === 'daily-notes') {
+    return <DailyNotesView />;
   }
 
   return <PlaceholderView view={currentView} />;
