@@ -1,0 +1,102 @@
+/**
+ * Backlinks Section Styles
+ */
+
+.backlinks {
+  margin-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--spacing-md);
+}
+
+.backlinks__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-xs);
+  margin: 0;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.backlinks__header:hover {
+  background: var(--bg-raised);
+}
+
+.backlinks__collapse-icon {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  width: 1em;
+  text-align: center;
+}
+
+.backlinks__title {
+  font-family: var(--font-family-ui);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.backlinks__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) 0;
+  padding-left: calc(var(--spacing-sm) + 1em);
+}
+
+.backlinks__empty {
+  font-family: var(--font-family-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin: 0;
+  padding: var(--spacing-xs) 0;
+}
+
+/* BacklinkItem styles */
+.backlink-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.backlink-item:hover {
+  background: var(--bg-sunken);
+  border-color: var(--border-default);
+}
+
+.backlink-item__icon {
+  font-size: var(--font-size-base);
+  flex-shrink: 0;
+}
+
+.backlink-item__name {
+  font-family: var(--font-family-ui);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.backlink-item__via {
+  font-family: var(--font-family-ui);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}

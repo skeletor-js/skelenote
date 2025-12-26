@@ -1,8 +1,9 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import './ObjectDetailView.css';
 import { ObjectHeader } from './ObjectHeader';
 import { PropertyList } from './PropertyList';
 import { RelatedTasks } from './RelatedTasks';
+import { Backlinks } from './Backlinks';
 import { Editor } from '@/components/editor';
 import type { PropertyValue } from '@/lib/types';
 import {
@@ -19,7 +20,6 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
   const { store, isLoading, refreshData } = useObjects();
   const { navigateBack, canGoBack } = useNavigation();
   const typeRegistry = useTypeRegistry();
-  const [backlinksExpanded, setBacklinksExpanded] = useState(false);
 
   const handleTitleChange = useCallback(
     (newTitle: string) => {
@@ -139,26 +139,8 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
       {/* Related Tasks Section */}
       <RelatedTasks objectId={objectId} />
 
-      {/* Backlinks Section - will be replaced with Backlinks component */}
-      <section className="object-detail__backlinks">
-        <button
-          className="object-detail__section-header object-detail__section-header--clickable"
-          onClick={() => setBacklinksExpanded(!backlinksExpanded)}
-          aria-expanded={backlinksExpanded}
-        >
-          <h2 className="object-detail__section-title">Backlinks</h2>
-          <span className="object-detail__collapse-icon">
-            {backlinksExpanded ? '▼' : '▶'}
-          </span>
-        </button>
-        {backlinksExpanded && (
-          <div className="object-detail__backlinks-list">
-            <p className="object-detail__placeholder-text">
-              Objects linking to this one will appear here
-            </p>
-          </div>
-        )}
-      </section>
+      {/* Backlinks Section */}
+      <Backlinks objectId={objectId} />
     </div>
   );
 }
