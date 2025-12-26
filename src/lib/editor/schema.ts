@@ -1,18 +1,26 @@
 /**
  * BlockNote editor schema configuration
- * Using default BlockNote blocks for now, can be extended for custom blocks later
+ * Includes custom mention inline content for object references
  */
 
-import { BlockNoteSchema, defaultBlockSpecs } from '@blocknote/core';
+import {
+  BlockNoteSchema,
+  defaultBlockSpecs,
+  defaultInlineContentSpecs,
+} from '@blocknote/core';
+import { Mention } from '@/components/editor/MentionChip';
 
 /**
- * Default schema using BlockNote's built-in blocks
- * Includes: paragraph, heading, bulletListItem, numberedListItem,
- * checkListItem, table, file, image, video, audio, codeBlock
+ * Custom schema with mention support
+ * Includes all default blocks plus custom mention inline content
  */
 export const editorSchema = BlockNoteSchema.create({
   blockSpecs: {
     ...defaultBlockSpecs,
+  },
+  inlineContentSpecs: {
+    ...defaultInlineContentSpecs,
+    mention: Mention,
   },
 });
 

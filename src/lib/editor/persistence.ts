@@ -3,20 +3,22 @@
  * Handles serialization/deserialization of editor content
  */
 
-import type { Block } from '@blocknote/core';
+// Using any[] for block types to support custom schemas
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type BlockArray = any[];
 
 /**
  * Serialize BlockNote document to JSON string for storage
  */
-export function serializeBlockNoteDocument(blocks: Block[]): string {
+export function serializeBlockNoteDocument(blocks: BlockArray): string {
   return JSON.stringify(blocks);
 }
 
 /**
  * Deserialize stored JSON string to BlockNote blocks
- * Returns empty array if data is invalid
+ * Returns undefined if data is invalid
  */
-export function deserializeBlockNoteDocument(data: string | null): Block[] | undefined {
+export function deserializeBlockNoteDocument(data: string | null): BlockArray | undefined {
   if (!data) return undefined;
 
   try {
