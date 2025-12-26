@@ -1,21 +1,11 @@
+import { useMemo } from 'react';
 import './Sidebar.css';
 import { SidebarSection } from './SidebarSection';
 import { SidebarItem } from './SidebarItem';
-import { Tag } from '@/components/ui';
-import { useSidebar, useNavigation, type ViewType } from '@/contexts';
+import { Tag, type TagColor } from '@/components/ui';
+import { useSidebar, useNavigation, useObjects, type ViewType } from '@/contexts';
 import { useTheme } from '@/hooks';
-
-// Mock data - will be replaced with real data from ObjectStore in later phases
-const mockProjects = [
-  { id: 'proj-1', name: 'Website Redesign' },
-  { id: 'proj-2', name: 'Q1 Planning' },
-];
-
-const mockTags = [
-  { id: 'tag-1', name: 'urgent', color: 'red' as const },
-  { id: 'tag-2', name: 'work', color: 'blue' as const },
-  { id: 'tag-3', name: 'personal', color: 'green' as const },
-];
+import { BuiltInTypeIds } from '@/lib/types';
 
 interface SidebarProps {
   inboxCount?: number;
@@ -23,8 +13,28 @@ interface SidebarProps {
 
 export function Sidebar({ inboxCount = 0 }: SidebarProps) {
   const { isCollapsed, toggleCollapsed } = useSidebar();
-  const { navigateToView } = useNavigation();
+  const { navigateToView, navigateToObject } = useNavigation();
+  const { store } = useObjects();
   const { theme, toggleTheme } = useTheme();
+
+  // Get real projects from the store
+  const projects = useMemo(() => {
+    if (!store) return [];
+    return store.getByType(BuiltInTypeIds.PROJECT).map((obj) => ({
+      id: obj.id,
+      name: (obj.properties.name as string) || 'Untitled Project',
+    }));
+  }, [store]);
+
+  // Get real tags from the store
+  const tags = useMemo(() => {
+    if (!store) return [];
+    return store.getByType(BuiltInTypeIds.TAG).map((obj) => ({
+      id: obj.id,
+      name: (obj.properties.name as string) || 'Untitled',
+      color: (obj.properties.color as TagColor) || undefined,
+    }));
+  }, [store]);
 
   const handleNavigate = (view: ViewType) => {
     navigateToView(view);
@@ -104,24 +114,37 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
 
         {/* Projects section */}
         <SidebarSection id="projects" title="Projects">
-          {mockProjects.map((project) => (
-            <SidebarItem
-              key={project.id}
-              id={`project-${project.id}`}
-              label={project.name}
-              indent
-            />
-          ))}
-          <SidebarItem id="new-project" label="+ New Project" indent />
+          {projects.length === 0 ? (
+            <div className="sidebar__empty-text">No projects yet</div>
+          ) : (
+            projects.map((project) => (
+              <SidebarItem
+                key={project.id}
+                id={`project-${project.id}`}
+                label={project.name}
+                indent
+                onClick={() => navigateToObject(project.id)}
+              />
+            ))
+          )}
         </SidebarSection>
 
         {/* Tags section */}
         <SidebarSection id="tags" title="Tags">
-          {mockTags.map((tag) => (
-            <div key={tag.id} className="sidebar__tag-item">
-              <Tag name={tag.name} color={tag.color} size="sm" onClick={() => {}} />
-            </div>
-          ))}
+          {tags.length === 0 ? (
+            <div className="sidebar__empty-text">No tags yet</div>
+          ) : (
+            tags.map((tag) => (
+              <div key={tag.id} className="sidebar__tag-item">
+                <Tag
+                  name={tag.name}
+                  color={tag.color}
+                  size="sm"
+                  onClick={() => navigateToObject(tag.id)}
+                />
+              </div>
+            ))
+          )}
         </SidebarSection>
       </div>
 

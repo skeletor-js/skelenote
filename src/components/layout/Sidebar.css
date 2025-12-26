@@ -31,6 +31,15 @@
   padding-left: calc(var(--spacing-md) + var(--spacing-lg));
 }
 
+.sidebar__empty-text {
+  padding: var(--spacing-xs) var(--spacing-md);
+  padding-left: calc(var(--spacing-md) + var(--spacing-lg));
+  font-family: var(--font-family-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 .sidebar__footer {
   display: flex;
   align-items: center;
