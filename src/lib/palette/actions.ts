@@ -21,14 +21,16 @@ export interface PaletteAction {
 }
 
 /**
- * Quick action IDs (handled specially by the palette)
+ * Special action IDs (handled specially by the palette)
  */
 export const QUICK_CAPTURE_ACTION_ID = 'action-quick-capture';
+export const SEARCH_ACTION_ID = 'action-search';
 
 /**
  * Navigation actions for jumping to views
  */
 export const navigationActions: PaletteAction[] = [
+  { id: SEARCH_ACTION_ID, label: 'Search', icon: '🔎', category: 'action' },
   { id: QUICK_CAPTURE_ACTION_ID, label: 'Quick Capture', icon: '⚡', category: 'action' },
   { id: 'nav-inbox', label: 'Go to Inbox', icon: '📥', category: 'navigation', view: 'inbox' },
   { id: 'nav-today', label: 'Go to Today', icon: '📅', category: 'navigation', view: 'today' },
