@@ -30,67 +30,73 @@ export function TaskList({
 }: TaskListProps) {
   const { navigateToObject } = useNavigation();
 
-  // Track drag state
-  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
-  const [dragOverState, setDragOverState] = useState<{
+  // Track drag state - use refs to avoid stale closure issues
+  const draggedTaskIdRef = useRef<string | null>(null);
+  const dragOverRef = useRef<{
     taskId: string;
     position: 'above' | 'below';
   } | null>(null);
 
-  // Use ref to persist drag over state for drop (state can be cleared by dragLeave)
-  const dragOverRef = useRef<{
+  // State for visual feedback only
+  const [, setDraggedTaskId] = useState<string | null>(null);
+  const [dragOverState, setDragOverState] = useState<{
     taskId: string;
     position: 'above' | 'below';
   } | null>(null);
 
   // Handle drag start
   const handleDragStart = useCallback((taskId: string) => {
+    draggedTaskIdRef.current = taskId;
     setDraggedTaskId(taskId);
   }, []);
 
   // Handle drag end
   const handleDragEnd = useCallback(() => {
+    draggedTaskIdRef.current = null;
+    dragOverRef.current = null;
     setDraggedTaskId(null);
     setDragOverState(null);
-    dragOverRef.current = null;
   }, []);
 
   // Handle drag over
   const handleDragOver = useCallback(
     (taskId: string, position: 'above' | 'below') => {
       // Don't allow dropping on self
-      if (taskId === draggedTaskId) {
-        setDragOverState(null);
+      if (taskId === draggedTaskIdRef.current) {
         dragOverRef.current = null;
+        setDragOverState(null);
         return;
       }
       const newState = { taskId, position };
-      setDragOverState(newState);
       dragOverRef.current = newState;
+      setDragOverState(newState);
     },
-    [draggedTaskId]
+    []
   );
 
   // Handle drag leave - only clear visual state, keep ref for drop
   const handleDragLeave = useCallback(() => {
     // Don't clear the ref - we need it for drop
-    // Just clear visual state with a small delay to prevent flicker
-    // (dragLeave fires before dragEnter on adjacent element)
   }, []);
 
   // Handle drop
   const handleDrop = useCallback(
     (_targetTaskId: string) => {
-      // Use ref instead of state (state might have been cleared by dragLeave)
+      // Use refs to get current drag state (avoids stale closure issues)
+      const sourceId = draggedTaskIdRef.current;
       const dropState = dragOverRef.current;
-      if (draggedTaskId && dropState && onReorder) {
-        onReorder(draggedTaskId, dropState.taskId, dropState.position);
+
+      if (sourceId && dropState && onReorder) {
+        onReorder(sourceId, dropState.taskId, dropState.position);
       }
+
+      // Clear all state
+      draggedTaskIdRef.current = null;
+      dragOverRef.current = null;
       setDraggedTaskId(null);
       setDragOverState(null);
-      dragOverRef.current = null;
     },
-    [draggedTaskId, onReorder]
+    [onReorder]
   );
 
   if (tasks.length === 0) {

@@ -3,7 +3,7 @@
  */
 
 import type { EphemeraObject } from '../types';
-import { isToday, isOverdue, isThisWeekAfterToday, isBeyondThisWeek } from '../utils/date';
+import { isToday, isOverdue, isThisWeek, isBeyondThisWeek } from '../utils/date';
 
 /**
  * Task filter types matching sidebar navigation
@@ -44,7 +44,7 @@ export function filterToday(task: EphemeraObject): boolean {
 
 /**
  * Filter function for This Week view
- * Tasks due this week (after today) that are not done
+ * Tasks due this week (including today) that are not done
  */
 export function filterThisWeek(task: EphemeraObject): boolean {
   const status = task.properties.status as string | null;
@@ -53,7 +53,7 @@ export function filterThisWeek(task: EphemeraObject): boolean {
   if (status === 'done') return false;
   if (dueDate === null) return false;
 
-  return isThisWeekAfterToday(dueDate);
+  return isThisWeek(dueDate);
 }
 
 /**

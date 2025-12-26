@@ -48,34 +48,34 @@ describe('Date Utilities', () => {
   });
 
   describe('startOfWeek', () => {
-    it('should return Sunday of the week', () => {
+    it('should return Monday of the week', () => {
       // Wednesday Dec 25, 2024
       const date = new Date('2024-12-25T14:30:45.123Z');
       const result = startOfWeek(date);
 
-      expect(result.getDay()).toBe(0); // Sunday
-      expect(result.getDate()).toBe(22); // Dec 22, 2024
+      expect(result.getDay()).toBe(1); // Monday
+      expect(result.getDate()).toBe(23); // Dec 23, 2024
       expect(result.getHours()).toBe(0);
     });
 
-    it('should handle Sunday correctly', () => {
+    it('should handle Sunday correctly (goes to previous Monday)', () => {
       // Sunday Dec 22, 2024
       const date = new Date('2024-12-22T14:30:45.123Z');
       const result = startOfWeek(date);
 
-      expect(result.getDay()).toBe(0);
-      expect(result.getDate()).toBe(22);
+      expect(result.getDay()).toBe(1); // Monday
+      expect(result.getDate()).toBe(16); // Dec 16, 2024 (previous Monday)
     });
   });
 
   describe('endOfWeek', () => {
-    it('should return Saturday of the week', () => {
+    it('should return Sunday of the week', () => {
       // Wednesday Dec 25, 2024
       const date = new Date('2024-12-25T14:30:45.123Z');
       const result = endOfWeek(date);
 
-      expect(result.getDay()).toBe(6); // Saturday
-      expect(result.getDate()).toBe(28); // Dec 28, 2024
+      expect(result.getDay()).toBe(0); // Sunday
+      expect(result.getDate()).toBe(29); // Dec 29, 2024
       expect(result.getHours()).toBe(23);
       expect(result.getMinutes()).toBe(59);
     });

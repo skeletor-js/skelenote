@@ -22,23 +22,27 @@ export function endOfDay(date: Date = new Date()): Date {
 }
 
 /**
- * Get the start of the week (Sunday midnight) for a given date
+ * Get the start of the week (Monday midnight) for a given date
  */
 export function startOfWeek(date: Date = new Date()): Date {
   const result = new Date(date);
   const day = result.getDay();
-  result.setDate(result.getDate() - day);
+  // Convert Sunday (0) to 7 for Monday-based week
+  const dayFromMonday = day === 0 ? 7 : day;
+  result.setDate(result.getDate() - (dayFromMonday - 1));
   result.setHours(0, 0, 0, 0);
   return result;
 }
 
 /**
- * Get the end of the week (Saturday 23:59:59.999) for a given date
+ * Get the end of the week (Sunday 23:59:59.999) for a given date
  */
 export function endOfWeek(date: Date = new Date()): Date {
   const result = new Date(date);
   const day = result.getDay();
-  result.setDate(result.getDate() + (6 - day));
+  // Convert Sunday (0) to 7 for Monday-based week
+  const dayFromMonday = day === 0 ? 7 : day;
+  result.setDate(result.getDate() + (7 - dayFromMonday));
   result.setHours(23, 59, 59, 999);
   return result;
 }
@@ -62,6 +66,15 @@ export function isToday(timestamp: number): boolean {
 export function isOverdue(timestamp: number): boolean {
   const start = startOfDay();
   return timestamp < start.getTime();
+}
+
+/**
+ * Check if a timestamp is within this week (including today)
+ */
+export function isThisWeek(timestamp: number): boolean {
+  const weekStart = startOfWeek();
+  const weekEnd = endOfWeek();
+  return timestamp >= weekStart.getTime() && timestamp <= weekEnd.getTime();
 }
 
 /**
