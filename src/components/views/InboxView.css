@@ -1,0 +1,65 @@
+/**
+ * InboxView styles - main container for inbox view
+ */
+
+.inbox-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--spacing-lg);
+}
+
+.inbox-view--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+/* Header */
+.inbox-view__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.inbox-view__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.inbox-view__count {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  font-weight: var(--font-weight-normal);
+}
+
+/* Content */
+.inbox-view__content {
+  flex: 1;
+  overflow: auto;
+}
+
+/* List */
+.inbox-view__list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Empty state */
+.inbox-view__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.inbox-view__empty-message {
+  color: var(--text-muted);
+  font-size: var(--font-size-base);
+}

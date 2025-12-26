@@ -16,6 +16,8 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 tauri-plugin-fs = "2"
 tauri-plugin-shell = "2"
+# tauri-plugin-global-shortcut = "2"  # Disabled: Quick Capture hotkey deprioritized
+# tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2.1" }  # Disabled: crashes on macOS
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
