@@ -1,5 +1,14 @@
 import type { PropertyDefinition, PropertyValue } from '@/lib/types';
-import { TextInput, NumberInput, Checkbox, DatePicker, Select } from './editors';
+import {
+  TextInput,
+  NumberInput,
+  Checkbox,
+  DatePicker,
+  Select,
+  UrlInput,
+  EmailInput,
+  PhoneInput,
+} from './editors';
 
 interface PropertyEditorProps {
   id: string;
@@ -97,23 +106,29 @@ export function PropertyEditor({
 
     case 'url':
       return (
-        <div style={placeholderStyle} id={id}>
-          {formatValue(value)} <span style={{ opacity: 0.6 }}>(url editor)</span>
-        </div>
+        <UrlInput
+          id={id}
+          value={typeof value === 'string' ? value : null}
+          onChange={onChange}
+        />
       );
 
     case 'email':
       return (
-        <div style={placeholderStyle} id={id}>
-          {formatValue(value)} <span style={{ opacity: 0.6 }}>(email editor)</span>
-        </div>
+        <EmailInput
+          id={id}
+          value={typeof value === 'string' ? value : null}
+          onChange={onChange}
+        />
       );
 
     case 'phone':
       return (
-        <div style={placeholderStyle} id={id}>
-          {formatValue(value)} <span style={{ opacity: 0.6 }}>(phone editor)</span>
-        </div>
+        <PhoneInput
+          id={id}
+          value={typeof value === 'string' ? value : null}
+          onChange={onChange}
+        />
       );
 
     case 'file':

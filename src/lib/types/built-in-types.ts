@@ -361,6 +361,65 @@ export const TagType: TypeDefinition = {
 };
 
 /**
+ * Person type definition
+ * Properties: name, email, phone, company, website, tags
+ */
+export const PersonType: TypeDefinition = {
+  id: BuiltInTypeIds.PERSON,
+  name: 'Person',
+  icon: '👤',
+  hasContent: true,
+  isBuiltIn: true,
+  schema: [
+    {
+      id: 'name',
+      name: 'Name',
+      type: 'text',
+      required: true,
+      multiple: false,
+    },
+    {
+      id: 'email',
+      name: 'Email',
+      type: 'email',
+      required: false,
+      multiple: false,
+    },
+    {
+      id: 'phone',
+      name: 'Phone',
+      type: 'phone',
+      required: false,
+      multiple: false,
+    },
+    {
+      id: 'company',
+      name: 'Company',
+      type: 'text',
+      required: false,
+      multiple: false,
+    },
+    {
+      id: 'website',
+      name: 'Website',
+      type: 'url',
+      required: false,
+      multiple: false,
+    },
+    {
+      id: 'tags',
+      name: 'Tags',
+      type: 'relation',
+      required: false,
+      multiple: true,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.TAG],
+      },
+    },
+  ],
+};
+
+/**
  * All built-in type definitions
  */
 export const builtInTypes: TypeDefinition[] = [
@@ -370,6 +429,7 @@ export const builtInTypes: TypeDefinition[] = [
   LinkType,
   MeetingType,
   TagType,
+  PersonType,
 ];
 
 /**

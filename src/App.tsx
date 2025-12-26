@@ -48,6 +48,18 @@ function PlaceholderView({ view }: { view: ViewType }) {
     navigateToObject(task.id);
   };
 
+  const handleCreateTestPerson = () => {
+    if (!store) return;
+    const person = store.create({
+      typeId: 'person',
+      properties: {
+        name: `Test Person ${Date.now()}`,
+      },
+    });
+    refreshData();
+    navigateToObject(person.id);
+  };
+
   // Get all objects for testing
   const allObjects = store?.getAll() ?? [];
 
@@ -94,9 +106,10 @@ function PlaceholderView({ view }: { view: ViewType }) {
         >
           Test Controls (temporary)
         </h2>
-        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-md)' }}>
+        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-md)', flexWrap: 'wrap' }}>
           <button onClick={handleCreateTestNote}>Create Note</button>
           <button onClick={handleCreateTestTask}>Create Task</button>
+          <button onClick={handleCreateTestPerson}>Create Person</button>
         </div>
 
         {allObjects.length > 0 && (
