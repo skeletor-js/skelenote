@@ -1,11 +1,22 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import './Sidebar.css';
 import { SidebarSection } from './SidebarSection';
 import { SidebarItem } from './SidebarItem';
 import { Tag, type TagColor } from '@/components/ui';
-import { useSidebar, useNavigation, useObjects, type ViewType } from '@/contexts';
+import { useSidebar, useNavigation, useObjects, useTypeRegistry, type ViewType } from '@/contexts';
 import { useTheme } from '@/hooks';
-import { BuiltInTypeIds } from '@/lib/types';
+import { BuiltInTypeIds, type PropertyValue } from '@/lib/types';
+
+// Default properties for each type when creating
+const defaultPropertiesForType: Record<string, Record<string, PropertyValue>> = {
+  [BuiltInTypeIds.TASK]: { title: 'New Task', status: 'todo', priority: 'medium' },
+  [BuiltInTypeIds.NOTE]: { title: 'New Note' },
+  [BuiltInTypeIds.PROJECT]: { name: 'New Project', status: 'active' },
+  [BuiltInTypeIds.LINK]: { url: 'https://', title: 'New Link' },
+  [BuiltInTypeIds.MEETING]: { title: 'New Meeting', startTime: Date.now() },
+  [BuiltInTypeIds.TAG]: { name: 'new-tag' },
+  [BuiltInTypeIds.PERSON]: { name: 'New Person' },
+};
 
 interface SidebarProps {
   inboxCount?: number;
@@ -14,8 +25,53 @@ interface SidebarProps {
 export function Sidebar({ inboxCount = 0 }: SidebarProps) {
   const { isCollapsed, toggleCollapsed, selectedItem, setSelectedItem } = useSidebar();
   const { navigateToView, navigateToObject } = useNavigation();
-  const { store } = useObjects();
+  const { store, refreshData } = useObjects();
+  const typeRegistry = useTypeRegistry();
   const { theme, toggleTheme } = useTheme();
+
+  const [showTypeSelector, setShowTypeSelector] = useState(false);
+  const typeSelectorRef = useRef<HTMLDivElement>(null);
+
+  // Get all available types for the selector
+  const availableTypes = useMemo(() => {
+    return typeRegistry.getAll().map((typeDef) => ({
+      id: typeDef.id,
+      name: typeDef.name,
+      icon: typeDef.icon,
+    }));
+  }, [typeRegistry]);
+
+  // Handle creating a new object of the selected type
+  const handleCreateObject = useCallback(
+    (typeId: string) => {
+      if (!store) return;
+
+      const defaultProps = defaultPropertiesForType[typeId] || {};
+      const newObject = store.create({
+        typeId,
+        properties: defaultProps,
+      });
+
+      refreshData();
+      setShowTypeSelector(false);
+      navigateToObject(newObject.id);
+    },
+    [store, refreshData, navigateToObject]
+  );
+
+  // Close type selector when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (typeSelectorRef.current && !typeSelectorRef.current.contains(event.target as Node)) {
+        setShowTypeSelector(false);
+      }
+    };
+
+    if (showTypeSelector) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showTypeSelector]);
 
   // Get real projects from the store
   const projects = useMemo(() => {
@@ -156,20 +212,47 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
 
       {/* Footer with controls */}
       <div className="sidebar__footer">
-        <button
-          className="sidebar__control-btn"
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙' : '☀️'}
-        </button>
-        <button
-          className="sidebar__control-btn"
-          onClick={toggleCollapsed}
-          aria-label="Collapse sidebar"
-        >
-          ◀
-        </button>
+        <div className="sidebar__add-object" ref={typeSelectorRef}>
+          <button
+            className="sidebar__add-btn"
+            onClick={() => setShowTypeSelector(!showTypeSelector)}
+            aria-expanded={showTypeSelector}
+          >
+            + Add Object
+          </button>
+
+          {showTypeSelector && (
+            <div className="sidebar__type-selector">
+              {availableTypes.map((type) => (
+                <button
+                  key={type.id}
+                  className="sidebar__type-option"
+                  onClick={() => handleCreateObject(type.id)}
+                >
+                  <span className="sidebar__type-icon">{type.icon}</span>
+                  <span className="sidebar__type-name">{type.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="sidebar__controls">
+          <button
+            className="sidebar__control-btn"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
+          <button
+            className="sidebar__control-btn"
+            onClick={toggleCollapsed}
+            aria-label="Collapse sidebar"
+          >
+            ◀
+          </button>
+        </div>
       </div>
     </aside>
   );
