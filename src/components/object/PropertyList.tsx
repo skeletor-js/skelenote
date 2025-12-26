@@ -13,9 +13,9 @@ export function PropertyList({
   typeDef,
   onPropertyChange,
 }: PropertyListProps) {
-  // Filter out title/name properties (handled by ObjectHeader)
+  // Filter out title/name properties (handled by ObjectHeader) and hidden properties
   const editableProperties = typeDef.schema.filter(
-    (prop) => prop.id !== 'title' && prop.id !== 'name'
+    (prop) => prop.id !== 'title' && prop.id !== 'name' && !prop.hidden
   );
 
   if (editableProperties.length === 0) {

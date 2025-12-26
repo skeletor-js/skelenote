@@ -10,30 +10,23 @@ import {
   getTaskFilter,
   getDefaultSort,
   sortTasks,
-  groupTasksBy,
 } from '@/lib/tasks/filters';
 import { prepareNextRecurringTask } from '@/lib/tasks/recurrence';
 
 export interface UseTasksOptions {
   /** Which task view filter to apply */
   filter: TaskFilter;
-  /** Optional grouping for kanban view */
-  groupBy?: 'status' | 'project';
 }
 
 export interface UseTasksResult {
   /** Filtered and sorted tasks */
   tasks: EphemeraObject[];
-  /** Tasks grouped by status or project (for kanban view) */
-  groupedTasks: Map<string, EphemeraObject[]> | null;
   /** Whether the data is still loading */
   isLoading: boolean;
   /** Toggle a task between todo and done status */
   toggleComplete: (taskId: string) => void;
   /** Update task properties */
   updateTask: (taskId: string, properties: Record<string, PropertyValue>) => void;
-  /** Update task status (for drag and drop) */
-  updateStatus: (taskId: string, status: string) => void;
   /** Reorder a task relative to another task */
   reorderTask: (taskId: string, targetId: string, position: 'above' | 'below') => void;
 }
@@ -95,12 +88,6 @@ export function useTasks(options: UseTasksOptions): UseTasksResult {
     return sorted;
   }, [store, options.filter]);
 
-  // Group tasks if requested
-  const groupedTasks = useMemo(() => {
-    if (!options.groupBy) return null;
-    return groupTasksBy(tasks, options.groupBy);
-  }, [tasks, options.groupBy]);
-
   // Toggle task completion
   const toggleComplete = useCallback(
     (taskId: string) => {
@@ -142,17 +129,6 @@ export function useTasks(options: UseTasksOptions): UseTasksResult {
       if (!task) return;
 
       store.update(taskId, { properties });
-      refreshData();
-    },
-    [store, refreshData]
-  );
-
-  // Update task status (for drag and drop in kanban)
-  const updateStatus = useCallback(
-    (taskId: string, status: string) => {
-      if (!store) return;
-
-      store.setProperty(taskId, 'status', status);
       refreshData();
     },
     [store, refreshData]
@@ -201,11 +177,9 @@ export function useTasks(options: UseTasksOptions): UseTasksResult {
 
   return {
     tasks,
-    groupedTasks,
     isLoading,
     toggleComplete,
     updateTask,
-    updateStatus,
     reorderTask,
   };
 }

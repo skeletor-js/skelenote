@@ -409,6 +409,24 @@
   flex-wrap: wrap;
 }
 
+.recurrence-editor__monthly {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.recurrence-editor__monthly-mode {
+  display: flex;
+  align-items: center;
+}
+
+.recurrence-editor__nth-weekday {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
 .recurrence-editor__yearly {
   display: flex;
   align-items: center;

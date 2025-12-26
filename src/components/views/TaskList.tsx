@@ -2,7 +2,7 @@
  * TaskList - displays tasks in a list/table format with drag and drop reordering
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { EphemeraObject } from '@/lib/types';
 import { useNavigation } from '@/contexts';
 import { TaskRow } from './TaskRow';
@@ -37,6 +37,12 @@ export function TaskList({
     position: 'above' | 'below';
   } | null>(null);
 
+  // Use ref to persist drag over state for drop (state can be cleared by dragLeave)
+  const dragOverRef = useRef<{
+    taskId: string;
+    position: 'above' | 'below';
+  } | null>(null);
+
   // Handle drag start
   const handleDragStart = useCallback((taskId: string) => {
     setDraggedTaskId(taskId);
@@ -46,6 +52,7 @@ export function TaskList({
   const handleDragEnd = useCallback(() => {
     setDraggedTaskId(null);
     setDragOverState(null);
+    dragOverRef.current = null;
   }, []);
 
   // Handle drag over
@@ -54,28 +61,36 @@ export function TaskList({
       // Don't allow dropping on self
       if (taskId === draggedTaskId) {
         setDragOverState(null);
+        dragOverRef.current = null;
         return;
       }
-      setDragOverState({ taskId, position });
+      const newState = { taskId, position };
+      setDragOverState(newState);
+      dragOverRef.current = newState;
     },
     [draggedTaskId]
   );
 
-  // Handle drag leave
+  // Handle drag leave - only clear visual state, keep ref for drop
   const handleDragLeave = useCallback(() => {
-    setDragOverState(null);
+    // Don't clear the ref - we need it for drop
+    // Just clear visual state with a small delay to prevent flicker
+    // (dragLeave fires before dragEnter on adjacent element)
   }, []);
 
   // Handle drop
   const handleDrop = useCallback(
-    (targetTaskId: string) => {
-      if (draggedTaskId && dragOverState && onReorder) {
-        onReorder(draggedTaskId, targetTaskId, dragOverState.position);
+    (_targetTaskId: string) => {
+      // Use ref instead of state (state might have been cleared by dragLeave)
+      const dropState = dragOverRef.current;
+      if (draggedTaskId && dropState && onReorder) {
+        onReorder(draggedTaskId, dropState.taskId, dropState.position);
       }
       setDraggedTaskId(null);
       setDragOverState(null);
+      dragOverRef.current = null;
     },
-    [draggedTaskId, dragOverState, onReorder]
+    [draggedTaskId, onReorder]
   );
 
   if (tasks.length === 0) {

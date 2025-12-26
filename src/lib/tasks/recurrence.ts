@@ -21,6 +21,8 @@ export interface RecurrenceValue {
   interval?: number;
   daysOfWeek?: number[]; // 0=Sun, 1=Mon, ..., 6=Sat
   dayOfMonth?: number; // 1-31
+  weekOfMonth?: number; // 1=first, 2=second, 3=third, 4=fourth, 5=last
+  dayOfWeek?: number; // 0=Sun, 1=Mon, ..., 6=Sat (for monthly nth weekday)
   month?: number; // 1-12
 }
 
@@ -37,6 +39,8 @@ export interface RecurrenceConfig {
   interval: number;
   daysOfWeek?: number[];
   dayOfMonth?: number;
+  weekOfMonth?: number; // 1=first, 2=second, 3=third, 4=fourth, 5=last
+  dayOfWeek?: number; // 0=Sun, 1=Mon, ..., 6=Sat (for monthly nth weekday)
   month?: number;
 }
 
@@ -66,6 +70,8 @@ export function parseRecurrence(recurrence: string | null | undefined): Recurren
         interval: value.interval ?? 1,
         daysOfWeek: value.daysOfWeek,
         dayOfMonth: value.dayOfMonth,
+        weekOfMonth: value.weekOfMonth,
+        dayOfWeek: value.dayOfWeek,
         month: value.month,
       };
     }
@@ -111,6 +117,58 @@ function getNextDayOfWeek(fromDate: Date, targetDay: number): Date {
 }
 
 /**
+ * Get the nth weekday of a given month
+ *
+ * @param year - The year
+ * @param month - The month (0-indexed, 0=January)
+ * @param dayOfWeek - Target day of week (0=Sun, 6=Sat)
+ * @param weekOfMonth - Which occurrence (1=first, 2=second, 3=third, 4=fourth, 5=last)
+ * @returns Date of the nth weekday, or null if it doesn't exist
+ */
+function getNthWeekdayOfMonth(
+  year: number,
+  month: number,
+  dayOfWeek: number,
+  weekOfMonth: number
+): Date | null {
+  if (weekOfMonth === 5) {
+    // "Last" - find the last occurrence of this weekday in the month
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+    const lastDay = lastDayOfMonth.getDate();
+    const lastDayWeekday = lastDayOfMonth.getDay();
+
+    // Calculate how many days back to go to find the target weekday
+    let daysBack = lastDayWeekday - dayOfWeek;
+    if (daysBack < 0) {
+      daysBack += 7;
+    }
+
+    return new Date(year, month, lastDay - daysBack);
+  }
+
+  // Find the first occurrence of this weekday in the month
+  const firstOfMonth = new Date(year, month, 1);
+  const firstDayWeekday = firstOfMonth.getDay();
+
+  // Calculate days until the first occurrence of target weekday
+  let daysUntilFirst = dayOfWeek - firstDayWeekday;
+  if (daysUntilFirst < 0) {
+    daysUntilFirst += 7;
+  }
+
+  // Calculate the date of the nth occurrence
+  const dayOfMonth = 1 + daysUntilFirst + (weekOfMonth - 1) * 7;
+
+  // Check if this date is still within the month
+  const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+  if (dayOfMonth > lastDayOfMonth) {
+    return null; // This occurrence doesn't exist (e.g., 5th Monday in a month with only 4)
+  }
+
+  return new Date(year, month, dayOfMonth);
+}
+
+/**
  * Calculate the next due date based on recurrence pattern
  *
  * @param currentDueDate - The current due date timestamp (milliseconds)
@@ -149,6 +207,45 @@ export function calculateNextDueDate(
     }
 
     case 'monthly': {
+      // Handle nth weekday (e.g., "first Monday", "last Friday")
+      if (config.weekOfMonth !== undefined && config.dayOfWeek !== undefined) {
+        let nextMonth = currentDate.getMonth() + 1;
+        let nextYear = currentDate.getFullYear();
+
+        // Handle year rollover
+        if (nextMonth > 11) {
+          nextMonth = 0;
+          nextYear += 1;
+        }
+
+        // Find the nth weekday of the next month
+        let nthWeekday = getNthWeekdayOfMonth(
+          nextYear,
+          nextMonth,
+          config.dayOfWeek,
+          config.weekOfMonth
+        );
+
+        // If the nth weekday doesn't exist in this month (e.g., 5th Monday),
+        // try the following month
+        if (!nthWeekday) {
+          nextMonth += 1;
+          if (nextMonth > 11) {
+            nextMonth = 0;
+            nextYear += 1;
+          }
+          nthWeekday = getNthWeekdayOfMonth(
+            nextYear,
+            nextMonth,
+            config.dayOfWeek,
+            config.weekOfMonth
+          );
+        }
+
+        return nthWeekday?.getTime() ?? addMonths(currentDueDate, 1);
+      }
+
+      // Handle day of month (e.g., "15th of each month")
       const nextMonth = addMonths(currentDueDate, 1 * config.interval);
       if (config.dayOfMonth) {
         const nextDate = new Date(nextMonth);

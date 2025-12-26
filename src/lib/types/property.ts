@@ -56,6 +56,8 @@ export interface PropertyDefinition {
   multiple: boolean;
   /** Additional configuration for specific property types */
   config?: PropertyConfig;
+  /** Whether this property should be hidden from the user interface */
+  hidden?: boolean;
 }
 
 /**

@@ -1,14 +1,11 @@
 /**
  * TaskView - main container for task views
- * Combines header, view mode toggle, and list/kanban display
+ * Displays tasks in a list format with drag and drop reordering
  */
 
-import { useState } from 'react';
 import { useTasks } from '@/hooks/useTasks';
 import type { TaskFilter } from '@/lib/tasks/filters';
 import { TaskList } from './TaskList';
-import { TaskKanban } from './TaskKanban';
-import { ViewModeToggle, type ViewMode } from './ViewModeToggle';
 import './TaskView.css';
 
 interface TaskViewProps {
@@ -29,12 +26,8 @@ const EMPTY_MESSAGES: Record<TaskFilter, string> = {
 };
 
 export function TaskView({ filter, title }: TaskViewProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [groupBy, setGroupBy] = useState<'status' | 'project'>('status');
-
-  const { tasks, isLoading, toggleComplete, updateStatus, reorderTask } = useTasks({
+  const { tasks, isLoading, toggleComplete, reorderTask } = useTasks({
     filter,
-    groupBy: viewMode === 'kanban' ? groupBy : undefined,
   });
 
   if (isLoading) {
@@ -50,46 +43,17 @@ export function TaskView({ filter, title }: TaskViewProps) {
       {/* Header */}
       <header className="task-view__header">
         <h1 className="task-view__title">{title}</h1>
-        <div className="task-view__controls">
-          <ViewModeToggle mode={viewMode} onChange={setViewMode} />
-          {viewMode === 'kanban' && (
-            <select
-              className="task-view__group-select"
-              value={groupBy}
-              onChange={(e) => setGroupBy(e.target.value as 'status' | 'project')}
-              aria-label="Group by"
-            >
-              <option value="status">Group by Status</option>
-              <option value="project">Group by Project</option>
-            </select>
-          )}
-        </div>
       </header>
 
       {/* Content */}
-      <div className="task-view__content" id="task-view-content" role="tabpanel">
-        {viewMode === 'list' ? (
-          <TaskList
-            tasks={tasks}
-            onToggleComplete={toggleComplete}
-            emptyMessage={EMPTY_MESSAGES[filter]}
-            enableReorder
-            onReorder={reorderTask}
-          />
-        ) : (
-          <TaskKanban
-            tasks={tasks}
-            groupBy={groupBy}
-            onToggleComplete={toggleComplete}
-            onMoveTask={(taskId, newValue) => {
-              if (groupBy === 'status') {
-                updateStatus(taskId, newValue);
-              }
-              // Project grouping would need different handling
-            }}
-            emptyMessage={EMPTY_MESSAGES[filter]}
-          />
-        )}
+      <div className="task-view__content">
+        <TaskList
+          tasks={tasks}
+          onToggleComplete={toggleComplete}
+          emptyMessage={EMPTY_MESSAGES[filter]}
+          enableReorder
+          onReorder={reorderTask}
+        />
       </div>
     </div>
   );

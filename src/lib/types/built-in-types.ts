@@ -117,6 +117,7 @@ export const TaskType: TypeDefinition = {
       type: 'number',
       required: false,
       multiple: false,
+      hidden: true,
     },
   ],
 };
