@@ -10,6 +10,18 @@ import { useObjects } from '@/contexts';
 import { Tag, type TagColor } from '@/components/ui';
 import './TaskRow.css';
 
+// Module-level variable to track dragged task ID
+// Using module-level avoids dataTransfer API issues in Tauri webview
+let currentDraggedTaskId: string | null = null;
+
+export function getDraggedTaskId(): string | null {
+  return currentDraggedTaskId;
+}
+
+export function setDraggedTaskId(id: string | null): void {
+  currentDraggedTaskId = id;
+}
+
 interface TaskRowProps {
   /** The task object to display */
   task: EphemeraObject;
@@ -98,6 +110,9 @@ export function TaskRow({
   const handleDragStart = useCallback(
     (e: React.DragEvent) => {
       wasDragging.current = true;
+      // Store in module-level variable (works reliably in Tauri)
+      setDraggedTaskId(task.id);
+      // Also set in dataTransfer for standard compatibility
       e.dataTransfer.setData('text/plain', task.id);
       e.dataTransfer.effectAllowed = 'move';
       onDragStart?.(task.id);
@@ -110,6 +125,7 @@ export function TaskRow({
     setTimeout(() => {
       wasDragging.current = false;
     }, 0);
+    setDraggedTaskId(null);
     onDragEnd?.();
   }, [onDragEnd]);
 
@@ -139,7 +155,8 @@ export function TaskRow({
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-      const sourceTaskId = e.dataTransfer.getData('text/plain');
+      // Get source ID from module-level variable (reliable in Tauri)
+      const sourceTaskId = getDraggedTaskId();
       if (sourceTaskId && sourceTaskId !== task.id && rowRef.current) {
         // Calculate drop position based on cursor location
         const rect = rowRef.current.getBoundingClientRect();
@@ -147,6 +164,8 @@ export function TaskRow({
         const position = e.clientY < midpoint ? 'above' : 'below';
         onDrop?.(task.id, sourceTaskId, position);
       }
+      // Clear the dragged ID
+      setDraggedTaskId(null);
     },
     [task.id, onDrop]
   );
