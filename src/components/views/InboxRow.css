@@ -1,0 +1,101 @@
+/**
+ * InboxRow styles - list view row for inbox items
+ */
+
+.inbox-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.inbox-row:hover {
+  background-color: var(--surface-hover);
+}
+
+.inbox-row:focus {
+  outline: none;
+  background-color: var(--surface-hover);
+}
+
+.inbox-row:focus-visible {
+  outline: 2px solid var(--border-strong);
+  outline-offset: -2px;
+}
+
+/* Type icon */
+.inbox-row__icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-base);
+}
+
+/* Title/Name */
+.inbox-row__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+}
+
+/* Type label */
+.inbox-row__type {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+/* Created date */
+.inbox-row__date {
+  flex-shrink: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* Preview (first tag) */
+.inbox-row__preview {
+  flex-shrink: 0;
+}
+
+/* Process button */
+.inbox-row__process {
+  flex-shrink: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  opacity: 0;
+}
+
+.inbox-row:hover .inbox-row__process,
+.inbox-row:focus-within .inbox-row__process {
+  opacity: 1;
+}
+
+.inbox-row__process:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+  background-color: var(--surface-hover);
+}
+
+.inbox-row__process:focus-visible {
+  outline: 2px solid var(--border-strong);
+  outline-offset: 2px;
+  opacity: 1;
+}

@@ -1,7 +1,11 @@
+import { useEffect, useState, useCallback } from 'react';
 import { Layout } from '@/components/layout';
 import { ObjectDetailView } from '@/components/object';
-import { TaskView } from '@/components/views';
+import { TaskView, InboxView } from '@/components/views';
+import { CommandPalette } from '@/components/palette';
+import { QuickCapture } from '@/components/capture';
 import { useNavigation, useObjects, type ViewType } from '@/contexts';
+import { useCommandPalette } from '@/hooks';
 import type { TaskFilter } from '@/lib/tasks/filters';
 
 /**
@@ -253,17 +257,53 @@ function MainContent() {
     return <TaskView filter={config.filter} title={config.title} />;
   }
 
+  // Inbox view
+  if (currentView === 'inbox') {
+    return <InboxView />;
+  }
+
   return <PlaceholderView view={currentView} />;
 }
 
 function App() {
   const { store } = useObjects();
   const inboxCount = store?.getInboxed().length ?? 0;
+  const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
+  const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
+
+  const openQuickCapture = useCallback(() => {
+    setIsQuickCaptureOpen(true);
+  }, []);
+
+  const closeQuickCapture = useCallback(() => {
+    setIsQuickCaptureOpen(false);
+  }, []);
+
+  // Global Cmd+K keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        togglePalette();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [togglePalette]);
 
   return (
-    <Layout inboxCount={inboxCount}>
-      <MainContent />
-    </Layout>
+    <>
+      <Layout inboxCount={inboxCount}>
+        <MainContent />
+      </Layout>
+      <CommandPalette
+        isOpen={isPaletteOpen}
+        onClose={closePalette}
+        onQuickCapture={openQuickCapture}
+      />
+      <QuickCapture isOpen={isQuickCaptureOpen} onClose={closeQuickCapture} />
+    </>
   );
 }
 
