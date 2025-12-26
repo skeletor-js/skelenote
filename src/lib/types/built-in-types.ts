@@ -31,7 +31,7 @@ export type TagColor = (typeof TagColorOptions)[number];
 
 /**
  * Task type definition
- * Properties: title, status, dueDate, priority, project, note, tags, recurrence
+ * Properties: title, status, dueDate, priority, project, note, tags, recurrence, dailyNote
  */
 export const TaskType: TypeDefinition = {
   id: BuiltInTypeIds.TASK,
@@ -119,12 +119,23 @@ export const TaskType: TypeDefinition = {
       multiple: false,
       hidden: true,
     },
+    {
+      id: 'dailyNote',
+      name: 'Daily Note',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      hidden: true,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.NOTE],
+      },
+    },
   ],
 };
 
 /**
  * Note type definition
- * Properties: title, date, isDailyNote, project, tags
+ * Properties: title, date, isDailyNote, project, tags, dailyNote
  */
 export const NoteType: TypeDefinition = {
   id: BuiltInTypeIds.NOTE,
@@ -174,12 +185,23 @@ export const NoteType: TypeDefinition = {
         targetTypeIds: [BuiltInTypeIds.TAG],
       },
     },
+    {
+      id: 'dailyNote',
+      name: 'Daily Note',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      hidden: true,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.NOTE],
+      },
+    },
   ],
 };
 
 /**
  * Project type definition
- * Properties: name, status, tags
+ * Properties: name, status, tags, dailyNote
  */
 export const ProjectType: TypeDefinition = {
   id: BuiltInTypeIds.PROJECT,
@@ -215,12 +237,23 @@ export const ProjectType: TypeDefinition = {
         targetTypeIds: [BuiltInTypeIds.TAG],
       },
     },
+    {
+      id: 'dailyNote',
+      name: 'Daily Note',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      hidden: true,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.NOTE],
+      },
+    },
   ],
 };
 
 /**
  * Link type definition
- * Properties: url, title, description, tags
+ * Properties: url, title, description, tags, dailyNote
  */
 export const LinkType: TypeDefinition = {
   id: BuiltInTypeIds.LINK,
@@ -260,12 +293,23 @@ export const LinkType: TypeDefinition = {
         targetTypeIds: [BuiltInTypeIds.TAG],
       },
     },
+    {
+      id: 'dailyNote',
+      name: 'Daily Note',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      hidden: true,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.NOTE],
+      },
+    },
   ],
 };
 
 /**
  * Meeting type definition
- * Properties: title, startTime, endTime, location, attendees, calendarEventId, project, tags
+ * Properties: title, startTime, endTime, location, attendees, calendarEventId, project, tags, dailyNote
  */
 export const MeetingType: TypeDefinition = {
   id: BuiltInTypeIds.MEETING,
@@ -336,12 +380,23 @@ export const MeetingType: TypeDefinition = {
         targetTypeIds: [BuiltInTypeIds.TAG],
       },
     },
+    {
+      id: 'dailyNote',
+      name: 'Daily Note',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      hidden: true,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.NOTE],
+      },
+    },
   ],
 };
 
 /**
  * Tag type definition
- * Properties: name, color, description
+ * Properties: name, color, description, dailyNote
  */
 export const TagType: TypeDefinition = {
   id: BuiltInTypeIds.TAG,
@@ -374,12 +429,23 @@ export const TagType: TypeDefinition = {
       required: false,
       multiple: false,
     },
+    {
+      id: 'dailyNote',
+      name: 'Daily Note',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      hidden: true,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.NOTE],
+      },
+    },
   ],
 };
 
 /**
  * Person type definition
- * Properties: name, email, phone, company, website, tags
+ * Properties: name, email, phone, company, website, tags, dailyNote
  */
 export const PersonType: TypeDefinition = {
   id: BuiltInTypeIds.PERSON,
@@ -431,6 +497,17 @@ export const PersonType: TypeDefinition = {
       multiple: true,
       config: {
         targetTypeIds: [BuiltInTypeIds.TAG],
+      },
+    },
+    {
+      id: 'dailyNote',
+      name: 'Daily Note',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      hidden: true,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.NOTE],
       },
     },
   ],

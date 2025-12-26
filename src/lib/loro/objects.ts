@@ -66,10 +66,13 @@ export class ObjectStore {
     const properties = input.properties ?? {};
     this.validateProperties(properties, typeDef);
 
+    // Use provided ID or generate a new one
+    const id = input.id ?? generateId();
+
     // Create the object
     const now = Date.now();
     const obj: EphemeraObject = {
-      id: generateId(),
+      id,
       typeId: input.typeId,
       properties,
       hasContent: input.withContent ?? typeDef.hasContent,

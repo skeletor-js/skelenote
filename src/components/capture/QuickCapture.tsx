@@ -5,6 +5,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useObjects, useNavigation } from '@/contexts';
+import { useLinkToDaily } from '@/hooks';
 import { TypeSelector, type CaptureType } from './TypeSelector';
 import { CaptureForm } from './CaptureForm';
 import './QuickCapture.css';
@@ -29,6 +30,7 @@ interface QuickCaptureProps {
 export function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
   const { store, refreshData } = useObjects();
   const { navigateToObject } = useNavigation();
+  const { linkToDaily } = useLinkToDaily();
   const [selectedType, setSelectedType] = useState<CaptureType>('task');
   const [formValues, setFormValues] = useState<Record<string, string>>({});
 
@@ -85,10 +87,13 @@ export function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
       inboxed: true,
     });
 
+    // Link to today's daily note
+    linkToDaily(newObject);
+
     refreshData();
     onClose();
     navigateToObject(newObject.id);
-  }, [store, selectedType, formValues, isValid, refreshData, onClose, navigateToObject]);
+  }, [store, selectedType, formValues, isValid, linkToDaily, refreshData, onClose, navigateToObject]);
 
   // Handle backdrop click
   const handleBackdropClick = useCallback(
