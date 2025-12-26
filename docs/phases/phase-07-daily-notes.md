@@ -59,10 +59,15 @@ Recommend Option A for simplicity in lookups.
 - Could show summary of objects created that day (via backlinks)
 
 ### Linking Objects to Daily Note
-When creating any object via Quick Capture:
+When creating any object (via Quick Capture or Command Palette):
 1. Get or create today's daily note
 2. Add daily note ID to object's relations (e.g., `dailyNote` property)
-3. Daily note shows these objects in backlinks
+3. **Add an inline mention of the new object in the daily note's content**
+4. Daily note shows these objects in backlinks
+
+The inline mention should be appended to the daily note's content as a new line,
+formatted as an object mention (e.g., `@[Task: Buy groceries]`). This provides
+an automatic log of everything created that day directly within the note.
 
 Alternative: Query objects by `createdAt` date matching daily note date.
 
@@ -94,5 +99,7 @@ Alternative: Query objects by `createdAt` date matching daily note date.
 - [ ] Clicking day opens/creates that day's note
 - [ ] Previous/Next navigation works in daily note view
 - [ ] Objects created via Quick Capture link to today's daily note
+- [ ] Objects created via Command Palette link to today's daily note
+- [ ] **New objects have inline mention added to today's daily note content**
 - [ ] Daily note backlinks show objects created that day
 - [ ] Today button returns to current day
