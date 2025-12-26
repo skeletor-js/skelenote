@@ -1,3 +1,4 @@
+
 # Phase 4: Object Views & Editor
 
 ## Objective
@@ -13,8 +14,7 @@ Build the Universal Object Detail View with BlockNote editor integration, proper
 - [ ] Property editors for all property types
 - [ ] Object mention system (`@` trigger)
 - [ ] Relation property chips with navigation
-- [ ] Backlinks section (collapsible)
-- [ ] Related Tasks section with "+ Add" button
+- [ ] Backlinks section (collapsible, includes @-mentions and relations)
 - [ ] Inline title editing
 
 ## Technical Notes
@@ -32,15 +32,14 @@ Build the Universal Object Detail View with BlockNote editor integration, proper
 │  (Only shown if type.hasContent = true)                 │
 │                                                         │
 ├─────────────────────────────────────────────────────────┤
-│  Tasks                                      [+ Add]     │
+│  Backlinks (3)                          [▼ collapse]    │
 │  ─────────────────────────────────────────────────────  │
-│  ☐ Task title here                      Due: Dec 27    │
-├─────────────────────────────────────────────────────────┤
-│  Backlinks                              [▼ collapse]    │
-│  ─────────────────────────────────────────────────────  │
-│  📝 Note that mentions this object                      │
+│  ✓ Task that has this as project        via Project     │
+│  📝 Note that @mentions this object     via Content     │
 └─────────────────────────────────────────────────────────┘
 ```
+
+Note: Tasks linked to an object appear in the Backlinks section (e.g., a Task with this Project in its "project" relation will show as a backlink). This simplifies the UI while maintaining discoverability.
 
 ### BlockNote Integration
 - Install `@blocknote/core` and `@blocknote/react`
@@ -77,8 +76,9 @@ Build the Universal Object Detail View with BlockNote editor integration, proper
 
 ### Backlinks Section
 - Query all objects where any relation contains current object ID
-- Group by type if helpful
-- Collapsed by default
+- Also scan content for @-mentions referencing current object
+- Show source property name (e.g., "via Project", "via Content")
+- Collapsed by default with count in header
 - Click to navigate
 
 ## Files to Create/Modify
@@ -93,8 +93,7 @@ Build the Universal Object Detail View with BlockNote editor integration, proper
 - `src/components/object/editors/Select.tsx`
 - `src/components/object/editors/RelationPicker.tsx`
 - `src/components/object/editors/UrlInput.tsx`
-- `src/components/object/RelatedTasks.tsx` - Tasks section
-- `src/components/object/Backlinks.tsx` - Backlinks section
+- `src/components/object/Backlinks.tsx` - Backlinks section (includes relations and @-mentions)
 - `src/components/editor/Editor.tsx` - BlockNote wrapper
 - `src/components/editor/MentionSuggestion.tsx` - @ mention menu
 - `src/lib/editor/schema.ts` - BlockNote configuration
@@ -107,8 +106,6 @@ Build the Universal Object Detail View with BlockNote editor integration, proper
 - [ ] BlockNote editor loads and saves content
 - [ ] `@` triggers mention menu with object search
 - [ ] Mentions insert as styled chips
-- [ ] Mention creates relation in underlying data
 - [ ] Relations display as clickable chips
-- [ ] Backlinks section shows all referencing objects
-- [ ] Related Tasks section shows tasks linked to current object
-- [ ] "+ Add" in Tasks creates task pre-linked to current object
+- [ ] Backlinks section shows all referencing objects (via relations and @-mentions)
+- [ ] Backlinks are collapsible with count in header

@@ -49,18 +49,16 @@ Title & Properties
      ↓
 Content (if applicable)
      ↓
-Related Tasks
-     ↓
-Backlinks
+Backlinks (collapsed)
 ```
 
-A Project isn't a special "dashboard." It's an object. You see its properties, its description, the tasks pointing to it, and everything that references it. Same pattern for Notes, Meetings, Links, custom types—everything.
+A Project isn't a special "dashboard." It's an object. You see its properties, its description, and everything that references it—tasks with this project, notes that mention it, other objects linked via relations. Same pattern for Notes, Meetings, Links, custom types—everything.
 
 This consistency means you learn one interaction model and it works everywhere.
 
 ### 3. Automatic Backlinks
 
-Relations are bidirectional without extra work. When a Task belongs to a Project, that Project shows the Task in its related tasks section. When a Note mentions a Meeting, that Meeting shows the Note in its backlinks.
+Relations are bidirectional without extra work. When a Task belongs to a Project, that Project shows the Task in its backlinks. When a Note mentions a Meeting with an @-mention, that Meeting shows the Note in its backlinks.
 
 You don't maintain these connections manually. The graph builds itself.
 

@@ -24,6 +24,12 @@ export const ProjectStatusOptions = ['active', 'on-hold', 'completed', 'archived
 export type ProjectStatus = (typeof ProjectStatusOptions)[number];
 
 /**
+ * Tag color options (maps to CSS variables like --tag-red, --tag-blue, etc.)
+ */
+export const TagColorOptions = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'pink'] as const;
+export type TagColor = (typeof TagColorOptions)[number];
+
+/**
  * Task type definition
  * Properties: title, status, dueDate, priority, project, note, tags, recurrence
  */
@@ -346,9 +352,12 @@ export const TagType: TypeDefinition = {
     {
       id: 'color',
       name: 'Color',
-      type: 'text',
+      type: 'select',
       required: false,
       multiple: false,
+      config: {
+        options: [...TagColorOptions],
+      },
     },
     {
       id: 'description',
@@ -356,6 +365,65 @@ export const TagType: TypeDefinition = {
       type: 'text',
       required: false,
       multiple: false,
+    },
+  ],
+};
+
+/**
+ * Person type definition
+ * Properties: name, email, phone, company, website, tags
+ */
+export const PersonType: TypeDefinition = {
+  id: BuiltInTypeIds.PERSON,
+  name: 'Person',
+  icon: '👤',
+  hasContent: true,
+  isBuiltIn: true,
+  schema: [
+    {
+      id: 'name',
+      name: 'Name',
+      type: 'text',
+      required: true,
+      multiple: false,
+    },
+    {
+      id: 'email',
+      name: 'Email',
+      type: 'email',
+      required: false,
+      multiple: false,
+    },
+    {
+      id: 'phone',
+      name: 'Phone',
+      type: 'phone',
+      required: false,
+      multiple: false,
+    },
+    {
+      id: 'company',
+      name: 'Company',
+      type: 'text',
+      required: false,
+      multiple: false,
+    },
+    {
+      id: 'website',
+      name: 'Website',
+      type: 'url',
+      required: false,
+      multiple: false,
+    },
+    {
+      id: 'tags',
+      name: 'Tags',
+      type: 'relation',
+      required: false,
+      multiple: true,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.TAG],
+      },
     },
   ],
 };
@@ -370,6 +438,7 @@ export const builtInTypes: TypeDefinition[] = [
   LinkType,
   MeetingType,
   TagType,
+  PersonType,
 ];
 
 /**

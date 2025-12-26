@@ -1,0 +1,78 @@
+.object-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.object-header__icon {
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.object-header__title {
+  flex: 1;
+  margin: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-family: var(--font-ui);
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: text;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.object-header__title:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-subtle);
+}
+
+.object-header__title:focus {
+  outline: none;
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.object-header__edit-hint {
+  position: absolute;
+  right: var(--spacing-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  pointer-events: none;
+}
+
+.object-header__title:hover .object-header__edit-hint,
+.object-header__title:focus .object-header__edit-hint {
+  opacity: 1;
+}
+
+.object-header__input {
+  flex: 1;
+  margin: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-family: var(--font-ui);
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.object-header__input:focus {
+  border-color: var(--text-primary);
+}

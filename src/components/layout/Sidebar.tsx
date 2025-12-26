@@ -1,29 +1,100 @@
+import { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import './Sidebar.css';
 import { SidebarSection } from './SidebarSection';
 import { SidebarItem } from './SidebarItem';
-import { Tag } from '@/components/ui';
-import { useSidebar } from '@/contexts';
+import { Tag, type TagColor } from '@/components/ui';
+import { useSidebar, useNavigation, useObjects, useTypeRegistry, type ViewType } from '@/contexts';
 import { useTheme } from '@/hooks';
+import { BuiltInTypeIds, type PropertyValue } from '@/lib/types';
 
-// Mock data - will be replaced with real data from ObjectStore in later phases
-const mockProjects = [
-  { id: 'proj-1', name: 'Website Redesign' },
-  { id: 'proj-2', name: 'Q1 Planning' },
-];
-
-const mockTags = [
-  { id: 'tag-1', name: 'urgent', color: 'red' as const },
-  { id: 'tag-2', name: 'work', color: 'blue' as const },
-  { id: 'tag-3', name: 'personal', color: 'green' as const },
-];
+// Default properties for each type when creating
+const defaultPropertiesForType: Record<string, Record<string, PropertyValue>> = {
+  [BuiltInTypeIds.TASK]: { title: 'New Task', status: 'todo', priority: 'medium' },
+  [BuiltInTypeIds.NOTE]: { title: 'New Note' },
+  [BuiltInTypeIds.PROJECT]: { name: 'New Project', status: 'active' },
+  [BuiltInTypeIds.LINK]: { url: 'https://', title: 'New Link' },
+  [BuiltInTypeIds.MEETING]: { title: 'New Meeting', startTime: Date.now() },
+  [BuiltInTypeIds.TAG]: { name: 'new-tag' },
+  [BuiltInTypeIds.PERSON]: { name: 'New Person' },
+};
 
 interface SidebarProps {
   inboxCount?: number;
 }
 
 export function Sidebar({ inboxCount = 0 }: SidebarProps) {
-  const { isCollapsed, toggleCollapsed } = useSidebar();
+  const { isCollapsed, toggleCollapsed, selectedItem, setSelectedItem } = useSidebar();
+  const { navigateToView, navigateToObject } = useNavigation();
+  const { store, refreshData } = useObjects();
+  const typeRegistry = useTypeRegistry();
   const { theme, toggleTheme } = useTheme();
+
+  const [showTypeSelector, setShowTypeSelector] = useState(false);
+  const typeSelectorRef = useRef<HTMLDivElement>(null);
+
+  // Get all available types for the selector
+  const availableTypes = useMemo(() => {
+    return typeRegistry.getAll().map((typeDef) => ({
+      id: typeDef.id,
+      name: typeDef.name,
+      icon: typeDef.icon,
+    }));
+  }, [typeRegistry]);
+
+  // Handle creating a new object of the selected type
+  const handleCreateObject = useCallback(
+    (typeId: string) => {
+      if (!store) return;
+
+      const defaultProps = defaultPropertiesForType[typeId] || {};
+      const newObject = store.create({
+        typeId,
+        properties: defaultProps,
+      });
+
+      refreshData();
+      setShowTypeSelector(false);
+      navigateToObject(newObject.id);
+    },
+    [store, refreshData, navigateToObject]
+  );
+
+  // Close type selector when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (typeSelectorRef.current && !typeSelectorRef.current.contains(event.target as Node)) {
+        setShowTypeSelector(false);
+      }
+    };
+
+    if (showTypeSelector) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showTypeSelector]);
+
+  // Get real projects from the store
+  const projects = useMemo(() => {
+    if (!store) return [];
+    return store.getByType(BuiltInTypeIds.PROJECT).map((obj) => ({
+      id: obj.id,
+      name: (obj.properties.name as string) || 'Untitled Project',
+    }));
+  }, [store]);
+
+  // Get real tags from the store
+  const tags = useMemo(() => {
+    if (!store) return [];
+    return store.getByType(BuiltInTypeIds.TAG).map((obj) => ({
+      id: obj.id,
+      name: (obj.properties.name as string) || 'Untitled',
+      color: (obj.properties.color as TagColor) || undefined,
+    }));
+  }, [store]);
+
+  const handleNavigate = (view: ViewType) => {
+    navigateToView(view);
+  };
 
   if (isCollapsed) {
     return null;
@@ -34,67 +105,154 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
       <div className="sidebar__content">
         {/* Primary navigation */}
         <div className="sidebar__primary">
-          <SidebarItem id="inbox" icon="📥" label="Inbox" count={inboxCount} />
+          <SidebarItem
+            id="inbox"
+            icon="📥"
+            label="Inbox"
+            count={inboxCount}
+            onClick={() => handleNavigate('inbox')}
+          />
         </div>
 
         <div className="sidebar__divider" />
 
         {/* Quick access */}
         <div className="sidebar__quick">
-          <SidebarItem id="today" icon="📅" label="Today" />
-          <SidebarItem id="daily-notes" icon="📆" label="Daily Notes" />
+          <SidebarItem
+            id="today"
+            icon="📅"
+            label="Today"
+            onClick={() => handleNavigate('today')}
+          />
+          <SidebarItem
+            id="daily-notes"
+            icon="📆"
+            label="Daily Notes"
+            onClick={() => handleNavigate('daily-notes')}
+          />
         </div>
 
         <div className="sidebar__divider" />
 
         {/* Tasks section */}
         <SidebarSection id="tasks" title="Tasks">
-          <SidebarItem id="this-week" label="This Week" indent />
-          <SidebarItem id="overdue" label="Overdue" indent />
-          <SidebarItem id="blocked" label="Blocked" indent />
-          <SidebarItem id="eventually" label="Eventually" indent />
-          <SidebarItem id="completed" label="Completed" indent />
+          <SidebarItem
+            id="this-week"
+            label="This Week"
+            indent
+            onClick={() => handleNavigate('this-week')}
+          />
+          <SidebarItem
+            id="overdue"
+            label="Overdue"
+            indent
+            onClick={() => handleNavigate('overdue')}
+          />
+          <SidebarItem
+            id="blocked"
+            label="Blocked"
+            indent
+            onClick={() => handleNavigate('blocked')}
+          />
+          <SidebarItem
+            id="eventually"
+            label="Eventually"
+            indent
+            onClick={() => handleNavigate('eventually')}
+          />
+          <SidebarItem
+            id="completed"
+            label="Completed"
+            indent
+            onClick={() => handleNavigate('completed')}
+          />
         </SidebarSection>
 
         {/* Projects section */}
         <SidebarSection id="projects" title="Projects">
-          {mockProjects.map((project) => (
-            <SidebarItem
-              key={project.id}
-              id={`project-${project.id}`}
-              label={project.name}
-              indent
-            />
-          ))}
-          <SidebarItem id="new-project" label="+ New Project" indent />
+          {projects.length === 0 ? (
+            <div className="sidebar__empty-text">No projects yet</div>
+          ) : (
+            projects.map((project) => (
+              <SidebarItem
+                key={project.id}
+                id={`project-${project.id}`}
+                label={project.name}
+                indent
+                onClick={() => navigateToObject(project.id)}
+              />
+            ))
+          )}
         </SidebarSection>
 
         {/* Tags section */}
         <SidebarSection id="tags" title="Tags">
-          {mockTags.map((tag) => (
-            <div key={tag.id} className="sidebar__tag-item">
-              <Tag name={tag.name} color={tag.color} size="sm" onClick={() => {}} />
-            </div>
-          ))}
+          {tags.length === 0 ? (
+            <div className="sidebar__empty-text">No tags yet</div>
+          ) : (
+            tags.map((tag) => {
+              const tagItemId = `tag-${tag.id}`;
+              const isSelected = selectedItem === tagItemId;
+              return (
+                <button
+                  key={tag.id}
+                  className={`sidebar__tag-item ${isSelected ? 'sidebar__tag-item--selected' : ''}`}
+                  onClick={() => {
+                    setSelectedItem(tagItemId);
+                    navigateToObject(tag.id);
+                  }}
+                >
+                  <Tag name={tag.name} color={tag.color} size="sm" />
+                </button>
+              );
+            })
+          )}
         </SidebarSection>
       </div>
 
       {/* Footer with controls */}
       <div className="sidebar__footer">
-        <button
-          className="sidebar__control-btn"
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙' : '☀️'}
-        </button>
-        <button
-          className="sidebar__control-btn"
-          onClick={toggleCollapsed}
-          aria-label="Collapse sidebar"
-        >
-          ◀
-        </button>
+        <div className="sidebar__add-object" ref={typeSelectorRef}>
+          <button
+            className="sidebar__add-btn"
+            onClick={() => setShowTypeSelector(!showTypeSelector)}
+            aria-expanded={showTypeSelector}
+          >
+            + Add Object
+          </button>
+
+          {showTypeSelector && (
+            <div className="sidebar__type-selector">
+              {availableTypes.map((type) => (
+                <button
+                  key={type.id}
+                  className="sidebar__type-option"
+                  onClick={() => handleCreateObject(type.id)}
+                >
+                  <span className="sidebar__type-icon">{type.icon}</span>
+                  <span className="sidebar__type-name">{type.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="sidebar__controls">
+          <button
+            className="sidebar__control-btn"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
+          <button
+            className="sidebar__control-btn"
+            onClick={toggleCollapsed}
+            aria-label="Collapse sidebar"
+          >
+            ◀
+          </button>
+        </div>
       </div>
     </aside>
   );

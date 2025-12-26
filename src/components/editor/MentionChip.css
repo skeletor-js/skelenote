@@ -1,0 +1,52 @@
+/* MentionChip - Inline mention styling */
+
+.mention-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  padding: 0.1em 0.4em;
+  margin: 0 0.1em;
+  background: var(--surface-active);
+  color: var(--tag-blue);
+  border-radius: var(--radius-sm);
+  font-size: 0.95em;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: baseline;
+  transition: background-color var(--transition-fast);
+}
+
+.mention-chip:hover {
+  background: var(--surface-hover);
+  text-decoration: underline;
+}
+
+/* Different colors for different object types */
+.mention-chip[data-type-id="task"] {
+  color: var(--tag-orange);
+}
+
+.mention-chip[data-type-id="project"] {
+  color: var(--tag-purple);
+}
+
+.mention-chip[data-type-id="note"] {
+  color: var(--tag-blue);
+}
+
+.mention-chip[data-type-id="meeting"] {
+  color: var(--tag-green);
+}
+
+.mention-chip[data-type-id="person"] {
+  color: var(--tag-pink);
+}
+
+.mention-chip[data-type-id="link"] {
+  color: var(--tag-cyan);
+}
+
+.mention-chip[data-type-id="tag"] {
+  color: var(--tag-yellow);
+}
