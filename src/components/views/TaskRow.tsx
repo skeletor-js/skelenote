@@ -30,7 +30,7 @@ interface TaskRowProps {
   /** Callback when dragging leaves this row */
   onDragLeave?: () => void;
   /** Callback when dropping on this row */
-  onDrop?: (taskId: string) => void;
+  onDrop?: (targetTaskId: string, sourceTaskId: string, position: 'above' | 'below') => void;
 }
 
 export function TaskRow({
@@ -139,7 +139,14 @@ export function TaskRow({
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-      onDrop?.(task.id);
+      const sourceTaskId = e.dataTransfer.getData('text/plain');
+      if (sourceTaskId && sourceTaskId !== task.id && rowRef.current) {
+        // Calculate drop position based on cursor location
+        const rect = rowRef.current.getBoundingClientRect();
+        const midpoint = rect.top + rect.height / 2;
+        const position = e.clientY < midpoint ? 'above' : 'below';
+        onDrop?.(task.id, sourceTaskId, position);
+      }
     },
     [task.id, onDrop]
   );

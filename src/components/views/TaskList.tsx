@@ -30,15 +30,8 @@ export function TaskList({
 }: TaskListProps) {
   const { navigateToObject } = useNavigation();
 
-  // Track drag state - use refs to avoid stale closure issues
+  // Track drag state for visual feedback
   const draggedTaskIdRef = useRef<string | null>(null);
-  const dragOverRef = useRef<{
-    taskId: string;
-    position: 'above' | 'below';
-  } | null>(null);
-
-  // State for visual feedback only
-  const [, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverState, setDragOverState] = useState<{
     taskId: string;
     position: 'above' | 'below';
@@ -47,53 +40,40 @@ export function TaskList({
   // Handle drag start
   const handleDragStart = useCallback((taskId: string) => {
     draggedTaskIdRef.current = taskId;
-    setDraggedTaskId(taskId);
   }, []);
 
-  // Handle drag end
+  // Handle drag end - clear visual state
   const handleDragEnd = useCallback(() => {
     draggedTaskIdRef.current = null;
-    dragOverRef.current = null;
-    setDraggedTaskId(null);
     setDragOverState(null);
   }, []);
 
-  // Handle drag over
+  // Handle drag over - update visual feedback
   const handleDragOver = useCallback(
     (taskId: string, position: 'above' | 'below') => {
-      // Don't allow dropping on self
+      // Don't show feedback when hovering over self
       if (taskId === draggedTaskIdRef.current) {
-        dragOverRef.current = null;
         setDragOverState(null);
         return;
       }
-      const newState = { taskId, position };
-      dragOverRef.current = newState;
-      setDragOverState(newState);
+      setDragOverState({ taskId, position });
     },
     []
   );
 
-  // Handle drag leave - only clear visual state, keep ref for drop
+  // Handle drag leave
   const handleDragLeave = useCallback(() => {
-    // Don't clear the ref - we need it for drop
+    // Don't clear state here - causes flicker when moving between elements
   }, []);
 
-  // Handle drop
+  // Handle drop - TaskRow now passes all info directly via dataTransfer
   const handleDrop = useCallback(
-    (_targetTaskId: string) => {
-      // Use refs to get current drag state (avoids stale closure issues)
-      const sourceId = draggedTaskIdRef.current;
-      const dropState = dragOverRef.current;
-
-      if (sourceId && dropState && onReorder) {
-        onReorder(sourceId, dropState.taskId, dropState.position);
+    (targetTaskId: string, sourceTaskId: string, position: 'above' | 'below') => {
+      if (onReorder) {
+        onReorder(sourceTaskId, targetTaskId, position);
       }
-
-      // Clear all state
+      // Clear visual state
       draggedTaskIdRef.current = null;
-      dragOverRef.current = null;
-      setDraggedTaskId(null);
       setDragOverState(null);
     },
     [onReorder]
