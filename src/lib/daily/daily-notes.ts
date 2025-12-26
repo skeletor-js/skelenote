@@ -5,7 +5,7 @@
 import type { ObjectStore } from '../loro/objects';
 import type { EphemeraObject } from '../types';
 import { BuiltInTypeIds } from '../types';
-import { formatDateTitle, formatDateId, parseDate } from './date-utils';
+import { formatDateTitle, formatDateId } from './date-utils';
 
 /**
  * Generate a deterministic ID for a daily note based on the date
@@ -47,6 +47,15 @@ export function getDailyNoteByDate(store: ObjectStore, date: Date): EphemeraObje
 }
 
 /**
+ * Get the start of day timestamp for a date (midnight)
+ */
+function getStartOfDay(date: Date): number {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
+/**
  * Get or create a daily note for the given date
  * - Uses a deterministic ID based on the date
  * - Returns existing note if already created
@@ -63,14 +72,14 @@ export function getOrCreateDailyNote(store: ObjectStore, date: Date): EphemeraOb
 
   // Create new daily note
   const title = formatDateTitle(date);
-  const dateStr = formatDateId(date);
+  const dateTimestamp = getStartOfDay(date);
 
   const dailyNote = store.create({
     id,
     typeId: BuiltInTypeIds.NOTE,
     properties: {
       title,
-      date: dateStr,
+      date: dateTimestamp,
       isDailyNote: true,
     },
     inboxed: false, // Daily notes skip the inbox
@@ -110,11 +119,12 @@ export function getDailyNotesForMonth(
 
   // Filter to the specified month
   for (const note of dailyNotes) {
-    const dateStr = note.properties.date as string | undefined;
-    if (!dateStr) continue;
+    const dateTimestamp = note.properties.date as number | undefined;
+    if (dateTimestamp === undefined) continue;
 
-    const noteDate = parseDate(dateStr);
+    const noteDate = new Date(dateTimestamp);
     if (noteDate.getFullYear() === year && noteDate.getMonth() === month) {
+      const dateStr = formatDateId(noteDate);
       result.set(dateStr, note);
     }
   }

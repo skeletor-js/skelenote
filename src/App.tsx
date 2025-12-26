@@ -1,11 +1,11 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Layout } from '@/components/layout';
 import { ObjectDetailView } from '@/components/object';
 import { TaskView, InboxView } from '@/components/views';
 import { CommandPalette } from '@/components/palette';
 import { QuickCapture } from '@/components/capture';
 import { useNavigation, useObjects, type ViewType } from '@/contexts';
-import { useCommandPalette } from '@/hooks';
+import { useCommandPalette, useTodaysDailyNote } from '@/hooks';
 import type { TaskFilter } from '@/lib/tasks/filters';
 
 /**
@@ -270,6 +270,16 @@ function App() {
   const inboxCount = store?.getInboxed().length ?? 0;
   const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
+  const { ensureExists: ensureTodaysDailyNote } = useTodaysDailyNote();
+  const dailyNoteCreatedRef = useRef(false);
+
+  // Auto-create today's daily note on app launch
+  useEffect(() => {
+    if (!dailyNoteCreatedRef.current && store) {
+      ensureTodaysDailyNote();
+      dailyNoteCreatedRef.current = true;
+    }
+  }, [store, ensureTodaysDailyNote]);
 
   const openQuickCapture = useCallback(() => {
     setIsQuickCaptureOpen(true);
