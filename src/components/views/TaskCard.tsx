@@ -3,7 +3,7 @@
  * Compact card showing title, due date, priority, tags
  */
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import type { EphemeraObject } from '@/lib/types';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
 import { useObjects } from '@/contexts';
@@ -21,6 +21,8 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onClick, isDragging = false }: TaskCardProps) {
   const { store } = useObjects();
+  // Track if a drag operation occurred to prevent click after drag
+  const wasDragging = useRef(false);
 
   const isComplete = task.properties.status === 'done';
   const priority = task.properties.priority as string | null;
@@ -45,18 +47,35 @@ export function TaskCard({ task, onClick, isDragging = false }: TaskCardProps) {
   // Handle drag start
   const handleDragStart = useCallback(
     (e: React.DragEvent) => {
+      wasDragging.current = true;
       e.dataTransfer.setData('text/plain', task.id);
       e.dataTransfer.effectAllowed = 'move';
     },
     [task.id]
   );
 
+  // Handle drag end - reset drag state
+  const handleDragEnd = useCallback(() => {
+    // Reset after a short delay to allow click event to check it
+    setTimeout(() => {
+      wasDragging.current = false;
+    }, 0);
+  }, []);
+
+  // Handle click - only trigger if not dragging
+  const handleClick = useCallback(() => {
+    if (!wasDragging.current) {
+      onClick();
+    }
+  }, [onClick]);
+
   return (
     <div
       className={`task-card ${isComplete ? 'task-card--complete' : ''} ${isDragging ? 'task-card--dragging' : ''}`}
-      onClick={onClick}
+      onClick={handleClick}
       draggable
       onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
