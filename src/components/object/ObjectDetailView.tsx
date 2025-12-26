@@ -4,6 +4,7 @@ import { ObjectHeader } from './ObjectHeader';
 import { PropertyList } from './PropertyList';
 import { Backlinks } from './Backlinks';
 import { Editor } from '@/components/editor';
+import { DailyNoteHeader } from '@/components/daily';
 import type { PropertyValue } from '@/lib/types';
 import {
   useObjects,
@@ -100,13 +101,19 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
     );
   }
 
+  const isDailyNote = object.properties.isDailyNote === true;
+
   return (
     <div className="object-detail">
-      {/* Back navigation */}
-      {canGoBack && (
-        <button onClick={navigateBack} className="object-detail__back-btn">
-          ← Back
-        </button>
+      {/* Navigation: Daily note header or regular back button */}
+      {isDailyNote && typeof object.properties.date === 'number' ? (
+        <DailyNoteHeader dateTimestamp={object.properties.date} />
+      ) : (
+        canGoBack && (
+          <button onClick={navigateBack} className="object-detail__back-btn">
+            ← Back
+          </button>
+        )
       )}
 
       {/* Header with inline title editing */}

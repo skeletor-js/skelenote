@@ -4,7 +4,7 @@ import { SidebarSection } from './SidebarSection';
 import { SidebarItem } from './SidebarItem';
 import { Tag, type TagColor } from '@/components/ui';
 import { useSidebar, useNavigation, useObjects, useTypeRegistry, type ViewType } from '@/contexts';
-import { useTheme } from '@/hooks';
+import { useTheme, useLinkToDaily } from '@/hooks';
 import { BuiltInTypeIds, type PropertyValue } from '@/lib/types';
 
 // Default properties for each type when creating
@@ -28,6 +28,7 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { theme, toggleTheme } = useTheme();
+  const { linkToDaily } = useLinkToDaily();
 
   const [showTypeSelector, setShowTypeSelector] = useState(false);
   const typeSelectorRef = useRef<HTMLDivElement>(null);
@@ -52,11 +53,14 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
         properties: defaultProps,
       });
 
+      // Link to today's daily note
+      linkToDaily(newObject);
+
       refreshData();
       setShowTypeSelector(false);
       navigateToObject(newObject.id);
     },
-    [store, refreshData, navigateToObject]
+    [store, linkToDaily, refreshData, navigateToObject]
   );
 
   // Close type selector when clicking outside
