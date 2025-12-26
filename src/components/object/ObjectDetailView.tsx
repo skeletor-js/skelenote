@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import './ObjectDetailView.css';
 import { ObjectHeader } from './ObjectHeader';
 import { PropertyList } from './PropertyList';
+import { RelatedTasks } from './RelatedTasks';
 import { Editor } from '@/components/editor';
 import type { PropertyValue } from '@/lib/types';
 import {
@@ -135,18 +136,8 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
         </section>
       )}
 
-      {/* Related Tasks Section - will be replaced with RelatedTasks component */}
-      <section className="object-detail__tasks">
-        <div className="object-detail__section-header">
-          <h2 className="object-detail__section-title">Tasks</h2>
-          <button className="object-detail__add-btn">+ Add</button>
-        </div>
-        <div className="object-detail__tasks-list">
-          <p className="object-detail__placeholder-text">
-            Related tasks will appear here
-          </p>
-        </div>
-      </section>
+      {/* Related Tasks Section */}
+      <RelatedTasks objectId={objectId} />
 
       {/* Backlinks Section - will be replaced with Backlinks component */}
       <section className="object-detail__backlinks">
