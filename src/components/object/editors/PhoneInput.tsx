@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { open } from '@tauri-apps/plugin-shell';
 import './editors.css';
 
 interface PhoneInputProps {
@@ -41,11 +42,11 @@ export function PhoneInput({
     [handleBlur]
   );
 
-  const handleCall = () => {
+  const handleCall = async () => {
     if (value) {
       // Remove non-numeric characters except +
       const phoneNumber = value.replace(/[^\d+]/g, '');
-      window.open(`tel:${phoneNumber}`, '_blank');
+      await open(`tel:${phoneNumber}`);
     }
   };
 

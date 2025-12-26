@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { open } from '@tauri-apps/plugin-shell';
 import './editors.css';
 
 interface EmailInputProps {
@@ -52,9 +53,9 @@ export function EmailInput({
     [handleBlur]
   );
 
-  const handleOpenMailto = () => {
+  const handleOpenMailto = async () => {
     if (value && validateEmail(value)) {
-      window.open(`mailto:${value}`, '_blank');
+      await open(`mailto:${value}`);
     }
   };
 

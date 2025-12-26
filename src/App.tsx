@@ -60,6 +60,19 @@ function PlaceholderView({ view }: { view: ViewType }) {
     navigateToObject(person.id);
   };
 
+  const handleCreateTestLink = () => {
+    if (!store) return;
+    const link = store.create({
+      typeId: 'link',
+      properties: {
+        url: 'https://example.com',
+        title: `Test Link ${Date.now()}`,
+      },
+    });
+    refreshData();
+    navigateToObject(link.id);
+  };
+
   // Get all objects for testing
   const allObjects = store?.getAll() ?? [];
 
@@ -110,6 +123,7 @@ function PlaceholderView({ view }: { view: ViewType }) {
           <button onClick={handleCreateTestNote}>Create Note</button>
           <button onClick={handleCreateTestTask}>Create Task</button>
           <button onClick={handleCreateTestPerson}>Create Person</button>
+          <button onClick={handleCreateTestLink}>Create Link</button>
         </div>
 
         {allObjects.length > 0 && (

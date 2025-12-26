@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { open } from '@tauri-apps/plugin-shell';
 import './editors.css';
 
 interface UrlInputProps {
@@ -56,9 +57,9 @@ export function UrlInput({
     [handleBlur]
   );
 
-  const handleOpenUrl = () => {
+  const handleOpenUrl = async () => {
     if (value && validateUrl(value)) {
-      window.open(value, '_blank', 'noopener,noreferrer');
+      await open(value);
     }
   };
 
