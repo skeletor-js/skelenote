@@ -1,0 +1,149 @@
+/**
+ * TaskRow styles - list view row for tasks
+ */
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.task-row:hover {
+  background-color: var(--surface-hover);
+}
+
+.task-row:focus {
+  outline: none;
+  background-color: var(--surface-hover);
+}
+
+.task-row:focus-visible {
+  outline: 2px solid var(--border-strong);
+  outline-offset: -2px;
+}
+
+/* Completed state */
+.task-row--complete {
+  opacity: 0.7;
+}
+
+.task-row--complete .task-row__title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Checkbox */
+.task-row__checkbox {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  padding: 0;
+}
+
+.task-row__checkbox:hover {
+  border-color: var(--text-primary);
+  background-color: var(--surface-hover);
+}
+
+.task-row__checkbox:focus-visible {
+  outline: 2px solid var(--border-strong);
+  outline-offset: 2px;
+}
+
+.task-row__checkbox--checked {
+  background-color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+.task-row__check-icon {
+  color: var(--bg-base);
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Title */
+.task-row__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+}
+
+/* Priority indicator */
+.task-row__priority {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.task-row__priority--urgent {
+  background-color: var(--tag-red);
+}
+
+.task-row__priority--high {
+  background-color: var(--tag-orange);
+}
+
+.task-row__priority--medium {
+  background-color: var(--tag-yellow);
+}
+
+.task-row__priority--low {
+  background-color: var(--tag-gray);
+}
+
+/* Due date */
+.task-row__due-date {
+  flex-shrink: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.task-row__due-date--overdue {
+  color: var(--tag-red);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Project chip */
+.task-row__project {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  background-color: var(--bg-sunken);
+  padding: 2px var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tags */
+.task-row__tags {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+.task-row__tags-more {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}

@@ -1,0 +1,116 @@
+/**
+ * TaskCard styles - kanban card for tasks
+ */
+
+.task-card {
+  background-color: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.task-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.task-card:focus {
+  outline: none;
+}
+
+.task-card:focus-visible {
+  outline: 2px solid var(--border-strong);
+  outline-offset: 2px;
+}
+
+/* Completed state */
+.task-card--complete {
+  opacity: 0.6;
+}
+
+.task-card--complete .task-card__title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Dragging state */
+.task-card--dragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+}
+
+/* Header row */
+.task-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+}
+
+/* Priority indicator */
+.task-card__priority {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+}
+
+.task-card__priority--urgent {
+  background-color: var(--tag-red);
+}
+
+.task-card__priority--high {
+  background-color: var(--tag-orange);
+}
+
+.task-card__priority--medium {
+  background-color: var(--tag-yellow);
+}
+
+.task-card__priority--low {
+  background-color: var(--tag-gray);
+}
+
+/* Title */
+.task-card__title {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  line-height: 1.4;
+  /* Allow 2 lines before truncating */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Footer row */
+.task-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+/* Due date */
+.task-card__due-date {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.task-card__due-date--overdue {
+  color: var(--tag-red);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Tags */
+.task-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
