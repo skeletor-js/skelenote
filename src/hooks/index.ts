@@ -5,3 +5,4 @@ export { useCommandPalette, type UseCommandPaletteResult } from './useCommandPal
 export { useQuickCaptureShortcut } from './useGlobalShortcut';
 export { useDailyNote, useTodaysDailyNote, type UseDailyNoteResult } from './useDailyNote';
 export { useCalendar, type UseCalendarResult } from './useCalendar';
+export { useLinkToDaily } from './useLinkToDaily';
