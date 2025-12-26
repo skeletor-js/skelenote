@@ -1,0 +1,91 @@
+/* Shared styles for property editors */
+
+/* Base input styles */
+.editor-input {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.editor-input:hover {
+  border-color: var(--border-strong);
+}
+
+.editor-input:focus {
+  border-color: var(--text-primary);
+  background: var(--bg-base);
+}
+
+.editor-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Number input specific */
+.editor-input--number {
+  /* Hide spin buttons */
+  -moz-appearance: textfield;
+}
+
+.editor-input--number::-webkit-outer-spin-button,
+.editor-input--number::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Checkbox styles */
+.editor-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.editor-checkbox__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.editor-checkbox__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+
+.editor-checkbox:hover .editor-checkbox__box {
+  border-color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+.editor-checkbox__input:focus + .editor-checkbox__box {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--border-strong);
+}
+
+.editor-checkbox__input:checked + .editor-checkbox__box {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--bg-base);
+}
+
+.editor-checkbox__label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}

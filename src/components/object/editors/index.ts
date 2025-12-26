@@ -1,4 +1,4 @@
 // Property editor components
-// Will be populated as editors are implemented
-
-export {};
+export { TextInput } from './TextInput';
+export { NumberInput } from './NumberInput';
+export { Checkbox } from './Checkbox';

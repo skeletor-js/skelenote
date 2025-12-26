@@ -1,4 +1,5 @@
 import type { PropertyDefinition, PropertyValue } from '@/lib/types';
+import { TextInput, NumberInput, Checkbox } from './editors';
 
 interface PropertyEditorProps {
   id: string;
@@ -9,13 +10,12 @@ interface PropertyEditorProps {
 
 /**
  * Routes to the appropriate editor component based on property type.
- * Placeholder editors will be replaced with real implementations in subsequent commits.
  */
 export function PropertyEditor({
   id,
   definition,
   value,
-  onChange: _onChange, // Will be used when real editors are implemented
+  onChange,
 }: PropertyEditorProps) {
   const { type, config } = definition;
 
@@ -40,16 +40,29 @@ export function PropertyEditor({
   switch (type) {
     case 'text':
       return (
-        <div style={placeholderStyle} id={id}>
-          {formatValue(value)} <span style={{ opacity: 0.6 }}>(text editor)</span>
-        </div>
+        <TextInput
+          id={id}
+          value={typeof value === 'string' ? value : null}
+          onChange={onChange}
+        />
       );
 
     case 'number':
       return (
-        <div style={placeholderStyle} id={id}>
-          {formatValue(value)} <span style={{ opacity: 0.6 }}>(number editor)</span>
-        </div>
+        <NumberInput
+          id={id}
+          value={typeof value === 'number' ? value : null}
+          onChange={onChange}
+        />
+      );
+
+    case 'checkbox':
+      return (
+        <Checkbox
+          id={id}
+          value={typeof value === 'boolean' ? value : null}
+          onChange={onChange}
+        />
       );
 
     case 'date':
@@ -57,13 +70,6 @@ export function PropertyEditor({
         <div style={placeholderStyle} id={id}>
           {value ? new Date(value as number).toLocaleDateString() : '—'}{' '}
           <span style={{ opacity: 0.6 }}>(date picker)</span>
-        </div>
-      );
-
-    case 'checkbox':
-      return (
-        <div style={placeholderStyle} id={id}>
-          {formatValue(value)} <span style={{ opacity: 0.6 }}>(checkbox)</span>
         </div>
       );
 
