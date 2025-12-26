@@ -6,6 +6,9 @@ import { useNavigation, useObjects, type ViewType } from '@/contexts';
  * Placeholder component for views not yet implemented
  */
 function PlaceholderView({ view }: { view: ViewType }) {
+  const { store, refreshData } = useObjects();
+  const { navigateToObject } = useNavigation();
+
   const viewLabels: Record<ViewType, string> = {
     inbox: 'Inbox',
     today: 'Today',
@@ -17,6 +20,36 @@ function PlaceholderView({ view }: { view: ViewType }) {
     completed: 'Completed',
     object: 'Object Detail',
   };
+
+  const handleCreateTestNote = () => {
+    if (!store) return;
+    const note = store.create({
+      typeId: 'note',
+      properties: {
+        title: `Test Note ${Date.now()}`,
+        isDailyNote: false,
+      },
+    });
+    refreshData();
+    navigateToObject(note.id);
+  };
+
+  const handleCreateTestTask = () => {
+    if (!store) return;
+    const task = store.create({
+      typeId: 'task',
+      properties: {
+        title: `Test Task ${Date.now()}`,
+        status: 'todo',
+        priority: 'medium',
+      },
+    });
+    refreshData();
+    navigateToObject(task.id);
+  };
+
+  // Get all objects for testing
+  const allObjects = store?.getAll() ?? [];
 
   return (
     <div
@@ -35,7 +68,75 @@ function PlaceholderView({ view }: { view: ViewType }) {
       >
         {viewLabels[view]}
       </h1>
-      <p>This view will be implemented soon.</p>
+      <p style={{ marginBottom: 'var(--spacing-lg)' }}>
+        This view will be implemented soon.
+      </p>
+
+      {/* Test controls - will be removed later */}
+      <div
+        style={{
+          padding: 'var(--spacing-md)',
+          background: 'var(--bg-raised)',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border-subtle)',
+          textAlign: 'left',
+          maxWidth: '400px',
+          margin: '0 auto',
+        }}
+      >
+        <h2
+          className="font-ui"
+          style={{
+            fontSize: 'var(--font-size-sm)',
+            marginBottom: 'var(--spacing-md)',
+            color: 'var(--text-muted)',
+          }}
+        >
+          Test Controls (temporary)
+        </h2>
+        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-md)' }}>
+          <button onClick={handleCreateTestNote}>Create Note</button>
+          <button onClick={handleCreateTestTask}>Create Task</button>
+        </div>
+
+        {allObjects.length > 0 && (
+          <>
+            <h3
+              className="font-ui"
+              style={{
+                fontSize: 'var(--font-size-xs)',
+                marginBottom: 'var(--spacing-sm)',
+                color: 'var(--text-muted)',
+              }}
+            >
+              Existing Objects ({allObjects.length})
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xs)' }}>
+              {allObjects.slice(0, 5).map((obj) => (
+                <button
+                  key={obj.id}
+                  onClick={() => navigateToObject(obj.id)}
+                  style={{
+                    textAlign: 'left',
+                    padding: 'var(--spacing-xs) var(--spacing-sm)',
+                    background: 'var(--bg-sunken)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {obj.typeId}: {String(obj.properties.title ?? obj.properties.name ?? obj.id)}
+                </button>
+              ))}
+              {allObjects.length > 5 && (
+                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+                  ...and {allObjects.length - 5} more
+                </p>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

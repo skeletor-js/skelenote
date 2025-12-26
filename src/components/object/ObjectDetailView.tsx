@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import './ObjectDetailView.css';
+import { ObjectHeader } from './ObjectHeader';
 import {
   useObjects,
   useNavigation,
@@ -11,10 +12,24 @@ interface ObjectDetailViewProps {
 }
 
 export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
-  const { store, isLoading } = useObjects();
+  const { store, isLoading, refreshData } = useObjects();
   const { navigateBack, canGoBack } = useNavigation();
   const typeRegistry = useTypeRegistry();
   const [backlinksExpanded, setBacklinksExpanded] = useState(false);
+
+  const handleTitleChange = useCallback(
+    (newTitle: string) => {
+      if (!store) return;
+      const object = store.get(objectId);
+      if (!object) return;
+
+      // Determine which property holds the title
+      const titlePropertyId = object.properties.title !== undefined ? 'title' : 'name';
+      store.setProperty(objectId, titlePropertyId, newTitle);
+      refreshData();
+    },
+    [store, objectId, refreshData]
+  );
 
   if (isLoading || !store) {
     return (
@@ -54,10 +69,6 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
     );
   }
 
-  // Get the title property (varies by type: 'title' for most, 'name' for Project/Tag)
-  const titleProp = object.properties.title ?? object.properties.name ?? 'Untitled';
-  const title = typeof titleProp === 'string' ? titleProp : 'Untitled';
-
   return (
     <div className="object-detail">
       {/* Back navigation */}
@@ -67,11 +78,12 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
         </button>
       )}
 
-      {/* Header Section - will be replaced with ObjectHeader component */}
-      <header className="object-detail__header">
-        <span className="object-detail__icon">{typeDef.icon}</span>
-        <h1 className="object-detail__title">{title}</h1>
-      </header>
+      {/* Header with inline title editing */}
+      <ObjectHeader
+        object={object}
+        typeDef={typeDef}
+        onTitleChange={handleTitleChange}
+      />
 
       {/* Properties Section - will be replaced with PropertyList component */}
       <section className="object-detail__properties">
