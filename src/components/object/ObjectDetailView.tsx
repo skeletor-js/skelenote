@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react';
 import './ObjectDetailView.css';
 import { ObjectHeader } from './ObjectHeader';
 import { PropertyList } from './PropertyList';
-import { RelatedTasks } from './RelatedTasks';
 import { Backlinks } from './Backlinks';
 import { Editor } from '@/components/editor';
 import type { PropertyValue } from '@/lib/types';
@@ -135,9 +134,6 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
           />
         </section>
       )}
-
-      {/* Related Tasks Section */}
-      <RelatedTasks objectId={objectId} />
 
       {/* Backlinks Section */}
       <Backlinks objectId={objectId} />

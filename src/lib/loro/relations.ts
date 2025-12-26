@@ -17,10 +17,58 @@ import type { ObjectStore } from './objects';
 export interface Backlink {
   /** The object that contains the relation */
   sourceId: string;
-  /** The property that contains the relation */
+  /** The property that contains the relation (or 'content' for mentions) */
   propertyId: string;
-  /** The name of the property */
+  /** The name of the property (or 'Content' for mentions) */
   propertyName: string;
+}
+
+/**
+ * Extract all mentioned object IDs from BlockNote content JSON
+ * Recursively searches for inline mention content
+ */
+export function extractMentionsFromContent(content: string | null): string[] {
+  if (!content) return [];
+
+  try {
+    const blocks = JSON.parse(content);
+    const mentions: string[] = [];
+
+    // Recursively find mentions in blocks
+    function searchBlocks(items: unknown[]): void {
+      for (const item of items) {
+        if (typeof item !== 'object' || item === null) continue;
+
+        const block = item as Record<string, unknown>;
+
+        // Check if this is a mention inline content
+        if (block.type === 'mention' && block.props) {
+          const props = block.props as Record<string, unknown>;
+          if (typeof props.objectId === 'string') {
+            mentions.push(props.objectId);
+          }
+        }
+
+        // Search in content array (inline content)
+        if (Array.isArray(block.content)) {
+          searchBlocks(block.content);
+        }
+
+        // Search in children array (nested blocks)
+        if (Array.isArray(block.children)) {
+          searchBlocks(block.children);
+        }
+      }
+    }
+
+    if (Array.isArray(blocks)) {
+      searchBlocks(blocks);
+    }
+
+    return mentions;
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -91,6 +139,7 @@ export class RelationHelper {
 
   /**
    * Find all objects that reference the given object ID (backlinks)
+   * Includes both relation properties and @-mentions in content
    */
   findBacklinks(targetId: string): Backlink[] {
     const backlinks: Backlink[] = [];
@@ -99,6 +148,7 @@ export class RelationHelper {
       const typeDef = this.typeRegistry.get(obj.typeId);
       if (!typeDef) continue;
 
+      // Check relation properties
       for (const propDef of getRelationProperties(typeDef)) {
         const value = obj.properties[propDef.id];
         const ids = getRelationIds(value);
@@ -109,6 +159,24 @@ export class RelationHelper {
             propertyId: propDef.id,
             propertyName: propDef.name,
           });
+        }
+      }
+
+      // Check content for @-mentions
+      if (typeDef.hasContent) {
+        try {
+          const content = this.store.getContent(obj.id);
+          const mentionedIds = extractMentionsFromContent(content);
+
+          if (mentionedIds.includes(targetId)) {
+            backlinks.push({
+              sourceId: obj.id,
+              propertyId: 'content',
+              propertyName: 'Content',
+            });
+          }
+        } catch {
+          // Content not available, skip
         }
       }
     }
