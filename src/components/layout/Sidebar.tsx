@@ -2,7 +2,7 @@ import './Sidebar.css';
 import { SidebarSection } from './SidebarSection';
 import { SidebarItem } from './SidebarItem';
 import { Tag } from '@/components/ui';
-import { useSidebar } from '@/contexts';
+import { useSidebar, useNavigation, type ViewType } from '@/contexts';
 import { useTheme } from '@/hooks';
 
 // Mock data - will be replaced with real data from ObjectStore in later phases
@@ -23,7 +23,12 @@ interface SidebarProps {
 
 export function Sidebar({ inboxCount = 0 }: SidebarProps) {
   const { isCollapsed, toggleCollapsed } = useSidebar();
+  const { navigateToView } = useNavigation();
   const { theme, toggleTheme } = useTheme();
+
+  const handleNavigate = (view: ViewType) => {
+    navigateToView(view);
+  };
 
   if (isCollapsed) {
     return null;
@@ -34,26 +39,67 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
       <div className="sidebar__content">
         {/* Primary navigation */}
         <div className="sidebar__primary">
-          <SidebarItem id="inbox" icon="📥" label="Inbox" count={inboxCount} />
+          <SidebarItem
+            id="inbox"
+            icon="📥"
+            label="Inbox"
+            count={inboxCount}
+            onClick={() => handleNavigate('inbox')}
+          />
         </div>
 
         <div className="sidebar__divider" />
 
         {/* Quick access */}
         <div className="sidebar__quick">
-          <SidebarItem id="today" icon="📅" label="Today" />
-          <SidebarItem id="daily-notes" icon="📆" label="Daily Notes" />
+          <SidebarItem
+            id="today"
+            icon="📅"
+            label="Today"
+            onClick={() => handleNavigate('today')}
+          />
+          <SidebarItem
+            id="daily-notes"
+            icon="📆"
+            label="Daily Notes"
+            onClick={() => handleNavigate('daily-notes')}
+          />
         </div>
 
         <div className="sidebar__divider" />
 
         {/* Tasks section */}
         <SidebarSection id="tasks" title="Tasks">
-          <SidebarItem id="this-week" label="This Week" indent />
-          <SidebarItem id="overdue" label="Overdue" indent />
-          <SidebarItem id="blocked" label="Blocked" indent />
-          <SidebarItem id="eventually" label="Eventually" indent />
-          <SidebarItem id="completed" label="Completed" indent />
+          <SidebarItem
+            id="this-week"
+            label="This Week"
+            indent
+            onClick={() => handleNavigate('this-week')}
+          />
+          <SidebarItem
+            id="overdue"
+            label="Overdue"
+            indent
+            onClick={() => handleNavigate('overdue')}
+          />
+          <SidebarItem
+            id="blocked"
+            label="Blocked"
+            indent
+            onClick={() => handleNavigate('blocked')}
+          />
+          <SidebarItem
+            id="eventually"
+            label="Eventually"
+            indent
+            onClick={() => handleNavigate('eventually')}
+          />
+          <SidebarItem
+            id="completed"
+            label="Completed"
+            indent
+            onClick={() => handleNavigate('completed')}
+          />
         </SidebarSection>
 
         {/* Projects section */}

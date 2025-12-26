@@ -1,121 +1,134 @@
-import { useState, useEffect } from 'react';
-import { invoke } from '@tauri-apps/api/core';
 import { Layout } from '@/components/layout';
-import { LoroDocStore } from '@/lib/loro/store';
+import { useNavigation, useObjects, type ViewType } from '@/contexts';
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState('');
-  const [loroStatus, setLoroStatus] = useState('Not initialized');
-  const [store] = useState(() => new LoroDocStore());
-
-  useEffect(() => {
-    // Initialize Loro store on mount
-    store
-      .initialize()
-      .then(() => setLoroStatus('Loro initialized successfully'))
-      .catch((err) => setLoroStatus(`Loro error: ${err}`));
-  }, [store]);
-
-  async function testTauriCommand() {
-    try {
-      const result = await invoke<string>('greet', { name: 'Ephemera' });
-      setGreetMsg(result);
-    } catch (error) {
-      setGreetMsg(`Error: ${error}`);
-    }
-  }
-
-  async function testLoroPersistence() {
-    try {
-      // Create a test document
-      const doc = store.createDocument('test-doc');
-      const text = doc.getText('content');
-      text.insert(0, 'Hello from Loro!');
-
-      // Save to disk
-      await store.save();
-      setLoroStatus('Loro document saved to disk');
-    } catch (error) {
-      setLoroStatus(`Loro save error: ${error}`);
-    }
-  }
-
-  async function loadLoroDocument() {
-    try {
-      await store.load();
-      const doc = store.getDocument('test-doc');
-      if (doc) {
-        const text = doc.getText('content');
-        setLoroStatus(`Loaded document content: "${text.toString()}"`);
-      } else {
-        setLoroStatus('No saved document found');
-      }
-    } catch (error) {
-      setLoroStatus(`Loro load error: ${error}`);
-    }
-  }
+/**
+ * Placeholder component for views not yet implemented
+ */
+function PlaceholderView({ view }: { view: ViewType }) {
+  const viewLabels: Record<ViewType, string> = {
+    inbox: 'Inbox',
+    today: 'Today',
+    'daily-notes': 'Daily Notes',
+    'this-week': 'This Week',
+    overdue: 'Overdue',
+    blocked: 'Blocked',
+    eventually: 'Eventually',
+    completed: 'Completed',
+    object: 'Object Detail',
+  };
 
   return (
-    <Layout inboxCount={12}>
-      <h1 className="font-ui" style={{ marginBottom: 'var(--spacing-lg)' }}>
-        Ephemera
+    <div
+      style={{
+        padding: 'var(--spacing-lg)',
+        textAlign: 'center',
+        color: 'var(--text-secondary)',
+      }}
+    >
+      <h1
+        className="font-ui"
+        style={{
+          marginBottom: 'var(--spacing-md)',
+          color: 'var(--text-primary)',
+        }}
+      >
+        {viewLabels[view]}
       </h1>
+      <p>This view will be implemented soon.</p>
+    </div>
+  );
+}
 
-      <section
-        style={{
-          marginBottom: 'var(--spacing-xl)',
-          padding: 'var(--spacing-md)',
-          background: 'var(--bg-raised)',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--border-subtle)',
-        }}
-      >
-        <h2
-          className="font-ui"
-          style={{ marginBottom: 'var(--spacing-md)', fontSize: '0.875rem' }}
-        >
-          Tauri Command Test
-        </h2>
-        <button onClick={testTauriCommand}>Test Tauri Command</button>
-        {greetMsg && (
-          <p
-            style={{
-              marginTop: 'var(--spacing-sm)',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            {greetMsg}
-          </p>
-        )}
-      </section>
+/**
+ * Object detail view placeholder (will be replaced in Commit 2)
+ */
+function ObjectDetailPlaceholder({ objectId }: { objectId: string }) {
+  const { navigateBack, canGoBack } = useNavigation();
 
-      <section
-        style={{
-          padding: 'var(--spacing-md)',
-          background: 'var(--bg-raised)',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--border-subtle)',
-        }}
-      >
-        <h2
-          className="font-ui"
-          style={{ marginBottom: 'var(--spacing-md)', fontSize: '0.875rem' }}
-        >
-          Loro CRDT Test
-        </h2>
-        <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
-          <button onClick={testLoroPersistence}>Create & Save</button>
-          <button onClick={loadLoroDocument}>Load Document</button>
-        </div>
-        <p
+  return (
+    <div style={{ padding: 'var(--spacing-lg)' }}>
+      {canGoBack && (
+        <button
+          onClick={navigateBack}
           style={{
-            marginTop: 'var(--spacing-sm)',
-            color: 'var(--text-secondary)',
+            marginBottom: 'var(--spacing-md)',
+            padding: 'var(--spacing-xs) var(--spacing-sm)',
+            background: 'var(--bg-raised)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-sm)',
+            cursor: 'pointer',
+            fontSize: 'var(--font-size-sm)',
           }}
         >
-          Status: {loroStatus}
-        </p>
-      </section>
+          ← Back
+        </button>
+      )}
+      <h1
+        className="font-ui"
+        style={{
+          marginBottom: 'var(--spacing-md)',
+          color: 'var(--text-primary)',
+        }}
+      >
+        Object Detail
+      </h1>
+      <p style={{ color: 'var(--text-secondary)' }}>
+        Viewing object: <code>{objectId}</code>
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Main content router based on current navigation state
+ */
+function MainContent() {
+  const { currentView, selectedObjectId } = useNavigation();
+  const { isLoading, error } = useObjects();
+
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          padding: 'var(--spacing-lg)',
+          textAlign: 'center',
+          color: 'var(--text-secondary)',
+        }}
+      >
+        Loading...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          padding: 'var(--spacing-lg)',
+          textAlign: 'center',
+          color: 'var(--text-secondary)',
+        }}
+      >
+        <p>Error initializing data store:</p>
+        <p style={{ color: 'var(--tag-red)' }}>{error.message}</p>
+      </div>
+    );
+  }
+
+  if (currentView === 'object' && selectedObjectId) {
+    return <ObjectDetailPlaceholder objectId={selectedObjectId} />;
+  }
+
+  return <PlaceholderView view={currentView} />;
+}
+
+function App() {
+  const { store } = useObjects();
+  const inboxCount = store?.getInboxed().length ?? 0;
+
+  return (
+    <Layout inboxCount={inboxCount}>
+      <MainContent />
     </Layout>
   );
 }
