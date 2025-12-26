@@ -8,7 +8,7 @@ import { BuiltInTypeIds } from './type-definition';
 /**
  * Task status options
  */
-export const TaskStatusOptions = ['todo', 'in-progress', 'done', 'cancelled'] as const;
+export const TaskStatusOptions = ['todo', 'in-progress', 'blocked', 'done'] as const;
 export type TaskStatus = (typeof TaskStatusOptions)[number];
 
 /**
@@ -107,9 +107,17 @@ export const TaskType: TypeDefinition = {
     {
       id: 'recurrence',
       name: 'Recurrence',
-      type: 'text',
+      type: 'recurrence',
       required: false,
       multiple: false,
+    },
+    {
+      id: 'sortOrder',
+      name: 'Sort Order',
+      type: 'number',
+      required: false,
+      multiple: false,
+      hidden: true,
     },
   ],
 };

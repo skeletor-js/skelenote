@@ -1,6 +1,8 @@
 import { Layout } from '@/components/layout';
 import { ObjectDetailView } from '@/components/object';
+import { TaskView } from '@/components/views';
 import { useNavigation, useObjects, type ViewType } from '@/contexts';
+import type { TaskFilter } from '@/lib/tasks/filters';
 
 /**
  * Placeholder component for views not yet implemented
@@ -234,6 +236,21 @@ function MainContent() {
 
   if (currentView === 'object' && selectedObjectId) {
     return <ObjectDetailView objectId={selectedObjectId} />;
+  }
+
+  // Task views
+  const taskViewConfig: Record<string, { filter: TaskFilter; title: string }> = {
+    today: { filter: 'today', title: 'Today' },
+    'this-week': { filter: 'this-week', title: 'This Week' },
+    overdue: { filter: 'overdue', title: 'Overdue' },
+    blocked: { filter: 'blocked', title: 'Blocked' },
+    eventually: { filter: 'eventually', title: 'Eventually' },
+    completed: { filter: 'completed', title: 'Completed' },
+  };
+
+  if (currentView in taskViewConfig) {
+    const config = taskViewConfig[currentView];
+    return <TaskView filter={config.filter} title={config.title} />;
   }
 
   return <PlaceholderView view={currentView} />;
