@@ -1,0 +1,1 @@
+export { ObjectDetailView } from './ObjectDetailView';

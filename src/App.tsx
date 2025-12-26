@@ -1,4 +1,5 @@
 import { Layout } from '@/components/layout';
+import { ObjectDetailView } from '@/components/object';
 import { useNavigation, useObjects, type ViewType } from '@/contexts';
 
 /**
@@ -39,45 +40,6 @@ function PlaceholderView({ view }: { view: ViewType }) {
   );
 }
 
-/**
- * Object detail view placeholder (will be replaced in Commit 2)
- */
-function ObjectDetailPlaceholder({ objectId }: { objectId: string }) {
-  const { navigateBack, canGoBack } = useNavigation();
-
-  return (
-    <div style={{ padding: 'var(--spacing-lg)' }}>
-      {canGoBack && (
-        <button
-          onClick={navigateBack}
-          style={{
-            marginBottom: 'var(--spacing-md)',
-            padding: 'var(--spacing-xs) var(--spacing-sm)',
-            background: 'var(--bg-raised)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-sm)',
-            cursor: 'pointer',
-            fontSize: 'var(--font-size-sm)',
-          }}
-        >
-          ← Back
-        </button>
-      )}
-      <h1
-        className="font-ui"
-        style={{
-          marginBottom: 'var(--spacing-md)',
-          color: 'var(--text-primary)',
-        }}
-      >
-        Object Detail
-      </h1>
-      <p style={{ color: 'var(--text-secondary)' }}>
-        Viewing object: <code>{objectId}</code>
-      </p>
-    </div>
-  );
-}
 
 /**
  * Main content router based on current navigation state
@@ -116,7 +78,7 @@ function MainContent() {
   }
 
   if (currentView === 'object' && selectedObjectId) {
-    return <ObjectDetailPlaceholder objectId={selectedObjectId} />;
+    return <ObjectDetailView objectId={selectedObjectId} />;
   }
 
   return <PlaceholderView view={currentView} />;
