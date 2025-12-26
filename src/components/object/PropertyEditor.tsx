@@ -9,6 +9,7 @@ import {
   EmailInput,
   PhoneInput,
   RelationPicker,
+  RecurrenceEditor,
 } from './editors';
 
 interface PropertyEditorProps {
@@ -144,6 +145,15 @@ export function PropertyEditor({
         <div style={placeholderStyle} id={id}>
           {formatValue(value)} <span style={{ opacity: 0.6 }}>(file picker - deferred)</span>
         </div>
+      );
+
+    case 'recurrence':
+      return (
+        <RecurrenceEditor
+          id={id}
+          value={typeof value === 'string' ? value : null}
+          onChange={onChange}
+        />
       );
 
     default:

@@ -107,7 +107,7 @@ export const TaskType: TypeDefinition = {
     {
       id: 'recurrence',
       name: 'Recurrence',
-      type: 'text',
+      type: 'recurrence',
       required: false,
       multiple: false,
     },

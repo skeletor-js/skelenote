@@ -10,3 +10,4 @@ export { PhoneInput } from './PhoneInput';
 export { RelationPicker } from './RelationPicker';
 export { RelationChip } from './RelationChip';
 export { ObjectSearchModal } from './ObjectSearchModal';
+export { RecurrenceEditor, parseRecurrenceValue, formatRecurrenceDisplay, type RecurrenceValue } from './RecurrenceEditor';

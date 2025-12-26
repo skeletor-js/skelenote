@@ -15,7 +15,8 @@ export type PropertyType =
   | 'url'
   | 'email'
   | 'phone'
-  | 'file';
+  | 'file'
+  | 'recurrence';
 
 /**
  * Property value types that can be stored
@@ -139,6 +140,13 @@ export function validatePropertyValue(
       }
       if (!value.every((v) => typeof v === 'string')) {
         return { valid: false, error: `Property "${definition.name}" must contain only string IDs` };
+      }
+      break;
+
+    case 'recurrence':
+      // Recurrence is stored as a JSON string or null
+      if (typeof value !== 'string') {
+        return { valid: false, error: `Property "${definition.name}" must be a string` };
       }
       break;
   }
