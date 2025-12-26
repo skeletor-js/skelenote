@@ -89,3 +89,86 @@
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
+
+/* Date picker styles */
+.editor-date {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.editor-date__input {
+  flex: 1;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.editor-date__input:hover {
+  border-color: var(--border-strong);
+}
+
+.editor-date__input:focus {
+  border-color: var(--text-primary);
+  background: var(--bg-base);
+}
+
+.editor-date__clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.editor-date__clear:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+/* Select styles */
+.editor-select {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--spacing-sm) center;
+  padding-right: calc(var(--spacing-sm) * 2 + 12px);
+}
+
+.editor-select:hover {
+  border-color: var(--border-strong);
+}
+
+.editor-select:focus {
+  border-color: var(--text-primary);
+  background-color: var(--bg-base);
+}
+
+.editor-select__placeholder {
+  color: var(--text-muted);
+}

@@ -2,3 +2,5 @@
 export { TextInput } from './TextInput';
 export { NumberInput } from './NumberInput';
 export { Checkbox } from './Checkbox';
+export { DatePicker } from './DatePicker';
+export { Select } from './Select';

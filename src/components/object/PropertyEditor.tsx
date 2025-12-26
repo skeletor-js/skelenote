@@ -1,5 +1,5 @@
 import type { PropertyDefinition, PropertyValue } from '@/lib/types';
-import { TextInput, NumberInput, Checkbox } from './editors';
+import { TextInput, NumberInput, Checkbox, DatePicker, Select } from './editors';
 
 interface PropertyEditorProps {
   id: string;
@@ -67,20 +67,22 @@ export function PropertyEditor({
 
     case 'date':
       return (
-        <div style={placeholderStyle} id={id}>
-          {value ? new Date(value as number).toLocaleDateString() : '—'}{' '}
-          <span style={{ opacity: 0.6 }}>(date picker)</span>
-        </div>
+        <DatePicker
+          id={id}
+          value={typeof value === 'number' ? value : null}
+          onChange={onChange}
+          showTime={config?.showTime}
+        />
       );
 
     case 'select':
       return (
-        <div style={placeholderStyle} id={id}>
-          {formatValue(value)}{' '}
-          <span style={{ opacity: 0.6 }}>
-            (select: {config?.options?.join(', ') ?? 'no options'})
-          </span>
-        </div>
+        <Select
+          id={id}
+          value={typeof value === 'string' ? value : null}
+          options={config?.options ?? []}
+          onChange={onChange}
+        />
       );
 
     case 'relation':
