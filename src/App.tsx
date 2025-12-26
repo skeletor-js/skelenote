@@ -1,121 +1,251 @@
-import { useState, useEffect } from 'react';
-import { invoke } from '@tauri-apps/api/core';
 import { Layout } from '@/components/layout';
-import { LoroDocStore } from '@/lib/loro/store';
+import { ObjectDetailView } from '@/components/object';
+import { useNavigation, useObjects, type ViewType } from '@/contexts';
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState('');
-  const [loroStatus, setLoroStatus] = useState('Not initialized');
-  const [store] = useState(() => new LoroDocStore());
+/**
+ * Placeholder component for views not yet implemented
+ */
+function PlaceholderView({ view }: { view: ViewType }) {
+  const { store, refreshData } = useObjects();
+  const { navigateToObject } = useNavigation();
 
-  useEffect(() => {
-    // Initialize Loro store on mount
-    store
-      .initialize()
-      .then(() => setLoroStatus('Loro initialized successfully'))
-      .catch((err) => setLoroStatus(`Loro error: ${err}`));
-  }, [store]);
+  const viewLabels: Record<ViewType, string> = {
+    inbox: 'Inbox',
+    today: 'Today',
+    'daily-notes': 'Daily Notes',
+    'this-week': 'This Week',
+    overdue: 'Overdue',
+    blocked: 'Blocked',
+    eventually: 'Eventually',
+    completed: 'Completed',
+    object: 'Object Detail',
+  };
 
-  async function testTauriCommand() {
-    try {
-      const result = await invoke<string>('greet', { name: 'Ephemera' });
-      setGreetMsg(result);
-    } catch (error) {
-      setGreetMsg(`Error: ${error}`);
-    }
-  }
+  const handleCreateTestNote = () => {
+    if (!store) return;
+    const note = store.create({
+      typeId: 'note',
+      properties: {
+        title: `Test Note ${Date.now()}`,
+        isDailyNote: false,
+      },
+    });
+    refreshData();
+    navigateToObject(note.id);
+  };
 
-  async function testLoroPersistence() {
-    try {
-      // Create a test document
-      const doc = store.createDocument('test-doc');
-      const text = doc.getText('content');
-      text.insert(0, 'Hello from Loro!');
+  const handleCreateTestTask = () => {
+    if (!store) return;
+    const task = store.create({
+      typeId: 'task',
+      properties: {
+        title: `Test Task ${Date.now()}`,
+        status: 'todo',
+        priority: 'medium',
+      },
+    });
+    refreshData();
+    navigateToObject(task.id);
+  };
 
-      // Save to disk
-      await store.save();
-      setLoroStatus('Loro document saved to disk');
-    } catch (error) {
-      setLoroStatus(`Loro save error: ${error}`);
-    }
-  }
+  const handleCreateTestPerson = () => {
+    if (!store) return;
+    const person = store.create({
+      typeId: 'person',
+      properties: {
+        name: `Test Person ${Date.now()}`,
+      },
+    });
+    refreshData();
+    navigateToObject(person.id);
+  };
 
-  async function loadLoroDocument() {
-    try {
-      await store.load();
-      const doc = store.getDocument('test-doc');
-      if (doc) {
-        const text = doc.getText('content');
-        setLoroStatus(`Loaded document content: "${text.toString()}"`);
-      } else {
-        setLoroStatus('No saved document found');
-      }
-    } catch (error) {
-      setLoroStatus(`Loro load error: ${error}`);
-    }
-  }
+  const handleCreateTestLink = () => {
+    if (!store) return;
+    const link = store.create({
+      typeId: 'link',
+      properties: {
+        url: 'https://example.com',
+        title: `Test Link ${Date.now()}`,
+      },
+    });
+    refreshData();
+    navigateToObject(link.id);
+  };
+
+  const handleCreateTestProject = () => {
+    if (!store) return;
+    const project = store.create({
+      typeId: 'project',
+      properties: {
+        name: `Test Project ${Date.now()}`,
+        status: 'active',
+      },
+    });
+    refreshData();
+    navigateToObject(project.id);
+  };
+
+  const handleCreateTestTag = () => {
+    if (!store) return;
+    const tag = store.create({
+      typeId: 'tag',
+      properties: {
+        name: `test-tag-${Date.now()}`,
+      },
+    });
+    refreshData();
+    navigateToObject(tag.id);
+  };
+
+  // Get all objects for testing
+  const allObjects = store?.getAll() ?? [];
 
   return (
-    <Layout inboxCount={12}>
-      <h1 className="font-ui" style={{ marginBottom: 'var(--spacing-lg)' }}>
-        Ephemera
+    <div
+      style={{
+        padding: 'var(--spacing-lg)',
+        textAlign: 'center',
+        color: 'var(--text-secondary)',
+      }}
+    >
+      <h1
+        className="font-ui"
+        style={{
+          marginBottom: 'var(--spacing-md)',
+          color: 'var(--text-primary)',
+        }}
+      >
+        {viewLabels[view]}
       </h1>
+      <p style={{ marginBottom: 'var(--spacing-lg)' }}>
+        This view will be implemented soon.
+      </p>
 
-      <section
-        style={{
-          marginBottom: 'var(--spacing-xl)',
-          padding: 'var(--spacing-md)',
-          background: 'var(--bg-raised)',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--border-subtle)',
-        }}
-      >
-        <h2
-          className="font-ui"
-          style={{ marginBottom: 'var(--spacing-md)', fontSize: '0.875rem' }}
-        >
-          Tauri Command Test
-        </h2>
-        <button onClick={testTauriCommand}>Test Tauri Command</button>
-        {greetMsg && (
-          <p
-            style={{
-              marginTop: 'var(--spacing-sm)',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            {greetMsg}
-          </p>
-        )}
-      </section>
-
-      <section
+      {/* Test controls - will be removed later */}
+      <div
         style={{
           padding: 'var(--spacing-md)',
           background: 'var(--bg-raised)',
           borderRadius: 'var(--radius-md)',
           border: '1px solid var(--border-subtle)',
+          textAlign: 'left',
+          maxWidth: '400px',
+          margin: '0 auto',
         }}
       >
         <h2
           className="font-ui"
-          style={{ marginBottom: 'var(--spacing-md)', fontSize: '0.875rem' }}
-        >
-          Loro CRDT Test
-        </h2>
-        <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
-          <button onClick={testLoroPersistence}>Create & Save</button>
-          <button onClick={loadLoroDocument}>Load Document</button>
-        </div>
-        <p
           style={{
-            marginTop: 'var(--spacing-sm)',
-            color: 'var(--text-secondary)',
+            fontSize: 'var(--font-size-sm)',
+            marginBottom: 'var(--spacing-md)',
+            color: 'var(--text-muted)',
           }}
         >
-          Status: {loroStatus}
-        </p>
-      </section>
+          Test Controls (temporary)
+        </h2>
+        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-md)', flexWrap: 'wrap' }}>
+          <button onClick={handleCreateTestNote}>Create Note</button>
+          <button onClick={handleCreateTestTask}>Create Task</button>
+          <button onClick={handleCreateTestPerson}>Create Person</button>
+          <button onClick={handleCreateTestLink}>Create Link</button>
+          <button onClick={handleCreateTestProject}>Create Project</button>
+          <button onClick={handleCreateTestTag}>Create Tag</button>
+        </div>
+
+        {allObjects.length > 0 && (
+          <>
+            <h3
+              className="font-ui"
+              style={{
+                fontSize: 'var(--font-size-xs)',
+                marginBottom: 'var(--spacing-sm)',
+                color: 'var(--text-muted)',
+              }}
+            >
+              Existing Objects ({allObjects.length})
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xs)' }}>
+              {allObjects.slice(0, 5).map((obj) => (
+                <button
+                  key={obj.id}
+                  onClick={() => navigateToObject(obj.id)}
+                  style={{
+                    textAlign: 'left',
+                    padding: 'var(--spacing-xs) var(--spacing-sm)',
+                    background: 'var(--bg-sunken)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {obj.typeId}: {String(obj.properties.title ?? obj.properties.name ?? obj.id)}
+                </button>
+              ))}
+              {allObjects.length > 5 && (
+                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+                  ...and {allObjects.length - 5} more
+                </p>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+/**
+ * Main content router based on current navigation state
+ */
+function MainContent() {
+  const { currentView, selectedObjectId } = useNavigation();
+  const { isLoading, error } = useObjects();
+
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          padding: 'var(--spacing-lg)',
+          textAlign: 'center',
+          color: 'var(--text-secondary)',
+        }}
+      >
+        Loading...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          padding: 'var(--spacing-lg)',
+          textAlign: 'center',
+          color: 'var(--text-secondary)',
+        }}
+      >
+        <p>Error initializing data store:</p>
+        <p style={{ color: 'var(--tag-red)' }}>{error.message}</p>
+      </div>
+    );
+  }
+
+  if (currentView === 'object' && selectedObjectId) {
+    return <ObjectDetailView objectId={selectedObjectId} />;
+  }
+
+  return <PlaceholderView view={currentView} />;
+}
+
+function App() {
+  const { store } = useObjects();
+  const inboxCount = store?.getInboxed().length ?? 0;
+
+  return (
+    <Layout inboxCount={inboxCount}>
+      <MainContent />
     </Layout>
   );
 }

@@ -35,6 +35,8 @@ export interface PropertyConfig {
   options?: string[];
   /** Target type IDs for relation properties (if empty, any type allowed) */
   targetTypeIds?: string[];
+  /** Whether to include time selection for date properties */
+  showTime?: boolean;
 }
 
 /**

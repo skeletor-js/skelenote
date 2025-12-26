@@ -1,0 +1,49 @@
+/* MentionSuggestion - Suggestion menu styling */
+
+.mention-suggestion-menu {
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 300px;
+  overflow-y: auto;
+  min-width: 200px;
+}
+
+.mention-suggestion-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.mention-suggestion-item:hover,
+.mention-suggestion-item--selected {
+  background: var(--surface-hover);
+}
+
+.mention-suggestion-item__title {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mention-suggestion-item__type {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+/* Empty state */
+.mention-suggestion-empty {
+  padding: var(--spacing-sm);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
