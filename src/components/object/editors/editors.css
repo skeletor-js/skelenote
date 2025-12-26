@@ -333,3 +333,114 @@
   background: var(--surface-hover);
   border-color: var(--border-strong);
 }
+
+/* Recurrence editor styles */
+.recurrence-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.recurrence-editor__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: var(--bg-sunken);
+  border-radius: var(--radius-sm);
+}
+
+.recurrence-editor__label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.recurrence-editor__days {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.recurrence-editor__day-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.recurrence-editor__day-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 28px;
+  padding: 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  background: var(--bg-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.recurrence-editor__day-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.recurrence-editor__day-btn--active {
+  color: var(--bg-base);
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+.recurrence-editor__day-btn--active:hover {
+  color: var(--bg-base);
+  background: var(--text-primary);
+  opacity: 0.9;
+}
+
+.recurrence-editor__day-of-month {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.recurrence-editor__monthly {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.recurrence-editor__monthly-mode {
+  display: flex;
+  align-items: center;
+}
+
+.recurrence-editor__nth-weekday {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.recurrence-editor__yearly {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.recurrence-editor__hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+/* Narrow select variant */
+.editor-select--narrow {
+  width: auto;
+  min-width: 60px;
+}
