@@ -12,6 +12,7 @@ import {
   sortTasks,
   groupTasksBy,
 } from '@/lib/tasks/filters';
+import { prepareNextRecurringTask } from '@/lib/tasks/recurrence';
 
 export interface UseTasksOptions {
   /** Which task view filter to apply */
@@ -90,17 +91,22 @@ export function useTasks(options: UseTasksOptions): UseTasksResult {
       const currentStatus = task.properties.status as string;
       const newStatus = currentStatus === 'done' ? 'todo' : 'done';
 
-      // Check if task has recurrence
-      const recurrence = task.properties.recurrence as string | null;
+      if (newStatus === 'done') {
+        // Check if this is a recurring task
+        const nextTaskProperties = prepareNextRecurringTask(task);
 
-      if (newStatus === 'done' && recurrence) {
-        // TODO: Handle recurring task completion in Commit 4
-        // For now, just mark as done
-        store.setProperty(taskId, 'status', newStatus);
-      } else {
-        store.setProperty(taskId, 'status', newStatus);
+        if (nextTaskProperties) {
+          // This is a recurring task - create the next instance
+          store.create({
+            typeId: BuiltInTypeIds.TASK,
+            properties: nextTaskProperties,
+            inboxed: false,
+          });
+        }
       }
 
+      // Update the current task's status
+      store.setProperty(taskId, 'status', newStatus);
       refreshData();
     },
     [store, refreshData]
