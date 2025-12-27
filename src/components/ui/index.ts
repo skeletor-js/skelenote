@@ -5,3 +5,4 @@ export { Toast } from './Toast';
 export { ToastContainer } from './ToastContainer';
 export { ConfirmDialog, type ConfirmDialogProps, type ConfirmDialogVariant } from './ConfirmDialog';
 export { ContextMenu, type ContextMenuItem, type ContextMenuProps } from './ContextMenu';
+export { EmptyState } from './EmptyState';

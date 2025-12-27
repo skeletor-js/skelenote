@@ -5,6 +5,7 @@
 
 import { useInbox } from '@/hooks/useInbox';
 import { useNavigation } from '@/contexts';
+import { EmptyState } from '@/components/ui';
 import { InboxRow } from './InboxRow';
 import './InboxView.css';
 
@@ -33,9 +34,7 @@ export function InboxView() {
       {/* Content */}
       <div className="inbox-view__content">
         {items.length === 0 ? (
-          <div className="inbox-view__empty">
-            <p className="inbox-view__empty-message">All clear! Nothing to process.</p>
-          </div>
+          <EmptyState message="All clear! Nothing to process." size="large" />
         ) : (
           <div className="inbox-view__list">
             {items.map((item) => (

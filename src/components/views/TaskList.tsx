@@ -4,6 +4,7 @@
 
 import type { EphemeraObject } from '@/lib/types';
 import { useNavigation } from '@/contexts';
+import { EmptyState } from '@/components/ui';
 import { TaskRow } from './TaskRow';
 import './TaskList.css';
 
@@ -27,11 +28,7 @@ export function TaskList({
   const { navigateToObject } = useNavigation();
 
   if (tasks.length === 0) {
-    return (
-      <div className="task-list task-list--empty">
-        <p className="task-list__empty-message">{emptyMessage}</p>
-      </div>
-    );
+    return <EmptyState message={emptyMessage} size="large" />;
   }
 
   return (

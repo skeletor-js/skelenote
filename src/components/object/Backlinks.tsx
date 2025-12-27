@@ -5,6 +5,7 @@
 import { useState, useMemo } from 'react';
 import { useObjects, useTypeRegistry } from '@/contexts';
 import { createRelationHelper } from '@/lib/loro';
+import { EmptyState } from '@/components/ui';
 import { BacklinkItem } from './BacklinkItem';
 import './Backlinks.css';
 
@@ -74,7 +75,7 @@ export function Backlinks({ objectId }: BacklinksProps) {
       {isExpanded && (
         <div className="backlinks__list">
           {groupedBacklinks.length === 0 ? (
-            <p className="backlinks__empty">No objects link to this one</p>
+            <EmptyState message="No objects link to this one" size="small" />
           ) : (
             groupedBacklinks.map(({ sourceId, propertyNames }) => (
               <BacklinkItem

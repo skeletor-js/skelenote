@@ -17,12 +17,12 @@ interface TaskViewProps {
 
 /** Empty state messages for each filter */
 const EMPTY_MESSAGES: Record<TaskFilter, string> = {
-  today: 'No tasks due today',
-  'this-week': 'No tasks due this week',
-  overdue: 'No overdue tasks',
-  blocked: 'No blocked tasks',
-  eventually: 'No future tasks',
-  completed: 'No completed tasks yet',
+  today: 'No tasks due today.',
+  'this-week': 'No tasks due this week.',
+  overdue: 'Nothing overdue. Nice!',
+  blocked: 'No blocked tasks.',
+  eventually: 'No future tasks scheduled.',
+  completed: 'No completed tasks yet.',
 };
 
 export function TaskView({ filter, title }: TaskViewProps) {
