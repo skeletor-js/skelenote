@@ -14,6 +14,8 @@ export class LoroDocStore {
   private syncClient: SyncClient | null = null;
   private onRemoteChangeCallback: (() => void) | null = null;
   private isImporting = false; // Flag to prevent sync loops
+  private syncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastExportedData: Uint8Array | null = null; // Cache to avoid re-exporting
 
   /**
    * Initialize the store by setting up the data directory
@@ -121,7 +123,7 @@ export class LoroDocStore {
   }
 
   /**
-   * Save all documents to disk and broadcast to connected devices
+   * Save all documents to disk (does not broadcast)
    */
   async save(): Promise<void> {
     if (!this.initialized || !this.dataPath) {
@@ -129,14 +131,33 @@ export class LoroDocStore {
     }
 
     const data = this.exportAll();
+    this.lastExportedData = data; // Cache for sync
     const filePath = await join(this.dataPath, 'store.loro');
 
     await writeFile(filePath, data);
+  }
 
-    // Automatically broadcast to other devices when connected
-    if (this.syncClient && this.isSyncConnected() && !this.isImporting) {
-      this.syncClient.sendUpdate(data);
+  /**
+   * Broadcast current state to connected devices (debounced, no disk write)
+   * Call this frequently - it will debounce to avoid flooding
+   */
+  sync(): void {
+    if (!this.syncClient || !this.isSyncConnected() || this.isImporting) {
+      return;
     }
+
+    // Debounce: wait 100ms before actually sending
+    if (this.syncDebounceTimer) {
+      clearTimeout(this.syncDebounceTimer);
+    }
+
+    this.syncDebounceTimer = setTimeout(() => {
+      this.syncDebounceTimer = null;
+      if (this.syncClient && this.isSyncConnected() && !this.isImporting) {
+        const data = this.exportAll();
+        this.syncClient.sendUpdate(data);
+      }
+    }, 100);
   }
 
   /**
