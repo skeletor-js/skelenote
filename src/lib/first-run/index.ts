@@ -8,7 +8,7 @@ import type { ObjectStore } from '@/lib/loro';
 import { serializeBlockNoteDocument } from '@/lib/editor';
 import { getWelcomeNoteBlocks } from './welcome-content';
 
-const FIRST_RUN_KEY = 'ephemera:firstRunComplete';
+const FIRST_RUN_KEY = 'skelenote:firstRunComplete';
 
 /**
  * Check if this is the first time the app is running
@@ -37,7 +37,7 @@ export function createWelcomeNote(
   const welcomeNote = store.create({
     typeId: 'note',
     properties: {
-      title: 'Welcome to Ephemera',
+      title: 'Welcome to skelenote',
       isDailyNote: false,
     },
     withContent: true,

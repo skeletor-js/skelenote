@@ -1,5 +1,5 @@
 /**
- * Loro document schema for Ephemera object storage
+ * Loro document schema for skelenote object storage
  *
  * Document Structure:
  * - Root LoroDoc contains:

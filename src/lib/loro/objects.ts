@@ -1,5 +1,5 @@
 /**
- * CRUD operations for Ephemera objects using Loro CRDT
+ * CRUD operations for skelenote objects using Loro CRDT
  */
 
 import type { LoroDoc } from 'loro-crdt';
@@ -41,7 +41,7 @@ export class ValidationError extends Error {
 }
 
 /**
- * ObjectStore provides CRUD operations for Ephemera objects
+ * ObjectStore provides CRUD operations for skelenote objects
  */
 export class ObjectStore {
   private doc: LoroDoc;

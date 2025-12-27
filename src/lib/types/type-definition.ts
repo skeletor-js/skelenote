@@ -1,5 +1,5 @@
 /**
- * Type definition interfaces for the Ephemera object model
+ * Type definition interfaces for the skelenote object model
  */
 
 import type { PropertyDefinition } from './property';

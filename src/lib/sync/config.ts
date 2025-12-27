@@ -4,7 +4,7 @@
  * Persists sync server configuration to localStorage.
  */
 
-const SYNC_SERVER_URL_KEY = 'ephemera:syncServerUrl';
+const SYNC_SERVER_URL_KEY = 'skelenote:syncServerUrl';
 
 export interface SyncServerConfig {
   serverUrl: string;

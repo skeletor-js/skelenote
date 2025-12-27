@@ -1,12 +1,12 @@
 [package]
-name = "ephemera"
+name = "skelenote"
 version = "0.1.0"
 description = "Object-based note app with local-first sync"
 authors = [""]
 edition = "2021"
 
 [lib]
-name = "ephemera_lib"
+name = "skelenote_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [build-dependencies]

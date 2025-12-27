@@ -1,5 +1,5 @@
 /**
- * Ephemera Sync Worker
+ * skelenote Sync Worker
  *
  * Cloudflare Worker entry point that routes WebSocket connections
  * to Durable Objects for stateful sync relay.

@@ -1,5 +1,5 @@
 /**
- * Relation and backlink utilities for Ephemera objects
+ * Relation and backlink utilities for skelenote objects
  */
 
 import type {
