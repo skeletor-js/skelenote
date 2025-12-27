@@ -246,6 +246,13 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
         <div className="sidebar__controls">
           <button
             className="sidebar__control-btn"
+            onClick={() => handleNavigate('settings')}
+            aria-label="Settings"
+          >
+            ⚙
+          </button>
+          <button
+            className="sidebar__control-btn"
             onClick={toggleTheme}
             aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
           >

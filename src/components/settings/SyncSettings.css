@@ -1,0 +1,190 @@
+.sync-settings {
+  max-width: 500px;
+}
+
+.sync-settings__title {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-lg) 0;
+}
+
+.sync-settings__section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.sync-settings__label {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.sync-settings__help {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.sync-settings__input-row {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.sync-settings__input {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  background: var(--bg-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-fast);
+}
+
+.sync-settings__input:focus {
+  outline: none;
+  border-color: var(--border-strong);
+}
+
+.sync-settings__input:disabled {
+  background: var(--bg-sunken);
+  color: var(--text-secondary);
+}
+
+.sync-settings__error {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  color: var(--tag-red);
+  margin: var(--spacing-xs) 0 0 0;
+}
+
+.sync-settings__status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.sync-settings__status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.sync-settings__status-dot--connected {
+  background: var(--tag-green);
+}
+
+.sync-settings__status-dot--syncing {
+  background: var(--tag-blue);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.sync-settings__status-dot--connecting {
+  background: var(--tag-yellow);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.sync-settings__status-dot--disconnected {
+  background: var(--text-muted);
+}
+
+.sync-settings__button-row {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.sync-settings__button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.sync-settings__button--primary {
+  color: var(--bg-base);
+  background: var(--text-primary);
+  border: 1px solid var(--text-primary);
+}
+
+.sync-settings__button--primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.sync-settings__button--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sync-settings__button--secondary {
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+}
+
+.sync-settings__button--secondary:hover {
+  background: var(--surface-hover);
+}
+
+.sync-settings__divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: var(--spacing-xl) 0;
+}
+
+.sync-settings__id-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.sync-settings__id {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  background: var(--bg-sunken);
+  border-radius: var(--radius-sm);
+  word-break: break-all;
+}
+
+.sync-settings__copy-btn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.sync-settings__copy-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
