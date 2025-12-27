@@ -30,18 +30,31 @@ export const Mention = createReactInlineContentSpec(
       const { objectId, objectName, objectTypeId } = props.inlineContent.props;
       const { store } = useObjects();
 
-      // Dynamically look up the current object name
-      let displayName = objectName || 'Unknown';
+      // Don't render if object was deleted
       if (store && objectId) {
         const obj = store.get(objectId);
-        if (obj) {
-          const currentName = (obj.properties.title ?? obj.properties.name) as string | undefined;
-          if (currentName) {
-            displayName = currentName;
-          }
+        if (!obj) {
+          // Return empty span to not break inline content flow
+          return <span />;
         }
+
+        // Use current name from object (reflects title changes)
+        const currentName = (obj.properties.title ?? obj.properties.name) as string | undefined;
+        const displayName = currentName || objectName || 'Unknown';
+
+        return (
+          <span
+            className="mention-chip"
+            data-object-id={objectId}
+            data-type-id={objectTypeId}
+            contentEditable={false}
+          >
+            @{displayName}
+          </span>
+        );
       }
 
+      // Fallback if store not available
       return (
         <span
           className="mention-chip"
@@ -49,7 +62,7 @@ export const Mention = createReactInlineContentSpec(
           data-type-id={objectTypeId}
           contentEditable={false}
         >
-          @{displayName}
+          @{objectName || 'Unknown'}
         </span>
       );
     },

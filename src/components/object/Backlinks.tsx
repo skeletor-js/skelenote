@@ -26,10 +26,17 @@ export function Backlinks({ objectId }: BacklinksProps) {
   }, [store, typeRegistry, objectId]);
 
   // Group backlinks by source object to avoid duplicates in display
+  // Also filter out deleted source objects
   const groupedBacklinks = useMemo(() => {
+    if (!store) return [];
+
     const grouped = new Map<string, { sourceId: string; propertyNames: string[] }>();
 
     for (const backlink of backlinks) {
+      // Skip if source object was deleted
+      const sourceObj = store.get(backlink.sourceId);
+      if (!sourceObj) continue;
+
       const existing = grouped.get(backlink.sourceId);
       if (existing) {
         if (!existing.propertyNames.includes(backlink.propertyName)) {
@@ -44,7 +51,7 @@ export function Backlinks({ objectId }: BacklinksProps) {
     }
 
     return Array.from(grouped.values());
-  }, [backlinks]);
+  }, [store, backlinks]);
 
   const backlinkCount = groupedBacklinks.length;
 

@@ -19,25 +19,9 @@ export function RelationChip({ objectId, onRemove, showRemove = true }: Relation
   if (!store) return null;
 
   const object = store.get(objectId);
+  // Don't render if object was deleted
   if (!object) {
-    return (
-      <span className="relation-chip relation-chip--missing">
-        Missing object
-        {showRemove && onRemove && (
-          <button
-            type="button"
-            className="relation-chip__remove"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove();
-            }}
-            aria-label="Remove relation"
-          >
-            x
-          </button>
-        )}
-      </span>
-    );
+    return null;
   }
 
   const typeDef = typeRegistry.get(object.typeId);
