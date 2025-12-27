@@ -9,3 +9,9 @@ export { useLinkToDaily } from './useLinkToDaily';
 export { useSearch, type UseSearchOptions, type UseSearchResult } from './useSearch';
 export { useConnectionStatus } from './useConnectionStatus';
 export { useSync } from './useSync';
+export {
+  useConfirmDialog,
+  type ConfirmOptions,
+  type ConfirmDialogState,
+  type UseConfirmDialogResult,
+} from './useConfirmDialog';
