@@ -15,7 +15,6 @@ export class LoroDocStore {
   private onRemoteChangeCallback: (() => void) | null = null;
   private isImporting = false; // Flag to prevent sync loops
   private syncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-  private lastExportedData: Uint8Array | null = null; // Cache to avoid re-exporting
 
   /**
    * Initialize the store by setting up the data directory
@@ -131,7 +130,6 @@ export class LoroDocStore {
     }
 
     const data = this.exportAll();
-    this.lastExportedData = data; // Cache for sync
     const filePath = await join(this.dataPath, 'store.loro');
 
     await writeFile(filePath, data);
