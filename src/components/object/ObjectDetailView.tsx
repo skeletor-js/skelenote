@@ -6,6 +6,7 @@ import { Backlinks } from './Backlinks';
 import { Editor } from '@/components/editor';
 import { DailyNoteHeader } from '@/components/daily';
 import { ConfirmDialog } from '@/components/ui';
+import { removeMentionsFromContent } from '@/lib/editor';
 import type { PropertyValue } from '@/lib/types';
 import {
   useObjects,
@@ -45,6 +46,24 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
     });
 
     if (confirmed) {
+      // Clean up mentions of this object in other objects' content
+      const allObjects = store.getAll();
+      for (const obj of allObjects) {
+        if (obj.id === objectId) continue; // Skip the object being deleted
+
+        try {
+          const content = store.getContent(obj.id);
+          if (content) {
+            const cleanedContent = removeMentionsFromContent(content, objectId);
+            if (cleanedContent) {
+              store.setContent(obj.id, cleanedContent);
+            }
+          }
+        } catch {
+          // Content might not exist for this object, skip
+        }
+      }
+
       store.delete(objectId);
       refreshData();
       addToast({

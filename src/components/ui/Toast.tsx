@@ -80,7 +80,7 @@ export function Toast({ toast, onDismiss }: ToastProps) {
         aria-label="Dismiss notification"
         type="button"
       >
-        \u00D7
+        {'\u00D7'}
       </button>
     </div>
   );
