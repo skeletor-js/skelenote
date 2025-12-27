@@ -1,5 +1,5 @@
 /**
- * Query helpers for filtering and sorting Ephemera objects
+ * Query helpers for filtering and sorting skelenote objects
  */
 
 import type { EphemeraObject, PropertyValue } from '../types';

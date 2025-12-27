@@ -1,11 +1,11 @@
 /**
- * Core object interfaces for the Ephemera object model
+ * Core object interfaces for the skelenote object model
  */
 
 import type { PropertyValue } from './property';
 
 /**
- * The core Object type - all data in Ephemera is stored as Objects
+ * The core Object type - all data in skelenote is stored as Objects
  */
 export interface EphemeraObject {
   /** Unique identifier (UUID) */

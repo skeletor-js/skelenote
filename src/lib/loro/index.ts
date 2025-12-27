@@ -1,5 +1,5 @@
 /**
- * Loro CRDT storage layer for Ephemera
+ * Loro CRDT storage layer for skelenote
  */
 
 // Store

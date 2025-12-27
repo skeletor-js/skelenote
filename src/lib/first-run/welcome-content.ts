@@ -12,7 +12,7 @@ export function getWelcomeNoteBlocks(dailyNoteId: string, dailyNoteName: string)
       id: 'welcome-1',
       type: 'heading',
       props: { level: 2 },
-      content: [{ type: 'text', text: 'Welcome to Ephemera', styles: {} }],
+      content: [{ type: 'text', text: 'Welcome to skelenote', styles: {} }],
       children: [],
     },
     {
@@ -22,7 +22,7 @@ export function getWelcomeNoteBlocks(dailyNoteId: string, dailyNoteName: string)
       content: [
         {
           type: 'text',
-          text: 'Ephemera is a personal knowledge base built around objects and connections. Here are the key concepts to get you started:',
+          text: 'skelenote is a personal knowledge base built around objects and connections. Here are the key concepts to get you started:',
           styles: {},
         },
       ],

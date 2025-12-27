@@ -28,7 +28,7 @@ Implement read-only sync with Google Calendar to automatically create and update
 ### OAuth Flow in Tauri
 1. Open Google OAuth URL in system browser
 2. User authorizes app
-3. Redirect to custom URL scheme (e.g., `ephemera://oauth`)
+3. Redirect to custom URL scheme (e.g., `skelenote://oauth`)
 4. Tauri captures redirect, extracts auth code
 5. Exchange code for access/refresh tokens
 6. Store tokens securely

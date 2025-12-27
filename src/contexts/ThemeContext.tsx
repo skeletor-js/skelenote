@@ -16,7 +16,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-const STORAGE_KEY = 'ephemera-theme';
+const STORAGE_KEY = 'skelenote-theme';
 
 function getInitialTheme(): Theme {
   // Check localStorage first

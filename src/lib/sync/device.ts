@@ -4,8 +4,8 @@
  * Generates and persists unique device and user IDs for sync.
  */
 
-const USER_ID_KEY = 'ephemera:userId';
-const DEVICE_ID_KEY = 'ephemera:deviceId';
+const USER_ID_KEY = 'skelenote:userId';
+const DEVICE_ID_KEY = 'skelenote:deviceId';
 
 /**
  * Generate a random UUID v4

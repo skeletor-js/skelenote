@@ -5,7 +5,7 @@ import type { SyncClient } from '../sync';
 
 /**
  * LoroDocStore manages Loro CRDT documents with persistence to the local file system.
- * Uses Tauri's app_data_dir for storage (~/.local/share/ephemera or ~/Library/Application Support/ephemera)
+ * Uses Tauri's app_data_dir for storage (~/.local/share/skelenote or ~/Library/Application Support/skelenote)
  */
 export class LoroDocStore {
   private documents: Map<string, LoroDoc> = new Map();

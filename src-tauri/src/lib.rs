@@ -1,7 +1,7 @@
 /// Greet command - returns a greeting message
 #[tauri::command]
 fn greet(name: &str) -> String {
-    format!("Hello, {}! Welcome to Ephemera.", name)
+    format!("Hello, {}! Welcome to skelenote.", name)
 }
 
 // NOTE: Global Hotkey Quick Capture (Cmd+Shift+Space) - DEPRIORITIZED

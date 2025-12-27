@@ -1,5 +1,5 @@
 /**
- * Type definitions for Ephemera object model
+ * Type definitions for skelenote object model
  */
 
 // Property types

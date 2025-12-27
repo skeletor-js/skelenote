@@ -1,5 +1,5 @@
 {
-  "name": "ephemera-sync-worker",
+  "name": "skelenote-sync-worker",
   "version": "1.0.0",
   "type": "module",
   "scripts": {

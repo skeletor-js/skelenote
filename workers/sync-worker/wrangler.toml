@@ -1,4 +1,4 @@
-name = "ephemera-sync"
+name = "skelenote-sync"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
 
