@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import './ObjectHeader.css';
-import type { EphemeraObject, TypeDefinition } from '@/lib/types';
+import type { SkelenoteObject, TypeDefinition } from '@/lib/types';
 
 interface ObjectHeaderProps {
-  object: EphemeraObject;
+  object: SkelenoteObject;
   typeDef: TypeDefinition;
   onTitleChange: (newTitle: string) => void;
   onDelete?: () => void;

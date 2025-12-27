@@ -11,8 +11,8 @@ export type { TypeDefinition, TypeRegistry, BuiltInTypeId } from './type-definit
 export { BuiltInTypeIds, createTypeRegistry } from './type-definition';
 
 // Object types
-export type { EphemeraObject, CreateObjectInput, UpdateObjectInput } from './object';
-export { generateId, createObject, isEphemeraObject } from './object';
+export type { SkelenoteObject, CreateObjectInput, UpdateObjectInput } from './object';
+export { generateId, createObject, isSkelenoteObject } from './object';
 
 // Built-in types
 export {

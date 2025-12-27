@@ -4,7 +4,7 @@
  */
 
 import { useCallback } from 'react';
-import type { EphemeraObject } from '@/lib/types';
+import type { SkelenoteObject } from '@/lib/types';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
 import { useObjects, useToast } from '@/contexts';
 import { Tag, ContextMenu, ConfirmDialog, type TagColor, type ContextMenuItem } from '@/components/ui';
@@ -13,7 +13,7 @@ import './TaskRow.css';
 
 interface TaskRowProps {
   /** The task object to display */
-  task: EphemeraObject;
+  task: SkelenoteObject;
   /** Callback when checkbox is clicked */
   onToggleComplete: (taskId: string) => void;
   /** Callback when row is clicked (navigates to detail) */
@@ -47,7 +47,7 @@ export function TaskRow({
   const tagIds = task.properties.tags as string[] | null;
   const tags = tagIds
     ?.map((id) => store?.get(id))
-    .filter((t): t is EphemeraObject => t !== undefined)
+    .filter((t): t is SkelenoteObject => t !== undefined)
     .map((t) => ({
       id: t.id,
       name: t.properties.name as string,

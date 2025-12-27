@@ -1,5 +1,5 @@
 /**
- * Built-in type definitions for Ephemera
+ * Built-in type definitions for Skelenote
  */
 
 import type { TypeDefinition } from './type-definition';

@@ -3,7 +3,7 @@
  */
 
 import type { ObjectStore } from '../loro/objects';
-import type { EphemeraObject } from '../types';
+import type { SkelenoteObject } from '../types';
 import { BuiltInTypeIds } from '../types';
 import { formatDateTitle, formatDateId } from './date-utils';
 
@@ -27,14 +27,14 @@ export function extractDateFromId(id: string): string | null {
 /**
  * Check if an object is a daily note
  */
-export function isDailyNote(obj: EphemeraObject): boolean {
+export function isDailyNote(obj: SkelenoteObject): boolean {
   return obj.typeId === BuiltInTypeIds.NOTE && obj.properties.isDailyNote === true;
 }
 
 /**
  * Get a daily note by date (returns undefined if it doesn't exist)
  */
-export function getDailyNoteByDate(store: ObjectStore, date: Date): EphemeraObject | undefined {
+export function getDailyNoteByDate(store: ObjectStore, date: Date): SkelenoteObject | undefined {
   const id = getDailyNoteId(date);
   const obj = store.get(id);
 
@@ -61,7 +61,7 @@ function getStartOfDay(date: Date): number {
  * - Returns existing note if already created
  * - Creates new note with proper properties if not
  */
-export function getOrCreateDailyNote(store: ObjectStore, date: Date): EphemeraObject {
+export function getOrCreateDailyNote(store: ObjectStore, date: Date): SkelenoteObject {
   const id = getDailyNoteId(date);
 
   // Check if it already exists
@@ -92,14 +92,14 @@ export function getOrCreateDailyNote(store: ObjectStore, date: Date): EphemeraOb
 /**
  * Get today's daily note, creating it if it doesn't exist
  */
-export function getOrCreateTodaysDailyNote(store: ObjectStore): EphemeraObject {
+export function getOrCreateTodaysDailyNote(store: ObjectStore): SkelenoteObject {
   return getOrCreateDailyNote(store, new Date());
 }
 
 /**
  * Get all daily notes from the store
  */
-export function getAllDailyNotes(store: ObjectStore): EphemeraObject[] {
+export function getAllDailyNotes(store: ObjectStore): SkelenoteObject[] {
   return store.getByType(BuiltInTypeIds.NOTE).filter(isDailyNote);
 }
 
@@ -111,8 +111,8 @@ export function getDailyNotesForMonth(
   store: ObjectStore,
   year: number,
   month: number
-): Map<string, EphemeraObject> {
-  const result = new Map<string, EphemeraObject>();
+): Map<string, SkelenoteObject> {
+  const result = new Map<string, SkelenoteObject>();
 
   // Get all daily notes
   const dailyNotes = getAllDailyNotes(store);
@@ -140,7 +140,7 @@ export function getAdjacentDailyNote(
   store: ObjectStore,
   currentDate: Date,
   offset: number
-): EphemeraObject {
+): SkelenoteObject {
   const targetDate = new Date(currentDate);
   targetDate.setDate(targetDate.getDate() + offset);
   return getOrCreateDailyNote(store, targetDate);

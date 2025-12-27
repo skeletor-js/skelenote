@@ -3,7 +3,7 @@
  */
 
 import type {
-  EphemeraObject,
+  SkelenoteObject,
   PropertyValue,
   TypeDefinition,
   TypeRegistry,
@@ -110,7 +110,7 @@ export class RelationHelper {
   /**
    * Get all objects that the given object relates to
    */
-  getRelatedObjects(objectId: string): EphemeraObject[] {
+  getRelatedObjects(objectId: string): SkelenoteObject[] {
     const obj = this.store.get(objectId);
     if (!obj) return [];
 
@@ -126,7 +126,7 @@ export class RelationHelper {
       }
     }
 
-    const related: EphemeraObject[] = [];
+    const related: SkelenoteObject[] = [];
     for (const id of relatedIds) {
       const relatedObj = this.store.get(id);
       if (relatedObj) {
@@ -187,10 +187,10 @@ export class RelationHelper {
   /**
    * Get all objects that reference the given object
    */
-  getBacklinkedObjects(targetId: string): EphemeraObject[] {
+  getBacklinkedObjects(targetId: string): SkelenoteObject[] {
     const backlinks = this.findBacklinks(targetId);
     const seen = new Set<string>();
-    const objects: EphemeraObject[] = [];
+    const objects: SkelenoteObject[] = [];
 
     for (const backlink of backlinks) {
       if (!seen.has(backlink.sourceId)) {
@@ -237,14 +237,14 @@ export class RelationHelper {
   /**
    * Get objects related by a specific property
    */
-  getRelatedByProperty(objectId: string, propertyId: string): EphemeraObject[] {
+  getRelatedByProperty(objectId: string, propertyId: string): SkelenoteObject[] {
     const obj = this.store.get(objectId);
     if (!obj) return [];
 
     const value = obj.properties[propertyId];
     const ids = getRelationIds(value);
 
-    const related: EphemeraObject[] = [];
+    const related: SkelenoteObject[] = [];
     for (const id of ids) {
       const relatedObj = this.store.get(id);
       if (relatedObj) {

@@ -2,14 +2,14 @@
  * Search utilities for Command Palette
  */
 
-import type { EphemeraObject, TypeRegistry } from '@/lib/types';
+import type { SkelenoteObject, TypeRegistry } from '@/lib/types';
 import { fuzzyMatch, type PaletteAction } from './actions';
 
 /**
  * Search objects and return palette actions
  */
 export function searchObjects(
-  objects: EphemeraObject[],
+  objects: SkelenoteObject[],
   query: string,
   typeRegistry: TypeRegistry,
   limit: number = 10
@@ -49,6 +49,6 @@ export function searchObjects(
 /**
  * Sort objects by relevance (most recently updated first)
  */
-export function sortByRelevance(objects: EphemeraObject[]): EphemeraObject[] {
+export function sortByRelevance(objects: SkelenoteObject[]): SkelenoteObject[] {
   return [...objects].sort((a, b) => b.updatedAt - a.updatedAt);
 }

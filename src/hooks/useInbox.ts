@@ -4,12 +4,12 @@
 
 import { useMemo, useCallback } from 'react';
 import { useObjects } from '@/contexts';
-import type { EphemeraObject } from '@/lib/types';
+import type { SkelenoteObject } from '@/lib/types';
 import { removeMentionsFromContent } from '@/lib/editor';
 
 export interface UseInboxResult {
   /** All inboxed items sorted by createdAt (newest first) */
-  items: EphemeraObject[];
+  items: SkelenoteObject[];
   /** Whether the data is still loading */
   isLoading: boolean;
   /** Number of items in inbox */

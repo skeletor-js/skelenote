@@ -4,7 +4,7 @@
  */
 
 import type { ObjectStore } from '@/lib/loro';
-import type { EphemeraObject } from '@/lib/types';
+import type { SkelenoteObject } from '@/lib/types';
 import { getOrCreateDailyNote, getDailyNoteId } from './daily-notes';
 
 /**
@@ -25,7 +25,7 @@ interface MentionBlock {
 /**
  * Get the display name for an object based on its type
  */
-function getObjectDisplayName(object: EphemeraObject): string {
+function getObjectDisplayName(object: SkelenoteObject): string {
   const title = object.properties.title as string | undefined;
   const name = object.properties.name as string | undefined;
   const url = object.properties.url as string | undefined;
@@ -35,7 +35,7 @@ function getObjectDisplayName(object: EphemeraObject): string {
 /**
  * Create a mention block for an object
  */
-function createMentionBlock(object: EphemeraObject): MentionBlock {
+function createMentionBlock(object: SkelenoteObject): MentionBlock {
   return {
     type: 'paragraph',
     content: [
@@ -79,7 +79,7 @@ function isEmptyBlock(block: unknown): boolean {
 function appendMentionToContent(
   store: ObjectStore,
   dailyNoteId: string,
-  object: EphemeraObject
+  object: SkelenoteObject
 ): void {
   // Get existing content
   let existingContent: string | null = null;
@@ -128,8 +128,8 @@ function appendMentionToContent(
  */
 export function linkObjectToDaily(
   store: ObjectStore,
-  object: EphemeraObject
-): EphemeraObject {
+  object: SkelenoteObject
+): SkelenoteObject {
   const today = new Date();
   const dailyNote = getOrCreateDailyNote(store, today);
 
@@ -145,7 +145,7 @@ export function linkObjectToDaily(
 /**
  * Check if an object is already linked to today's daily note
  */
-export function isLinkedToToday(object: EphemeraObject): boolean {
+export function isLinkedToToday(object: SkelenoteObject): boolean {
   const dailyNoteRelation = object.properties.dailyNote;
   if (!Array.isArray(dailyNoteRelation) || dailyNoteRelation.length === 0) {
     return false;

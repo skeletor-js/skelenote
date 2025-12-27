@@ -1,9 +1,9 @@
 import './PropertyList.css';
 import { PropertyEditor } from './PropertyEditor';
-import type { EphemeraObject, TypeDefinition, PropertyValue } from '@/lib/types';
+import type { SkelenoteObject, TypeDefinition, PropertyValue } from '@/lib/types';
 
 interface PropertyListProps {
-  object: EphemeraObject;
+  object: SkelenoteObject;
   typeDef: TypeDefinition;
   onPropertyChange: (propertyId: string, value: PropertyValue) => void;
 }

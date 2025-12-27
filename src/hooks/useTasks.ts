@@ -4,7 +4,7 @@
 
 import { useMemo, useCallback } from 'react';
 import { useObjects } from '@/contexts';
-import { BuiltInTypeIds, type EphemeraObject, type PropertyValue } from '@/lib/types';
+import { BuiltInTypeIds, type SkelenoteObject, type PropertyValue } from '@/lib/types';
 import {
   type TaskFilter,
   getTaskFilter,
@@ -21,7 +21,7 @@ export interface UseTasksOptions {
 
 export interface UseTasksResult {
   /** Filtered and sorted tasks */
-  tasks: EphemeraObject[];
+  tasks: SkelenoteObject[];
   /** Whether the data is still loading */
   isLoading: boolean;
   /** Toggle a task between todo and done status */

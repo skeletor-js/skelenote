@@ -1,9 +1,9 @@
 /**
  * Search index builder
- * Builds SearchableItem array from EphemeraObjects
+ * Builds SearchableItem array from SkelenoteObjects
  */
 
-import type { EphemeraObject } from '@/lib/types/object';
+import type { SkelenoteObject } from '@/lib/types/object';
 import type { TypeRegistry } from '@/lib/types/type-definition';
 import type { PropertyValue, PropertyType } from '@/lib/types/property';
 import type { ObjectStore } from '@/lib/loro/objects';
@@ -24,7 +24,7 @@ const SEARCHABLE_PROPERTY_TYPES: PropertyType[] = [
 /**
  * Extract the title/name from an object's properties
  */
-function extractTitle(obj: EphemeraObject): string {
+function extractTitle(obj: SkelenoteObject): string {
   const title = obj.properties.title ?? obj.properties.name;
   if (typeof title === 'string') {
     return title;
@@ -68,7 +68,7 @@ function extractPropertyText(value: PropertyValue): string {
  * Excludes title/name (indexed separately) and relation properties
  */
 function extractSearchableProperties(
-  obj: EphemeraObject,
+  obj: SkelenoteObject,
   typeRegistry: TypeRegistry
 ): string {
   const typeDef = typeRegistry.get(obj.typeId);
@@ -105,10 +105,10 @@ function extractSearchableProperties(
 }
 
 /**
- * Build a SearchableItem from an EphemeraObject
+ * Build a SearchableItem from an SkelenoteObject
  */
 function buildSearchableItem(
-  obj: EphemeraObject,
+  obj: SkelenoteObject,
   typeRegistry: TypeRegistry,
   store: ObjectStore
 ): SearchableItem {
@@ -150,7 +150,7 @@ export function buildSearchIndex(
  * Useful for incremental updates when an object changes
  */
 export function buildSearchableItemForObject(
-  obj: EphemeraObject,
+  obj: SkelenoteObject,
   typeRegistry: TypeRegistry,
   store: ObjectStore
 ): SearchableItem {

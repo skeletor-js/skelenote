@@ -1,7 +1,7 @@
 /**
- * Data migration from ephemera to skelenote
+ * Data migration for skelenote
  *
- * Migrates localStorage keys from old naming convention to new one.
+ * Migrates localStorage keys from legacy naming convention to current one.
  * This preserves user settings and data when upgrading.
  */
 
@@ -14,11 +14,11 @@ const KEY_MIGRATIONS: [string, string][] = [
 ];
 
 /**
- * Migrate localStorage keys from ephemera to skelenote naming
+ * Migrate localStorage keys from legacy naming to skelenote naming
  * - Only migrates if old key exists and new key doesn't
  * - Removes old keys after migration
  */
-export function migrateFromEphemera(): void {
+export function migrateLocalStorageKeys(): void {
   for (const [oldKey, newKey] of KEY_MIGRATIONS) {
     const oldValue = localStorage.getItem(oldKey);
     if (oldValue !== null && localStorage.getItem(newKey) === null) {

@@ -4,7 +4,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useObjects } from '@/contexts';
-import type { EphemeraObject } from '@/lib/types';
+import type { SkelenoteObject } from '@/lib/types';
 import {
   getDaysInMonth,
   getFirstDayOfWeek,
@@ -29,7 +29,7 @@ export interface UseCalendarResult {
   /** Day of week offset for the first day (0 = Sunday) */
   firstDayOffset: number;
   /** Map of date strings to daily notes for the current month */
-  dailyNotesInMonth: Map<string, EphemeraObject>;
+  dailyNotesInMonth: Map<string, SkelenoteObject>;
   /** Check if a specific day has a daily note */
   hasNote: (day: number) => boolean;
   /** Get the date string for a day in the current month */
@@ -87,7 +87,7 @@ export function useCalendar(): UseCalendarResult {
 
   // Get daily notes for the current month
   const dailyNotesInMonth = useMemo(() => {
-    if (!store) return new Map<string, EphemeraObject>();
+    if (!store) return new Map<string, SkelenoteObject>();
     return getDailyNotesForMonth(store, year, month);
   }, [store, year, month]);
 

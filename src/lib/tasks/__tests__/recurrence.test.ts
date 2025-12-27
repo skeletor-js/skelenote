@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { EphemeraObject } from '../../types';
+import type { SkelenoteObject } from '../../types';
 import {
   parseRecurrence,
   calculateNextDueDate,
@@ -17,7 +17,7 @@ function createMockTask(overrides: Partial<{
   project: string | null;
   tags: string[];
   recurrence: string | null;
-}>): EphemeraObject {
+}>): SkelenoteObject {
   return {
     id: overrides.id ?? 'task-1',
     typeId: 'task',

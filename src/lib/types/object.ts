@@ -7,7 +7,7 @@ import type { PropertyValue } from './property';
 /**
  * The core Object type - all data in skelenote is stored as Objects
  */
-export interface EphemeraObject {
+export interface SkelenoteObject {
   /** Unique identifier (UUID) */
   id: string;
   /** References a TypeDefinition ID */
@@ -60,7 +60,7 @@ export function generateId(): string {
 /**
  * Creates a new object with auto-generated fields
  */
-export function createObject(input: CreateObjectInput): EphemeraObject {
+export function createObject(input: CreateObjectInput): SkelenoteObject {
   const now = Date.now();
 
   return {
@@ -75,9 +75,9 @@ export function createObject(input: CreateObjectInput): EphemeraObject {
 }
 
 /**
- * Type guard to check if a value is a valid EphemeraObject
+ * Type guard to check if a value is a valid SkelenoteObject
  */
-export function isEphemeraObject(value: unknown): value is EphemeraObject {
+export function isSkelenoteObject(value: unknown): value is SkelenoteObject {
   if (typeof value !== 'object' || value === null) return false;
 
   const obj = value as Record<string, unknown>;
