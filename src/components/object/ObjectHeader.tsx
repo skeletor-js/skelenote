@@ -6,9 +6,17 @@ interface ObjectHeaderProps {
   object: EphemeraObject;
   typeDef: TypeDefinition;
   onTitleChange: (newTitle: string) => void;
+  onDelete?: () => void;
+  canDelete?: boolean;
 }
 
-export function ObjectHeader({ object, typeDef, onTitleChange }: ObjectHeaderProps) {
+export function ObjectHeader({
+  object,
+  typeDef,
+  onTitleChange,
+  onDelete,
+  canDelete = true,
+}: ObjectHeaderProps) {
   // Determine which property holds the title (varies by type)
   const titlePropertyId = object.properties.title !== undefined ? 'title' : 'name';
   const currentTitle = String(object.properties[titlePropertyId] ?? 'Untitled');
@@ -106,6 +114,18 @@ export function ObjectHeader({ object, typeDef, onTitleChange }: ObjectHeaderPro
           {currentTitle}
           <span className="object-header__edit-hint">Click to edit</span>
         </h1>
+      )}
+
+      {canDelete && onDelete && (
+        <button
+          type="button"
+          className="object-header__delete"
+          onClick={onDelete}
+          aria-label="Delete object"
+          title="Delete"
+        >
+          Delete
+        </button>
       )}
     </header>
   );

@@ -5,11 +5,12 @@
 
 import { useInbox } from '@/hooks/useInbox';
 import { useNavigation } from '@/contexts';
+import { EmptyState } from '@/components/ui';
 import { InboxRow } from './InboxRow';
 import './InboxView.css';
 
 export function InboxView() {
-  const { items, isLoading, count, processItem } = useInbox();
+  const { items, isLoading, count, processItem, deleteItem } = useInbox();
   const { navigateToObject } = useNavigation();
 
   if (isLoading) {
@@ -33,9 +34,7 @@ export function InboxView() {
       {/* Content */}
       <div className="inbox-view__content">
         {items.length === 0 ? (
-          <div className="inbox-view__empty">
-            <p className="inbox-view__empty-message">All clear! Nothing to process.</p>
-          </div>
+          <EmptyState message="All clear! Nothing to process." size="large" />
         ) : (
           <div className="inbox-view__list">
             {items.map((item) => (
@@ -44,6 +43,7 @@ export function InboxView() {
                 item={item}
                 onClick={() => navigateToObject(item.id)}
                 onProcess={processItem}
+                onDelete={deleteItem}
               />
             ))}
           </div>

@@ -1,0 +1,137 @@
+/* Toast Component */
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  min-width: 280px;
+  max-width: 400px;
+  animation: toast-enter 0.2s ease-out;
+}
+
+.toast--exiting {
+  animation: toast-exit 0.2s ease-in forwards;
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toast-exit {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* Toast Icon */
+.toast__icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: var(--font-weight-bold);
+}
+
+/* Toast Type Variants */
+.toast--success .toast__icon {
+  color: var(--tag-green);
+}
+
+.toast--error .toast__icon {
+  color: var(--tag-red);
+}
+
+.toast--warning .toast__icon {
+  color: var(--tag-orange);
+}
+
+.toast--info .toast__icon {
+  color: var(--tag-blue);
+}
+
+.toast--error {
+  border-color: var(--tag-red);
+  border-left-width: 3px;
+}
+
+.toast--warning {
+  border-color: var(--tag-orange);
+  border-left-width: 3px;
+}
+
+/* Toast Message */
+.toast__message {
+  flex: 1;
+  line-height: var(--line-height-tight);
+}
+
+/* Toast Action Button */
+.toast__action {
+  flex-shrink: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.toast__action:hover {
+  background: var(--surface-hover);
+}
+
+.toast__action:active {
+  background: var(--surface-active);
+}
+
+/* Toast Dismiss Button */
+.toast__dismiss {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 18px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.toast__dismiss:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+.toast__dismiss:active {
+  background: var(--surface-active);
+}

@@ -7,21 +7,26 @@ import {
   NavigationProvider,
   ObjectProvider,
   SyncProvider,
+  ToastProvider,
 } from '@/contexts';
+import { ToastContainer } from '@/components/ui';
 import '@/styles/global.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
-      <ObjectProvider>
-        <SyncProvider>
-          <NavigationProvider>
-            <SidebarProvider>
-              <App />
-            </SidebarProvider>
-          </NavigationProvider>
-        </SyncProvider>
-      </ObjectProvider>
+      <ToastProvider>
+        <ObjectProvider>
+          <SyncProvider>
+            <NavigationProvider>
+              <SidebarProvider>
+                <App />
+              </SidebarProvider>
+            </NavigationProvider>
+          </SyncProvider>
+        </ObjectProvider>
+        <ToastContainer />
+      </ToastProvider>
     </ThemeProvider>
   </React.StrictMode>
 );

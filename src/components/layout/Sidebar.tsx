@@ -214,33 +214,34 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
         </SidebarSection>
       </div>
 
+      {/* Add Object button */}
+      <div className="sidebar__add-object" ref={typeSelectorRef}>
+        <button
+          className="sidebar__add-btn"
+          onClick={() => setShowTypeSelector(!showTypeSelector)}
+          aria-expanded={showTypeSelector}
+        >
+          + Add Object
+        </button>
+
+        {showTypeSelector && (
+          <div className="sidebar__type-selector">
+            {availableTypes.map((type) => (
+              <button
+                key={type.id}
+                className="sidebar__type-option"
+                onClick={() => handleCreateObject(type.id)}
+              >
+                <span className="sidebar__type-icon">{type.icon}</span>
+                <span className="sidebar__type-name">{type.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Footer with controls */}
       <div className="sidebar__footer">
-        <div className="sidebar__add-object" ref={typeSelectorRef}>
-          <button
-            className="sidebar__add-btn"
-            onClick={() => setShowTypeSelector(!showTypeSelector)}
-            aria-expanded={showTypeSelector}
-          >
-            + Add Object
-          </button>
-
-          {showTypeSelector && (
-            <div className="sidebar__type-selector">
-              {availableTypes.map((type) => (
-                <button
-                  key={type.id}
-                  className="sidebar__type-option"
-                  onClick={() => handleCreateObject(type.id)}
-                >
-                  <span className="sidebar__type-icon">{type.icon}</span>
-                  <span className="sidebar__type-name">{type.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
         <SyncIndicator />
 
         <div className="sidebar__controls">
