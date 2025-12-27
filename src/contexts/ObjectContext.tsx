@@ -95,6 +95,10 @@ export function ObjectProvider({ children }: ObjectProviderProps) {
 
   const refreshData = () => {
     setRefreshCounter((c) => c + 1);
+    // Trigger immediate save (and sync if connected)
+    docStore.save().catch((err) => {
+      console.error('Save on refresh failed:', err);
+    });
   };
 
   // Auto-save periodically

@@ -112,10 +112,9 @@ export class LoroDocStore {
   }
 
   /**
-   * Save all documents to disk
-   * @param broadcast - If true, also broadcast snapshot to connected devices
+   * Save all documents to disk and broadcast to connected devices
    */
-  async save(broadcast = false): Promise<void> {
+  async save(): Promise<void> {
     if (!this.initialized || !this.dataPath) {
       throw new Error('LoroDocStore not initialized');
     }
@@ -125,8 +124,8 @@ export class LoroDocStore {
 
     await writeFile(filePath, data);
 
-    // Optionally broadcast to other devices
-    if (broadcast && this.syncClient) {
+    // Automatically broadcast to other devices when connected
+    if (this.syncClient && this.isSyncConnected() && !this.isImporting) {
       this.syncClient.sendUpdate(data);
     }
   }
