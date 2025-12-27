@@ -5,7 +5,7 @@
   height: 100%;
   background: var(--bg-raised);
   border-right: 1px solid var(--border-subtle);
-  overflow: hidden;
+  overflow: visible;
   flex-shrink: 0;
 }
 
@@ -60,14 +60,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-sm);
   border-top: 1px solid var(--border-subtle);
-  gap: var(--spacing-sm);
+  flex-shrink: 0;
+  background: var(--bg-raised);
 }
 
 .sidebar__add-object {
   position: relative;
-  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-sm);
+  flex-shrink: 0;
 }
 
 .sidebar__add-btn {
@@ -75,13 +77,13 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  font-family: var(--font-family-ui);
+  padding: var(--spacing-sm);
+  font-family: var(--font-ui);
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
   background: transparent;
-  border: 1px dashed var(--border-default);
+  border: 1px dashed var(--border-subtle);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -95,12 +97,11 @@
 
 .sidebar__type-selector {
   position: absolute;
-  bottom: 100%;
-  left: 0;
-  right: 0;
-  margin-bottom: var(--spacing-xs);
+  bottom: calc(100% + var(--spacing-xs));
+  left: var(--spacing-sm);
+  right: var(--spacing-sm);
   background: var(--bg-raised);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
@@ -113,7 +114,6 @@
   gap: var(--spacing-sm);
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
-  font-family: var(--font-family-ui);
   font-size: var(--font-size-sm);
   color: var(--text-primary);
   background: transparent;
@@ -139,20 +139,21 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
+  flex-shrink: 0;
 }
 
 .sidebar__control-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-sm);
   background: transparent;
   border: none;
   cursor: pointer;
   transition: background var(--transition-fast);
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .sidebar__control-btn:hover {

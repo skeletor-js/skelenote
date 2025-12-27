@@ -7,6 +7,7 @@ export function SyncIndicator() {
   // When SyncProvider is not available, show "Local only" state
   const status = syncContext?.status ?? 'disconnected';
   const pendingCount = syncContext?.pendingCount ?? 0;
+  const hasError = syncContext?.hasError ?? false;
   const reconnect = syncContext?.reconnect;
   const hasSyncProvider = syncContext !== null;
 
@@ -16,6 +17,15 @@ export function SyncIndicator() {
         dotClass: 'sync-indicator__dot--local',
         label: 'Local only',
         clickable: false,
+      };
+    }
+
+    // Show error state if there's an error
+    if (hasError) {
+      return {
+        dotClass: 'sync-indicator__dot--error',
+        label: 'Sync error',
+        clickable: true,
       };
     }
 

@@ -37,6 +37,11 @@
   --transition-base: 0.15s ease;
   --transition-slow: 0.3s ease;
 
+  /* ===== FOCUS ===== */
+  --focus-ring-color: var(--tag-blue);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
   /* ===== LIGHT MODE COLORS ===== */
   --bg-base: #ffffff;
   --bg-raised: #fafafa;

@@ -5,6 +5,7 @@
 import { useState, useMemo } from 'react';
 import { useObjects, useTypeRegistry } from '@/contexts';
 import { createRelationHelper } from '@/lib/loro';
+import { EmptyState } from '@/components/ui';
 import { BacklinkItem } from './BacklinkItem';
 import './Backlinks.css';
 
@@ -26,10 +27,17 @@ export function Backlinks({ objectId }: BacklinksProps) {
   }, [store, typeRegistry, objectId]);
 
   // Group backlinks by source object to avoid duplicates in display
+  // Also filter out deleted source objects
   const groupedBacklinks = useMemo(() => {
+    if (!store) return [];
+
     const grouped = new Map<string, { sourceId: string; propertyNames: string[] }>();
 
     for (const backlink of backlinks) {
+      // Skip if source object was deleted
+      const sourceObj = store.get(backlink.sourceId);
+      if (!sourceObj) continue;
+
       const existing = grouped.get(backlink.sourceId);
       if (existing) {
         if (!existing.propertyNames.includes(backlink.propertyName)) {
@@ -44,7 +52,7 @@ export function Backlinks({ objectId }: BacklinksProps) {
     }
 
     return Array.from(grouped.values());
-  }, [backlinks]);
+  }, [store, backlinks]);
 
   const backlinkCount = groupedBacklinks.length;
 
@@ -67,7 +75,7 @@ export function Backlinks({ objectId }: BacklinksProps) {
       {isExpanded && (
         <div className="backlinks__list">
           {groupedBacklinks.length === 0 ? (
-            <p className="backlinks__empty">No objects link to this one</p>
+            <EmptyState message="No objects link to this one" size="small" />
           ) : (
             groupedBacklinks.map(({ sourceId, propertyNames }) => (
               <BacklinkItem

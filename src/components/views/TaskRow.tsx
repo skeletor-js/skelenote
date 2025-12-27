@@ -6,8 +6,9 @@
 import { useCallback } from 'react';
 import type { EphemeraObject } from '@/lib/types';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
-import { useObjects } from '@/contexts';
-import { Tag, type TagColor } from '@/components/ui';
+import { useObjects, useToast } from '@/contexts';
+import { Tag, ContextMenu, ConfirmDialog, type TagColor, type ContextMenuItem } from '@/components/ui';
+import { useContextMenu, useConfirmDialog } from '@/hooks';
 import './TaskRow.css';
 
 interface TaskRowProps {
@@ -17,14 +18,20 @@ interface TaskRowProps {
   onToggleComplete: (taskId: string) => void;
   /** Callback when row is clicked (navigates to detail) */
   onClick: () => void;
+  /** Callback when task is deleted */
+  onDelete: (taskId: string) => void;
 }
 
 export function TaskRow({
   task,
   onToggleComplete,
   onClick,
+  onDelete,
 }: TaskRowProps) {
   const { store } = useObjects();
+  const { addToast } = useToast();
+  const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
+  const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
 
   const isComplete = task.properties.status === 'done';
   const priority = task.properties.priority as string | null;
@@ -71,14 +78,45 @@ export function TaskRow({
     [onToggleComplete, task.id]
   );
 
+  // Handle delete with confirmation
+  const handleDelete = useCallback(async () => {
+    const confirmed = await confirm({
+      title: 'Delete Task?',
+      message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    });
+
+    if (confirmed) {
+      onDelete(task.id);
+      addToast({
+        type: 'success',
+        message: `"${title}" deleted`,
+      });
+    }
+  }, [confirm, title, task.id, onDelete, addToast]);
+
+  // Context menu items
+  const contextMenuItems: ContextMenuItem[] = [
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: '🗑️',
+      variant: 'danger',
+      onClick: handleDelete,
+    },
+  ];
+
   // Build class names
   const classNames = ['task-row'];
   if (isComplete) classNames.push('task-row--complete');
 
   return (
+    <>
     <div
       className={classNames.join(' ')}
       onClick={onClick}
+      onContextMenu={openContextMenu}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -133,5 +171,26 @@ export function TaskRow({
         </div>
       )}
     </div>
+
+    {/* Context Menu */}
+    <ContextMenu
+      items={contextMenuItems}
+      position={position}
+      isOpen={isOpen}
+      onClose={closeContextMenu}
+    />
+
+    {/* Confirm Dialog */}
+    <ConfirmDialog
+      isOpen={dialogState.isOpen}
+      title={dialogState.title}
+      message={dialogState.message}
+      confirmLabel={dialogState.confirmLabel}
+      cancelLabel={dialogState.cancelLabel}
+      variant={dialogState.variant}
+      onConfirm={handleConfirm}
+      onCancel={handleCancel}
+    />
+    </>
   );
 }

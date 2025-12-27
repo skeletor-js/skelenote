@@ -1,0 +1,52 @@
+/**
+ * EmptyState styles
+ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Size variants */
+.empty-state--small {
+  padding: var(--spacing-md);
+  min-height: 80px;
+}
+
+.empty-state--medium {
+  padding: var(--spacing-lg);
+  min-height: 150px;
+}
+
+.empty-state--large {
+  padding: var(--spacing-xl);
+  min-height: 200px;
+}
+
+.empty-state__icon {
+  font-size: 1.5em;
+  opacity: 0.7;
+}
+
+.empty-state--small .empty-state__icon {
+  font-size: 1.2em;
+}
+
+.empty-state--large .empty-state__icon {
+  font-size: 2em;
+}
+
+.empty-state__message {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height);
+}
+
+.empty-state--large .empty-state__message {
+  font-size: var(--font-size-base);
+}

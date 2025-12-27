@@ -4,10 +4,18 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from 'react';
-import { SyncClient, type ConnectionStatus } from '@/lib/sync';
+import {
+  SyncClient,
+  type ConnectionStatus,
+  getSyncServerUrl,
+  getUserId,
+  getDeviceId,
+} from '@/lib/sync';
 import { useObjects } from './ObjectContext';
+import { useToast } from './ToastContext';
 
 interface SyncContextValue {
   /** The sync client instance */
@@ -20,6 +28,8 @@ interface SyncContextValue {
   isConnected: boolean;
   /** Whether currently syncing data */
   isSyncing: boolean;
+  /** Whether there's a sync error */
+  hasError: boolean;
   /** Number of pending updates in the offline queue */
   pendingCount: number;
   /** Manually trigger reconnection */
@@ -28,6 +38,8 @@ interface SyncContextValue {
   connect: (serverUrl: string, userId: string, deviceId: string) => void;
   /** Disconnect from sync server */
   disconnect: () => void;
+  /** Clear error state */
+  clearError: () => void;
 }
 
 const SyncContext = createContext<SyncContextValue | null>(null);
@@ -38,10 +50,13 @@ interface SyncProviderProps {
 
 export function SyncProvider({ children }: SyncProviderProps) {
   const { docStore, refreshData } = useObjects();
+  const { addToast } = useToast();
   const [syncClient, setSyncClient] = useState<SyncClient | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pendingCount, setPendingCount] = useState(0);
+  const [hasError, setHasError] = useState(false);
+  const autoConnectAttemptedRef = useRef(false);
 
   // Track browser online/offline status
   useEffect(() => {
@@ -75,6 +90,10 @@ export function SyncProvider({ children }: SyncProviderProps) {
       client.on('statusChange', (event) => {
         if (event.status) {
           setStatus(event.status);
+          // Clear error on successful connection
+          if (event.status === 'connected') {
+            setHasError(false);
+          }
         }
         setPendingCount(client.getPendingCount());
       });
@@ -87,6 +106,19 @@ export function SyncProvider({ children }: SyncProviderProps) {
       // Subscribe to errors
       client.on('error', (event) => {
         console.error('[SyncProvider] Sync error:', event.error);
+        setHasError(true);
+        addToast({
+          type: 'error',
+          message: event.error?.message || 'Sync error occurred',
+          duration: 8000,
+          action: {
+            label: 'Retry',
+            onClick: () => {
+              setHasError(false);
+              client.connect();
+            },
+          },
+        });
       });
 
       // Wire up to docStore
@@ -98,7 +130,7 @@ export function SyncProvider({ children }: SyncProviderProps) {
       setSyncClient(client);
       client.connect();
     },
-    [syncClient, docStore, refreshData]
+    [syncClient, docStore, refreshData, addToast]
   );
 
   // Disconnect from sync server
@@ -114,9 +146,29 @@ export function SyncProvider({ children }: SyncProviderProps) {
   // Reconnect
   const reconnect = useCallback(() => {
     if (syncClient) {
+      setHasError(false);
       syncClient.connect();
     }
   }, [syncClient]);
+
+  // Clear error state
+  const clearError = useCallback(() => {
+    setHasError(false);
+  }, []);
+
+  // Auto-connect on mount if server URL is saved
+  useEffect(() => {
+    // Only attempt auto-connect once and when docStore is ready
+    if (autoConnectAttemptedRef.current || !docStore) return;
+    autoConnectAttemptedRef.current = true;
+
+    const savedUrl = getSyncServerUrl();
+    if (savedUrl) {
+      const userId = getUserId();
+      const deviceId = getDeviceId();
+      connect(savedUrl, userId, deviceId);
+    }
+  }, [docStore, connect]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -133,10 +185,12 @@ export function SyncProvider({ children }: SyncProviderProps) {
     isOnline,
     isConnected: status === 'connected',
     isSyncing: status === 'syncing',
+    hasError,
     pendingCount,
     reconnect,
     connect,
     disconnect,
+    clearError,
   };
 
   return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;

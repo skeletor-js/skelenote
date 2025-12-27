@@ -56,12 +56,6 @@
   outline-offset: 1px;
 }
 
-.relation-chip--missing {
-  color: var(--text-muted);
-  background: var(--bg-sunken);
-  font-style: italic;
-}
-
 .relation-chip__icon {
   font-size: 1em;
 }

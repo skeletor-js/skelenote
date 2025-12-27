@@ -4,6 +4,8 @@ import {
   useState,
   useEffect,
   useMemo,
+  useRef,
+  useCallback,
   type ReactNode,
 } from 'react';
 import type { LoroDoc } from 'loro-crdt';
@@ -35,8 +37,12 @@ interface ObjectContextValue {
   isLoading: boolean;
   /** Any initialization error */
   error: Error | null;
-  /** Force a re-render after data changes */
+  /** Force a re-render after data changes (also triggers debounced save) */
   refreshData: () => void;
+  /** Immediately save to disk (for critical operations) */
+  saveNow: () => Promise<void>;
+  /** Trigger a debounced save without re-render (for content changes) */
+  scheduleSave: () => void;
 }
 
 const ObjectContext = createContext<ObjectContextValue | null>(null);
@@ -68,6 +74,9 @@ export function ObjectProvider({ children }: ObjectProviderProps) {
         setIsLoading(true);
         await docStore.initialize();
 
+        // Load saved data from disk
+        await docStore.load();
+
         // Get or create the main document
         const mainDoc = docStore.getOrCreateDocument('main');
         setDoc(mainDoc);
@@ -93,13 +102,55 @@ export function ObjectProvider({ children }: ObjectProviderProps) {
     return createRelationHelper(store, typeRegistry);
   }, [store, typeRegistry]);
 
-  const refreshData = () => {
+  // Debounced save timer
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounced save - triggers 300ms after last change
+  const debouncedSave = useCallback(() => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        await docStore.save();
+      } catch (err) {
+        console.error('Debounced save failed:', err);
+      }
+    }, 300);
+  }, [docStore]);
+
+  const refreshData = useCallback(() => {
     setRefreshCounter((c) => c + 1);
     // Trigger sync broadcast (debounced, no disk write)
     docStore.sync();
-  };
+    // Trigger debounced save to disk
+    debouncedSave();
+  }, [docStore, debouncedSave]);
 
-  // Auto-save periodically
+  // Immediate save for critical operations
+  const saveNow = useCallback(async () => {
+    // Clear any pending debounced save
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    try {
+      await docStore.save();
+    } catch (err) {
+      console.error('Immediate save failed:', err);
+    }
+  }, [docStore]);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Backup auto-save every 30 seconds (safety net)
   useEffect(() => {
     if (!doc) return;
 
@@ -109,7 +160,7 @@ export function ObjectProvider({ children }: ObjectProviderProps) {
       } catch (err) {
         console.error('Auto-save failed:', err);
       }
-    }, 5000); // Save every 5 seconds
+    }, 30000); // Save every 30 seconds as backup
 
     return () => clearInterval(saveInterval);
   }, [doc, docStore]);
@@ -125,6 +176,8 @@ export function ObjectProvider({ children }: ObjectProviderProps) {
         isLoading,
         error,
         refreshData,
+        saveNow,
+        scheduleSave: debouncedSave,
       }}
     >
       {children}

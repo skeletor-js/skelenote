@@ -5,21 +5,76 @@ import { PropertyList } from './PropertyList';
 import { Backlinks } from './Backlinks';
 import { Editor } from '@/components/editor';
 import { DailyNoteHeader } from '@/components/daily';
+import { ConfirmDialog } from '@/components/ui';
+import { removeMentionsFromContent } from '@/lib/editor';
 import type { PropertyValue } from '@/lib/types';
 import {
   useObjects,
   useNavigation,
   useTypeRegistry,
+  useToast,
 } from '@/contexts';
+import { useConfirmDialog } from '@/hooks';
 
 interface ObjectDetailViewProps {
   objectId: string;
 }
 
 export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
-  const { store, isLoading, refreshData } = useObjects();
+  const { store, isLoading, refreshData, scheduleSave } = useObjects();
   const { navigateBack, canGoBack } = useNavigation();
   const typeRegistry = useTypeRegistry();
+  const { addToast } = useToast();
+  const { dialogState, confirm, handleConfirm, handleCancel } = useConfirmDialog();
+
+  const handleDelete = useCallback(async () => {
+    if (!store) return;
+
+    const object = store.get(objectId);
+    if (!object) return;
+
+    const typeDef = typeRegistry.get(object.typeId);
+    const titleProp = object.properties.title ?? object.properties.name ?? 'Untitled';
+    const title = String(titleProp);
+
+    const confirmed = await confirm({
+      title: `Delete ${typeDef?.name ?? 'Object'}?`,
+      message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
+      confirmLabel: 'Delete',
+      cancelLabel: 'Cancel',
+      variant: 'danger',
+    });
+
+    if (confirmed) {
+      // Clean up mentions of this object in other objects' content
+      const allObjects = store.getAll();
+      for (const obj of allObjects) {
+        if (obj.id === objectId) continue; // Skip the object being deleted
+
+        try {
+          const content = store.getContent(obj.id);
+          if (content) {
+            const cleanedContent = removeMentionsFromContent(content, objectId);
+            if (cleanedContent) {
+              store.setContent(obj.id, cleanedContent);
+            }
+          }
+        } catch {
+          // Content might not exist for this object, skip
+        }
+      }
+
+      store.delete(objectId);
+      refreshData();
+      addToast({
+        type: 'success',
+        message: `"${title}" has been deleted.`,
+      });
+      if (canGoBack) {
+        navigateBack();
+      }
+    }
+  }, [store, objectId, typeRegistry, confirm, refreshData, addToast, canGoBack, navigateBack]);
 
   const handleTitleChange = useCallback(
     (newTitle: string) => {
@@ -49,8 +104,10 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
       if (!store) return;
       store.setContent(objectId, content);
       // Don't call refreshData here - editor handles its own state
+      // But do schedule a save to persist content changes
+      scheduleSave();
     },
-    [store, objectId]
+    [store, objectId, scheduleSave]
   );
 
   // Get current content for the editor
@@ -116,11 +173,13 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
         )
       )}
 
-      {/* Header with inline title editing */}
+      {/* Header with inline title editing and delete */}
       <ObjectHeader
         object={object}
         typeDef={typeDef}
         onTitleChange={handleTitleChange}
+        onDelete={handleDelete}
+        canDelete={!isDailyNote}
       />
 
       {/* Properties Section */}
@@ -144,6 +203,18 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
 
       {/* Backlinks Section */}
       <Backlinks objectId={objectId} />
+
+      {/* Confirm Dialog for Delete */}
+      <ConfirmDialog
+        isOpen={dialogState.isOpen}
+        title={dialogState.title}
+        message={dialogState.message}
+        confirmLabel={dialogState.confirmLabel}
+        cancelLabel={dialogState.cancelLabel}
+        variant={dialogState.variant}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </div>
   );
 }

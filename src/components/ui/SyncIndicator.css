@@ -51,6 +51,10 @@
   background: var(--border-strong);
 }
 
+.sync-indicator__dot--error {
+  background: var(--tag-red);
+}
+
 .sync-indicator__label {
   white-space: nowrap;
 }
