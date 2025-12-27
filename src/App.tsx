@@ -4,6 +4,7 @@ import { ObjectDetailView } from '@/components/object';
 import { TaskView, InboxView, DailyNotesView } from '@/components/views';
 import { CommandPalette } from '@/components/palette';
 import { QuickCapture } from '@/components/capture';
+import { SettingsView } from '@/components/settings';
 import { useNavigation, useObjects, type ViewType } from '@/contexts';
 import { useCommandPalette, useTodaysDailyNote } from '@/hooks';
 import type { TaskFilter } from '@/lib/tasks/filters';
@@ -25,6 +26,7 @@ function PlaceholderView({ view }: { view: ViewType }) {
     eventually: 'Eventually',
     completed: 'Completed',
     object: 'Object Detail',
+    settings: 'Settings',
   };
 
   const handleCreateTestNote = () => {
@@ -265,6 +267,11 @@ function MainContent() {
   // Daily Notes view
   if (currentView === 'daily-notes') {
     return <DailyNotesView />;
+  }
+
+  // Settings view
+  if (currentView === 'settings') {
+    return <SettingsView />;
   }
 
   return <PlaceholderView view={currentView} />;

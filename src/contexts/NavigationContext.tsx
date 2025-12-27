@@ -18,7 +18,8 @@ export type ViewType =
   | 'blocked'
   | 'eventually'
   | 'completed'
-  | 'object';
+  | 'object'
+  | 'settings';
 
 interface NavigationState {
   view: ViewType;

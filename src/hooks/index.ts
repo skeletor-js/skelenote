@@ -7,3 +7,5 @@ export { useDailyNote, useTodaysDailyNote, type UseDailyNoteResult } from './use
 export { useCalendar, type UseCalendarResult } from './useCalendar';
 export { useLinkToDaily } from './useLinkToDaily';
 export { useSearch, type UseSearchOptions, type UseSearchResult } from './useSearch';
+export { useConnectionStatus } from './useConnectionStatus';
+export { useSync } from './useSync';
