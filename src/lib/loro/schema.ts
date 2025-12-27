@@ -9,7 +9,7 @@
  */
 
 import type { LoroDoc, LoroMap, LoroText } from 'loro-crdt';
-import type { EphemeraObject } from '../types/object';
+import type { SkelenoteObject } from '../types/object';
 import type { TypeDefinition } from '../types/type-definition';
 
 /** Key for the objects map in the root document */
@@ -50,17 +50,17 @@ export function getContentText(doc: LoroDoc, objectId: string): LoroText {
 }
 
 /**
- * Serializes an EphemeraObject to a JSON string for storage
+ * Serializes an SkelenoteObject to a JSON string for storage
  */
-export function serializeObject(obj: EphemeraObject): string {
+export function serializeObject(obj: SkelenoteObject): string {
   return JSON.stringify(obj);
 }
 
 /**
- * Deserializes a JSON string back to an EphemeraObject
+ * Deserializes a JSON string back to an SkelenoteObject
  */
-export function deserializeObject(data: string): EphemeraObject {
-  return JSON.parse(data) as EphemeraObject;
+export function deserializeObject(data: string): SkelenoteObject {
+  return JSON.parse(data) as SkelenoteObject;
 }
 
 /**

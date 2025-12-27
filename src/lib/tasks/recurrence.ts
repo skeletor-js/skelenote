@@ -10,7 +10,7 @@
  *    - Reset: status: todo, inboxed: false
  */
 
-import type { EphemeraObject, PropertyValue } from '../types';
+import type { SkelenoteObject, PropertyValue } from '../types';
 import { addDays, addMonths, addYears } from '../utils/date';
 
 /**
@@ -308,7 +308,7 @@ const COPIED_PROPERTIES = ['title', 'priority', 'project', 'note', 'tags', 'recu
  * @returns Properties for the new task
  */
 export function createRecurringTaskProperties(
-  originalTask: EphemeraObject,
+  originalTask: SkelenoteObject,
   nextDueDate: number
 ): Record<string, PropertyValue> {
   const properties: Record<string, PropertyValue> = {
@@ -330,7 +330,7 @@ export function createRecurringTaskProperties(
 /**
  * Check if a task is recurring
  */
-export function isRecurringTask(task: EphemeraObject): boolean {
+export function isRecurringTask(task: SkelenoteObject): boolean {
   const recurrence = task.properties.recurrence as string | null | undefined;
   return parseRecurrence(recurrence) !== null;
 }
@@ -352,7 +352,7 @@ export function isRecurringTask(task: EphemeraObject): boolean {
  * @returns Properties for the new task, or null if not a valid recurring task
  */
 export function prepareNextRecurringTask(
-  task: EphemeraObject
+  task: SkelenoteObject
 ): Record<string, PropertyValue> | null {
   const recurrence = task.properties.recurrence as string | null | undefined;
   const config = parseRecurrence(recurrence);

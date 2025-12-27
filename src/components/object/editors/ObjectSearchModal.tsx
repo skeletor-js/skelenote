@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useObjects, useTypeRegistry } from '@/contexts';
-import type { EphemeraObject } from '@/lib/types';
+import type { SkelenoteObject } from '@/lib/types';
 import './RelationPicker.css';
 
 interface ObjectSearchModalProps {
@@ -38,7 +38,7 @@ export function ObjectSearchModal({
     const allObjects = store.getAll();
     const lowerQuery = query.toLowerCase();
 
-    return allObjects.filter((obj: EphemeraObject) => {
+    return allObjects.filter((obj: SkelenoteObject) => {
       // Filter by target types if specified
       if (targetTypeIds && targetTypeIds.length > 0) {
         if (!targetTypeIds.includes(obj.typeId)) return false;

@@ -5,7 +5,7 @@
 
 import { useMemo } from 'react';
 import { useObjects, useTypeRegistry } from '@/contexts';
-import type { EphemeraObject } from '@/lib/types';
+import type { SkelenoteObject } from '@/lib/types';
 import './MentionSuggestion.css';
 
 export interface MentionItem {
@@ -30,13 +30,13 @@ export function useMentionSuggestions(query: string): MentionItem[] {
 
     // Filter and map objects to mention items
     const items: MentionItem[] = allObjects
-      .filter((obj: EphemeraObject) => {
+      .filter((obj: SkelenoteObject) => {
         // Get display name from title or name property
         const name = (obj.properties.title ?? obj.properties.name ?? '') as string;
         return name.toLowerCase().includes(lowerQuery);
       })
       .slice(0, 10) // Limit results
-      .map((obj: EphemeraObject) => {
+      .map((obj: SkelenoteObject) => {
         const name = (obj.properties.title ?? obj.properties.name ?? 'Untitled') as string;
         const typeDef = typeRegistry.get(obj.typeId);
         const icon = typeDef?.icon ?? '📄';
@@ -69,14 +69,14 @@ export function getMentionMenuItems(
   const lowerQuery = query.toLowerCase();
 
   return allObjects
-    .filter((obj: EphemeraObject) => {
+    .filter((obj: SkelenoteObject) => {
       // Exclude the current object to prevent self-mentions
       if (excludeObjectId && obj.id === excludeObjectId) return false;
       const name = (obj.properties.title ?? obj.properties.name ?? '') as string;
       return name.toLowerCase().includes(lowerQuery);
     })
     .slice(0, 10)
-    .map((obj: EphemeraObject) => {
+    .map((obj: SkelenoteObject) => {
       const name = (obj.properties.title ?? obj.properties.name ?? 'Untitled') as string;
       const typeDef = typeRegistry.get(obj.typeId);
       const icon = typeDef?.icon ?? '📄';

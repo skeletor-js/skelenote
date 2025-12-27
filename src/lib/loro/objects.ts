@@ -4,7 +4,7 @@
 
 import type { LoroDoc } from 'loro-crdt';
 import type {
-  EphemeraObject,
+  SkelenoteObject,
   CreateObjectInput,
   UpdateObjectInput,
   PropertyValue,
@@ -56,7 +56,7 @@ export class ObjectStore {
   /**
    * Create a new object
    */
-  create(input: CreateObjectInput): EphemeraObject {
+  create(input: CreateObjectInput): SkelenoteObject {
     const typeDef = this.typeRegistry.get(input.typeId);
     if (!typeDef) {
       throw new ValidationError(`Unknown type: ${input.typeId}`);
@@ -71,7 +71,7 @@ export class ObjectStore {
 
     // Create the object
     const now = Date.now();
-    const obj: EphemeraObject = {
+    const obj: SkelenoteObject = {
       id,
       typeId: input.typeId,
       properties,
@@ -96,7 +96,7 @@ export class ObjectStore {
   /**
    * Get an object by ID
    */
-  get(id: string): EphemeraObject | undefined {
+  get(id: string): SkelenoteObject | undefined {
     const objectsMap = getObjectsMap(this.doc);
     const data = objectsMap.get(id);
 
@@ -110,7 +110,7 @@ export class ObjectStore {
   /**
    * Get an object by ID, throwing if not found
    */
-  getOrThrow(id: string): EphemeraObject {
+  getOrThrow(id: string): SkelenoteObject {
     const obj = this.get(id);
     if (!obj) {
       throw new ObjectNotFoundError(id);
@@ -121,9 +121,9 @@ export class ObjectStore {
   /**
    * Get all objects
    */
-  getAll(): EphemeraObject[] {
+  getAll(): SkelenoteObject[] {
     const objectsMap = getObjectsMap(this.doc);
-    const objects: EphemeraObject[] = [];
+    const objects: SkelenoteObject[] = [];
 
     // Iterate over all entries in the map
     const entries = objectsMap.toJSON() as Record<string, string>;
@@ -139,14 +139,14 @@ export class ObjectStore {
   /**
    * Get all objects of a specific type
    */
-  getByType(typeId: string): EphemeraObject[] {
+  getByType(typeId: string): SkelenoteObject[] {
     return this.getAll().filter((obj) => obj.typeId === typeId);
   }
 
   /**
    * Update an existing object
    */
-  update(id: string, input: UpdateObjectInput): EphemeraObject {
+  update(id: string, input: UpdateObjectInput): SkelenoteObject {
     const obj = this.getOrThrow(id);
     const typeDef = this.typeRegistry.get(obj.typeId);
 
@@ -161,7 +161,7 @@ export class ObjectStore {
     }
 
     // Create updated object
-    const updated: EphemeraObject = {
+    const updated: SkelenoteObject = {
       ...obj,
       properties: newProperties,
       inboxed: input.inboxed ?? obj.inboxed,
@@ -178,7 +178,7 @@ export class ObjectStore {
   /**
    * Set a single property value
    */
-  setProperty(id: string, propertyId: string, value: PropertyValue): EphemeraObject {
+  setProperty(id: string, propertyId: string, value: PropertyValue): SkelenoteObject {
     return this.update(id, {
       properties: { [propertyId]: value },
     });
@@ -245,14 +245,14 @@ export class ObjectStore {
   /**
    * Mark object as processed (remove from inbox)
    */
-  markProcessed(id: string): EphemeraObject {
+  markProcessed(id: string): SkelenoteObject {
     return this.update(id, { inboxed: false });
   }
 
   /**
    * Get all inboxed objects
    */
-  getInboxed(): EphemeraObject[] {
+  getInboxed(): SkelenoteObject[] {
     return this.getAll().filter((obj) => obj.inboxed);
   }
 

@@ -2,7 +2,7 @@
  * TaskList - displays tasks in a list format
  */
 
-import type { EphemeraObject } from '@/lib/types';
+import type { SkelenoteObject } from '@/lib/types';
 import { useNavigation } from '@/contexts';
 import { EmptyState } from '@/components/ui';
 import { TaskRow } from './TaskRow';
@@ -10,7 +10,7 @@ import './TaskList.css';
 
 interface TaskListProps {
   /** Tasks to display */
-  tasks: EphemeraObject[];
+  tasks: SkelenoteObject[];
   /** Callback when task completion is toggled */
   onToggleComplete: (taskId: string) => void;
   /** Callback when task is deleted */

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import type { EphemeraObject } from '../../types';
+import type { SkelenoteObject } from '../../types';
 import {
   filterToday,
   filterThisWeek,
@@ -22,7 +22,7 @@ function createMockTask(overrides: Partial<{
   priority: string | null;
   project: string | null;
   updatedAt: number;
-}>): EphemeraObject {
+}>): SkelenoteObject {
   return {
     id: overrides.id ?? 'task-1',
     typeId: 'task',

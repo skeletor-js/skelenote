@@ -5,19 +5,19 @@
 import { useCallback } from 'react';
 import { useObjects } from '@/contexts';
 import { linkObjectToDaily, isLinkedToToday } from '@/lib/daily';
-import type { EphemeraObject } from '@/lib/types';
+import type { SkelenoteObject } from '@/lib/types';
 
 interface UseLinkToDailyResult {
   /**
    * Link an object to today's daily note
    * Sets the dailyNote relation and appends a mention to the daily note content
    */
-  linkToDaily: (object: EphemeraObject) => EphemeraObject | null;
+  linkToDaily: (object: SkelenoteObject) => SkelenoteObject | null;
 
   /**
    * Check if an object is already linked to today's daily note
    */
-  isLinkedToToday: (object: EphemeraObject) => boolean;
+  isLinkedToToday: (object: SkelenoteObject) => boolean;
 }
 
 /**
@@ -38,7 +38,7 @@ export function useLinkToDaily(): UseLinkToDailyResult {
   const { store, refreshData } = useObjects();
 
   const linkToDaily = useCallback(
-    (object: EphemeraObject): EphemeraObject | null => {
+    (object: SkelenoteObject): SkelenoteObject | null => {
       if (!store) return null;
       const dailyNote = linkObjectToDaily(store, object);
       refreshData();
@@ -47,7 +47,7 @@ export function useLinkToDaily(): UseLinkToDailyResult {
     [store, refreshData]
   );
 
-  const checkIsLinkedToToday = useCallback((object: EphemeraObject): boolean => {
+  const checkIsLinkedToToday = useCallback((object: SkelenoteObject): boolean => {
     return isLinkedToToday(object);
   }, []);
 

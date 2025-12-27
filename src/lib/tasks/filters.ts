@@ -2,7 +2,7 @@
  * Task filtering and sorting functions for task views
  */
 
-import type { EphemeraObject } from '../types';
+import type { SkelenoteObject } from '../types';
 import { isToday, isOverdue, isThisWeek, isBeyondThisWeek } from '../utils/date';
 
 /**
@@ -32,7 +32,7 @@ export function getPriorityValue(priority: string | null | undefined): number {
  * Filter function for Today view
  * Tasks due today that are not done
  */
-export function filterToday(task: EphemeraObject): boolean {
+export function filterToday(task: SkelenoteObject): boolean {
   const status = task.properties.status as string | null;
   const dueDate = task.properties.dueDate as number | null;
 
@@ -46,7 +46,7 @@ export function filterToday(task: EphemeraObject): boolean {
  * Filter function for This Week view
  * Tasks due this week (including today) that are not done
  */
-export function filterThisWeek(task: EphemeraObject): boolean {
+export function filterThisWeek(task: SkelenoteObject): boolean {
   const status = task.properties.status as string | null;
   const dueDate = task.properties.dueDate as number | null;
 
@@ -60,7 +60,7 @@ export function filterThisWeek(task: EphemeraObject): boolean {
  * Filter function for Overdue view
  * Tasks with due date before today that are not done
  */
-export function filterOverdue(task: EphemeraObject): boolean {
+export function filterOverdue(task: SkelenoteObject): boolean {
   const status = task.properties.status as string | null;
   const dueDate = task.properties.dueDate as number | null;
 
@@ -74,7 +74,7 @@ export function filterOverdue(task: EphemeraObject): boolean {
  * Filter function for Blocked view
  * Tasks with status = blocked (regardless of done status per PRD)
  */
-export function filterBlocked(task: EphemeraObject): boolean {
+export function filterBlocked(task: SkelenoteObject): boolean {
   const status = task.properties.status as string | null;
   return status === 'blocked';
 }
@@ -83,7 +83,7 @@ export function filterBlocked(task: EphemeraObject): boolean {
  * Filter function for Eventually view
  * Tasks due beyond this week that are not done
  */
-export function filterEventually(task: EphemeraObject): boolean {
+export function filterEventually(task: SkelenoteObject): boolean {
   const status = task.properties.status as string | null;
   const dueDate = task.properties.dueDate as number | null;
 
@@ -97,7 +97,7 @@ export function filterEventually(task: EphemeraObject): boolean {
  * Filter function for Completed view
  * Tasks with status = done
  */
-export function filterCompleted(task: EphemeraObject): boolean {
+export function filterCompleted(task: SkelenoteObject): boolean {
   const status = task.properties.status as string | null;
   return status === 'done';
 }
@@ -105,7 +105,7 @@ export function filterCompleted(task: EphemeraObject): boolean {
 /**
  * Get the appropriate filter function for a task filter type
  */
-export function getTaskFilter(filter: TaskFilter): (task: EphemeraObject) => boolean {
+export function getTaskFilter(filter: TaskFilter): (task: SkelenoteObject) => boolean {
   switch (filter) {
     case 'today':
       return filterToday;
@@ -153,7 +153,7 @@ export function getDefaultSort(filter: TaskFilter): SortConfig {
 /**
  * Sort tasks by the specified configuration
  */
-export function sortTasks(tasks: EphemeraObject[], config: SortConfig): EphemeraObject[] {
+export function sortTasks(tasks: SkelenoteObject[], config: SortConfig): SkelenoteObject[] {
   const sorted = [...tasks];
 
   sorted.sort((a, b) => {
@@ -189,9 +189,9 @@ export function sortTasks(tasks: EphemeraObject[], config: SortConfig): Ephemera
  * Filter and sort tasks for a specific view
  */
 export function getFilteredTasks(
-  tasks: EphemeraObject[],
+  tasks: SkelenoteObject[],
   filter: TaskFilter
-): EphemeraObject[] {
+): SkelenoteObject[] {
   const filterFn = getTaskFilter(filter);
   const sortConfig = getDefaultSort(filter);
 
@@ -203,10 +203,10 @@ export function getFilteredTasks(
  * Group tasks by a property value
  */
 export function groupTasksBy(
-  tasks: EphemeraObject[],
+  tasks: SkelenoteObject[],
   property: 'status' | 'project'
-): Map<string, EphemeraObject[]> {
-  const groups = new Map<string, EphemeraObject[]>();
+): Map<string, SkelenoteObject[]> {
+  const groups = new Map<string, SkelenoteObject[]>();
 
   for (const task of tasks) {
     let key: string;

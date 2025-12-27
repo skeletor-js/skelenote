@@ -4,7 +4,7 @@
  */
 
 import { useCallback } from 'react';
-import type { EphemeraObject } from '@/lib/types';
+import type { SkelenoteObject } from '@/lib/types';
 import { formatRelativeDate } from '@/lib/utils/date';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
 import { Tag, ContextMenu, ConfirmDialog, type TagColor, type ContextMenuItem } from '@/components/ui';
@@ -13,7 +13,7 @@ import './InboxRow.css';
 
 interface InboxRowProps {
   /** The inbox item object to display */
-  item: EphemeraObject;
+  item: SkelenoteObject;
   /** Callback when row is clicked (navigates to detail) */
   onClick: () => void;
   /** Callback when process button is clicked */

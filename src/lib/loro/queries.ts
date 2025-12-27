@@ -2,7 +2,7 @@
  * Query helpers for filtering and sorting skelenote objects
  */
 
-import type { EphemeraObject, PropertyValue } from '../types';
+import type { SkelenoteObject, PropertyValue } from '../types';
 
 /**
  * Sort direction
@@ -66,7 +66,7 @@ export interface QueryConfig {
 /**
  * Get a field value from an object (supports properties and built-in fields)
  */
-function getFieldValue(obj: EphemeraObject, field: string): PropertyValue {
+function getFieldValue(obj: SkelenoteObject, field: string): PropertyValue {
   switch (field) {
     case 'id':
       return obj.id;
@@ -86,7 +86,7 @@ function getFieldValue(obj: EphemeraObject, field: string): PropertyValue {
 /**
  * Apply a filter condition to an object
  */
-function matchesFilter(obj: EphemeraObject, filter: FilterCondition): boolean {
+function matchesFilter(obj: SkelenoteObject, filter: FilterCondition): boolean {
   const value = getFieldValue(obj, filter.field);
   const filterValue = filter.value;
 
@@ -184,7 +184,7 @@ function compareValues(a: PropertyValue, b: PropertyValue, direction: SortDirect
 /**
  * Execute a query on a list of objects
  */
-export function executeQuery(objects: EphemeraObject[], config: QueryConfig): EphemeraObject[] {
+export function executeQuery(objects: SkelenoteObject[], config: QueryConfig): SkelenoteObject[] {
   let result = [...objects];
 
   // Apply filters
@@ -216,9 +216,9 @@ export function executeQuery(objects: EphemeraObject[], config: QueryConfig): Ep
  */
 export class QueryBuilder {
   private config: QueryConfig = {};
-  private objects: EphemeraObject[];
+  private objects: SkelenoteObject[];
 
-  constructor(objects: EphemeraObject[]) {
+  constructor(objects: SkelenoteObject[]) {
     this.objects = objects;
     this.config.filters = [];
   }
@@ -293,14 +293,14 @@ export class QueryBuilder {
   /**
    * Execute the query and return results
    */
-  execute(): EphemeraObject[] {
+  execute(): SkelenoteObject[] {
     return executeQuery(this.objects, this.config);
   }
 
   /**
    * Get the first result or undefined
    */
-  first(): EphemeraObject | undefined {
+  first(): SkelenoteObject | undefined {
     return this.limit(1).execute()[0];
   }
 
@@ -317,6 +317,6 @@ export class QueryBuilder {
 /**
  * Create a query builder for objects
  */
-export function query(objects: EphemeraObject[]): QueryBuilder {
+export function query(objects: SkelenoteObject[]): QueryBuilder {
   return new QueryBuilder(objects);
 }

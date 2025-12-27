@@ -4,7 +4,7 @@
 
 /**
  * An item that can be searched
- * Built from an EphemeraObject by extracting searchable text
+ * Built from a SkelenoteObject by extracting searchable text
  */
 export interface SearchableItem {
   /** Object ID */

@@ -4,18 +4,18 @@
 
 import { useMemo, useCallback } from 'react';
 import { useObjects } from '@/contexts';
-import type { EphemeraObject } from '@/lib/types';
+import type { SkelenoteObject } from '@/lib/types';
 import { getOrCreateDailyNote, getDailyNoteByDate } from '@/lib/daily';
 
 export interface UseDailyNoteResult {
   /** The daily note for the specified date (or today if no date provided) */
-  dailyNote: EphemeraObject | null;
+  dailyNote: SkelenoteObject | null;
   /** Whether the data is still loading */
   isLoading: boolean;
   /** Ensure the daily note exists (creates if needed) and returns it */
-  ensureExists: () => EphemeraObject | null;
+  ensureExists: () => SkelenoteObject | null;
   /** Navigate to the daily note (ensures it exists first) */
-  getOrCreate: () => EphemeraObject | null;
+  getOrCreate: () => SkelenoteObject | null;
 }
 
 /**
