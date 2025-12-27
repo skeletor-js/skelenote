@@ -15,3 +15,8 @@ export {
   type ConfirmDialogState,
   type UseConfirmDialogResult,
 } from './useConfirmDialog';
+export {
+  useContextMenu,
+  type ContextMenuPosition,
+  type UseContextMenuResult,
+} from './useContextMenu';
