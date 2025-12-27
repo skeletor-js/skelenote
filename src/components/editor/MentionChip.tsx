@@ -2,10 +2,11 @@
  * MentionChip - Inline mention component for BlockNote editor
  * Displays object references as styled chips within the editor
  * Dynamically looks up object name to reflect title changes
+ * Clicking navigates to the mentioned object
  */
 
 import { createReactInlineContentSpec } from '@blocknote/react';
-import { useObjects } from '@/contexts';
+import { useObjects, useNavigation } from '@/contexts';
 import './MentionChip.css';
 
 // The mention inline content spec for BlockNote
@@ -29,6 +30,24 @@ export const Mention = createReactInlineContentSpec(
     render: (props) => {
       const { objectId, objectName, objectTypeId } = props.inlineContent.props;
       const { store } = useObjects();
+      const { navigateToObject } = useNavigation();
+
+      const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (objectId) {
+          navigateToObject(objectId);
+        }
+      };
+
+      const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          if (objectId) {
+            navigateToObject(objectId);
+          }
+        }
+      };
 
       // Don't render if object was deleted
       if (store && objectId) {
@@ -48,6 +67,10 @@ export const Mention = createReactInlineContentSpec(
             data-object-id={objectId}
             data-type-id={objectTypeId}
             contentEditable={false}
+            onClick={handleClick}
+            onKeyDown={handleKeyDown}
+            role="link"
+            tabIndex={0}
           >
             @{displayName}
           </span>
@@ -61,6 +84,10 @@ export const Mention = createReactInlineContentSpec(
           data-object-id={objectId}
           data-type-id={objectTypeId}
           contentEditable={false}
+          onClick={handleClick}
+          onKeyDown={handleKeyDown}
+          role="link"
+          tabIndex={0}
         >
           @{objectName || 'Unknown'}
         </span>
