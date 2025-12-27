@@ -98,6 +98,7 @@ export class LoroDocStore {
 
   /**
    * Import documents from a binary snapshot
+   * Merges into existing documents using CRDT, or creates new ones
    */
   importAll(data: Uint8Array): void {
     const jsonData = new TextDecoder().decode(data);
@@ -105,9 +106,17 @@ export class LoroDocStore {
 
     for (const [id, bytesArray] of Object.entries(parsed)) {
       const bytes = new Uint8Array(bytesArray);
-      const doc = new LoroDoc();
-      doc.import(bytes);
-      this.documents.set(id, doc);
+      // Get existing doc or create new one
+      let doc = this.documents.get(id);
+      if (doc) {
+        // Import into existing doc (CRDT merge)
+        doc.import(bytes);
+      } else {
+        // Create new doc for documents we don't have yet
+        doc = new LoroDoc();
+        doc.import(bytes);
+        this.documents.set(id, doc);
+      }
     }
   }
 
