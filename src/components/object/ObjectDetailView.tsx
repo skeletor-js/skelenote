@@ -21,7 +21,7 @@ interface ObjectDetailViewProps {
 }
 
 export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
-  const { store, isLoading, refreshData } = useObjects();
+  const { store, isLoading, refreshData, scheduleSave } = useObjects();
   const { navigateBack, canGoBack } = useNavigation();
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
@@ -104,8 +104,10 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
       if (!store) return;
       store.setContent(objectId, content);
       // Don't call refreshData here - editor handles its own state
+      // But do schedule a save to persist content changes
+      scheduleSave();
     },
-    [store, objectId]
+    [store, objectId, scheduleSave]
   );
 
   // Get current content for the editor

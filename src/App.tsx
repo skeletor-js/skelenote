@@ -7,6 +7,7 @@ import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
 import { useNavigation, useObjects, type ViewType } from '@/contexts';
 import { useCommandPalette, useTodaysDailyNote } from '@/hooks';
+import { runFirstRunSetup } from '@/lib/first-run';
 import type { TaskFilter } from '@/lib/tasks/filters';
 
 /**
@@ -278,20 +279,34 @@ function MainContent() {
 }
 
 function App() {
-  const { store } = useObjects();
+  const { store, refreshData, saveNow } = useObjects();
   const inboxCount = store?.getInboxed().length ?? 0;
   const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
   const { ensureExists: ensureTodaysDailyNote } = useTodaysDailyNote();
-  const dailyNoteCreatedRef = useRef(false);
+  const startupCompleteRef = useRef(false);
 
-  // Auto-create today's daily note on app launch
+  // Auto-create today's daily note and run first-run setup on app launch
   useEffect(() => {
-    if (!dailyNoteCreatedRef.current && store) {
-      ensureTodaysDailyNote();
-      dailyNoteCreatedRef.current = true;
+    if (!startupCompleteRef.current && store) {
+      // Create today's daily note first
+      const dailyNote = ensureTodaysDailyNote();
+
+      // Run first-run setup if needed (creates welcome note)
+      if (dailyNote) {
+        const dailyNoteName = String(dailyNote.properties.title ?? 'Today');
+        const welcomeNoteId = runFirstRunSetup(store, dailyNote.id, dailyNoteName);
+        refreshData();
+
+        // Immediately save if first-run created data
+        if (welcomeNoteId) {
+          saveNow();
+        }
+      }
+
+      startupCompleteRef.current = true;
     }
-  }, [store, ensureTodaysDailyNote]);
+  }, [store, ensureTodaysDailyNote, refreshData, saveNow]);
 
   const openQuickCapture = useCallback(() => {
     setIsQuickCaptureOpen(true);
