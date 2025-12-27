@@ -26,7 +26,7 @@ const EMPTY_MESSAGES: Record<TaskFilter, string> = {
 };
 
 export function TaskView({ filter, title }: TaskViewProps) {
-  const { tasks, isLoading, toggleComplete } = useTasks({ filter });
+  const { tasks, isLoading, toggleComplete, deleteTask } = useTasks({ filter });
 
   if (isLoading) {
     return (
@@ -48,6 +48,7 @@ export function TaskView({ filter, title }: TaskViewProps) {
         <TaskList
           tasks={tasks}
           onToggleComplete={toggleComplete}
+          onDeleteTask={deleteTask}
           emptyMessage={EMPTY_MESSAGES[filter]}
         />
       </div>

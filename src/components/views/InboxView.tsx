@@ -9,7 +9,7 @@ import { InboxRow } from './InboxRow';
 import './InboxView.css';
 
 export function InboxView() {
-  const { items, isLoading, count, processItem } = useInbox();
+  const { items, isLoading, count, processItem, deleteItem } = useInbox();
   const { navigateToObject } = useNavigation();
 
   if (isLoading) {
@@ -44,6 +44,7 @@ export function InboxView() {
                 item={item}
                 onClick={() => navigateToObject(item.id)}
                 onProcess={processItem}
+                onDelete={deleteItem}
               />
             ))}
           </div>

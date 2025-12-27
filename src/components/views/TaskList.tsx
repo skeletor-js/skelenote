@@ -12,6 +12,8 @@ interface TaskListProps {
   tasks: EphemeraObject[];
   /** Callback when task completion is toggled */
   onToggleComplete: (taskId: string) => void;
+  /** Callback when task is deleted */
+  onDeleteTask: (taskId: string) => void;
   /** Message to show when list is empty */
   emptyMessage?: string;
 }
@@ -19,6 +21,7 @@ interface TaskListProps {
 export function TaskList({
   tasks,
   onToggleComplete,
+  onDeleteTask,
   emptyMessage = 'No tasks',
 }: TaskListProps) {
   const { navigateToObject } = useNavigation();
@@ -38,6 +41,7 @@ export function TaskList({
           key={task.id}
           task={task}
           onToggleComplete={onToggleComplete}
+          onDelete={onDeleteTask}
           onClick={() => navigateToObject(task.id)}
         />
       ))}

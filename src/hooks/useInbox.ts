@@ -5,6 +5,7 @@
 import { useMemo, useCallback } from 'react';
 import { useObjects } from '@/contexts';
 import type { EphemeraObject } from '@/lib/types';
+import { removeMentionsFromContent } from '@/lib/editor';
 
 export interface UseInboxResult {
   /** All inboxed items sorted by createdAt (newest first) */
@@ -15,6 +16,8 @@ export interface UseInboxResult {
   count: number;
   /** Mark an item as processed (sets inboxed: false) */
   processItem: (itemId: string) => void;
+  /** Delete an inbox item and clean up mentions */
+  deleteItem: (itemId: string) => void;
 }
 
 /**
@@ -56,10 +59,40 @@ export function useInbox(): UseInboxResult {
     [store, refreshData]
   );
 
+  // Delete an inbox item and clean up mentions
+  const deleteItem = useCallback(
+    (itemId: string) => {
+      if (!store) return;
+
+      // Clean up mentions of this item in other objects' content
+      const allObjects = store.getAll();
+      for (const obj of allObjects) {
+        if (obj.id === itemId) continue;
+        try {
+          const content = store.getContent(obj.id);
+          if (content) {
+            const cleanedContent = removeMentionsFromContent(content, itemId);
+            if (cleanedContent) {
+              store.setContent(obj.id, cleanedContent);
+            }
+          }
+        } catch {
+          // Skip objects without content
+        }
+      }
+
+      // Delete the item
+      store.delete(itemId);
+      refreshData();
+    },
+    [store, refreshData]
+  );
+
   return {
     items,
     isLoading,
     count: items.length,
     processItem,
+    deleteItem,
   };
 }

@@ -6,8 +6,9 @@
 import { useCallback } from 'react';
 import type { EphemeraObject } from '@/lib/types';
 import { formatRelativeDate } from '@/lib/utils/date';
-import { useObjects, useTypeRegistry } from '@/contexts';
-import { Tag, type TagColor } from '@/components/ui';
+import { useObjects, useTypeRegistry, useToast } from '@/contexts';
+import { Tag, ContextMenu, ConfirmDialog, type TagColor, type ContextMenuItem } from '@/components/ui';
+import { useContextMenu, useConfirmDialog } from '@/hooks';
 import './InboxRow.css';
 
 interface InboxRowProps {
@@ -17,11 +18,16 @@ interface InboxRowProps {
   onClick: () => void;
   /** Callback when process button is clicked */
   onProcess: (itemId: string) => void;
+  /** Callback when item is deleted */
+  onDelete: (itemId: string) => void;
 }
 
-export function InboxRow({ item, onClick, onProcess }: InboxRowProps) {
+export function InboxRow({ item, onClick, onProcess, onDelete }: InboxRowProps) {
   const { store } = useObjects();
   const typeRegistry = useTypeRegistry();
+  const { addToast } = useToast();
+  const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
+  const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
 
   // Get type info
   const typeDef = typeRegistry.get(item.typeId);
@@ -62,10 +68,41 @@ export function InboxRow({ item, onClick, onProcess }: InboxRowProps) {
     [onProcess, item.id]
   );
 
+  // Handle delete with confirmation
+  const handleDelete = useCallback(async () => {
+    const confirmed = await confirm({
+      title: `Delete ${typeName}?`,
+      message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    });
+
+    if (confirmed) {
+      onDelete(item.id);
+      addToast({
+        type: 'success',
+        message: `"${title}" deleted`,
+      });
+    }
+  }, [confirm, typeName, title, item.id, onDelete, addToast]);
+
+  // Context menu items
+  const contextMenuItems: ContextMenuItem[] = [
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: '🗑️',
+      variant: 'danger',
+      onClick: handleDelete,
+    },
+  ];
+
   return (
+    <>
     <div
       className="inbox-row"
       onClick={onClick}
+      onContextMenu={openContextMenu}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -106,5 +143,26 @@ export function InboxRow({ item, onClick, onProcess }: InboxRowProps) {
         Done
       </button>
     </div>
+
+    {/* Context Menu */}
+    <ContextMenu
+      items={contextMenuItems}
+      position={position}
+      isOpen={isOpen}
+      onClose={closeContextMenu}
+    />
+
+    {/* Confirm Dialog */}
+    <ConfirmDialog
+      isOpen={dialogState.isOpen}
+      title={dialogState.title}
+      message={dialogState.message}
+      confirmLabel={dialogState.confirmLabel}
+      cancelLabel={dialogState.cancelLabel}
+      variant={dialogState.variant}
+      onConfirm={handleConfirm}
+      onCancel={handleCancel}
+    />
+    </>
   );
 }
