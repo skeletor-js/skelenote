@@ -95,6 +95,8 @@ export function ObjectProvider({ children }: ObjectProviderProps) {
 
   const refreshData = () => {
     setRefreshCounter((c) => c + 1);
+    // Trigger sync broadcast (debounced, no disk write)
+    docStore.sync();
   };
 
   // Auto-save periodically

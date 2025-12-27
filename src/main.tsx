@@ -6,6 +6,7 @@ import {
   SidebarProvider,
   NavigationProvider,
   ObjectProvider,
+  SyncProvider,
 } from '@/contexts';
 import '@/styles/global.css';
 
@@ -13,11 +14,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
       <ObjectProvider>
-        <NavigationProvider>
-          <SidebarProvider>
-            <App />
-          </SidebarProvider>
-        </NavigationProvider>
+        <SyncProvider>
+          <NavigationProvider>
+            <SidebarProvider>
+              <App />
+            </SidebarProvider>
+          </NavigationProvider>
+        </SyncProvider>
       </ObjectProvider>
     </ThemeProvider>
   </React.StrictMode>

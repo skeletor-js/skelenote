@@ -12,3 +12,4 @@ export {
   useTypeRegistry,
   useRelationHelper,
 } from './ObjectContext';
+export { SyncProvider, useSyncContext, useSyncContextSafe } from './SyncContext';
