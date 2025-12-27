@@ -76,3 +76,33 @@
 .object-header__input:focus {
   border-color: var(--text-primary);
 }
+
+/* Delete Button */
+.object-header__delete {
+  flex-shrink: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.object-header__delete:hover {
+  color: var(--tag-red);
+  background: rgba(220, 38, 38, 0.1);
+  border-color: var(--tag-red);
+}
+
+.object-header__delete:active {
+  background: rgba(220, 38, 38, 0.2);
+}
+
+.object-header__delete:focus-visible {
+  outline: 2px solid var(--tag-blue);
+  outline-offset: 2px;
+}
