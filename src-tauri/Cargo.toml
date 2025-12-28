@@ -36,6 +36,11 @@ base64 = "0.22"
 # Error handling
 thiserror = "1.0"
 
+# Networking - Local Network Sync
+tokio = { version = "1", features = ["full"] }
+hex = "0.4"  # For fingerprint encoding
+hostname = "0.4"  # For device name detection
+
 [profile.release]
 panic = "abort"
 codegen-units = 1

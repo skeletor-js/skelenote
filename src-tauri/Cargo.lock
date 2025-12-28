@@ -1270,6 +1270,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "hostname"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "617aaa3557aef3810a6369d0a99fac8a080891b68bd9f9812a1eeda0c0730cbd"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "windows-link 0.2.1",
+]
+
+[[package]]
 name = "html5ever"
 version = "0.29.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3168,7 +3179,9 @@ dependencies = [
  "base64 0.22.1",
  "bip39",
  "chacha20poly1305",
+ "hex",
  "hkdf",
+ "hostname",
  "qrcode",
  "rand 0.8.5",
  "serde",
@@ -3179,6 +3192,7 @@ dependencies = [
  "tauri-plugin-fs",
  "tauri-plugin-shell",
  "thiserror 1.0.69",
+ "tokio",
  "zeroize",
 ]
 
@@ -3809,9 +3823,23 @@ dependencies = [
  "bytes",
  "libc",
  "mio",
+ "parking_lot",
  "pin-project-lite",
+ "signal-hook-registry",
  "socket2",
+ "tokio-macros",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "2.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af407857209536a95c8e56f8231ef2c2e2aff839b22e07a1ffcbc617e9db9fa5"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.111",
 ]
 
 [[package]]

@@ -1,15 +1,18 @@
 //! Skelenote Tauri backend
 //!
-//! Provides cryptographic operations for zero-knowledge sync.
+//! Provides cryptographic operations for zero-knowledge sync
+//! and local network sync capabilities.
 
 mod crypto;
+mod network;
 
 use crypto::{
     derive_sync_key, derive_user_id, encrypt_bytes, decrypt_bytes, generate_mnemonic, generate_mnemonic_qr,
     mnemonic_to_master_key, parse_qr_payload, validate_mnemonic, StrongholdManager,
 };
+use network::{LocalSyncServer, NetworkState};
 use std::sync::Mutex;
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 use zeroize::Zeroizing;
 
 /// Shared crypto state managed by Tauri
@@ -199,6 +202,156 @@ fn crypto_clear_key(state: State<'_, CryptoState>) -> Result<(), String> {
 // The in-app QuickCapture modal (via Cmd+K Command Palette) works and is the
 // recommended approach for now.
 
+// ============================================================================
+// Network Commands - Local Network Sync
+// ============================================================================
+
+/// Derive fingerprint from user ID for peer verification
+///
+/// Returns first 8 characters of SHA-256 hash of user ID.
+fn derive_fingerprint(user_id: &str) -> String {
+    use sha2::{Sha256, Digest};
+    let hash = Sha256::digest(user_id.as_bytes());
+    hex::encode(&hash[..4]) // 8 hex chars
+}
+
+/// Start the local sync TCP server
+///
+/// Returns the port number the server is listening on.
+#[tauri::command]
+async fn network_start_server(
+    app: AppHandle,
+    crypto_state: State<'_, CryptoState>,
+    network_state: State<'_, NetworkState>,
+) -> Result<u16, String> {
+    // Check if server is already running
+    {
+        let server = network_state.server.read().await;
+        if server.is_some() {
+            return Err("Server already running".to_string());
+        }
+    }
+
+    // Get fingerprint from user ID
+    let fingerprint = {
+        let stronghold_guard = crypto_state.stronghold.lock().unwrap();
+        let manager = stronghold_guard
+            .as_ref()
+            .ok_or("Crypto not initialized - call crypto_init first")?;
+        let master_key = manager.get_master_key().map_err(|e| e.to_string())?;
+        let user_id = derive_user_id(&master_key);
+        derive_fingerprint(&user_id)
+    };
+
+    // Store fingerprint
+    {
+        let mut fp = network_state.fingerprint.write().await;
+        *fp = Some(fingerprint.clone());
+    }
+
+    // Get device info
+    let device_id = network_state.device_id.read().await.clone();
+    let device_name = network_state.device_name.read().await.clone();
+    let connected_peers = network_state.connected_peers.clone();
+
+    // Start the server
+    let (handle, mut event_rx, port) = LocalSyncServer::start(
+        device_id,
+        device_name,
+        fingerprint,
+        connected_peers,
+    ).await.map_err(|e| e.to_string())?;
+
+    // Store the server handle
+    {
+        let mut server = network_state.server.write().await;
+        *server = Some(handle);
+    }
+
+    // Spawn event handler to emit events to frontend
+    let app_handle = app.clone();
+    tokio::spawn(async move {
+        while let Some(event) = event_rx.recv().await {
+            match event {
+                network::server::ServerEvent::PeerConnected { device_id, device_name, address } => {
+                    let _ = app_handle.emit("local-peer-connected", serde_json::json!({
+                        "deviceId": device_id,
+                        "deviceName": device_name,
+                        "address": address,
+                    }));
+                }
+                network::server::ServerEvent::PeerDisconnected { device_id } => {
+                    let _ = app_handle.emit("local-peer-disconnected", serde_json::json!({
+                        "deviceId": device_id,
+                    }));
+                }
+                network::server::ServerEvent::MessageReceived { device_id, msg_type, payload } => {
+                    let _ = app_handle.emit("local-sync-message", serde_json::json!({
+                        "deviceId": device_id,
+                        "msgType": msg_type,
+                        "payload": payload,
+                    }));
+                }
+                network::server::ServerEvent::Error { message } => {
+                    let _ = app_handle.emit("local-sync-error", serde_json::json!({
+                        "message": message,
+                    }));
+                }
+            }
+        }
+    });
+
+    Ok(port)
+}
+
+/// Stop the local sync TCP server
+#[tauri::command]
+async fn network_stop_server(
+    network_state: State<'_, NetworkState>,
+) -> Result<(), String> {
+    let mut server = network_state.server.write().await;
+    if let Some(handle) = server.take() {
+        // Send shutdown signal (receiver will be dropped, causing the accept loop to exit)
+        let _ = handle.shutdown_tx.send(());
+    }
+    Ok(())
+}
+
+/// Get server info (running status and port)
+#[tauri::command]
+async fn network_get_server_info(
+    network_state: State<'_, NetworkState>,
+) -> Result<network::state::ServerInfo, String> {
+    Ok(network_state.get_server_info().await)
+}
+
+/// Get list of connected peers
+#[tauri::command]
+async fn network_get_connected_peers(
+    network_state: State<'_, NetworkState>,
+) -> Result<Vec<network::state::ConnectedPeer>, String> {
+    let peers = network_state.connected_peers.read().await;
+    Ok(peers.values().cloned().collect())
+}
+
+/// Get this device's info
+#[tauri::command]
+async fn network_get_device_info(
+    network_state: State<'_, NetworkState>,
+) -> Result<serde_json::Value, String> {
+    let device_id = network_state.device_id.read().await.clone();
+    let device_name = network_state.device_name.read().await.clone();
+    let fingerprint = network_state.fingerprint.read().await.clone();
+    let server_info = network_state.get_server_info().await;
+
+    Ok(serde_json::json!({
+        "deviceId": device_id,
+        "deviceName": device_name,
+        "fingerprint": fingerprint,
+        "server": server_info,
+    }))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -208,8 +361,10 @@ pub fn run() {
             stronghold: Mutex::new(None),
             sync_key: Mutex::new(None),
         })
+        .manage(NetworkState::new())
         .invoke_handler(tauri::generate_handler![
             greet,
+            // Crypto commands
             crypto_init,
             crypto_generate_key,
             crypto_import_key,
@@ -221,6 +376,12 @@ pub fn run() {
             crypto_validate_mnemonic,
             crypto_get_user_id,
             crypto_clear_key,
+            // Network commands
+            network_start_server,
+            network_stop_server,
+            network_get_server_info,
+            network_get_connected_peers,
+            network_get_device_info,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
