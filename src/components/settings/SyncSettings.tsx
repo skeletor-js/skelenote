@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useSyncContextSafe } from '@/contexts';
+import { useState, useEffect, useCallback } from 'react';
+import { useSyncContextSafe, useSkeletonKeySafe } from '@/contexts';
 import {
   getUserId,
   getDeviceId,
@@ -12,14 +12,18 @@ import './SyncSettings.css';
 
 export function SyncSettings() {
   const syncContext = useSyncContextSafe();
+  const skeletonKeyContext = useSkeletonKeySafe();
   const [serverUrl, setServerUrl] = useState(getSyncServerUrl() || '');
   const [urlError, setUrlError] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   const userId = getUserId();
   const deviceId = getDeviceId();
   const isConnected = syncContext?.isConnected ?? false;
   const status = syncContext?.status ?? 'disconnected';
+  const hasSkeletonKey = skeletonKeyContext?.hasSkeletonKey ?? false;
 
   // Validate URL on change
   useEffect(() => {
@@ -49,6 +53,26 @@ export function SyncSettings() {
       setTimeout(() => setCopySuccess(false), 2000);
     }
   };
+
+  const handleResetVault = useCallback(async () => {
+    if (!skeletonKeyContext) return;
+
+    setIsResetting(true);
+    try {
+      // Disconnect sync first
+      syncContext?.disconnect();
+
+      // Reset the vault
+      await skeletonKeyContext.resetVault();
+
+      // The app will now show the Skeleton Key setup screen
+    } catch (err) {
+      console.error('[SyncSettings] Failed to reset vault:', err);
+    } finally {
+      setIsResetting(false);
+      setShowResetConfirm(false);
+    }
+  }, [skeletonKeyContext, syncContext]);
 
   const getStatusLabel = () => {
     switch (status) {
@@ -91,6 +115,40 @@ export function SyncSettings() {
           />
           <span>{getStatusLabel()}</span>
         </div>
+      </div>
+
+      <div className="sync-settings__section">
+        <label className="sync-settings__label">Encryption</label>
+        <div className="sync-settings__encryption">
+          {hasSkeletonKey ? (
+            <>
+              <span className="sync-settings__encryption-icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </span>
+              <span className="sync-settings__encryption-label">
+                End-to-end encrypted with Skeleton Key
+              </span>
+            </>
+          ) : (
+            <span className="sync-settings__encryption-label sync-settings__encryption-label--warning">
+              No Skeleton Key configured
+            </span>
+          )}
+        </div>
+        <p className="sync-settings__help">
+          Your notes are encrypted before leaving this device. The sync server
+          cannot read your data.
+        </p>
       </div>
 
       <div className="sync-settings__section">
@@ -138,6 +196,42 @@ export function SyncSettings() {
           Unique identifier for this device (read-only).
         </p>
         <code className="sync-settings__id">{deviceId}</code>
+      </div>
+
+      <div className="sync-settings__divider" />
+
+      <div className="sync-settings__section sync-settings__section--danger">
+        <label className="sync-settings__label">Danger Zone</label>
+        <p className="sync-settings__help">
+          Reset your vault to use a different Skeleton Key. This will disconnect
+          sync and clear your encryption key from this device.
+        </p>
+        {showResetConfirm ? (
+          <div className="sync-settings__confirm-row">
+            <span className="sync-settings__confirm-text">Are you sure?</span>
+            <button
+              className="sync-settings__button sync-settings__button--danger"
+              onClick={handleResetVault}
+              disabled={isResetting}
+            >
+              {isResetting ? 'Resetting...' : 'Yes, Reset'}
+            </button>
+            <button
+              className="sync-settings__button sync-settings__button--secondary"
+              onClick={() => setShowResetConfirm(false)}
+              disabled={isResetting}
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            className="sync-settings__button sync-settings__button--danger-outline"
+            onClick={() => setShowResetConfirm(true)}
+          >
+            Reset Vault
+          </button>
+        )}
       </div>
     </section>
   );

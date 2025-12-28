@@ -30,15 +30,27 @@ export default {
       });
     }
 
-    // Extract user ID from path: /sync/:userId
-    const match = url.pathname.match(/^\/sync\/([^/]+)$/);
-    if (!match) {
+    // Extract user ID from path: /sync/:userId or /sync/:userId/reset
+    const resetMatch = url.pathname.match(/^\/sync\/([^/]+)\/reset$/);
+    const syncMatch = url.pathname.match(/^\/sync\/([^/]+)$/);
+
+    if (resetMatch && request.method === 'DELETE') {
+      // Handle reset endpoint
+      const userId = resetMatch[1];
+      console.log(`[Worker] Reset request for user: ${userId}`);
+
+      const roomId = env.SYNC_ROOM.idFromName(userId);
+      const room = env.SYNC_ROOM.get(roomId);
+      return room.fetch(request);
+    }
+
+    if (!syncMatch) {
       return new Response('Not Found. Use /sync/:userId for WebSocket connections.', {
         status: 404,
       });
     }
 
-    const userId = match[1];
+    const userId = syncMatch[1];
 
     // Check for WebSocket upgrade
     const upgradeHeader = request.headers.get('Upgrade');

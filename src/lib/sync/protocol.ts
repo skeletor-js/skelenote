@@ -8,12 +8,16 @@
 // Message type constants
 export const MessageType = {
   HELLO: 0x01, // Client handshake
-  UPDATE: 0x02, // Loro update bytes
+  UPDATE: 0x02, // Loro update bytes (encrypted in E2EE mode)
   SNAPSHOT_REQUEST: 0x03, // Request full snapshot from another device
-  SNAPSHOT: 0x04, // Full Loro snapshot
+  SNAPSHOT: 0x04, // Full Loro snapshot (encrypted in E2EE mode)
   ACK: 0x05, // Acknowledgment
   PING: 0x06, // Keep-alive ping
   PONG: 0x07, // Keep-alive pong
+  // New: Server-side persistence for E2EE
+  CATCH_UP: 0x08, // Request historical updates from server
+  HISTORY: 0x09, // Batch of historical encrypted updates
+  COMPACT: 0x0a, // Client-initiated compaction
 } as const;
 
 export type MessageTypeValue = (typeof MessageType)[keyof typeof MessageType];
@@ -22,10 +26,40 @@ export type MessageTypeValue = (typeof MessageType)[keyof typeof MessageType];
 export interface HelloPayload {
   deviceId: string;
   protocolVersion: number;
+  /** Whether client supports E2EE (encrypted updates) */
+  encrypted?: boolean;
+  /** Last known sequence number for catch-up */
+  lastSequence?: number;
 }
 
 export interface AckPayload {
   sessionCount: number;
+  /** Current server sequence number */
+  currentSequence?: number;
+  /** Whether there are historical updates to catch up on */
+  hasHistory?: boolean;
+}
+
+/** Request historical updates from server */
+export interface CatchUpPayload {
+  /** Start sequence (exclusive) - get updates after this */
+  fromSequence: number;
+}
+
+/** Header for batch of historical updates */
+export interface HistoryHeaderPayload {
+  /** Number of updates in this batch */
+  count: number;
+  /** Sequence of first update */
+  fromSequence: number;
+  /** Sequence of last update */
+  toSequence: number;
+}
+
+/** Client-initiated compaction request */
+export interface CompactPayload {
+  /** Compact all updates up to this sequence */
+  upToSequence: number;
 }
 
 /**

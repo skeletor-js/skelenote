@@ -13,13 +13,28 @@ crate-type = ["lib", "cdylib", "staticlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["devtools"] }
 tauri-plugin-fs = "2"
 tauri-plugin-shell = "2"
 # tauri-plugin-global-shortcut = "2"  # Disabled: Quick Capture hotkey deprioritized
 # tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2.1" }  # Disabled: crashes on macOS
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+
+# Cryptography - Zero-Knowledge Sync
+chacha20poly1305 = "0.10"    # XChaCha20-Poly1305 AEAD encryption
+rand = "0.8"                  # Secure random number generation
+hkdf = "0.12"                 # Key derivation function
+sha2 = "0.10"                 # SHA-256 for HKDF
+bip39 = "2.0"                 # BIP39 mnemonic generation
+zeroize = { version = "1.7", features = ["derive"] }  # Secure memory cleanup
+
+# QR code generation
+qrcode = "0.14"
+base64 = "0.22"
+
+# Error handling
+thiserror = "1.0"
 
 [profile.release]
 panic = "abort"

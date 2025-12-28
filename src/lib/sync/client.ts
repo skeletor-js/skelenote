@@ -3,7 +3,7 @@
  *
  * Main class for managing WebSocket sync connections.
  * Handles connection lifecycle, message sending/receiving,
- * offline queuing, and automatic reconnection.
+ * offline queuing, automatic reconnection, and E2E encryption.
  */
 
 import { OfflineQueue } from './queue';
@@ -17,6 +17,8 @@ import {
   isValidMessageType,
   type HelloPayload,
   type AckPayload,
+  type CatchUpPayload,
+  type HistoryHeaderPayload,
 } from './protocol';
 import type {
   ConnectionStatus,
@@ -25,6 +27,7 @@ import type {
   SyncEvent,
   SyncEventCallback,
 } from './types';
+import { encrypt, decrypt, hasKey } from '../crypto';
 
 const PROTOCOL_VERSION = 1;
 const PING_INTERVAL = 30000; // 30 seconds
@@ -39,11 +42,50 @@ export class SyncClient {
   private pingInterval: ReturnType<typeof setInterval> | null = null;
   private onUpdateCallback: ((data: Uint8Array) => void) | null = null;
   private onSnapshotRequestCallback: (() => Uint8Array | null) | null = null;
+  private onHistoryCallback: ((updates: Uint8Array[]) => void) | null = null;
+
+  // E2E encryption state
+  private encryptionEnabled = false;
+  private lastSequence = 0;
 
   constructor(config: SyncConfig) {
     this.config = config;
     this.queue = new OfflineQueue();
     this.connectionManager = new ConnectionManager();
+  }
+
+  /**
+   * Enable encryption mode
+   *
+   * Checks if a Skeleton Key exists and enables encryption if so.
+   * Must be called before connect() for encrypted sync.
+   *
+   * @returns true if encryption is enabled
+   */
+  async enableEncryption(): Promise<boolean> {
+    try {
+      this.encryptionEnabled = await hasKey();
+      console.log(`[SyncClient] Encryption ${this.encryptionEnabled ? 'enabled' : 'disabled'}`);
+      return this.encryptionEnabled;
+    } catch (err) {
+      console.error('[SyncClient] Failed to check encryption key:', err);
+      this.encryptionEnabled = false;
+      return false;
+    }
+  }
+
+  /**
+   * Check if encryption is currently enabled
+   */
+  isEncryptionEnabled(): boolean {
+    return this.encryptionEnabled;
+  }
+
+  /**
+   * Get the last known sequence number
+   */
+  getLastSequence(): number {
+    return this.lastSequence;
   }
 
   /**
@@ -90,14 +132,29 @@ export class SyncClient {
 
   /**
    * Send a Loro update to other connected devices
+   *
+   * If encryption is enabled, the update is encrypted before sending.
    */
-  sendUpdate(update: Uint8Array): void {
+  async sendUpdate(update: Uint8Array): Promise<void> {
+    let payload = update;
+
+    // Encrypt if encryption is enabled
+    if (this.encryptionEnabled) {
+      try {
+        payload = await encrypt(update);
+      } catch (err) {
+        console.error('[SyncClient] Encryption failed:', err);
+        this.emit({ type: 'error', error: new Error('Encryption failed') });
+        return;
+      }
+    }
+
     if (this.ws?.readyState === WebSocket.OPEN) {
-      const message = encodeMessage(MessageType.UPDATE, update);
+      const message = encodeMessage(MessageType.UPDATE, payload);
       this.ws.send(message);
     } else {
-      // Queue the update for when we reconnect
-      this.queue.enqueue(update);
+      // Queue the (possibly encrypted) update for when we reconnect
+      this.queue.enqueue(payload);
     }
   }
 
@@ -113,12 +170,68 @@ export class SyncClient {
 
   /**
    * Send a full snapshot to other connected devices
+   *
+   * If encryption is enabled, the snapshot is encrypted before sending.
    */
-  sendSnapshot(snapshot: Uint8Array): void {
+  async sendSnapshot(snapshot: Uint8Array): Promise<void> {
+    let payload = snapshot;
+
+    if (this.encryptionEnabled) {
+      try {
+        payload = await encrypt(snapshot);
+      } catch (err) {
+        console.error('[SyncClient] Snapshot encryption failed:', err);
+        this.emit({ type: 'error', error: new Error('Encryption failed') });
+        return;
+      }
+    }
+
     if (this.ws?.readyState === WebSocket.OPEN) {
-      const message = encodeMessage(MessageType.SNAPSHOT, snapshot);
+      const message = encodeMessage(MessageType.SNAPSHOT, payload);
       this.ws.send(message);
     }
+  }
+
+  /**
+   * Request historical updates from server (for catch-up)
+   */
+  requestCatchUp(fromSequence: number): void {
+    if (this.ws?.readyState !== WebSocket.OPEN) return;
+
+    const payload: CatchUpPayload = { fromSequence };
+    const message = encodeMessage(MessageType.CATCH_UP, encodeJsonPayload(payload));
+    this.ws.send(message);
+    console.log(`[SyncClient] Requesting catch-up from sequence ${fromSequence}`);
+  }
+
+  /**
+   * Request server-side compaction
+   *
+   * Sends an encrypted snapshot to replace historical updates.
+   */
+  async requestCompaction(upToSequence: number, snapshot: Uint8Array): Promise<void> {
+    if (this.ws?.readyState !== WebSocket.OPEN) return;
+
+    let encryptedSnapshot = snapshot;
+    if (this.encryptionEnabled) {
+      try {
+        encryptedSnapshot = await encrypt(snapshot);
+      } catch (err) {
+        console.error('[SyncClient] Compaction snapshot encryption failed:', err);
+        return;
+      }
+    }
+
+    // Build COMPACT message: [headerLen: 4][header JSON][snapshot bytes]
+    const header = encodeJsonPayload({ upToSequence });
+    const payload = new Uint8Array(4 + header.length + encryptedSnapshot.length);
+    new DataView(payload.buffer).setUint32(0, header.length, true);
+    payload.set(header, 4);
+    payload.set(encryptedSnapshot, 4 + header.length);
+
+    const message = encodeMessage(MessageType.COMPACT, payload);
+    this.ws.send(message);
+    console.log(`[SyncClient] Requesting compaction up to sequence ${upToSequence}`);
   }
 
   /**
@@ -150,6 +263,13 @@ export class SyncClient {
   }
 
   /**
+   * Set callback for when historical updates are received
+   */
+  onHistory(callback: (updates: Uint8Array[]) => void): void {
+    this.onHistoryCallback = callback;
+  }
+
+  /**
    * Subscribe to sync events
    */
   on(event: SyncEventType, callback: SyncEventCallback): () => void {
@@ -168,10 +288,12 @@ export class SyncClient {
   private handleOpen(): void {
     this.connectionManager.resetRetries();
 
-    // Send HELLO handshake
+    // Send HELLO handshake with encryption info
     const hello: HelloPayload = {
       deviceId: this.config.deviceId,
       protocolVersion: PROTOCOL_VERSION,
+      encrypted: this.encryptionEnabled,
+      lastSequence: this.lastSequence,
     };
     const message = encodeMessage(MessageType.HELLO, encodeJsonPayload(hello));
     this.ws!.send(message);
@@ -214,6 +336,10 @@ export class SyncClient {
           this.handleSnapshotRequest();
           break;
 
+        case MessageType.HISTORY:
+          this.handleHistory(payload);
+          break;
+
         case MessageType.PONG:
           // Ignore pong responses
           break;
@@ -231,6 +357,16 @@ export class SyncClient {
       const ack = decodeJsonPayload<AckPayload>(payload);
       console.log(`[SyncClient] Connected. ${ack.sessionCount} device(s) in room.`);
 
+      // Update sequence tracking
+      if (ack.currentSequence !== undefined) {
+        // Check if we need to catch up
+        if (ack.hasHistory && this.lastSequence < ack.currentSequence) {
+          console.log(`[SyncClient] Need to catch up: local=${this.lastSequence} server=${ack.currentSequence}`);
+          this.requestCatchUp(this.lastSequence);
+        }
+        this.lastSequence = ack.currentSequence;
+      }
+
       this.setStatus('connected');
       this.flushQueue();
     } catch (err) {
@@ -241,9 +377,27 @@ export class SyncClient {
   /**
    * Handle UPDATE message from another device
    */
-  private handleUpdate(payload: Uint8Array): void {
+  private async handleUpdate(payload: Uint8Array): Promise<void> {
+    console.log('[SyncClient] Received UPDATE, encrypted size:', payload.length);
+    let decrypted = payload;
+
+    // Decrypt if encryption is enabled
+    if (this.encryptionEnabled) {
+      try {
+        decrypted = await decrypt(payload);
+        console.log('[SyncClient] Decrypted UPDATE, size:', decrypted.length);
+      } catch (err) {
+        console.error('[SyncClient] Decryption failed:', err);
+        this.emit({ type: 'error', error: new Error('Decryption failed') });
+        return;
+      }
+    }
+
     if (this.onUpdateCallback) {
-      this.onUpdateCallback(payload);
+      console.log('[SyncClient] Calling onUpdateCallback');
+      this.onUpdateCallback(decrypted);
+    } else {
+      console.warn('[SyncClient] No onUpdateCallback registered');
     }
     this.emit({ type: 'sync' });
   }
@@ -251,10 +405,22 @@ export class SyncClient {
   /**
    * Handle SNAPSHOT message from another device
    */
-  private handleSnapshot(payload: Uint8Array): void {
+  private async handleSnapshot(payload: Uint8Array): Promise<void> {
+    let decrypted = payload;
+
+    if (this.encryptionEnabled) {
+      try {
+        decrypted = await decrypt(payload);
+      } catch (err) {
+        console.error('[SyncClient] Snapshot decryption failed:', err);
+        this.emit({ type: 'error', error: new Error('Decryption failed') });
+        return;
+      }
+    }
+
     if (this.onUpdateCallback) {
       // Snapshots are imported the same way as updates in Loro
-      this.onUpdateCallback(payload);
+      this.onUpdateCallback(decrypted);
     }
     this.emit({ type: 'sync' });
   }
@@ -268,6 +434,55 @@ export class SyncClient {
       if (snapshot) {
         this.sendSnapshot(snapshot);
       }
+    }
+  }
+
+  /**
+   * Handle HISTORY message (batch of historical updates)
+   */
+  private async handleHistory(payload: Uint8Array): Promise<void> {
+    try {
+      // Parse header
+      const headerLen = new DataView(payload.buffer, payload.byteOffset).getUint32(0, true);
+      const headerBytes = payload.slice(4, 4 + headerLen);
+      const header = decodeJsonPayload<HistoryHeaderPayload>(headerBytes);
+
+      console.log(`[SyncClient] Receiving ${header.count} historical updates (${header.fromSequence}-${header.toSequence})`);
+
+      // Decrypt and collect updates
+      const updates: Uint8Array[] = [];
+      let offset = 4 + headerLen;
+
+      for (let i = 0; i < header.count; i++) {
+        const updateLen = new DataView(payload.buffer, payload.byteOffset + offset).getUint32(0, true);
+        offset += 4;
+        const updateData = payload.slice(offset, offset + updateLen);
+        offset += updateLen;
+
+        if (this.encryptionEnabled) {
+          try {
+            const decrypted = await decrypt(updateData);
+            updates.push(decrypted);
+          } catch (err) {
+            console.error(`[SyncClient] Failed to decrypt historical update ${i}:`, err);
+            // Continue with other updates
+          }
+        } else {
+          updates.push(updateData);
+        }
+      }
+
+      // Update sequence
+      this.lastSequence = header.toSequence;
+
+      // Notify listener
+      if (this.onHistoryCallback && updates.length > 0) {
+        this.onHistoryCallback(updates);
+      }
+
+      this.emit({ type: 'sync' });
+    } catch (err) {
+      console.error('[SyncClient] Error handling history:', err);
     }
   }
 
@@ -305,6 +520,7 @@ export class SyncClient {
     while (!this.queue.isEmpty) {
       const update = this.queue.dequeue();
       if (update && this.ws?.readyState === WebSocket.OPEN) {
+        // Queue already contains encrypted data if encryption was enabled when queued
         const message = encodeMessage(MessageType.UPDATE, update.data);
         this.ws.send(message);
       }

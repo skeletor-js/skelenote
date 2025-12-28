@@ -63,6 +63,18 @@
   color: var(--text-muted);
 }
 
+.sync-indicator__lock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tag-green);
+  flex-shrink: 0;
+}
+
+.sync-indicator__lock svg {
+  display: block;
+}
+
 @keyframes pulse {
   0%,
   100% {
