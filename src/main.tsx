@@ -8,6 +8,7 @@ import {
   ObjectProvider,
   SyncProvider,
   ToastProvider,
+  SkeletonKeyProvider,
 } from '@/contexts';
 import { ToastContainer } from '@/components/ui';
 import { migrateLocalStorageKeys } from '@/lib/migration';
@@ -20,15 +21,17 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
       <ToastProvider>
-        <ObjectProvider>
-          <SyncProvider>
-            <NavigationProvider>
-              <SidebarProvider>
-                <App />
-              </SidebarProvider>
-            </NavigationProvider>
-          </SyncProvider>
-        </ObjectProvider>
+        <SkeletonKeyProvider>
+          <ObjectProvider>
+            <SyncProvider>
+              <NavigationProvider>
+                <SidebarProvider>
+                  <App />
+                </SidebarProvider>
+              </NavigationProvider>
+            </SyncProvider>
+          </ObjectProvider>
+        </SkeletonKeyProvider>
         <ToastContainer />
       </ToastProvider>
     </ThemeProvider>

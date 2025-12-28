@@ -98,6 +98,29 @@ export class LoroDocStore {
   }
 
   /**
+   * Check if data is JSON-wrapped (from exportAll) vs raw Loro binary
+   * JSON-wrapped data starts with '{' (0x7B)
+   */
+  private isJsonWrapped(data: Uint8Array): boolean {
+    return data.length > 0 && data[0] === 0x7b; // '{' character
+  }
+
+  /**
+   * Import raw Loro binary data into all existing documents
+   * Used for historical updates that aren't JSON-wrapped
+   */
+  private importRaw(data: Uint8Array): void {
+    // Try to import into each document - Loro will ignore if not applicable
+    for (const [, doc] of this.documents) {
+      try {
+        doc.import(data);
+      } catch {
+        // This update may not be for this document, which is fine
+      }
+    }
+  }
+
+  /**
    * Import documents from a binary snapshot
    * Merges into existing documents using CRDT, or creates new ones
    */
@@ -213,6 +236,59 @@ export class LoroDocStore {
     client.onSnapshotRequest(() => {
       return this.exportAll();
     });
+
+    // Handle historical updates for catch-up
+    client.onHistory((updates: Uint8Array[]) => {
+      this.applyHistoricalUpdates(updates);
+    });
+  }
+
+  /**
+   * Apply a batch of historical updates received during catch-up
+   * Handles both old format (raw Loro binary) and new format (JSON-wrapped)
+   */
+  applyHistoricalUpdates(updates: Uint8Array[]): void {
+    if (updates.length === 0) return;
+
+    console.log(`[LoroDocStore] Applying ${updates.length} historical updates`);
+
+    this.isImporting = true;
+    try {
+      for (const update of updates) {
+        try {
+          if (this.isJsonWrapped(update)) {
+            // New format: JSON-wrapped snapshot from exportAll()
+            this.importAll(update);
+          } else {
+            // Old format: raw Loro binary
+            this.importRaw(update);
+          }
+        } catch (err) {
+          console.warn('[LoroDocStore] Failed to import historical update:', err);
+        }
+      }
+
+      // Notify listeners that data has changed
+      if (this.onRemoteChangeCallback) {
+        this.onRemoteChangeCallback();
+      }
+    } finally {
+      this.isImporting = false;
+    }
+  }
+
+  /**
+   * Request compaction of server-side updates
+   *
+   * Call this periodically to reduce server storage and improve catch-up times.
+   * The current snapshot is sent to replace all updates up to the given sequence.
+   */
+  async requestCompaction(upToSequence: number): Promise<void> {
+    if (!this.syncClient) return;
+
+    const snapshot = this.exportAll();
+    await this.syncClient.requestCompaction(upToSequence, snapshot);
+    console.log(`[LoroDocStore] Requested compaction up to sequence ${upToSequence}`);
   }
 
   /**
@@ -235,19 +311,24 @@ export class LoroDocStore {
    * Handle an update received from another device
    */
   private handleRemoteUpdate(data: Uint8Array): void {
+    console.log('[LoroDocStore] Received remote update, size:', data.length);
     this.isImporting = true;
     try {
       // Try to import as a full snapshot first (contains all documents)
       this.importAll(data);
+      console.log('[LoroDocStore] Import successful');
 
       // Notify listeners that remote data has changed
       if (this.onRemoteChangeCallback) {
+        console.log('[LoroDocStore] Calling onRemoteChangeCallback');
         this.onRemoteChangeCallback();
+      } else {
+        console.warn('[LoroDocStore] No onRemoteChangeCallback registered');
       }
-    } catch {
+    } catch (err) {
       // If it fails, it might be a single document update
       // For now, we only sync full snapshots
-      console.warn('[LoroDocStore] Failed to import remote update');
+      console.warn('[LoroDocStore] Failed to import remote update:', err);
     } finally {
       this.isImporting = false;
     }

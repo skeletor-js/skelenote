@@ -8,6 +8,8 @@ import {
   isValidMessageType,
   type HelloPayload,
   type AckPayload,
+  type CatchUpPayload,
+  type HistoryHeaderPayload,
 } from './protocol';
 
 /**
@@ -16,20 +18,139 @@ import {
 interface SessionData {
   deviceId: string;
   connectedAt: number;
+  encrypted: boolean;
+  lastSequence: number;
+}
+
+/**
+ * Stored update record
+ */
+interface StoredUpdate {
+  sequence: number;
+  data: ArrayBuffer;
+  timestamp: number;
 }
 
 /**
  * SyncRoom Durable Object
  *
  * Manages WebSocket connections for a single user's sync room.
- * Broadcasts messages from any connected device to all other devices.
+ * Stores encrypted updates in SQLite for catch-up and persistence.
  * Uses the hibernation API for cost efficiency.
  */
 export class SyncRoom extends DurableObject {
+  private sql: SqlStorage;
+  private currentSequence: number = 0;
+
+  constructor(ctx: DurableObjectState, env: Env) {
+    super(ctx, env);
+    this.sql = ctx.storage.sql;
+    this.initializeDatabase();
+  }
+
+  /**
+   * Initialize SQLite schema
+   */
+  private initializeDatabase(): void {
+    try {
+      // Create updates table for append-only log
+      this.sql.exec(`
+        CREATE TABLE IF NOT EXISTS updates (
+          sequence INTEGER PRIMARY KEY AUTOINCREMENT,
+          data BLOB NOT NULL,
+          timestamp INTEGER NOT NULL,
+          is_snapshot INTEGER DEFAULT 0
+        )
+      `);
+
+      // Get current sequence
+      const result = this.sql.exec('SELECT MAX(sequence) as max_seq FROM updates').one();
+      this.currentSequence = (result?.max_seq as number) ?? 0;
+
+      console.log(`[SyncRoom] Initialized with sequence ${this.currentSequence}`);
+    } catch (err) {
+      console.error('[SyncRoom] Database initialization failed:', err);
+      this.currentSequence = 0;
+    }
+  }
+
+  /**
+   * Store an encrypted update
+   */
+  private storeUpdate(data: Uint8Array, isSnapshot: boolean = false): number {
+    const timestamp = Date.now();
+
+    this.sql.exec(
+      'INSERT INTO updates (data, timestamp, is_snapshot) VALUES (?, ?, ?)',
+      data,
+      timestamp,
+      isSnapshot ? 1 : 0
+    );
+
+    this.currentSequence++;
+    return this.currentSequence;
+  }
+
+  /**
+   * Get updates after a given sequence
+   */
+  private getUpdatesAfter(sequence: number, limit: number = 100): StoredUpdate[] {
+    const results = this.sql.exec(
+      `SELECT sequence, data, timestamp FROM updates
+       WHERE sequence > ?
+       ORDER BY sequence ASC
+       LIMIT ?`,
+      sequence,
+      limit
+    ).toArray();
+
+    return results.map((row) => ({
+      sequence: row.sequence as number,
+      data: row.data as ArrayBuffer,
+      timestamp: row.timestamp as number,
+    }));
+  }
+
+  /**
+   * Compact updates up to a sequence (replace with snapshot)
+   */
+  private compactUpdates(upToSequence: number, snapshot: Uint8Array): void {
+    // Delete old updates (keep snapshots as markers)
+    this.sql.exec(
+      'DELETE FROM updates WHERE sequence <= ?',
+      upToSequence
+    );
+
+    // Store the compacted snapshot
+    this.storeUpdate(snapshot, true);
+
+    console.log(`[SyncRoom] Compacted updates up to sequence ${upToSequence}`);
+  }
+
+  /**
+   * Clear all stored updates (for data reset)
+   */
+  private clearAllUpdates(): void {
+    this.sql.exec('DELETE FROM updates');
+    this.currentSequence = 0;
+    console.log('[SyncRoom] All updates cleared');
+  }
+
   /**
    * Handle incoming HTTP requests (including WebSocket upgrades)
    */
   async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+
+    // Handle reset endpoint
+    if (url.pathname.endsWith('/reset') && request.method === 'DELETE') {
+      this.clearAllUpdates();
+      return new Response(JSON.stringify({ success: true, message: 'All updates cleared' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const upgradeHeader = request.headers.get('Upgrade');
 
     if (upgradeHeader !== 'websocket') {
@@ -97,6 +218,14 @@ export class SyncRoom extends DurableObject {
           await this.handleSnapshot(ws, payload);
           break;
 
+        case MessageType.CATCH_UP:
+          await this.handleCatchUp(ws, payload);
+          break;
+
+        case MessageType.COMPACT:
+          await this.handleCompact(ws, payload);
+          break;
+
         case MessageType.PING:
           this.handlePing(ws);
           break;
@@ -124,43 +253,63 @@ export class SyncRoom extends DurableObject {
       const sessionData: SessionData = {
         deviceId: hello.deviceId,
         connectedAt: Date.now(),
+        encrypted: hello.encrypted ?? false,
+        lastSequence: hello.lastSequence ?? 0,
       };
-      ws.serializeAttachment(sessionData);
+
+      try {
+        ws.serializeAttachment(sessionData);
+      } catch (attachErr) {
+        console.error('[SyncRoom] Failed to serialize attachment:', attachErr);
+      }
 
       console.log(
-        `[SyncRoom] Device ${hello.deviceId} connected (protocol v${hello.protocolVersion})`
+        `[SyncRoom] Device ${hello.deviceId} connected (encrypted: ${hello.encrypted}, lastSeq: ${hello.lastSequence})`
       );
 
-      // Send ACK response
+      // Determine if client needs to catch up
+      const clientSeq = hello.lastSequence ?? 0;
+      const hasHistory = this.currentSequence > clientSeq;
+
+      console.log(`[SyncRoom] Sending ACK: sessionCount=${this.ctx.getWebSockets().length}, currentSequence=${this.currentSequence}, hasHistory=${hasHistory}`);
+
+      // Send ACK response with sequence info
       const ack: AckPayload = {
         sessionCount: this.ctx.getWebSockets().length,
+        currentSequence: this.currentSequence,
+        hasHistory,
       };
       const ackMessage = encodeMessage(
         MessageType.ACK,
         encodeJsonPayload(ack)
       );
       ws.send(ackMessage);
+
+      console.log('[SyncRoom] ACK sent successfully');
     } catch (err) {
       console.error('[SyncRoom] Error handling HELLO:', err);
     }
   }
 
   /**
-   * Handle UPDATE message - broadcast Loro update bytes to other clients
+   * Handle UPDATE message - store and broadcast
    */
   private async handleUpdate(
     ws: WebSocket,
     payload: Uint8Array
   ): Promise<void> {
+    // Store the update (encrypted or not - server doesn't care)
+    const sequence = this.storeUpdate(payload);
+
+    console.log(
+      `[SyncRoom] Stored update #${sequence} (${payload.byteLength} bytes)`
+    );
+
+    // Broadcast to other clients
     const otherSockets = this.ctx
       .getWebSockets()
       .filter((socket) => socket !== ws);
 
-    console.log(
-      `[SyncRoom] Broadcasting update (${payload.byteLength} bytes) to ${otherSockets.length} clients`
-    );
-
-    // Wrap the payload in an UPDATE message
     const updateMessage = encodeMessage(MessageType.UPDATE, payload);
 
     for (const socket of otherSockets) {
@@ -173,19 +322,28 @@ export class SyncRoom extends DurableObject {
   }
 
   /**
-   * Handle SNAPSHOT_REQUEST - ask another connected device to send a snapshot
+   * Handle SNAPSHOT_REQUEST - check storage first, then other devices
    */
   private async handleSnapshotRequest(ws: WebSocket): Promise<void> {
+    // Check if we have stored updates
+    const updates = this.getUpdatesAfter(0, 1);
+
+    if (updates.length > 0) {
+      // We have stored data - client should use CATCH_UP instead
+      console.log('[SyncRoom] Snapshot request, but stored updates exist. Use CATCH_UP.');
+      return;
+    }
+
+    // No stored data, request from other device
     const otherSockets = this.ctx
       .getWebSockets()
       .filter((socket) => socket !== ws);
 
     if (otherSockets.length === 0) {
-      console.log('[SyncRoom] No other devices to request snapshot from');
+      console.log('[SyncRoom] No other devices for snapshot');
       return;
     }
 
-    // Request snapshot from the first available device
     const requestMessage = encodeMessage(
       MessageType.SNAPSHOT_REQUEST,
       new Uint8Array(0)
@@ -195,21 +353,23 @@ export class SyncRoom extends DurableObject {
   }
 
   /**
-   * Handle SNAPSHOT - broadcast full snapshot to requesting device(s)
+   * Handle SNAPSHOT - store and broadcast
    */
   private async handleSnapshot(
     ws: WebSocket,
     payload: Uint8Array
   ): Promise<void> {
-    // For now, broadcast to all other devices
-    // In the future, we could track which device requested the snapshot
+    // Store snapshot
+    const sequence = this.storeUpdate(payload, true);
+
+    console.log(
+      `[SyncRoom] Stored snapshot #${sequence} (${payload.byteLength} bytes)`
+    );
+
+    // Broadcast to other clients
     const otherSockets = this.ctx
       .getWebSockets()
       .filter((socket) => socket !== ws);
-
-    console.log(
-      `[SyncRoom] Broadcasting snapshot (${payload.byteLength} bytes) to ${otherSockets.length} clients`
-    );
 
     const snapshotMessage = encodeMessage(MessageType.SNAPSHOT, payload);
 
@@ -219,6 +379,88 @@ export class SyncRoom extends DurableObject {
       } catch (err) {
         console.error('[SyncRoom] Failed to send snapshot:', err);
       }
+    }
+  }
+
+  /**
+   * Handle CATCH_UP - send historical updates
+   */
+  private async handleCatchUp(ws: WebSocket, payload: Uint8Array): Promise<void> {
+    try {
+      const { fromSequence } = decodeJsonPayload<CatchUpPayload>(payload);
+
+      console.log(`[SyncRoom] CATCH_UP request from sequence ${fromSequence}`);
+
+      const updates = this.getUpdatesAfter(fromSequence);
+
+      if (updates.length === 0) {
+        console.log(`[SyncRoom] No updates to catch up from sequence ${fromSequence}`);
+        return;
+      }
+
+      console.log(
+        `[SyncRoom] Sending ${updates.length} historical updates from #${fromSequence}`
+      );
+
+      // Build history response
+      const header: HistoryHeaderPayload = {
+        count: updates.length,
+        fromSequence: updates[0].sequence,
+        toSequence: updates[updates.length - 1].sequence,
+      };
+
+      const headerBytes = encodeJsonPayload(header);
+
+      // Calculate total size
+      let totalSize = 4 + headerBytes.length;
+      for (const update of updates) {
+        totalSize += 4 + update.data.byteLength;
+      }
+
+      // Build response
+      const response = new Uint8Array(totalSize);
+      let offset = 0;
+
+      // Header length + header
+      new DataView(response.buffer).setUint32(offset, headerBytes.length, true);
+      offset += 4;
+      response.set(headerBytes, offset);
+      offset += headerBytes.length;
+
+      // Updates
+      for (const update of updates) {
+        const updateData = new Uint8Array(update.data);
+        new DataView(response.buffer).setUint32(offset, updateData.length, true);
+        offset += 4;
+        response.set(updateData, offset);
+        offset += updateData.length;
+      }
+
+      const message = encodeMessage(MessageType.HISTORY, response);
+      ws.send(message);
+      console.log('[SyncRoom] HISTORY response sent');
+    } catch (err) {
+      console.error('[SyncRoom] Error handling CATCH_UP:', err);
+    }
+  }
+
+  /**
+   * Handle COMPACT - replace old updates with snapshot
+   */
+  private async handleCompact(ws: WebSocket, payload: Uint8Array): Promise<void> {
+    try {
+      // Parse header
+      const headerLen = new DataView(payload.buffer, payload.byteOffset).getUint32(0, true);
+      const headerBytes = payload.slice(4, 4 + headerLen);
+      const { upToSequence } = decodeJsonPayload<{ upToSequence: number }>(headerBytes);
+
+      const snapshot = payload.slice(4 + headerLen);
+
+      console.log(`[SyncRoom] Compacting updates up to #${upToSequence}`);
+
+      this.compactUpdates(upToSequence, snapshot);
+    } catch (err) {
+      console.error('[SyncRoom] Error handling COMPACT:', err);
     }
   }
 

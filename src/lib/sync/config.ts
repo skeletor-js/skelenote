@@ -32,6 +32,16 @@ export function clearSyncServerUrl(): void {
 }
 
 /**
+ * Clear all sync-related settings from localStorage
+ * Call this when resetting or changing skeleton key
+ */
+export function clearAllSyncSettings(): void {
+  localStorage.removeItem(SYNC_SERVER_URL_KEY);
+  localStorage.removeItem('skelenote:userId');
+  localStorage.removeItem('skelenote:deviceId');
+}
+
+/**
  * Validate a WebSocket URL
  */
 export function isValidWebSocketUrl(url: string): boolean {

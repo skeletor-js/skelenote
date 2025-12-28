@@ -5,7 +5,8 @@ import { TaskView, InboxView, DailyNotesView } from '@/components/views';
 import { CommandPalette } from '@/components/palette';
 import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
-import { useNavigation, useObjects, type ViewType } from '@/contexts';
+import { SkeletonKeySetup } from '@/components/setup';
+import { useNavigation, useObjects, useSkeletonKey, type ViewType } from '@/contexts';
 import { useCommandPalette, useTodaysDailyNote } from '@/hooks';
 import { runFirstRunSetup } from '@/lib/first-run';
 import type { TaskFilter } from '@/lib/tasks/filters';
@@ -125,6 +126,7 @@ function MainContent() {
 
 function App() {
   const { store, refreshData, saveNow } = useObjects();
+  const { isInitialized: isCryptoInitialized, hasSkeletonKey } = useSkeletonKey();
   const inboxCount = store?.getInboxed().length ?? 0;
   const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
@@ -133,7 +135,8 @@ function App() {
 
   // Auto-create today's daily note and run first-run setup on app launch
   useEffect(() => {
-    if (!startupCompleteRef.current && store) {
+    // Only run after crypto is ready and key exists
+    if (!startupCompleteRef.current && store && hasSkeletonKey) {
       // Create today's daily note first
       const dailyNote = ensureTodaysDailyNote();
 
@@ -151,7 +154,7 @@ function App() {
 
       startupCompleteRef.current = true;
     }
-  }, [store, ensureTodaysDailyNote, refreshData, saveNow]);
+  }, [store, hasSkeletonKey, ensureTodaysDailyNote, refreshData, saveNow]);
 
   const openQuickCapture = useCallback(() => {
     setIsQuickCaptureOpen(true);
@@ -173,6 +176,30 @@ function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [togglePalette]);
+
+  // Show loading only during initial crypto initialization
+  // (not during subsequent operations like key generation)
+  if (!isCryptoInitialized) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          color: 'var(--text-secondary)',
+          fontFamily: 'var(--font-ui)',
+        }}
+      >
+        Initializing...
+      </div>
+    );
+  }
+
+  // Show Skeleton Key setup if no key exists
+  if (!hasSkeletonKey) {
+    return <SkeletonKeySetup />;
+  }
 
   return (
     <>

@@ -74,7 +74,7 @@ export function SyncProvider({ children }: SyncProviderProps) {
 
   // Connect to sync server
   const connect = useCallback(
-    (serverUrl: string, userId: string, deviceId: string) => {
+    async (serverUrl: string, userId: string, deviceId: string) => {
       // Disconnect existing client if any
       if (syncClient) {
         syncClient.disconnect();
@@ -128,6 +128,10 @@ export function SyncProvider({ children }: SyncProviderProps) {
       });
 
       setSyncClient(client);
+
+      // Enable encryption if Skeleton Key is available
+      await client.enableEncryption();
+
       client.connect();
     },
     [syncClient, docStore, refreshData, addToast]

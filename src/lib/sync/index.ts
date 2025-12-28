@@ -11,3 +11,4 @@ export * from './types';
 export * from './protocol';
 export * from './device';
 export * from './config';
+export { clearAllSyncSettings } from './config';
