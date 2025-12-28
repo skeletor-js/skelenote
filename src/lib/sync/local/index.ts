@@ -48,6 +48,33 @@ export interface SyncErrorEvent {
   message: string;
 }
 
+// Discovery types
+
+export interface DiscoveredPeer {
+  deviceId: string;
+  deviceName: string;
+  addresses: string[];
+  port: number;
+  fingerprint: string;
+  lastSeen?: number;
+}
+
+export interface PeerDiscoveredEvent {
+  deviceId: string;
+  deviceName: string;
+  addresses: string[];
+  port: number;
+  fingerprint: string;
+}
+
+export interface PeerLostEvent {
+  deviceId: string;
+}
+
+export interface DiscoveryErrorEvent {
+  message: string;
+}
+
 // Commands
 
 /**
@@ -84,6 +111,38 @@ export async function getConnectedPeers(): Promise<ConnectedPeer[]> {
  */
 export async function getDeviceInfo(): Promise<DeviceInfo> {
   return invoke<DeviceInfo>("network_get_device_info");
+}
+
+// Discovery commands
+
+/**
+ * Start mDNS discovery and advertising.
+ * Advertises this device on the local network and starts browsing for peers.
+ * Requires the server to be running first.
+ */
+export async function startDiscovery(): Promise<void> {
+  return invoke("network_start_discovery");
+}
+
+/**
+ * Stop mDNS discovery and advertising.
+ */
+export async function stopDiscovery(): Promise<void> {
+  return invoke("network_stop_discovery");
+}
+
+/**
+ * Get list of discovered peers on the local network.
+ */
+export async function getDiscoveredPeers(): Promise<DiscoveredPeer[]> {
+  return invoke<DiscoveredPeer[]>("network_get_discovered_peers");
+}
+
+/**
+ * Check if mDNS discovery is running.
+ */
+export async function isDiscoveryRunning(): Promise<boolean> {
+  return invoke<boolean>("network_is_discovery_running");
 }
 
 // Event listeners
@@ -128,6 +187,41 @@ export function onSyncError(
   callback: (event: SyncErrorEvent) => void
 ): Promise<UnlistenFn> {
   return listen<SyncErrorEvent>("local-sync-error", (event) => {
+    callback(event.payload);
+  });
+}
+
+// Discovery event listeners
+
+/**
+ * Listen for peer discovery events.
+ */
+export function onPeerDiscovered(
+  callback: (event: PeerDiscoveredEvent) => void
+): Promise<UnlistenFn> {
+  return listen<PeerDiscoveredEvent>("local-peer-discovered", (event) => {
+    callback(event.payload);
+  });
+}
+
+/**
+ * Listen for peer lost events.
+ */
+export function onPeerLost(
+  callback: (event: PeerLostEvent) => void
+): Promise<UnlistenFn> {
+  return listen<PeerLostEvent>("local-peer-lost", (event) => {
+    callback(event.payload);
+  });
+}
+
+/**
+ * Listen for discovery errors.
+ */
+export function onDiscoveryError(
+  callback: (event: DiscoveryErrorEvent) => void
+): Promise<UnlistenFn> {
+  return listen<DiscoveryErrorEvent>("local-discovery-error", (event) => {
     callback(event.payload);
   });
 }

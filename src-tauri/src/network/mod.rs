@@ -7,6 +7,8 @@ pub mod protocol;
 pub mod server;
 pub mod client;
 pub mod state;
+pub mod mdns;
 
 pub use server::LocalSyncServer;
-pub use state::NetworkState;
+pub use state::{NetworkState, DiscoveredPeer};
+pub use mdns::MdnsHandle;

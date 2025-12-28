@@ -53,10 +53,18 @@ pub struct ServerHandle {
     pub port: u16,
 }
 
+/// Handle to control mDNS discovery (stored separately due to ownership)
+pub struct MdnsHolder {
+    /// The mDNS handle (wrapped in Option so we can take it for shutdown)
+    pub handle: Option<super::mdns::MdnsHandle>,
+}
+
 /// Shared network state managed by Tauri
 pub struct NetworkState {
     /// Server handle (if running)
     pub server: Arc<RwLock<Option<ServerHandle>>>,
+    /// mDNS holder (contains the handle for shutdown)
+    pub mdns: Arc<RwLock<MdnsHolder>>,
     /// Discovered peers (from mDNS)
     pub discovered_peers: Arc<RwLock<HashMap<String, DiscoveredPeer>>>,
     /// Connected peers
@@ -74,12 +82,19 @@ impl NetworkState {
     pub fn new() -> Self {
         Self {
             server: Arc::new(RwLock::new(None)),
+            mdns: Arc::new(RwLock::new(MdnsHolder { handle: None })),
             discovered_peers: Arc::new(RwLock::new(HashMap::new())),
             connected_peers: Arc::new(RwLock::new(HashMap::new())),
             fingerprint: Arc::new(RwLock::new(None)),
             device_id: Arc::new(RwLock::new(generate_device_id())),
             device_name: Arc::new(RwLock::new(get_device_name())),
         }
+    }
+
+    /// Check if mDNS is running
+    pub async fn is_mdns_running(&self) -> bool {
+        let mdns = self.mdns.read().await;
+        mdns.handle.is_some()
     }
 
     /// Get server info

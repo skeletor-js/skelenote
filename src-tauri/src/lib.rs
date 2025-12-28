@@ -10,7 +10,7 @@ use crypto::{
     derive_sync_key, derive_user_id, encrypt_bytes, decrypt_bytes, generate_mnemonic, generate_mnemonic_qr,
     mnemonic_to_master_key, parse_qr_payload, validate_mnemonic, StrongholdManager,
 };
-use network::{LocalSyncServer, NetworkState};
+use network::{LocalSyncServer, MdnsHandle, NetworkState, DiscoveredPeer};
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, State};
 use zeroize::Zeroizing;
@@ -352,6 +352,149 @@ async fn network_get_device_info(
     }))
 }
 
+// ============================================================================
+// mDNS Discovery Commands
+// ============================================================================
+
+/// Start mDNS discovery and advertising
+///
+/// Advertises this device on the local network and starts browsing for peers.
+/// Requires the TCP server to be running first (to know the port to advertise).
+#[tauri::command]
+async fn network_start_discovery(
+    app: AppHandle,
+    crypto_state: State<'_, CryptoState>,
+    network_state: State<'_, NetworkState>,
+) -> Result<(), String> {
+    // Check if already running
+    if network_state.is_mdns_running().await {
+        return Err("mDNS discovery already running".to_string());
+    }
+
+    // Get server port - server must be running
+    let port = {
+        let server = network_state.server.read().await;
+        server
+            .as_ref()
+            .map(|h| h.port)
+            .ok_or("Server must be running before starting discovery")?
+    };
+
+    // Get fingerprint from user ID
+    let fingerprint = {
+        let stronghold_guard = crypto_state.stronghold.lock().unwrap();
+        let manager = stronghold_guard
+            .as_ref()
+            .ok_or("Crypto not initialized - call crypto_init first")?;
+        let master_key = manager.get_master_key().map_err(|e| e.to_string())?;
+        let user_id = derive_user_id(&master_key);
+        derive_fingerprint(&user_id)
+    };
+
+    // Get device info
+    let device_id = network_state.device_id.read().await.clone();
+    let device_name = network_state.device_name.read().await.clone();
+    let discovered_peers = network_state.discovered_peers.clone();
+
+    // Start mDNS
+    let (handle, mut event_rx) = MdnsHandle::start(
+        device_id,
+        device_name,
+        port,
+        fingerprint,
+    )?;
+
+    // Store the handle
+    {
+        let mut mdns = network_state.mdns.write().await;
+        mdns.handle = Some(handle);
+    }
+
+    // Spawn event handler to emit events to frontend and update discovered peers
+    let app_handle = app.clone();
+    tokio::spawn(async move {
+        while let Some(event) = event_rx.recv().await {
+            match event {
+                network::mdns::MdnsEvent::PeerDiscovered(peer) => {
+                    // Add to discovered peers map
+                    {
+                        let mut peers = discovered_peers.write().await;
+                        peers.insert(peer.device_id.clone(), peer.clone());
+                    }
+                    // Emit to frontend
+                    let _ = app_handle.emit("local-peer-discovered", serde_json::json!({
+                        "deviceId": peer.device_id,
+                        "deviceName": peer.device_name,
+                        "addresses": peer.addresses,
+                        "port": peer.port,
+                        "fingerprint": peer.fingerprint,
+                    }));
+                }
+                network::mdns::MdnsEvent::PeerLost { device_id } => {
+                    // Remove from discovered peers map
+                    {
+                        let mut peers = discovered_peers.write().await;
+                        peers.remove(&device_id);
+                    }
+                    // Emit to frontend
+                    let _ = app_handle.emit("local-peer-lost", serde_json::json!({
+                        "deviceId": device_id,
+                    }));
+                }
+                network::mdns::MdnsEvent::Error { message } => {
+                    let _ = app_handle.emit("local-discovery-error", serde_json::json!({
+                        "message": message,
+                    }));
+                }
+            }
+        }
+    });
+
+    Ok(())
+}
+
+/// Stop mDNS discovery and advertising
+#[tauri::command]
+async fn network_stop_discovery(
+    network_state: State<'_, NetworkState>,
+) -> Result<(), String> {
+    // Take the handle
+    let handle = {
+        let mut mdns = network_state.mdns.write().await;
+        mdns.handle.take()
+    };
+
+    // Stop if running
+    if let Some(handle) = handle {
+        handle.stop().await?;
+    }
+
+    // Clear discovered peers
+    {
+        let mut peers = network_state.discovered_peers.write().await;
+        peers.clear();
+    }
+
+    Ok(())
+}
+
+/// Get list of discovered peers on the local network
+#[tauri::command]
+async fn network_get_discovered_peers(
+    network_state: State<'_, NetworkState>,
+) -> Result<Vec<DiscoveredPeer>, String> {
+    let peers = network_state.discovered_peers.read().await;
+    Ok(peers.values().cloned().collect())
+}
+
+/// Check if mDNS discovery is running
+#[tauri::command]
+async fn network_is_discovery_running(
+    network_state: State<'_, NetworkState>,
+) -> Result<bool, String> {
+    Ok(network_state.is_mdns_running().await)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -382,6 +525,11 @@ pub fn run() {
             network_get_server_info,
             network_get_connected_peers,
             network_get_device_info,
+            // mDNS Discovery commands
+            network_start_discovery,
+            network_stop_discovery,
+            network_get_discovered_peers,
+            network_is_discovery_running,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
