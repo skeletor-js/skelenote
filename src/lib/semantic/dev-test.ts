@@ -106,16 +106,19 @@ const SAMPLE_CONTENT: IndexableContent[] = [
 function createTestInterface(): SemanticTestInterface {
   let engine: SemanticEngine | null = null;
 
+  // Helper to get or create the shared engine
+  const getEngine = (): SemanticEngine => {
+    if (!engine) {
+      engine = createSemanticEngine({ enabled: true });
+    }
+    return engine;
+  };
+
   return {
-    getEngine: () => {
-      if (!engine) {
-        engine = createSemanticEngine({ enabled: true });
-      }
-      return engine;
-    },
+    getEngine,
 
     downloadModel: async () => {
-      const eng = createTestInterface().getEngine();
+      const eng = getEngine();
       console.log('Downloading model...');
       await eng.initialize((progress) => {
         console.log(`[${progress.operation}] ${progress.percent}% - ${progress.message}`);
@@ -154,7 +157,7 @@ function createTestInterface(): SemanticTestInterface {
     },
 
     indexSamples: async () => {
-      const eng = createTestInterface().getEngine();
+      const eng = getEngine();
 
       // Initialize if needed
       if (eng.status !== 'ready') {
@@ -171,7 +174,7 @@ function createTestInterface(): SemanticTestInterface {
     },
 
     search: async (query: string, limit: number = 5) => {
-      const eng = createTestInterface().getEngine();
+      const eng = getEngine();
       console.log(`Searching for: "${query}"`);
       const results = await eng.search(query, { limit, threshold: 0.3 });
       console.log(`Found ${results.length} results:`);
@@ -183,7 +186,7 @@ function createTestInterface(): SemanticTestInterface {
     },
 
     findSimilar: async (objectId: string, limit: number = 5) => {
-      const eng = createTestInterface().getEngine();
+      const eng = getEngine();
       console.log(`Finding similar to: ${objectId}`);
       const results = await eng.findSimilar(objectId, { limit, threshold: 0.3 });
       console.log(`Found ${results.length} similar items:`);
@@ -195,14 +198,14 @@ function createTestInterface(): SemanticTestInterface {
     },
 
     stats: () => {
-      const eng = createTestInterface().getEngine();
+      const eng = getEngine();
       const stats = eng.getStats();
       console.log('Engine Stats:', stats);
       return stats;
     },
 
     clear: async () => {
-      const eng = createTestInterface().getEngine();
+      const eng = getEngine();
       await eng.cleanup();
       console.log('Cleared all semantic search data');
     },
