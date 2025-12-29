@@ -98,7 +98,7 @@ export function SemanticSettings() {
     return null;
   }
 
-  const { isEnabled, status, indexedCount, progress, error } = semanticContext;
+  const { isEnabled, status, indexedCount, progress, error, threshold, setThreshold } = semanticContext;
 
   // Format last indexed time
   const formatLastIndexed = () => {
@@ -202,6 +202,50 @@ export function SemanticSettings() {
             <p className="semantic-settings__help">
               Use if search quality degrades or after bulk imports.
             </p>
+          </div>
+
+          <div className="semantic-settings__divider" />
+
+          <div className="semantic-settings__section">
+            <label className="semantic-settings__label">Similarity Threshold</label>
+            <div className="semantic-settings__slider-row">
+              <input
+                type="range"
+                className="semantic-settings__slider"
+                min="0"
+                max="100"
+                value={Math.round(threshold * 100)}
+                onChange={(e) => setThreshold(parseInt(e.target.value, 10) / 100)}
+              />
+              <span className="semantic-settings__slider-value">{Math.round(threshold * 100)}%</span>
+            </div>
+            <p className="semantic-settings__help">
+              Lower values show more results (including loosely related).
+              Higher values show only closely related content.
+            </p>
+            <div className="semantic-settings__presets">
+              <button
+                type="button"
+                className={`semantic-settings__preset ${threshold <= 0.15 ? 'semantic-settings__preset--active' : ''}`}
+                onClick={() => setThreshold(0.15)}
+              >
+                Broad (15%)
+              </button>
+              <button
+                type="button"
+                className={`semantic-settings__preset ${threshold > 0.15 && threshold <= 0.25 ? 'semantic-settings__preset--active' : ''}`}
+                onClick={() => setThreshold(0.2)}
+              >
+                Balanced (20%)
+              </button>
+              <button
+                type="button"
+                className={`semantic-settings__preset ${threshold > 0.25 ? 'semantic-settings__preset--active' : ''}`}
+                onClick={() => setThreshold(0.35)}
+              >
+                Strict (35%)
+              </button>
+            </div>
           </div>
 
           <div className="semantic-settings__divider" />

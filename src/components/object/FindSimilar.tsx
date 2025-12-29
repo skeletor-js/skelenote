@@ -30,12 +30,13 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [similarItems, setSimilarItems] = useState<SimilarItem[]>([]);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [similarCount, setSimilarCount] = useState<number | null>(null);
 
   // Check if semantic search is available
   const isSemanticEnabled = semanticContext?.isEnabled && semanticContext?.status === 'ready';
+  const threshold = semanticContext?.threshold ?? 0.2;
 
-  // Find similar objects when expanded
+  // Find similar objects (full data)
   const findSimilarObjects = useCallback(async () => {
     if (!semanticContext || !store) return;
 
@@ -43,12 +44,11 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
     if (!engine || engine.status !== 'ready') return;
 
     setIsLoading(true);
-    setHasSearched(true);
 
     try {
       const results: SemanticSearchResult[] = await engine.findSimilar(objectId, {
         limit: 5,
-        threshold: 0.15, // Low threshold to capture conceptual relationships
+        threshold,
       });
 
       // Convert to display items
@@ -72,26 +72,52 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
         .filter((item): item is SimilarItem => item !== null);
 
       setSimilarItems(items);
+      setSimilarCount(items.length);
     } catch (error) {
       console.error('Failed to find similar objects:', error);
       setSimilarItems([]);
+      setSimilarCount(0);
     } finally {
       setIsLoading(false);
     }
-  }, [semanticContext, store, typeRegistry, objectId]);
+  }, [semanticContext, store, typeRegistry, objectId, threshold]);
 
-  // Trigger search when expanded
+  // Fetch count on mount and when object/threshold changes
   useEffect(() => {
-    if (isExpanded && !hasSearched && isSemanticEnabled) {
-      findSimilarObjects();
+    if (!isSemanticEnabled || !semanticContext || !store) {
+      setSimilarCount(null);
+      return;
     }
-  }, [isExpanded, hasSearched, isSemanticEnabled, findSimilarObjects]);
+
+    const engine = semanticContext.getEngine();
+    if (!engine || engine.status !== 'ready') {
+      setSimilarCount(null);
+      return;
+    }
+
+    // Fetch count (lightweight query)
+    engine.findSimilar(objectId, { limit: 5, threshold })
+      .then((results) => {
+        const count = results.filter((r) => r.objectId !== objectId).length;
+        setSimilarCount(count);
+      })
+      .catch(() => {
+        setSimilarCount(0);
+      });
+  }, [objectId, isSemanticEnabled, semanticContext, store, threshold]);
 
   // Reset when object changes
   useEffect(() => {
     setSimilarItems([]);
-    setHasSearched(false);
+    setSimilarCount(null);
   }, [objectId]);
+
+  // Trigger full search when expanded (if not already loaded)
+  useEffect(() => {
+    if (isExpanded && similarItems.length === 0 && !isLoading && isSemanticEnabled) {
+      findSimilarObjects();
+    }
+  }, [isExpanded, similarItems.length, isLoading, isSemanticEnabled, findSimilarObjects]);
 
   // Don't render if semantic search is not enabled
   if (!isSemanticEnabled) {
@@ -101,6 +127,9 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
   const handleItemClick = (itemId: string) => {
     navigateToObject(itemId);
   };
+
+  // Display count - use similarItems.length if loaded, otherwise similarCount
+  const displayCount = similarItems.length > 0 ? similarItems.length : similarCount;
 
   return (
     <section className="find-similar">
@@ -115,7 +144,7 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
         </span>
         <h2 className="find-similar__title">
           Find Similar
-          {similarItems.length > 0 && ` (${similarItems.length})`}
+          {displayCount !== null && displayCount > 0 && ` (${displayCount})`}
         </h2>
         <span className="find-similar__badge">AI</span>
       </button>

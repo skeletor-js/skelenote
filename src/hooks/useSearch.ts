@@ -157,9 +157,10 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchResult {
           try {
             const semanticEngine = semanticContext.getEngine();
             if (semanticEngine && semanticEngine.status === 'ready') {
+              // Use user-configured threshold from settings
               const semanticResults = await semanticEngine.search(searchQuery, {
                 limit: limit * 2,
-                threshold: 0.15, // Low threshold to capture conceptual matches
+                threshold: semanticContext.threshold,
               });
 
               // Fuse results using RRF

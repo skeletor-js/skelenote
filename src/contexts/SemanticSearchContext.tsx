@@ -22,6 +22,8 @@ import {
 } from '@/lib/semantic';
 
 const STORAGE_KEY = 'skelenote:semanticSearchEnabled';
+const THRESHOLD_KEY = 'skelenote:semanticThreshold';
+const DEFAULT_THRESHOLD = 0.2;
 
 interface SemanticSearchContextValue {
   /** Whether semantic search is enabled */
@@ -34,6 +36,8 @@ interface SemanticSearchContextValue {
   progress: SemanticProgress | null;
   /** Error message if any */
   error: string | null;
+  /** Similarity threshold (0-1) */
+  threshold: number;
   /** Enable semantic search (triggers download and indexing) */
   enable: (content: IndexableContent[]) => Promise<void>;
   /** Disable semantic search */
@@ -42,6 +46,8 @@ interface SemanticSearchContextValue {
   rebuildIndex: (content: IndexableContent[]) => Promise<void>;
   /** Get the engine instance (for search operations) */
   getEngine: () => SemanticEngine | null;
+  /** Update the similarity threshold */
+  setThreshold: (threshold: number) => void;
 }
 
 const SemanticSearchContext = createContext<SemanticSearchContextValue | null>(null);
@@ -51,6 +57,19 @@ function getInitialEnabled(): boolean {
     return localStorage.getItem(STORAGE_KEY) === 'true';
   }
   return false;
+}
+
+function getInitialThreshold(): number {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem(THRESHOLD_KEY);
+    if (stored) {
+      const val = parseFloat(stored);
+      if (!isNaN(val) && val >= 0 && val <= 1) {
+        return val;
+      }
+    }
+  }
+  return DEFAULT_THRESHOLD;
 }
 
 interface SemanticSearchProviderProps {
@@ -64,6 +83,14 @@ export function SemanticSearchProvider({ children }: SemanticSearchProviderProps
   const [indexedCount, setIndexedCount] = useState(0);
   const [progress, setProgress] = useState<SemanticProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [threshold, setThresholdState] = useState(getInitialThreshold);
+
+  // Update threshold and persist
+  const setThreshold = useCallback((newThreshold: number) => {
+    const clamped = Math.max(0, Math.min(1, newThreshold));
+    setThresholdState(clamped);
+    localStorage.setItem(THRESHOLD_KEY, String(clamped));
+  }, []);
 
   // Initialize engine if previously enabled
   useEffect(() => {
@@ -170,10 +197,12 @@ export function SemanticSearchProvider({ children }: SemanticSearchProviderProps
         indexedCount,
         progress,
         error,
+        threshold,
         enable,
         disable,
         rebuildIndex,
         getEngine,
+        setThreshold,
       }}
     >
       {children}
