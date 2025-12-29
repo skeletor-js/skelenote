@@ -79,3 +79,32 @@
   color: var(--text-muted);
   text-transform: capitalize;
 }
+
+/* Title row with semantic badge */
+.search-result__title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.search-result__title-row .search-result__title {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Semantic match badge */
+.search-result__semantic-badge {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--tag-purple);
+  background: rgba(168, 85, 247, 0.1);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+}
+
+/* Semantic-only snippet style */
+.search-result__snippet--semantic {
+  font-style: italic;
+  color: var(--text-muted);
+}

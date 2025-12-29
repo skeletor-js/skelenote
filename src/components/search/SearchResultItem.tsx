@@ -50,10 +50,17 @@ export function SearchResultItem({
   const icon = typeDef?.icon ?? '📄';
   const typeName = typeDef?.name ?? result.item.typeId;
 
-  // Get snippet from matches
+  // Get snippet from matches (only for text/hybrid matches)
   const snippet = useMemo(() => {
+    if (result.matches.length === 0) return null;
     return getBestSnippet(result.matches, 100);
   }, [result.matches]);
+
+  // Check if this is a semantic match
+  const isSemanticMatch = result.matchType === 'semantic' || result.matchType === 'hybrid';
+  const semanticPercent = result.semanticScore
+    ? Math.round(result.semanticScore * 100)
+    : null;
 
   return (
     <div
@@ -65,12 +72,26 @@ export function SearchResultItem({
     >
       <div className="search-result__icon">{icon}</div>
       <div className="search-result__content">
-        <div className="search-result__title">{result.item.title || 'Untitled'}</div>
-        {snippet && (
+        <div className="search-result__title-row">
+          <span className="search-result__title">{result.item.title || 'Untitled'}</span>
+          {isSemanticMatch && (
+            <span
+              className="search-result__semantic-badge"
+              title={semanticPercent ? `${semanticPercent}% similar` : 'Semantic match'}
+            >
+              ~{semanticPercent ? `${semanticPercent}%` : ''}
+            </span>
+          )}
+        </div>
+        {snippet ? (
           <div className="search-result__snippet">
             <HighlightedText segments={snippet.segments} />
           </div>
-        )}
+        ) : isSemanticMatch ? (
+          <div className="search-result__snippet search-result__snippet--semantic">
+            Conceptually similar
+          </div>
+        ) : null}
       </div>
       <div className="search-result__type">{typeName}</div>
     </div>

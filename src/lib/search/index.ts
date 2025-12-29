@@ -9,6 +9,7 @@ export type {
   SearchMatch,
   SearchResult,
   SearchOptions,
+  MatchType,
 } from './types';
 
 // Plain text extraction
@@ -36,3 +37,7 @@ export {
   createSnippet,
   getBestSnippet,
 } from './highlight';
+
+// Hybrid search orchestration
+export type { OrchestratorConfig } from './orchestrator';
+export { fuseSearchResults, semanticToSearchResults } from './orchestrator';
