@@ -103,14 +103,14 @@
 }
 
 .object-preview__action-btn--primary {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
+  background: var(--tag-blue, #2563eb);
+  border-color: var(--tag-blue, #2563eb);
   color: white;
 }
 
 .object-preview__action-btn--primary:hover {
-  background: var(--accent-primary-hover);
-  border-color: var(--accent-primary-hover);
+  background: var(--tag-blue-hover, #1d4ed8);
+  border-color: var(--tag-blue-hover, #1d4ed8);
   color: white;
 }
 

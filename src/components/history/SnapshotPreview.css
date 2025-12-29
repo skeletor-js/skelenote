@@ -35,24 +35,24 @@
 }
 
 .snapshot-preview__restore-btn {
-  padding: var(--spacing-xs) var(--spacing-md);
+  padding: var(--spacing-xs, 4px) var(--spacing-md, 12px);
   border: none;
-  border-radius: var(--radius-sm);
-  background: var(--accent-primary);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--tag-blue, #2563eb);
   color: white;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm, 14px);
+  font-weight: var(--font-weight-medium, 500);
   cursor: pointer;
   transition: background 0.15s ease;
   white-space: nowrap;
 }
 
 .snapshot-preview__restore-btn:hover {
-  background: var(--accent-primary-hover);
+  background: var(--tag-blue-hover, #1d4ed8);
 }
 
 .snapshot-preview__restore-btn:focus {
-  outline: 2px solid var(--accent-primary);
+  outline: 2px solid var(--tag-blue, #2563eb);
   outline-offset: 2px;
 }
 

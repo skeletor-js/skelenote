@@ -120,24 +120,24 @@
 }
 
 .historical-object-view__restore-btn {
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
   border: none;
-  border-radius: var(--radius-sm);
-  background: var(--accent-primary);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--tag-blue, #2563eb);
   color: white;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-xs, 12px);
+  font-weight: var(--font-weight-medium, 500);
   cursor: pointer;
   transition: background 0.15s ease;
   flex-shrink: 0;
 }
 
 .historical-object-view__restore-btn:hover {
-  background: var(--accent-primary-hover);
+  background: var(--tag-blue-hover, #1d4ed8);
 }
 
 .historical-object-view__restore-btn:focus-visible {
-  outline: 2px solid var(--accent-primary);
+  outline: 2px solid var(--tag-blue, #2563eb);
   outline-offset: 2px;
 }
 
