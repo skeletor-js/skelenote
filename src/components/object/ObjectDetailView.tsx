@@ -3,6 +3,7 @@ import './ObjectDetailView.css';
 import { ObjectHeader } from './ObjectHeader';
 import { PropertyList } from './PropertyList';
 import { Backlinks } from './Backlinks';
+import { FindSimilar } from './FindSimilar';
 import { Editor } from '@/components/editor';
 import { DailyNoteHeader } from '@/components/daily';
 import { ConfirmDialog } from '@/components/ui';
@@ -244,6 +245,9 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
 
       {/* Backlinks Section */}
       <Backlinks objectId={objectId} />
+
+      {/* Find Similar Section (AI-powered, only when semantic search enabled) */}
+      <FindSimilar objectId={objectId} />
 
       {/* Confirm Dialog for Delete */}
       <ConfirmDialog

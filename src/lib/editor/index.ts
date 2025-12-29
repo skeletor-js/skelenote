@@ -5,3 +5,10 @@ export {
   deserializeBlockNoteDocument,
   removeMentionsFromContent,
 } from './persistence';
+export {
+  copyMentionToClipboard,
+  getPendingMention,
+  clearPendingMention,
+  isMentionClipboardText,
+  type MentionClipboardData,
+} from './mention-clipboard';

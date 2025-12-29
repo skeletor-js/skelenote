@@ -42,3 +42,8 @@ export {
   useKeyboardShortcutsSafe,
   type ShortcutDefinition,
 } from './KeyboardShortcutsContext';
+export {
+  SemanticSearchProvider,
+  useSemanticSearch,
+  useSemanticSearchSafe,
+} from './SemanticSearchContext';
