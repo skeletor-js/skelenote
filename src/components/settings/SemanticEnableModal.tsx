@@ -5,7 +5,8 @@
  * Shows download and indexing progress.
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { SemanticProgress } from '@/lib/semantic';
 import './SemanticEnableModal.css';
 
@@ -25,6 +26,15 @@ export function SemanticEnableModal({
   error,
 }: SemanticEnableModalProps) {
   const [isEnabling, setIsEnabling] = useState(false);
+
+  const handleBackdropClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.target === e.currentTarget && !isEnabling) {
+        onClose();
+      }
+    },
+    [onClose, isEnabling]
+  );
 
   if (!isOpen) return null;
 
@@ -69,79 +79,72 @@ export function SemanticEnableModal({
     );
   };
 
+  // Render different modal content based on state
+  let modalContent: React.ReactNode;
+
   // Show progress view when enabling
   if (isEnabling && !error) {
-    return (
-      <div className="semantic-modal__overlay">
-        <div className="semantic-modal">
-          <div className="semantic-modal__header">
-            <h2 className="semantic-modal__title">Setting up Semantic Search...</h2>
-          </div>
-          <div className="semantic-modal__body">
-            {progress?.operation === 'download' && (
-              <p className="semantic-modal__description">
-                Downloading AI model... This only happens once.
-              </p>
-            )}
-            {progress?.operation === 'load' && (
-              <p className="semantic-modal__description">
-                Loading model into memory...
-              </p>
-            )}
-            {progress?.operation === 'index' && (
-              <p className="semantic-modal__description">
-                Building search index...
-              </p>
-            )}
-            {renderProgressBar()}
-          </div>
+    modalContent = (
+      <div className="semantic-modal" role="dialog" aria-modal="true">
+        <div className="semantic-modal__header">
+          <h2 className="semantic-modal__title">Setting up Semantic Search...</h2>
         </div>
-      </div>
-    );
-  }
-
-  // Show error view
-  if (error) {
-    return (
-      <div className="semantic-modal__overlay">
-        <div className="semantic-modal">
-          <div className="semantic-modal__header">
-            <h2 className="semantic-modal__title">Setup Failed</h2>
-            <button className="semantic-modal__close" onClick={handleCancel}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <div className="semantic-modal__body">
-            <p className="semantic-modal__error">{error}</p>
+        <div className="semantic-modal__body">
+          {progress?.operation === 'download' && (
             <p className="semantic-modal__description">
-              Please check your internet connection and try again.
+              Downloading AI model... This only happens once.
             </p>
-          </div>
-          <div className="semantic-modal__footer">
-            <button className="semantic-modal__button semantic-modal__button--secondary" onClick={handleCancel}>
-              Cancel
-            </button>
-            <button className="semantic-modal__button semantic-modal__button--primary" onClick={handleConfirm}>
-              Retry
-            </button>
-          </div>
+          )}
+          {progress?.operation === 'load' && (
+            <p className="semantic-modal__description">
+              Loading model into memory...
+            </p>
+          )}
+          {progress?.operation === 'index' && (
+            <p className="semantic-modal__description">
+              Building search index...
+            </p>
+          )}
+          {renderProgressBar()}
         </div>
       </div>
     );
   }
-
+  // Show error view
+  else if (error) {
+    modalContent = (
+      <div className="semantic-modal" role="dialog" aria-modal="true">
+        <div className="semantic-modal__header">
+          <h2 className="semantic-modal__title">Setup Failed</h2>
+          <button className="semantic-modal__close" onClick={handleCancel} aria-label="Close">
+            ×
+          </button>
+        </div>
+        <div className="semantic-modal__body">
+          <p className="semantic-modal__error">{error}</p>
+          <p className="semantic-modal__description">
+            Please check your internet connection and try again.
+          </p>
+        </div>
+        <div className="semantic-modal__footer">
+          <button className="semantic-modal__button semantic-modal__button--secondary" onClick={handleCancel}>
+            Cancel
+          </button>
+          <button className="semantic-modal__button semantic-modal__button--primary" onClick={handleConfirm}>
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
   // Show confirmation view
-  return (
-    <div className="semantic-modal__overlay">
-      <div className="semantic-modal">
+  else {
+    modalContent = (
+      <div className="semantic-modal" role="dialog" aria-modal="true">
         <div className="semantic-modal__header">
           <h2 className="semantic-modal__title">Enable Semantic Search?</h2>
-          <button className="semantic-modal__close" onClick={handleCancel}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
+          <button className="semantic-modal__close" onClick={handleCancel} aria-label="Close">
+            ×
           </button>
         </div>
         <div className="semantic-modal__body">
@@ -150,18 +153,18 @@ export function SemanticEnableModal({
             All processing happens locally on this device.
           </p>
 
-          <div className="semantic-modal__features">
-            <h3 className="semantic-modal__features-title">What you'll get:</h3>
-            <ul className="semantic-modal__features-list">
+          <div className="semantic-modal__section">
+            <h3 className="semantic-modal__section-title">What you'll get:</h3>
+            <ul className="semantic-modal__list">
               <li>Find related notes even with different wording</li>
               <li>"Find similar" suggestions on every object</li>
               <li>Conceptual matches alongside keyword results</li>
             </ul>
           </div>
 
-          <div className="semantic-modal__requirements">
-            <h3 className="semantic-modal__requirements-title">Requirements:</h3>
-            <ul className="semantic-modal__requirements-list">
+          <div className="semantic-modal__section">
+            <h3 className="semantic-modal__section-title">Requirements:</h3>
+            <ul className="semantic-modal__list">
               <li>One-time 23MB download</li>
               <li>~500MB RAM when active</li>
               <li>Works offline after initial download</li>
@@ -177,6 +180,13 @@ export function SemanticEnableModal({
           </button>
         </div>
       </div>
-    </div>
+    );
+  }
+
+  return createPortal(
+    <div className="semantic-modal__backdrop" onClick={handleBackdropClick}>
+      {modalContent}
+    </div>,
+    document.body
   );
 }
