@@ -8,6 +8,12 @@
   flex-direction: column;
 }
 
+.split-pane--single .split-pane__primary {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+}
+
 .split-pane--split {
   flex-direction: row;
 }
@@ -22,6 +28,7 @@
   overflow: auto;
   min-width: 300px;
   height: 100%;
+  /* In split mode, flex-basis is set via inline style */
 }
 
 /* Divider */

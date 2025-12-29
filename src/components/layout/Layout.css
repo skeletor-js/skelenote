@@ -17,6 +17,13 @@
   padding: var(--spacing-xl);
 }
 
+/* When split pane is active, use full width */
+.layout__content--split-active {
+  max-width: none;
+  padding: 0;
+  height: 100%;
+}
+
 .layout__menu-btn {
   position: fixed;
   bottom: var(--spacing-md);

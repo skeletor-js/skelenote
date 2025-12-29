@@ -4,6 +4,12 @@
   margin: 0 auto;
 }
 
+/* When in secondary pane, use full available width */
+.object-detail--secondary {
+  max-width: none;
+  padding: 0;
+}
+
 .object-detail--loading,
 .object-detail--error {
   display: flex;

@@ -55,12 +55,25 @@ export function SplitPane({
       const containerRect = containerRef.current.getBoundingClientRect();
       const containerWidth = containerRect.width;
       const mouseX = e.clientX - containerRect.left;
+      const dividerWidth = 12; // Match CSS divider width
+      const minPaneWidth = 300; // Minimum pane width in pixels
 
       // Calculate secondary pane width (right side)
       // mouseX is where the divider is, so secondary width is containerWidth - mouseX
-      const secondaryWidth = containerWidth - mouseX;
-      const widthPercent = (secondaryWidth / containerWidth) * 100;
+      let secondaryWidth = containerWidth - mouseX - dividerWidth / 2;
+      let primaryWidth = mouseX - dividerWidth / 2;
 
+      // Enforce minimum widths
+      if (primaryWidth < minPaneWidth) {
+        primaryWidth = minPaneWidth;
+        secondaryWidth = containerWidth - primaryWidth - dividerWidth;
+      } else if (secondaryWidth < minPaneWidth) {
+        secondaryWidth = minPaneWidth;
+        primaryWidth = containerWidth - secondaryWidth - dividerWidth;
+      }
+
+      // Convert to percentage for the secondary pane
+      const widthPercent = (secondaryWidth / containerWidth) * 100;
       onWidthChange(widthPercent);
     };
 

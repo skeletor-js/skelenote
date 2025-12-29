@@ -125,9 +125,11 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
     }
   }, [store, objectId]);
 
+  const secondaryClass = paneType === 'secondary' ? ' object-detail--secondary' : '';
+
   if (isLoading || !store) {
     return (
-      <div className="object-detail object-detail--loading">
+      <div className={`object-detail object-detail--loading${secondaryClass}`}>
         <p>Loading...</p>
       </div>
     );
@@ -137,7 +139,7 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
 
   if (!object) {
     return (
-      <div className="object-detail object-detail--error">
+      <div className={`object-detail object-detail--error${secondaryClass}`}>
         <p>Object not found: {objectId}</p>
         {paneType === 'secondary' ? (
           <button onClick={closeSplit} className="object-detail__back-btn">
@@ -158,7 +160,7 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
 
   if (!typeDef) {
     return (
-      <div className="object-detail object-detail--error">
+      <div className={`object-detail object-detail--error${secondaryClass}`}>
         <p>Unknown object type: {object.typeId}</p>
         {paneType === 'secondary' ? (
           <button onClick={closeSplit} className="object-detail__back-btn">
@@ -177,8 +179,13 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
 
   const isDailyNote = object.properties.isDailyNote === true;
 
+  const detailClasses = [
+    'object-detail',
+    paneType === 'secondary' ? 'object-detail--secondary' : '',
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className="object-detail">
+    <div className={detailClasses}>
       {/* Navigation: Daily note header or regular back button (primary pane only) */}
       {paneType === 'primary' && (
         isDailyNote && typeof object.properties.date === 'number' ? (
