@@ -51,29 +51,7 @@
 .historical-object-view__timestamp {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
-}
-
-.historical-object-view__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  margin-left: auto;
-}
-
-.historical-object-view__back-btn {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  background: var(--bg-base);
-  color: var(--text-secondary);
-  font-size: var(--font-size-xs);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.historical-object-view__back-btn:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
+  flex: 1;
 }
 
 .historical-object-view__close-btn {

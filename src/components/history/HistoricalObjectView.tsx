@@ -42,7 +42,7 @@ function formatDateValue(value: unknown): string {
 
 export function HistoricalObjectView() {
   const { docStore } = useObjects();
-  const { splitPane, closeSplit, navigateToView } = useNavigation();
+  const { splitPane, closeSplit } = useNavigation();
   const typeRegistry = useTypeRegistry();
 
   // Get the historical object from the frontier
@@ -65,12 +65,6 @@ export function HistoricalObjectView() {
       minute: '2-digit',
     });
   }, [splitPane.historicalTimestamp]);
-
-  // Handle back to Time Machine
-  const handleBackToTimeMachine = () => {
-    closeSplit();
-    navigateToView('time-machine');
-  };
 
   if (!historicalObject) {
     return (
@@ -103,22 +97,13 @@ export function HistoricalObjectView() {
         <div className="historical-object-view__timestamp">
           {formattedTimestamp}
         </div>
-        <div className="historical-object-view__actions">
-          <button
-            className="historical-object-view__back-btn"
-            onClick={handleBackToTimeMachine}
-            title="Back to Time Machine"
-          >
-            Back to Time Machine
-          </button>
-          <button
-            className="historical-object-view__close-btn"
-            onClick={closeSplit}
-            title="Close comparison"
-          >
-            &times;
-          </button>
-        </div>
+        <button
+          className="historical-object-view__close-btn"
+          onClick={closeSplit}
+          title="Close comparison"
+        >
+          &times;
+        </button>
       </header>
 
       <div className="historical-object-view__content">
