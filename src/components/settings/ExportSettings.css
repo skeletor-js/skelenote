@@ -1,0 +1,148 @@
+/* Export Settings */
+
+.export-settings {
+  max-width: 500px;
+}
+
+.export-settings__title {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-lg) 0;
+}
+
+.export-settings__section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.export-settings__divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: var(--spacing-xl) 0;
+}
+
+.export-settings__description {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-md) 0;
+  line-height: 1.5;
+}
+
+.export-settings__label {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.export-settings__help {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin: var(--spacing-sm) 0 0 0;
+  line-height: 1.5;
+}
+
+/* Stats */
+.export-settings__stats {
+  display: flex;
+  gap: var(--spacing-xl);
+  flex-wrap: wrap;
+}
+
+.export-settings__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.export-settings__stat-value {
+  font-family: var(--font-ui);
+  font-size: 18px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.export-settings__stat-label {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Toggle */
+.export-settings__toggle-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+}
+
+.export-settings__checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--tag-green);
+}
+
+.export-settings__toggle-text {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+/* Progress */
+.export-settings__progress {
+  margin-bottom: var(--spacing-md);
+}
+
+.export-settings__progress-bar {
+  height: 4px;
+  background: var(--bg-sunken);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: var(--spacing-xs);
+}
+
+.export-settings__progress-fill {
+  height: 100%;
+  background: var(--tag-blue);
+  border-radius: 2px;
+  transition: width 0.2s ease;
+}
+
+.export-settings__progress-text {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* Button */
+.export-settings__button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.export-settings__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.export-settings__button--primary {
+  color: var(--bg-base);
+  background: var(--text-primary);
+  border: 1px solid var(--text-primary);
+}
+
+.export-settings__button--primary:hover:not(:disabled) {
+  opacity: 0.9;
+}

@@ -15,6 +15,8 @@ interface ObjectHeaderProps {
   onCloseSplit?: () => void;
   /** Callback to view object history in Time Machine */
   onViewHistory?: () => void;
+  /** Callback to export object to Markdown */
+  onExport?: () => void;
 }
 
 export function ObjectHeader({
@@ -26,6 +28,7 @@ export function ObjectHeader({
   paneType = 'primary',
   onCloseSplit,
   onViewHistory,
+  onExport,
 }: ObjectHeaderProps) {
   const { openInSplit, splitPane } = useNavigation();
   // Determine which property holds the title (varies by type)
@@ -150,6 +153,19 @@ export function ObjectHeader({
           title="View history"
         >
           History
+        </button>
+      )}
+
+      {/* Export button - only show in primary pane */}
+      {paneType === 'primary' && onExport && (
+        <button
+          type="button"
+          className="object-header__export-btn"
+          onClick={onExport}
+          aria-label={`Export ${currentTitle} to Markdown`}
+          title="Export to Markdown (Cmd+Shift+E)"
+        >
+          Export
         </button>
       )}
 

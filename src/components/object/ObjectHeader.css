@@ -129,6 +129,32 @@
   outline-offset: 2px;
 }
 
+/* Export Button */
+.object-header__export-btn {
+  flex-shrink: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.object-header__export-btn:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+  border-color: var(--border-subtle);
+}
+
+.object-header__export-btn:focus-visible {
+  outline: 2px solid var(--tag-blue);
+  outline-offset: 2px;
+}
+
 /* Delete Button */
 .object-header__delete {
   flex-shrink: 0;
