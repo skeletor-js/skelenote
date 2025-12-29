@@ -51,6 +51,8 @@ export class LoroDocStore {
    */
   createDocument(id: string): LoroDoc {
     const doc = new LoroDoc();
+    // Enable automatic timestamp recording for Time Machine feature
+    doc.setRecordTimestamp(true);
     this.documents.set(id, doc);
     return doc;
   }
@@ -144,6 +146,8 @@ export class LoroDocStore {
       } else {
         // Create new doc for documents we don't have yet
         doc = new LoroDoc();
+        // Enable automatic timestamp recording for Time Machine feature
+        doc.setRecordTimestamp(true);
         doc.import(bytes);
         this.documents.set(id, doc);
       }
@@ -236,6 +240,12 @@ export class LoroDocStore {
 
     const data = await readFile(filePath);
     this.importAll(data);
+
+    // Enable timestamp recording for all loaded documents
+    // This ensures future changes will have timestamps even if historical data doesn't
+    for (const [, doc] of this.documents) {
+      doc.setRecordTimestamp(true);
+    }
   }
 
   /**
