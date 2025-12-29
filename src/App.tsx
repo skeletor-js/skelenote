@@ -163,6 +163,7 @@ function App() {
   const { store, refreshData, saveNow } = useObjects();
   const { isInitialized: isCryptoInitialized, hasSkeletonKey } = useSkeletonKey();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
+  const { splitPane, closeSplit, swapPanes } = useNavigation();
   const inboxCount = store?.getInboxed().length ?? 0;
   const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
@@ -209,10 +210,45 @@ function App() {
       description: 'Open command palette',
     });
 
+    // Cmd+\ to close split view (only when open)
+    registerShortcut('close-split', {
+      key: '\\',
+      metaKey: true,
+      action: () => {
+        if (splitPane.isOpen) {
+          closeSplit();
+        }
+      },
+      description: 'Close split view',
+    });
+
+    // Cmd+Shift+\ to swap panes
+    registerShortcut('swap-panes', {
+      key: '\\',
+      metaKey: true,
+      shiftKey: true,
+      action: swapPanes,
+      description: 'Swap split panes',
+    });
+
+    // Escape to close split view
+    registerShortcut('escape-close-split', {
+      key: 'Escape',
+      action: () => {
+        if (splitPane.isOpen) {
+          closeSplit();
+        }
+      },
+      description: 'Close split view',
+    });
+
     return () => {
       unregisterShortcut('command-palette');
+      unregisterShortcut('close-split');
+      unregisterShortcut('swap-panes');
+      unregisterShortcut('escape-close-split');
     };
-  }, [registerShortcut, unregisterShortcut, togglePalette]);
+  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes]);
 
   // Show loading only during initial crypto initialization
   // (not during subsequent operations like key generation)
