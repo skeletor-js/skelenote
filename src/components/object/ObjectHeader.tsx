@@ -8,6 +8,10 @@ interface ObjectHeaderProps {
   onTitleChange: (newTitle: string) => void;
   onDelete?: () => void;
   canDelete?: boolean;
+  /** Which pane this header is in */
+  paneType?: 'primary' | 'secondary';
+  /** Callback to close split view (secondary pane only) */
+  onCloseSplit?: () => void;
 }
 
 export function ObjectHeader({
@@ -16,6 +20,8 @@ export function ObjectHeader({
   onTitleChange,
   onDelete,
   canDelete = true,
+  paneType = 'primary',
+  onCloseSplit,
 }: ObjectHeaderProps) {
   // Determine which property holds the title (varies by type)
   const titlePropertyId = object.properties.title !== undefined ? 'title' : 'name';
@@ -125,6 +131,18 @@ export function ObjectHeader({
           title="Delete"
         >
           Delete
+        </button>
+      )}
+
+      {paneType === 'secondary' && onCloseSplit && (
+        <button
+          type="button"
+          className="object-header__close-split"
+          onClick={onCloseSplit}
+          aria-label="Close split view"
+          title="Close"
+        >
+          ×
         </button>
       )}
     </header>

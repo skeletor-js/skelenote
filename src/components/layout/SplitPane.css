@@ -8,11 +8,7 @@
   flex-direction: column;
 }
 
-.split-pane--single .split-pane__primary {
-  max-width: var(--content-max-width);
-  margin: 0 auto;
-  padding: var(--spacing-xl);
-}
+/* Single pane inherits layout__content constraints - no additional styling needed */
 
 .split-pane--split {
   flex-direction: row;
@@ -84,43 +80,10 @@
   background: var(--bg-base);
 }
 
-.split-pane__secondary-header {
-  display: flex;
-  justify-content: flex-end;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-raised);
-}
-
-.split-pane__close-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 20px;
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
-}
-
-.split-pane__close-btn:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-}
-
-.split-pane__close-btn:focus-visible {
-  outline: var(--focus-ring-width) solid var(--focus-ring-color);
-  outline-offset: var(--focus-ring-offset);
-}
-
 .split-pane__secondary-content {
   flex: 1;
   overflow: auto;
-  padding: var(--spacing-lg);
+  position: relative; /* Contain absolutely positioned children like editor menus */
 }
 
 /* Mobile: Split is auto-closed programmatically when viewport < 768px */

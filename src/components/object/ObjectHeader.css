@@ -106,3 +106,34 @@
   outline: 2px solid var(--tag-blue);
   outline-offset: 2px;
 }
+
+/* Close Split Button (secondary pane only) */
+.object-header__close-split {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: var(--spacing-sm);
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.object-header__close-split:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+  border-color: var(--border-subtle);
+}
+
+.object-header__close-split:focus-visible {
+  outline: 2px solid var(--tag-blue);
+  outline-offset: 2px;
+}

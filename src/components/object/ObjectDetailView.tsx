@@ -206,6 +206,8 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
         onTitleChange={handleTitleChange}
         onDelete={handleDelete}
         canDelete={!isDailyNote}
+        paneType={paneType}
+        onCloseSplit={paneType === 'secondary' ? closeSplit : undefined}
       />
 
       {/* Properties Section */}

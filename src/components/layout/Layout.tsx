@@ -10,7 +10,7 @@ interface LayoutProps {
 
 export function Layout({ children, inboxCount = 0 }: LayoutProps) {
   const { isCollapsed, setCollapsed, toggleCollapsed } = useSidebar();
-  const { splitPane } = useNavigation();
+  const { splitPane, currentView } = useNavigation();
 
   // Handle responsive collapse
   useEffect(() => {
@@ -46,7 +46,7 @@ export function Layout({ children, inboxCount = 0 }: LayoutProps) {
             ☰
           </button>
         )}
-        <div className={`layout__content ${splitPane.isOpen ? 'layout__content--split-active' : ''}`}>{children}</div>
+        <div className={`layout__content ${splitPane.isOpen || (isCollapsed && currentView === 'object') ? 'layout__content--split-active' : ''}`}>{children}</div>
       </main>
       {/* Overlay for mobile when sidebar is open */}
       {!isCollapsed && (

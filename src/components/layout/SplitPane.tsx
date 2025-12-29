@@ -136,15 +136,6 @@ export function SplitPane({
         className="split-pane__secondary"
         style={{ flex: `0 0 ${splitWidth}%` }}
       >
-        <div className="split-pane__secondary-header">
-          <button
-            className="split-pane__close-btn"
-            onClick={onClose}
-            aria-label="Close split view"
-          >
-            ×
-          </button>
-        </div>
         <div className="split-pane__secondary-content">
           {secondaryContent}
         </div>
