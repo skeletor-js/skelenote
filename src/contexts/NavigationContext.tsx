@@ -21,11 +21,14 @@ export type ViewType =
   | 'completed'
   | 'object'
   | 'settings'
-  | 'time-machine';
+  | 'time-machine'
+  | 'search';
 
 interface NavigationState {
   view: ViewType;
   objectId: string | null;
+  /** Search query when view is 'search' */
+  searchQuery: string | null;
 }
 
 /**
@@ -56,10 +59,14 @@ interface NavigationContextValue {
   currentView: ViewType;
   /** ID of the currently selected object (when view is 'object') */
   selectedObjectId: string | null;
+  /** Current search query (when view is 'search') */
+  searchQuery: string | null;
   /** Navigate to an object detail view */
   navigateToObject: (objectId: string) => void;
   /** Navigate to a specific view */
   navigateToView: (view: ViewType) => void;
+  /** Navigate to search view with optional initial query */
+  navigateToSearch: (query?: string) => void;
   /** Go back to the previous view */
   navigateBack: () => void;
   /** Check if we can go back */
@@ -96,6 +103,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   const [currentState, setCurrentState] = useState<NavigationState>({
     view: 'inbox',
     objectId: null,
+    searchQuery: null,
   });
   const [history, setHistory] = useState<NavigationState[]>([]);
 
@@ -114,6 +122,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     setCurrentState({
       view: 'object',
       objectId,
+      searchQuery: null,
     });
   }, [currentState]);
 
@@ -122,6 +131,16 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     setCurrentState({
       view,
       objectId: null,
+      searchQuery: null,
+    });
+  }, [currentState]);
+
+  const navigateToSearch = useCallback((query?: string) => {
+    setHistory((prev) => [...prev, currentState]);
+    setCurrentState({
+      view: 'search',
+      objectId: null,
+      searchQuery: query ?? null,
     });
   }, [currentState]);
 
@@ -172,6 +191,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     setCurrentState({
       view: 'object',
       objectId: splitPane.objectId,
+      searchQuery: null,
     });
 
     // Update split to show the former primary object
@@ -188,6 +208,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       setCurrentState({
         view: 'object',
         objectId,
+        searchQuery: null,
       });
 
       // Open split pane with historical version
@@ -208,8 +229,10 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       value={{
         currentView: currentState.view,
         selectedObjectId: currentState.objectId,
+        searchQuery: currentState.searchQuery,
         navigateToObject,
         navigateToView,
+        navigateToSearch,
         navigateBack,
         canGoBack: history.length > 0,
         navigationHistory: history,
