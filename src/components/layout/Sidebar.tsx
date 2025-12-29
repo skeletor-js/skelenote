@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import './Sidebar.css';
 import { SidebarSection } from './SidebarSection';
 import { SidebarItem } from './SidebarItem';
+import { PinnedSection } from './PinnedSection';
 import { Tag, type TagColor, SyncIndicator } from '@/components/ui';
 import { useSidebar, useNavigation, useObjects, useTypeRegistry, type ViewType } from '@/contexts';
 import { useTheme, useLinkToDaily } from '@/hooks';
@@ -107,6 +108,9 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
   return (
     <aside className="sidebar">
       <div className="sidebar__content">
+        {/* Pinned section */}
+        <PinnedSection />
+
         {/* Primary navigation */}
         <div className="sidebar__primary">
           <SidebarItem
@@ -121,6 +125,12 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
             icon="🔎"
             label="Search"
             onClick={() => handleNavigate('search')}
+          />
+          <SidebarItem
+            id="time-machine"
+            icon="🕰️"
+            label="Time Machine"
+            onClick={() => handleNavigate('time-machine')}
           />
         </div>
 
@@ -218,18 +228,6 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
             })
           )}
         </SidebarSection>
-
-        <div className="sidebar__divider" />
-
-        {/* Time Machine */}
-        <div className="sidebar__quick">
-          <SidebarItem
-            id="time-machine"
-            icon="🕰️"
-            label="Time Machine"
-            onClick={() => handleNavigate('time-machine')}
-          />
-        </div>
       </div>
 
       {/* Add Object button */}
