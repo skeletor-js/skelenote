@@ -253,6 +253,7 @@ async fn network_start_server(
     let device_id = network_state.device_id.read().await.clone();
     let device_name = network_state.device_name.read().await.clone();
     let connected_peers = network_state.connected_peers.clone();
+    let peer_streams = network_state.peer_streams.clone();
 
     // Start the server
     let (handle, mut event_rx, port) = LocalSyncServer::start(
@@ -260,6 +261,7 @@ async fn network_start_server(
         device_name,
         fingerprint,
         connected_peers,
+        peer_streams,
     ).await.map_err(|e| e.to_string())?;
 
     // Store the server handle
@@ -495,6 +497,173 @@ async fn network_is_discovery_running(
     Ok(network_state.is_mdns_running().await)
 }
 
+// ============================================================================
+// Peer Connection Commands
+// ============================================================================
+
+/// Connect to a discovered peer by device ID
+#[tauri::command]
+async fn network_connect_to_peer(
+    device_id: String,
+    app: tauri::AppHandle,
+    network_state: State<'_, NetworkState>,
+) -> Result<(), String> {
+    use std::net::SocketAddr;
+    use network::client::PeerConnection;
+    use network::protocol::MessageType;
+
+    println!("[Connect] Attempting to connect to peer: {}", device_id);
+
+    // Get the peer info from discovered peers
+    let peer = {
+        let peers = network_state.discovered_peers.read().await;
+        peers.get(&device_id).cloned()
+    };
+
+    let peer = peer.ok_or_else(|| format!("Peer not found: {}", device_id))?;
+    println!("[Connect] Found peer: {} at {:?}:{}", peer.device_name, peer.addresses, peer.port);
+
+    // Get our device info
+    let our_device_id = network_state.device_id.read().await.clone();
+    let our_device_name = network_state.device_name.read().await.clone();
+    let our_fingerprint = network_state.fingerprint.read().await
+        .clone()
+        .ok_or("No fingerprint set - start discovery first")?;
+
+    // Try each address until one works
+    let mut last_error = String::from("No addresses to try");
+    for addr_str in &peer.addresses {
+        // Parse the IP address and add the port
+        let addr: SocketAddr = match format!("{}:{}", addr_str, peer.port).parse() {
+            Ok(a) => a,
+            Err(e) => {
+                println!("[Connect] Invalid address {}: {}", addr_str, e);
+                continue;
+            }
+        };
+
+        println!("[Connect] Trying {}...", addr);
+
+        match PeerConnection::connect(
+            addr,
+            our_device_id.clone(),
+            our_device_name.clone(),
+            our_fingerprint.clone(),
+        ).await {
+            Ok((connection, mut event_rx)) => {
+                println!("[Connect] Connected to {} ({})", connection.device_name, connection.device_id);
+
+                let peer_device_id = connection.device_id.clone();
+                let peer_device_name = connection.device_name.clone();
+
+                // Store in connected peers
+                {
+                    let mut peers = network_state.connected_peers.write().await;
+                    peers.insert(peer_device_id.clone(), network::state::ConnectedPeer {
+                        device_id: peer_device_id.clone(),
+                        device_name: peer_device_name.clone(),
+                        address: addr.to_string(),
+                        connected_at: std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap()
+                            .as_secs(),
+                    });
+                }
+
+                // Store the write stream in peer_streams so broadcast_sync can send to it
+                let write_stream = connection.get_write_stream();
+                network_state.add_peer_write_stream_arc(peer_device_id.clone(), write_stream).await;
+                println!("[Connect] Added write stream to peer_streams for {}", peer_device_id);
+
+                // Emit connected event
+                println!("[Connect] Emitting local-peer-connected event for {}", peer_device_id);
+                match app.emit("local-peer-connected", serde_json::json!({
+                    "deviceId": peer_device_id.clone(),
+                    "deviceName": peer_device_name.clone(),
+                    "address": addr.to_string(),
+                })) {
+                    Ok(()) => println!("[Connect] Event emitted successfully"),
+                    Err(e) => println!("[Connect] Failed to emit event: {:?}", e),
+                }
+
+                // Spawn event handler for incoming messages
+                let app_clone = app.clone();
+                let peer_id_clone = peer_device_id.clone();
+                let connected_peers = network_state.connected_peers.clone();
+                let peer_streams = network_state.peer_streams.clone();
+                tokio::spawn(async move {
+                    while let Some(event) = event_rx.recv().await {
+                        match event {
+                            network::client::PeerEvent::MessageReceived { msg_type, payload } => {
+                                if msg_type == MessageType::Update as u8 {
+                                    let _ = app_clone.emit("local-sync-message", serde_json::json!({
+                                        "deviceId": peer_id_clone,
+                                        "msgType": msg_type,
+                                        "payload": payload,
+                                    }));
+                                }
+                            }
+                            network::client::PeerEvent::Disconnected => {
+                                // Remove from connected peers
+                                {
+                                    let mut peers = connected_peers.write().await;
+                                    peers.remove(&peer_id_clone);
+                                }
+                                // Remove from peer streams
+                                {
+                                    let mut streams = peer_streams.write().await;
+                                    streams.remove(&peer_id_clone);
+                                }
+                                let _ = app_clone.emit("local-peer-disconnected", serde_json::json!({
+                                    "deviceId": peer_id_clone,
+                                }));
+                                break;
+                            }
+                            network::client::PeerEvent::Error { message } => {
+                                eprintln!("[Connect] Peer error: {}", message);
+                            }
+                            _ => {}
+                        }
+                    }
+                });
+
+                return Ok(());
+            }
+            Err(e) => {
+                println!("[Connect] Failed to connect to {}: {}", addr, e);
+                last_error = e.to_string();
+            }
+        }
+    }
+
+    Err(format!("Failed to connect to peer: {}", last_error))
+}
+
+// ============================================================================
+// Sync Relay Commands
+// ============================================================================
+
+/// Broadcast sync data to all connected local peers
+///
+/// The data should be encrypted Loro update bytes.
+/// Returns the number of peers the data was sent to.
+#[tauri::command]
+async fn network_broadcast_sync(
+    data: Vec<u8>,
+    network_state: State<'_, NetworkState>,
+) -> Result<usize, String> {
+    let count = network_state.broadcast_sync(&data).await;
+    Ok(count)
+}
+
+/// Get number of connected peers for sync
+#[tauri::command]
+async fn network_peer_count(
+    network_state: State<'_, NetworkState>,
+) -> Result<usize, String> {
+    Ok(network_state.peer_count().await)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -530,6 +699,11 @@ pub fn run() {
             network_stop_discovery,
             network_get_discovered_peers,
             network_is_discovery_running,
+            // Peer Connection commands
+            network_connect_to_peer,
+            // Sync Relay commands
+            network_broadcast_sync,
+            network_peer_count,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -8,7 +8,9 @@ pub mod server;
 pub mod client;
 pub mod state;
 pub mod mdns;
+pub mod peers;
 
 pub use server::LocalSyncServer;
 pub use state::{NetworkState, DiscoveredPeer};
 pub use mdns::MdnsHandle;
+pub use peers::{PeerManager, PeerManagerEvent};

@@ -5,6 +5,7 @@
 
 use mdns_sd::{ServiceDaemon, ServiceEvent, ServiceInfo};
 use std::collections::HashMap;
+use std::net::IpAddr;
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
 
@@ -35,6 +36,34 @@ pub struct MdnsHandle {
 }
 
 impl MdnsHandle {
+    /// Get local IPv4 addresses for mDNS advertisement
+    fn get_local_ips() -> Vec<IpAddr> {
+        let mut ips = Vec::new();
+
+        // Try using local-ip-address crate
+        if let Ok(ip) = local_ip_address::local_ip() {
+            if let IpAddr::V4(ipv4) = ip {
+                println!("[mDNS] Found primary local IP: {}", ipv4);
+                ips.push(IpAddr::V4(ipv4));
+            }
+        }
+
+        // Also try to get all local IPs
+        if let Ok(list) = local_ip_address::list_afinet_netifas() {
+            for (name, ip) in list {
+                if let IpAddr::V4(ipv4) = ip {
+                    // Skip loopback and already-added IPs
+                    if !ipv4.is_loopback() && !ips.contains(&IpAddr::V4(ipv4)) {
+                        println!("[mDNS] Found interface {} with IP: {}", name, ipv4);
+                        ips.push(IpAddr::V4(ipv4));
+                    }
+                }
+            }
+        }
+
+        ips
+    }
+
     /// Start mDNS advertisement and discovery
     ///
     /// - `device_id`: Unique identifier for this device
@@ -49,10 +78,38 @@ impl MdnsHandle {
         fingerprint: String,
     ) -> Result<(Self, mpsc::Receiver<MdnsEvent>), String> {
         // Create the mDNS daemon
+        println!("[mDNS] Creating ServiceDaemon...");
         let daemon = ServiceDaemon::new().map_err(|e| format!("Failed to create mDNS daemon: {}", e))?;
+        println!("[mDNS] ServiceDaemon created successfully");
 
         // Create a unique instance name
         let instance_name = format!("{}._skelenote._tcp.local.", device_id);
+
+        // Get hostname - ensure it ends with exactly ".local."
+        let hostname = hostname::get().unwrap_or_default();
+        let hostname_raw = hostname.to_string_lossy();
+        let hostname_str = if hostname_raw.ends_with(".local") {
+            format!("{}.", hostname_raw)
+        } else if hostname_raw.ends_with(".local.") {
+            hostname_raw.to_string()
+        } else {
+            format!("{}.local.", hostname_raw)
+        };
+
+        // Get local IP addresses
+        let local_ips = Self::get_local_ips();
+        println!("[mDNS] Starting discovery:");
+        println!("[mDNS]   device_id: {}", device_id);
+        println!("[mDNS]   device_name: {}", device_name);
+        println!("[mDNS]   hostname: {}", hostname_str);
+        println!("[mDNS]   port: {}", port);
+        println!("[mDNS]   fingerprint: {}", fingerprint);
+        println!("[mDNS]   instance_name: {}", instance_name);
+        println!("[mDNS]   local_ips: {:?}", local_ips);
+
+        if local_ips.is_empty() {
+            return Err("No local IP addresses found".to_string());
+        }
 
         // Build TXT records
         let mut properties = HashMap::new();
@@ -61,24 +118,31 @@ impl MdnsHandle {
         properties.insert("id".to_string(), device_id.clone());
         properties.insert("name".to_string(), device_name.clone());
 
-        // Register our service
+        // Register our service with explicit IP addresses
+        println!("[mDNS] Creating ServiceInfo with {} IPs...", local_ips.len());
         let service_info = ServiceInfo::new(
             SERVICE_TYPE,
             &device_id,
-            &format!("{}.local.", hostname::get().unwrap_or_default().to_string_lossy()),
-            (),
+            &hostname_str,
+            &local_ips[..],  // Pass IP addresses explicitly
             port,
             properties,
         ).map_err(|e| format!("Failed to create service info: {}", e))?;
+        println!("[mDNS] ServiceInfo created: {}", service_info.get_fullname());
+        println!("[mDNS] ServiceInfo addresses: {:?}", service_info.get_addresses());
 
+        println!("[mDNS] Registering service...");
         daemon
             .register(service_info)
             .map_err(|e| format!("Failed to register mDNS service: {}", e))?;
+        println!("[mDNS] Service registered successfully!");
 
         // Start browsing for other services
+        println!("[mDNS] Starting browse for {}...", SERVICE_TYPE);
         let receiver = daemon
             .browse(SERVICE_TYPE)
             .map_err(|e| format!("Failed to start mDNS browse: {}", e))?;
+        println!("[mDNS] Browse started successfully!");
 
         let (event_tx, event_rx) = mpsc::channel(100);
         let shutdown = Arc::new(RwLock::new(false));
@@ -116,19 +180,44 @@ impl MdnsHandle {
             }
 
             // Use recv_timeout to allow periodic shutdown checks
-            match receiver.recv_timeout(std::time::Duration::from_millis(500)) {
+            // Short timeout for more responsive discovery
+            match receiver.recv_timeout(std::time::Duration::from_millis(100)) {
                 Ok(event) => {
+                    match &event {
+                        ServiceEvent::SearchStarted(stype) => {
+                            println!("[mDNS] SearchStarted: {}", stype);
+                        }
+                        ServiceEvent::ServiceFound(stype, name) => {
+                            println!("[mDNS] ServiceFound: {} - {}", stype, name);
+                        }
+                        ServiceEvent::ServiceResolved(info) => {
+                            println!("[mDNS] ServiceResolved: {} addresses={:?}",
+                                info.get_fullname(),
+                                info.get_addresses());
+                        }
+                        ServiceEvent::ServiceRemoved(stype, name) => {
+                            println!("[mDNS] ServiceRemoved: {} - {}", stype, name);
+                        }
+                        ServiceEvent::SearchStopped(stype) => {
+                            println!("[mDNS] SearchStopped: {}", stype);
+                        }
+                    }
                     match event {
                         ServiceEvent::ServiceResolved(info) => {
+                            println!("[mDNS] Processing resolved service: {}", info.get_fullname());
                             // Extract properties
                             let properties = info.get_properties();
                             let fp = properties.get("fp").map(|v| v.val_str().to_string());
                             let id = properties.get("id").map(|v| v.val_str().to_string());
                             let name = properties.get("name").map(|v| v.val_str().to_string());
 
+                            println!("[mDNS] Service properties: id={:?}, name={:?}, fp={:?}", id, name, fp);
+                            println!("[mDNS] Our id={}, our_fp={}", our_device_id, our_fingerprint);
+
                             // Skip our own service
                             if let Some(ref peer_id) = id {
                                 if peer_id == &our_device_id {
+                                    println!("[mDNS] Skipping our own service");
                                     continue;
                                 }
                             }
@@ -136,12 +225,16 @@ impl MdnsHandle {
                             // Filter by fingerprint - only show peers with same key
                             if let Some(ref peer_fp) = fp {
                                 if peer_fp != &our_fingerprint {
+                                    println!("[mDNS] Skipping peer with different fingerprint: {} != {}", peer_fp, our_fingerprint);
                                     continue;
                                 }
                             } else {
                                 // No fingerprint = skip
+                                println!("[mDNS] Skipping peer with no fingerprint");
                                 continue;
                             }
+
+                            println!("[mDNS] Peer passed all filters! Adding to discovered peers");
 
                             // Build discovered peer info
                             let peer = DiscoveredPeer {

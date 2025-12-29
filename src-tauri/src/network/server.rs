@@ -7,7 +7,8 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
-use tokio::sync::{mpsc, oneshot, RwLock};
+use tokio::net::tcp::OwnedWriteHalf;
+use tokio::sync::{mpsc, oneshot, RwLock, Mutex};
 
 use super::protocol::{decode_message, encode_message, HelloPayload, AckPayload, MessageType, ProtocolError, HEADER_SIZE};
 use super::state::{ConnectedPeer, ServerHandle};
@@ -58,6 +59,7 @@ impl LocalSyncServer {
         device_name: String,
         fingerprint: String,
         connected_peers: Arc<RwLock<HashMap<String, ConnectedPeer>>>,
+        peer_streams: Arc<RwLock<HashMap<String, Arc<Mutex<OwnedWriteHalf>>>>>,
     ) -> Result<(ServerHandle, mpsc::Receiver<ServerEvent>, u16), std::io::Error> {
         // Bind to any available port
         let listener = TcpListener::bind("0.0.0.0:0").await?;
@@ -74,7 +76,7 @@ impl LocalSyncServer {
         };
 
         // Spawn the accept loop
-        tokio::spawn(server.accept_loop(listener, shutdown_rx, event_tx, connected_peers));
+        tokio::spawn(server.accept_loop(listener, shutdown_rx, event_tx, connected_peers, peer_streams));
 
         let handle = ServerHandle { shutdown_tx, port };
         Ok((handle, event_rx, port))
@@ -87,6 +89,7 @@ impl LocalSyncServer {
         mut shutdown_rx: oneshot::Receiver<()>,
         event_tx: mpsc::Sender<ServerEvent>,
         connected_peers: Arc<RwLock<HashMap<String, ConnectedPeer>>>,
+        peer_streams: Arc<RwLock<HashMap<String, Arc<Mutex<OwnedWriteHalf>>>>>,
     ) {
         loop {
             tokio::select! {
@@ -100,6 +103,7 @@ impl LocalSyncServer {
                         Ok((stream, addr)) => {
                             let event_tx = event_tx.clone();
                             let connected_peers = connected_peers.clone();
+                            let peer_streams = peer_streams.clone();
                             let device_id = self.device_id.clone();
                             let device_name = self.device_name.clone();
                             let fingerprint = self.fingerprint.clone();
@@ -114,6 +118,7 @@ impl LocalSyncServer {
                                     fingerprint,
                                     event_tx,
                                     connected_peers,
+                                    peer_streams,
                                 ).await {
                                     eprintln!("Connection error: {}", e);
                                 }
@@ -140,6 +145,7 @@ async fn handle_connection(
     our_fingerprint: String,
     event_tx: mpsc::Sender<ServerEvent>,
     connected_peers: Arc<RwLock<HashMap<String, ConnectedPeer>>>,
+    peer_streams: Arc<RwLock<HashMap<String, Arc<Mutex<OwnedWriteHalf>>>>>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // Read the initial HELLO message
     let mut buffer = vec![0u8; 4096];
@@ -200,7 +206,7 @@ async fn handle_connection(
     let ack_response = encode_message(MessageType::Ack, &ack_bytes);
     stream.write_all(&ack_response).await?;
 
-    // Add to connected peers
+    // Add to connected peers info
     let peer_device_id = hello.device_id.clone();
     let peer_device_name = hello.device_name.clone();
     {
@@ -216,6 +222,17 @@ async fn handle_connection(
         });
     }
 
+    // Split the stream into read and write halves
+    // This prevents deadlock: read loop won't block writes
+    let (mut read_half, write_half) = stream.into_split();
+    let write_half = Arc::new(Mutex::new(write_half));
+
+    // Store write half for sending
+    {
+        let mut streams = peer_streams.write().await;
+        streams.insert(peer_device_id.clone(), write_half.clone());
+    }
+
     // Notify frontend
     let _ = event_tx.send(ServerEvent::PeerConnected {
         device_id: peer_device_id.clone(),
@@ -223,10 +240,10 @@ async fn handle_connection(
         address: addr.to_string(),
     }).await;
 
-    // Main message loop
+    // Main message loop using read half (no lock contention with writes)
     read_buffer.clear();
     loop {
-        let n = match stream.read(&mut buffer).await {
+        let n = match read_half.read(&mut buffer).await {
             Ok(0) => break, // Connection closed
             Ok(n) => n,
             Err(e) => {
@@ -249,7 +266,8 @@ async fn handle_connection(
                     match message.msg_type {
                         MessageType::Ping => {
                             let pong = encode_message(MessageType::Pong, &[]);
-                            let _ = stream.write_all(&pong).await;
+                            let mut s = write_half.lock().await;
+                            let _ = s.write_all(&pong).await;
                         }
                         MessageType::Pong => {
                             // Ignore pong
@@ -280,10 +298,14 @@ async fn handle_connection(
         }
     }
 
-    // Remove from connected peers
+    // Remove from connected peers and streams
     {
         let mut peers = connected_peers.write().await;
         peers.remove(&peer_device_id);
+    }
+    {
+        let mut streams = peer_streams.write().await;
+        streams.remove(&peer_device_id);
     }
 
     // Notify frontend

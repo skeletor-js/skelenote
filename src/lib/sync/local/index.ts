@@ -145,6 +145,16 @@ export async function isDiscoveryRunning(): Promise<boolean> {
   return invoke<boolean>("network_is_discovery_running");
 }
 
+// Peer connection commands
+
+/**
+ * Connect to a discovered peer by device ID.
+ * @param deviceId The device ID of the peer to connect to.
+ */
+export async function connectToPeer(deviceId: string): Promise<void> {
+  return invoke("network_connect_to_peer", { deviceId });
+}
+
 // Event listeners
 
 /**
@@ -224,4 +234,25 @@ export function onDiscoveryError(
   return listen<DiscoveryErrorEvent>("local-discovery-error", (event) => {
     callback(event.payload);
   });
+}
+
+// Sync relay commands
+
+/**
+ * Broadcast sync data to all connected local peers.
+ * @param data The encrypted Loro update bytes.
+ * @returns The number of peers the data was sent to.
+ */
+export async function broadcastSync(data: Uint8Array): Promise<number> {
+  // Convert Uint8Array to number[] for Tauri
+  return invoke<number>("network_broadcast_sync", {
+    data: Array.from(data),
+  });
+}
+
+/**
+ * Get the number of connected peers for sync.
+ */
+export async function getPeerCount(): Promise<number> {
+  return invoke<number>("network_peer_count");
 }

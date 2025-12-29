@@ -6,6 +6,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
+use tokio::net::tcp::OwnedWriteHalf;
 use tokio::sync::{mpsc, Mutex};
 
 use super::protocol::{decode_message, encode_message, HelloPayload, AckPayload, MessageType, ProtocolError, HEADER_SIZE};
@@ -36,8 +37,8 @@ pub struct PeerConnection {
     pub device_name: String,
     /// Remote address
     pub address: SocketAddr,
-    /// TCP stream (wrapped for thread-safety)
-    stream: Arc<Mutex<TcpStream>>,
+    /// TCP write stream (wrapped for thread-safety, read half is used by read_loop)
+    write_stream: Arc<Mutex<OwnedWriteHalf>>,
     /// When the connection was established
     pub connected_at: u64,
 }
@@ -53,7 +54,7 @@ impl PeerConnection {
         our_fingerprint: String,
     ) -> Result<(Self, mpsc::Receiver<PeerEvent>), Box<dyn std::error::Error + Send + Sync>> {
         // Connect with timeout
-        let stream = tokio::time::timeout(
+        let mut stream = tokio::time::timeout(
             std::time::Duration::from_secs(10),
             TcpStream::connect(addr),
         ).await??;
@@ -69,28 +70,21 @@ impl PeerConnection {
         let hello_bytes = serde_json::to_vec(&hello)?;
         let hello_msg = encode_message(MessageType::Hello, &hello_bytes);
 
-        let stream = Arc::new(Mutex::new(stream));
-        {
-            let mut s = stream.lock().await;
-            s.write_all(&hello_msg).await?;
-        }
+        stream.write_all(&hello_msg).await?;
 
         // Read response (HELLO + ACK)
         let mut buffer = vec![0u8; 4096];
         let mut read_buffer = Vec::new();
 
-        {
-            let mut s = stream.lock().await;
-            let n = tokio::time::timeout(
-                std::time::Duration::from_secs(10),
-                s.read(&mut buffer),
-            ).await??;
+        let n = tokio::time::timeout(
+            std::time::Duration::from_secs(10),
+            stream.read(&mut buffer),
+        ).await??;
 
-            if n == 0 {
-                return Err("Connection closed during handshake".into());
-            }
-            read_buffer.extend_from_slice(&buffer[..n]);
+        if n == 0 {
+            return Err("Connection closed during handshake".into());
         }
+        read_buffer.extend_from_slice(&buffer[..n]);
 
         // Decode peer's HELLO
         let (hello_response, consumed) = decode_message(&read_buffer)?;
@@ -109,10 +103,9 @@ impl PeerConnection {
 
         // Read more if needed for ACK
         if read_buffer.len() < HEADER_SIZE {
-            let mut s = stream.lock().await;
             let n = tokio::time::timeout(
                 std::time::Duration::from_secs(5),
-                s.read(&mut buffer),
+                stream.read(&mut buffer),
             ).await??;
             read_buffer.extend_from_slice(&buffer[..n]);
         }
@@ -128,13 +121,18 @@ impl PeerConnection {
             return Err(format!("Connection rejected: {}", ack.reason.unwrap_or_default()).into());
         }
 
+        // Split the stream into read and write halves
+        // This prevents deadlock: read loop won't block writes
+        let (read_half, write_half) = stream.into_split();
+        let write_stream = Arc::new(Mutex::new(write_half));
+
         let (event_tx, event_rx) = mpsc::channel(100);
 
         let connection = PeerConnection {
             device_id: peer_hello.device_id,
             device_name: peer_hello.device_name,
             address: addr,
-            stream: stream.clone(),
+            write_stream: write_stream.clone(),
             connected_at: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap()
@@ -144,32 +142,29 @@ impl PeerConnection {
         // Notify connected
         let _ = event_tx.send(PeerEvent::Connected).await;
 
-        // Spawn read loop
-        let stream_clone = stream.clone();
+        // Spawn read loop with the read half (no lock contention with writes)
         tokio::spawn(async move {
-            Self::read_loop(stream_clone, event_tx).await;
+            Self::read_loop(read_half, event_tx).await;
         });
 
         Ok((connection, event_rx))
     }
 
     /// Read loop for incoming messages
-    async fn read_loop(stream: Arc<Mutex<TcpStream>>, event_tx: mpsc::Sender<PeerEvent>) {
+    /// Takes ownership of the read half (no lock needed since we're the only reader)
+    async fn read_loop(mut read_half: tokio::net::tcp::OwnedReadHalf, event_tx: mpsc::Sender<PeerEvent>) {
         let mut buffer = vec![0u8; 4096];
         let mut read_buffer = Vec::new();
 
         loop {
-            let n = {
-                let mut s = stream.lock().await;
-                match s.read(&mut buffer).await {
-                    Ok(0) => break, // Connection closed
-                    Ok(n) => n,
-                    Err(e) => {
-                        let _ = event_tx.send(PeerEvent::Error {
-                            message: format!("Read error: {}", e),
-                        }).await;
-                        break;
-                    }
+            let n = match read_half.read(&mut buffer).await {
+                Ok(0) => break, // Connection closed
+                Ok(n) => n,
+                Err(e) => {
+                    let _ = event_tx.send(PeerEvent::Error {
+                        message: format!("Read error: {}", e),
+                    }).await;
+                    break;
                 }
             };
 
@@ -209,7 +204,7 @@ impl PeerConnection {
     /// Send a message to the peer
     pub async fn send(&self, msg_type: MessageType, payload: &[u8]) -> Result<(), std::io::Error> {
         let message = encode_message(msg_type, payload);
-        let mut stream = self.stream.lock().await;
+        let mut stream = self.write_stream.lock().await;
         stream.write_all(&message).await
     }
 
@@ -220,7 +215,15 @@ impl PeerConnection {
 
     /// Close the connection
     pub async fn close(&self) -> Result<(), std::io::Error> {
-        let mut stream = self.stream.lock().await;
+        let mut stream = self.write_stream.lock().await;
         stream.shutdown().await
+    }
+
+    /// Get a clone of the write stream handle for sending messages
+    ///
+    /// This is needed so the caller can add the stream to NetworkState.peer_streams
+    /// for broadcast_sync to work with client-initiated connections.
+    pub fn get_write_stream(&self) -> Arc<Mutex<OwnedWriteHalf>> {
+        self.write_stream.clone()
     }
 }

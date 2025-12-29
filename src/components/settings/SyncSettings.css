@@ -30,6 +30,18 @@
   margin: 0 0 var(--spacing-sm) 0;
 }
 
+.sync-settings__subsection {
+  margin-bottom: var(--spacing-md);
+}
+
+.sync-settings__sublabel {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
 .sync-settings__input-row {
   display: flex;
   gap: var(--spacing-sm);
