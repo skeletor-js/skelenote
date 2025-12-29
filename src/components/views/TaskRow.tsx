@@ -8,7 +8,7 @@ import type { SkelenoteObject } from '@/lib/types';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
 import { useObjects, useToast } from '@/contexts';
 import { Tag, ContextMenu, ConfirmDialog, type TagColor, type ContextMenuItem } from '@/components/ui';
-import { useContextMenu, useConfirmDialog } from '@/hooks';
+import { useContextMenu, useConfirmDialog, usePinnedObjects } from '@/hooks';
 import './TaskRow.css';
 
 interface TaskRowProps {
@@ -32,6 +32,7 @@ export function TaskRow({
   const { addToast } = useToast();
   const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
   const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
+  const { isPinned, pin, unpin } = usePinnedObjects();
 
   const isComplete = task.properties.status === 'done';
   const priority = task.properties.priority as string | null;
@@ -96,8 +97,26 @@ export function TaskRow({
     }
   }, [confirm, title, task.id, onDelete, addToast]);
 
+  // Handle pin/unpin
+  const taskIsPinned = isPinned(task.id);
+  const handleTogglePin = useCallback(() => {
+    if (taskIsPinned) {
+      unpin(task.id);
+      addToast({ type: 'success', message: 'Removed from pins' });
+    } else {
+      pin(task.id);
+      addToast({ type: 'success', message: 'Pinned to sidebar' });
+    }
+  }, [taskIsPinned, pin, unpin, task.id, addToast]);
+
   // Context menu items
   const contextMenuItems: ContextMenuItem[] = [
+    {
+      id: 'pin',
+      label: taskIsPinned ? 'Unpin from Sidebar' : 'Pin to Sidebar',
+      icon: '📌',
+      onClick: handleTogglePin,
+    },
     {
       id: 'delete',
       label: 'Delete',

@@ -32,6 +32,7 @@ function createMockTask(overrides: Partial<{
     },
     hasContent: true,
     inboxed: false,
+    pinned: false,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
