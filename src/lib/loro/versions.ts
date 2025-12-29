@@ -80,44 +80,19 @@ export interface VersionHistory {
 export function extractChangePoints(doc: LoroDoc): ChangePoint[] {
   const allChanges = doc.getAllChanges();
   const points: ChangePoint[] = [];
+  let skippedCount = 0;
 
-  // Debug: Log document state
-  console.log('[versions] Document peer ID:', doc.peerIdStr);
-  console.log('[versions] Document frontiers:', doc.frontiers());
-
-  // Debug: Log what getAllChanges returns
-  console.log('[versions] getAllChanges result:', allChanges);
-  console.log('[versions] getAllChanges type:', typeof allChanges);
-  console.log('[versions] getAllChanges is Map:', allChanges instanceof Map);
-
-  if (allChanges instanceof Map) {
-    console.log('[versions] Map size:', allChanges.size);
-    console.log('[versions] Map keys:', Array.from(allChanges.keys()));
-
-    // Try entries iteration
-    for (const [key, value] of allChanges.entries()) {
-      console.log('[versions] Entry - key:', key, 'value type:', typeof value, 'is array:', Array.isArray(value));
-    }
-  } else {
-    // Maybe it's a plain object?
-    console.log('[versions] Treating as object, keys:', Object.keys(allChanges));
-  }
-
-  // Use .entries() to be explicit about iteration
   for (const [peerId, changes] of allChanges.entries()) {
-    console.log('[versions] Processing peer:', peerId, 'changes:', changes);
-
     if (!Array.isArray(changes)) {
-      console.warn('[versions] Changes is not an array:', changes);
       continue;
     }
 
-    console.log('[versions] Peer', peerId, 'has', changes.length, 'changes');
-
     for (const change of changes) {
-      // Debug: Log individual change structure
-      if (points.length === 0) {
-        console.log('[versions] Sample change structure:', JSON.stringify(change, null, 2));
+      // Skip changes without timestamps (historical data before timestamp recording was enabled)
+      // These have timestamp: 0 which would incorrectly show as January 1, 1970
+      if (change.timestamp === 0) {
+        skippedCount++;
+        continue;
       }
 
       // Build frontier that represents state up to and including this change
@@ -135,7 +110,9 @@ export function extractChangePoints(doc: LoroDoc): ChangePoint[] {
     }
   }
 
-  console.log('[versions] Total change points extracted:', points.length);
+  if (skippedCount > 0) {
+    console.log(`[versions] Skipped ${skippedCount} changes without timestamps (historical data)`);
+  }
 
   // Sort by timestamp ascending
   return points.sort((a, b) => a.timestamp - b.timestamp);
