@@ -502,9 +502,7 @@ export class LoroDocStore {
 
     try {
       const objectsMap = forkedDoc.getMap('objects');
-      const contentsMap = forkedDoc.getMap('contents');
       const entries = objectsMap.toJSON() as Record<string, string>;
-      const contents = contentsMap.toJSON() as Record<string, string>;
       const objects: Array<{
         id: string;
         typeId: string;
@@ -520,11 +518,20 @@ export class LoroDocStore {
           try {
             const parsed = JSON.parse(data);
             // Include content in properties if it exists
-            if (parsed.hasContent && contents[id]) {
-              parsed.properties = {
-                ...parsed.properties,
-                content: contents[id],
-              };
+            // Content is stored in getText('content:<objectId>')
+            if (parsed.hasContent) {
+              try {
+                const contentText = forkedDoc.getText(`content:${id}`);
+                const content = contentText.toString();
+                if (content) {
+                  parsed.properties = {
+                    ...parsed.properties,
+                    content: content,
+                  };
+                }
+              } catch {
+                // Content might not exist at this historical point
+              }
             }
             objects.push(parsed);
           } catch {
