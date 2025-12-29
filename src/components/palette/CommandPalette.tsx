@@ -14,6 +14,7 @@ import {
   QUICK_CAPTURE_ACTION_ID,
   SEARCH_ACTION_ID,
   OPEN_IN_SPLIT_ACTION_ID,
+  KEYBOARD_SHORTCUTS_ACTION_ID,
 } from '@/lib/palette/actions';
 import { searchObjects, sortByRelevance } from '@/lib/palette/search';
 import { PaletteItem } from './PaletteItem';
@@ -24,9 +25,10 @@ interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
   onQuickCapture?: () => void;
+  onOpenShortcuts?: () => void;
 }
 
-export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPaletteProps) {
+export function CommandPalette({ isOpen, onClose, onQuickCapture, onOpenShortcuts }: CommandPaletteProps) {
   const { navigateToView, navigateToObject, openInSplit, selectedObjectId, currentView } = useNavigation();
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
@@ -161,6 +163,13 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
         return;
       }
 
+      // Keyboard Shortcuts action - open shortcuts modal
+      if (action.id === KEYBOARD_SHORTCUTS_ACTION_ID) {
+        onClose();
+        onOpenShortcuts?.();
+        return;
+      }
+
       if (action.view) {
         // Navigation action
         navigateToView(action.view);
@@ -190,7 +199,7 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
       }
       onClose();
     },
-    [navigateToView, navigateToObject, store, linkToDaily, refreshData, onClose, onQuickCapture, enterSearchMode, currentView, selectedObjectId, openInSplit]
+    [navigateToView, navigateToObject, store, linkToDaily, refreshData, onClose, onQuickCapture, onOpenShortcuts, enterSearchMode, currentView, selectedObjectId, openInSplit]
   );
 
   // Navigate to search result
