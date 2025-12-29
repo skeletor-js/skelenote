@@ -116,6 +116,12 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
             count={inboxCount}
             onClick={() => handleNavigate('inbox')}
           />
+          <SidebarItem
+            id="search"
+            icon="🔎"
+            label="Search"
+            onClick={() => handleNavigate('search')}
+          />
         </div>
 
         <div className="sidebar__divider" />
