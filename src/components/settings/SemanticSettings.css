@@ -1,0 +1,251 @@
+.semantic-settings {
+  margin-bottom: 24px;
+}
+
+.semantic-settings__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 16px;
+}
+
+.semantic-settings__section {
+  margin-bottom: 16px;
+}
+
+.semantic-settings__section--danger {
+  margin-top: 16px;
+}
+
+.semantic-settings__divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 16px 0;
+}
+
+.semantic-settings__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+.semantic-settings__help {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin: 4px 0 8px;
+  line-height: 1.5;
+}
+
+/* Toggle row */
+.semantic-settings__toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.semantic-settings__toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.semantic-settings__checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent);
+}
+
+.semantic-settings__toggle-text {
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.semantic-settings__status {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.semantic-settings__status--ready {
+  background: var(--color-success-bg, #dcfce7);
+  color: var(--color-success, #16a34a);
+}
+
+.semantic-settings__status--indexing {
+  background: var(--color-warning-bg, #fef9c3);
+  color: var(--color-warning, #ca8a04);
+}
+
+.semantic-settings__status--downloading,
+.semantic-settings__status--loading {
+  background: var(--color-info-bg, #dbeafe);
+  color: var(--color-info, #2563eb);
+}
+
+.semantic-settings__status--error {
+  background: var(--color-danger-bg, #fee2e2);
+  color: var(--color-danger, #dc2626);
+}
+
+.semantic-settings__status--disabled {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+}
+
+/* Info box */
+.semantic-settings__info-box {
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 12px;
+}
+
+.semantic-settings__info-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.semantic-settings__info-list li {
+  margin-bottom: 2px;
+}
+
+/* Stats */
+.semantic-settings__stats {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.semantic-settings__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.semantic-settings__stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.semantic-settings__stat-label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Progress */
+.semantic-settings__progress {
+  margin: 12px 0;
+}
+
+.semantic-settings__progress-bar {
+  height: 6px;
+  background: var(--color-bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.semantic-settings__progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.semantic-settings__progress-text {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+/* Buttons */
+.semantic-settings__button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.semantic-settings__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.semantic-settings__button--primary {
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  color: white;
+}
+
+.semantic-settings__button--primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.semantic-settings__button--secondary {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.semantic-settings__button--secondary:hover:not(:disabled) {
+  background: var(--color-bg-secondary);
+}
+
+.semantic-settings__button--danger {
+  background: var(--color-danger, #dc2626);
+  border: 1px solid var(--color-danger, #dc2626);
+  color: white;
+}
+
+.semantic-settings__button--danger:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.semantic-settings__button--danger-outline {
+  background: transparent;
+  border: 1px solid var(--color-danger, #dc2626);
+  color: var(--color-danger, #dc2626);
+}
+
+.semantic-settings__button--danger-outline:hover:not(:disabled) {
+  background: var(--color-danger-bg, #fee2e2);
+}
+
+/* Confirm row */
+.semantic-settings__confirm-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.semantic-settings__confirm-text {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-right: 4px;
+}
+
+/* Error */
+.semantic-settings__error {
+  background: var(--color-danger-bg, #fee2e2);
+  border: 1px solid var(--color-danger-border, #fecaca);
+  color: var(--color-danger, #dc2626);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-top: 12px;
+}

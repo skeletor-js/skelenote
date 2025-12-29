@@ -1,4 +1,5 @@
 import { SyncSettings } from './SyncSettings';
+import { SemanticSettings } from './SemanticSettings';
 import './SettingsView.css';
 
 export function SettingsView() {
@@ -9,6 +10,8 @@ export function SettingsView() {
       </header>
 
       <div className="settings-view__content">
+        <SemanticSettings />
+        <div className="settings-view__divider" />
         <SyncSettings />
       </div>
     </div>

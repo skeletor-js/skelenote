@@ -12,6 +12,7 @@ import {
   LocalSyncProvider,
   DeviceRegistryProvider,
   KeyboardShortcutsProvider,
+  SemanticSearchProvider,
 } from '@/contexts';
 import { ToastContainer } from '@/components/ui';
 import { migrateLocalStorageKeys } from '@/lib/migration';
@@ -31,17 +32,19 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <SkeletonKeyProvider>
           <DeviceRegistryProvider>
             <ObjectProvider>
-              <LocalSyncProvider>
-                <SyncProvider>
-                  <NavigationProvider>
-                    <SidebarProvider>
-                      <KeyboardShortcutsProvider>
-                        <App />
-                      </KeyboardShortcutsProvider>
-                    </SidebarProvider>
-                  </NavigationProvider>
-                </SyncProvider>
-              </LocalSyncProvider>
+              <SemanticSearchProvider>
+                <LocalSyncProvider>
+                  <SyncProvider>
+                    <NavigationProvider>
+                      <SidebarProvider>
+                        <KeyboardShortcutsProvider>
+                          <App />
+                        </KeyboardShortcutsProvider>
+                      </SidebarProvider>
+                    </NavigationProvider>
+                  </SyncProvider>
+                </LocalSyncProvider>
+              </SemanticSearchProvider>
             </ObjectProvider>
           </DeviceRegistryProvider>
         </SkeletonKeyProvider>
