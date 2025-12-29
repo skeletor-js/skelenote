@@ -4,7 +4,9 @@ import { exists, mkdir, readFile, writeFile } from '@tauri-apps/plugin-fs';
 import type { SyncClient } from '../sync';
 import {
   getVersionHistory as extractVersionHistory,
+  getVersionHistoryForObject as extractVersionHistoryForObject,
   type VersionHistory,
+  type ObjectVersionHistory,
 } from './versions';
 
 /**
@@ -451,6 +453,31 @@ export class LoroDocStore {
     }
 
     return extractVersionHistory(mainDoc);
+  }
+
+  /**
+   * Get version history filtered to a specific object.
+   *
+   * Returns only change points that affected the specified object,
+   * useful for viewing an object's edit history in isolation.
+   *
+   * @param objectId - The object ID to filter for
+   * @returns Object-filtered version history
+   */
+  getVersionHistoryForObject(objectId: string): ObjectVersionHistory {
+    const mainDoc = this.documents.get('main');
+    if (!mainDoc) {
+      return {
+        objectId,
+        objectTitle: 'Unknown',
+        changePoints: [],
+        byDate: new Map(),
+        earliest: null,
+        latest: null,
+      };
+    }
+
+    return extractVersionHistoryForObject(mainDoc, objectId);
   }
 
   /**
