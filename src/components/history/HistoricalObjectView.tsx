@@ -164,6 +164,13 @@ export function HistoricalObjectView() {
           {formattedTimestamp}
         </div>
         <button
+          className="historical-object-view__restore-btn"
+          onClick={handleRestoreClick}
+          title="Restore this object to this historical state"
+        >
+          Restore This
+        </button>
+        <button
           className="historical-object-view__close-btn"
           onClick={closeSplit}
           title="Close comparison"
@@ -180,13 +187,6 @@ export function HistoricalObjectView() {
 
         <div className="historical-object-view__meta">
           <span className="historical-object-view__type-badge">{typeName}</span>
-          <button
-            className="historical-object-view__restore-btn"
-            onClick={handleRestoreClick}
-            title="Restore this object to this historical state"
-          >
-            Restore This
-          </button>
         </div>
 
         {/* Properties Section */}

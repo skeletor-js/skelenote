@@ -129,7 +129,7 @@
   font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: background 0.15s ease;
-  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .historical-object-view__restore-btn:hover {
