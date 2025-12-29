@@ -21,6 +21,11 @@ import {
   type HistoryHeaderPayload,
 } from './protocol';
 import type {
+  DeviceRevokePayload,
+  DeviceRevokeAckPayload,
+  DeviceRenamePayload,
+} from '../devices/types';
+import type {
   ConnectionStatus,
   SyncConfig,
   SyncEventType,
@@ -43,6 +48,14 @@ export class SyncClient {
   private onUpdateCallback: ((data: Uint8Array) => void) | null = null;
   private onSnapshotRequestCallback: (() => Uint8Array | null) | null = null;
   private onHistoryCallback: ((updates: Uint8Array[]) => void) | null = null;
+
+  // Device management callbacks
+  private onDeviceRevokedCallback: ((deviceId: string, reason?: string) => void) | null = null;
+  private onDeviceRegistryCallback: ((data: Uint8Array) => void) | null = null;
+  private onDeviceUpdateCallback: ((data: Uint8Array) => void) | null = null;
+  private onDeviceRevokeCallback: ((payload: DeviceRevokePayload) => void) | null = null;
+  private onDeviceRevokeAckCallback: ((payload: DeviceRevokeAckPayload) => void) | null = null;
+  private onDeviceRenameCallback: ((payload: DeviceRenamePayload) => void) | null = null;
 
   // E2E encryption state
   private encryptionEnabled = false;
@@ -343,6 +356,27 @@ export class SyncClient {
         case MessageType.PONG:
           // Ignore pong responses
           break;
+
+        // Device management messages
+        case MessageType.DEVICE_REGISTRY:
+          this.handleDeviceRegistry(payload);
+          break;
+
+        case MessageType.DEVICE_UPDATE:
+          this.handleDeviceUpdate(payload);
+          break;
+
+        case MessageType.DEVICE_REVOKE:
+          this.handleDeviceRevoke(payload);
+          break;
+
+        case MessageType.DEVICE_REVOKE_ACK:
+          this.handleDeviceRevokeAck(payload);
+          break;
+
+        case MessageType.DEVICE_RENAME:
+          this.handleDeviceRename(payload);
+          break;
       }
     } catch (err) {
       console.error('[SyncClient] Error processing message:', err);
@@ -354,7 +388,26 @@ export class SyncClient {
    */
   private handleAck(payload: Uint8Array): void {
     try {
-      const ack = decodeJsonPayload<AckPayload>(payload);
+      const ack = decodeJsonPayload<AckPayload & { rejected?: boolean; reason?: string }>(payload);
+
+      // Check if connection was rejected (device revoked)
+      if (ack.rejected) {
+        console.log(`[SyncClient] Connection rejected: ${ack.reason}`);
+        this.setStatus('disconnected');
+
+        // Notify listener of revocation
+        if (this.onDeviceRevokedCallback) {
+          this.onDeviceRevokedCallback(this.config.deviceId, ack.reason);
+        }
+
+        // Emit error event
+        this.emit({ type: 'error', error: new Error(`Connection rejected: ${ack.reason}`) });
+
+        // Don't attempt to reconnect - device is revoked
+        this.connectionManager.cancelReconnect();
+        return;
+      }
+
       console.log(`[SyncClient] Connected. ${ack.sessionCount} device(s) in room.`);
 
       // Update sequence tracking
@@ -494,6 +547,16 @@ export class SyncClient {
     this.ws = null;
     this.setStatus('disconnected');
 
+    // Check for revocation close code (4001)
+    if (event.code === 4001) {
+      console.log(`[SyncClient] Disconnected due to revocation: ${event.reason}`);
+      if (this.onDeviceRevokedCallback) {
+        this.onDeviceRevokedCallback(this.config.deviceId, event.reason);
+      }
+      // Don't reconnect if device is revoked
+      return;
+    }
+
     // Only reconnect if this wasn't an intentional close
     if (event.code !== 1000) {
       this.scheduleReconnect();
@@ -577,5 +640,178 @@ export class SyncClient {
    */
   private emit(event: SyncEvent): void {
     this.listeners.get(event.type)?.forEach((cb) => cb(event));
+  }
+
+  // ============================================
+  // Device Management Methods
+  // ============================================
+
+  /**
+   * Set callback for when this device is revoked
+   */
+  onDeviceRevoked(callback: (deviceId: string, reason?: string) => void): void {
+    this.onDeviceRevokedCallback = callback;
+  }
+
+  /**
+   * Set callback for receiving device registry updates (Loro snapshot/update)
+   */
+  onDeviceRegistry(callback: (data: Uint8Array) => void): void {
+    this.onDeviceRegistryCallback = callback;
+  }
+
+  /**
+   * Set callback for receiving device registry incremental updates
+   */
+  onDeviceRegistryUpdate(callback: (data: Uint8Array) => void): void {
+    this.onDeviceUpdateCallback = callback;
+  }
+
+  /**
+   * Set callback for when a device revocation is received from another device
+   */
+  onDeviceRevokeReceived(callback: (payload: DeviceRevokePayload) => void): void {
+    this.onDeviceRevokeCallback = callback;
+  }
+
+  /**
+   * Set callback for revocation acknowledgment
+   */
+  onDeviceRevokeAckReceived(callback: (payload: DeviceRevokeAckPayload) => void): void {
+    this.onDeviceRevokeAckCallback = callback;
+  }
+
+  /**
+   * Set callback for device rename
+   */
+  onDeviceRenameReceived(callback: (payload: DeviceRenamePayload) => void): void {
+    this.onDeviceRenameCallback = callback;
+  }
+
+  /**
+   * Send full device registry (Loro snapshot) to sync with other devices
+   */
+  sendDeviceRegistry(data: Uint8Array): void {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      const message = encodeMessage(MessageType.DEVICE_REGISTRY, data);
+      this.ws.send(message);
+      console.log(`[SyncClient] Sent DEVICE_REGISTRY (${data.byteLength} bytes)`);
+    }
+  }
+
+  /**
+   * Send incremental device registry update
+   */
+  sendDeviceRegistryUpdate(data: Uint8Array): void {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      const message = encodeMessage(MessageType.DEVICE_UPDATE, data);
+      this.ws.send(message);
+      console.log(`[SyncClient] Sent DEVICE_UPDATE (${data.byteLength} bytes)`);
+    }
+  }
+
+  /**
+   * Send device revocation
+   */
+  sendDeviceRevoke(payload: DeviceRevokePayload): void {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      const message = encodeMessage(MessageType.DEVICE_REVOKE, encodeJsonPayload(payload));
+      this.ws.send(message);
+      console.log(`[SyncClient] Sent DEVICE_REVOKE for ${payload.deviceId}`);
+    }
+  }
+
+  /**
+   * Send device rename request
+   */
+  sendDeviceRename(payload: DeviceRenamePayload): void {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      const message = encodeMessage(MessageType.DEVICE_RENAME, encodeJsonPayload(payload));
+      this.ws.send(message);
+      console.log(`[SyncClient] Sent DEVICE_RENAME for ${payload.deviceId}`);
+    }
+  }
+
+  // ============================================
+  // Device Management Handlers
+  // ============================================
+
+  /**
+   * Handle DEVICE_REGISTRY message
+   */
+  private handleDeviceRegistry(payload: Uint8Array): void {
+    console.log(`[SyncClient] Received DEVICE_REGISTRY (${payload.byteLength} bytes)`);
+    if (this.onDeviceRegistryCallback) {
+      this.onDeviceRegistryCallback(payload);
+    }
+  }
+
+  /**
+   * Handle DEVICE_UPDATE message
+   */
+  private handleDeviceUpdate(payload: Uint8Array): void {
+    console.log(`[SyncClient] Received DEVICE_UPDATE (${payload.byteLength} bytes)`);
+    if (this.onDeviceUpdateCallback) {
+      this.onDeviceUpdateCallback(payload);
+    }
+  }
+
+  /**
+   * Handle DEVICE_REVOKE message
+   */
+  private handleDeviceRevoke(payload: Uint8Array): void {
+    try {
+      const revocation = decodeJsonPayload<DeviceRevokePayload>(payload);
+      console.log(`[SyncClient] Received DEVICE_REVOKE for ${revocation.deviceId}`);
+
+      // Check if we are the revoked device
+      if (revocation.deviceId === this.config.deviceId) {
+        console.log('[SyncClient] This device has been revoked!');
+        if (this.onDeviceRevokedCallback) {
+          this.onDeviceRevokedCallback(revocation.deviceId, revocation.reason);
+        }
+        // Connection will be closed by server
+        return;
+      }
+
+      // Forward to callback for processing
+      if (this.onDeviceRevokeCallback) {
+        this.onDeviceRevokeCallback(revocation);
+      }
+    } catch (err) {
+      console.error('[SyncClient] Error handling DEVICE_REVOKE:', err);
+    }
+  }
+
+  /**
+   * Handle DEVICE_REVOKE_ACK message
+   */
+  private handleDeviceRevokeAck(payload: Uint8Array): void {
+    try {
+      const ack = decodeJsonPayload<DeviceRevokeAckPayload>(payload);
+      console.log(`[SyncClient] Received DEVICE_REVOKE_ACK for ${ack.deviceId}: ${ack.accepted ? 'accepted' : 'rejected'}`);
+
+      if (this.onDeviceRevokeAckCallback) {
+        this.onDeviceRevokeAckCallback(ack);
+      }
+    } catch (err) {
+      console.error('[SyncClient] Error handling DEVICE_REVOKE_ACK:', err);
+    }
+  }
+
+  /**
+   * Handle DEVICE_RENAME message
+   */
+  private handleDeviceRename(payload: Uint8Array): void {
+    try {
+      const rename = decodeJsonPayload<DeviceRenamePayload>(payload);
+      console.log(`[SyncClient] Received DEVICE_RENAME for ${rename.deviceId}: ${rename.newName}`);
+
+      if (this.onDeviceRenameCallback) {
+        this.onDeviceRenameCallback(rename);
+      }
+    } catch (err) {
+      console.error('[SyncClient] Error handling DEVICE_RENAME:', err);
+    }
   }
 }

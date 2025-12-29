@@ -127,8 +127,12 @@ export interface DeviceRevokePayload {
  * Payload for DEVICE_REVOKE_ACK protocol message
  */
 export interface DeviceRevokeAckPayload {
+  /** ID of the revoked device */
   deviceId: string;
-  acknowledgedBy: string;
+  /** Whether revocation was accepted */
+  accepted: boolean;
+  /** Optional error message if rejected */
+  error?: string;
 }
 
 /**
