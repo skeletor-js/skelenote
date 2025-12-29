@@ -6,6 +6,7 @@ import { CommandPalette } from '@/components/palette';
 import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
 import { SkeletonKeySetup } from '@/components/setup';
+import { TimeMachine } from '@/components/history';
 import { useNavigation, useObjects, useSkeletonKey, useKeyboardShortcuts, type ViewType } from '@/contexts';
 import { useCommandPalette, useTodaysDailyNote } from '@/hooks';
 import { runFirstRunSetup } from '@/lib/first-run';
@@ -26,6 +27,7 @@ function PlaceholderView({ view }: { view: ViewType }) {
     completed: 'Completed',
     object: 'Object Detail',
     settings: 'Settings',
+    'time-machine': 'Time Machine',
   };
 
   return (
@@ -119,6 +121,11 @@ function PrimaryContent() {
   // Settings view
   if (currentView === 'settings') {
     return <SettingsView />;
+  }
+
+  // Time Machine view
+  if (currentView === 'time-machine') {
+    return <TimeMachine />;
   }
 
   return <PlaceholderView view={currentView} />;

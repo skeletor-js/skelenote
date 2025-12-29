@@ -19,7 +19,8 @@ export type ViewType =
   | 'eventually'
   | 'completed'
   | 'object'
-  | 'settings';
+  | 'settings'
+  | 'time-machine';
 
 interface NavigationState {
   view: ViewType;
