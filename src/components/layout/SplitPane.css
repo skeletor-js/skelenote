@@ -19,12 +19,16 @@
   user-select: none;
 }
 
-/* Primary pane (left) */
+/* Primary pane (left) - in split mode gets padding */
 .split-pane__primary {
   overflow: auto;
   min-width: 300px;
   height: 100%;
   /* In split mode, flex-basis is set via inline style */
+}
+
+.split-pane--split .split-pane__primary {
+  padding: var(--spacing-lg);
 }
 
 /* Divider */
@@ -83,6 +87,7 @@
 .split-pane__secondary-content {
   flex: 1;
   overflow: auto;
+  padding: var(--spacing-lg);
   position: relative; /* Contain absolutely positioned children like editor menus */
 }
 

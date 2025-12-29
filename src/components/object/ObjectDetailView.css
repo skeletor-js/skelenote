@@ -10,6 +10,11 @@
   padding: 0;
 }
 
+/* When sidebar is collapsed, use full width for object view */
+.layout--sidebar-collapsed .object-detail {
+  max-width: none;
+}
+
 .object-detail--loading,
 .object-detail--error {
   display: flex;

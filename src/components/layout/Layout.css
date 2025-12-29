@@ -24,6 +24,11 @@
   height: 100%;
 }
 
+/* When sidebar is collapsed, also use full width */
+.layout--sidebar-collapsed .layout__content {
+  max-width: none;
+}
+
 .layout__menu-btn {
   position: fixed;
   bottom: var(--spacing-md);
