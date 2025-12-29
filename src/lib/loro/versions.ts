@@ -72,6 +72,16 @@ export interface VersionHistory {
 }
 
 /**
+ * Object-filtered version history
+ */
+export interface ObjectVersionHistory extends VersionHistory {
+  /** The object ID this history is filtered to */
+  objectId: string;
+  /** The object's title (or 'Deleted Object' if no longer exists) */
+  objectTitle: string;
+}
+
+/**
  * Extract all change points from a Loro document.
  *
  * Loro stores timestamps in seconds; we convert to milliseconds for JavaScript Date.
@@ -301,4 +311,289 @@ export function enrichWithDeviceInfo(changePoints: ChangePoint[]): ChangePoint[]
       ...deviceInfo,
     };
   });
+}
+
+// ============================================
+// Object-Level Change Detection
+// ============================================
+
+/**
+ * Represents an object's state at a point in time
+ */
+interface ObjectState {
+  id: string;
+  data: string; // JSON stringified object data
+  content?: string; // Content text if hasContent is true
+}
+
+/**
+ * Extract all objects from a Loro document.
+ *
+ * @param doc - The Loro document
+ * @returns Map of object ID to object state
+ */
+function extractAllObjects(doc: LoroDoc): Map<string, ObjectState> {
+  const objects = new Map<string, ObjectState>();
+
+  try {
+    const objectsMap = doc.getMap('objects');
+    const entries = objectsMap.toJSON() as Record<string, string>;
+
+    for (const [id, data] of Object.entries(entries)) {
+      if (typeof data !== 'string') continue;
+
+      const state: ObjectState = { id, data };
+
+      // Try to get content if the object has it
+      try {
+        const parsed = JSON.parse(data);
+        if (parsed.hasContent) {
+          const contentText = doc.getText(`content:${id}`);
+          state.content = contentText.toString();
+        }
+      } catch {
+        // Ignore parse errors
+      }
+
+      objects.set(id, state);
+    }
+  } catch {
+    // Objects map might not exist yet
+  }
+
+  return objects;
+}
+
+/**
+ * Check if an object has changed between two states.
+ *
+ * @param prev - Previous object state
+ * @param curr - Current object state
+ * @returns True if the object changed
+ */
+function hasObjectChanged(prev: ObjectState, curr: ObjectState): boolean {
+  // Compare the JSON data
+  if (prev.data !== curr.data) {
+    return true;
+  }
+
+  // Compare content if either has it
+  if (prev.content !== curr.content) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Get the object IDs that changed between two frontiers.
+ *
+ * Compares document states at both frontiers to detect:
+ * - Added objects (exist in curr but not prev)
+ * - Modified objects (different data or content)
+ * - Deleted objects (exist in prev but not curr)
+ *
+ * @param doc - The Loro document
+ * @param prevFrontier - Previous frontier (null for initial state)
+ * @param currFrontier - Current frontier
+ * @returns Array of affected object IDs
+ */
+export function getAffectedObjectIds(
+  doc: LoroDoc,
+  prevFrontier: Frontiers | null,
+  currFrontier: Frontiers
+): string[] {
+  try {
+    // Fork document at both frontiers
+    const prevDoc = prevFrontier ? doc.forkAt(prevFrontier) : null;
+    const currDoc = doc.forkAt(currFrontier);
+
+    // Extract objects from both states
+    const prevObjects = prevDoc ? extractAllObjects(prevDoc) : new Map<string, ObjectState>();
+    const currObjects = extractAllObjects(currDoc);
+
+    const affectedIds: string[] = [];
+
+    // Check for added or modified objects
+    for (const [id, currObj] of currObjects) {
+      const prevObj = prevObjects.get(id);
+      if (!prevObj) {
+        // Object was added
+        affectedIds.push(id);
+      } else if (hasObjectChanged(prevObj, currObj)) {
+        // Object was modified
+        affectedIds.push(id);
+      }
+    }
+
+    // Check for deleted objects
+    for (const [id] of prevObjects) {
+      if (!currObjects.has(id)) {
+        affectedIds.push(id);
+      }
+    }
+
+    return affectedIds;
+  } catch (error) {
+    console.error('[versions] Failed to get affected object IDs:', error);
+    return [];
+  }
+}
+
+/**
+ * Cache for affected objects to avoid recomputing expensive diffs.
+ * Key: serialized frontier pair, Value: affected object IDs
+ */
+const affectedObjectsCache = new Map<string, string[]>();
+
+/**
+ * Serialize a frontier pair for use as a cache key.
+ */
+function serializeFrontierPair(
+  prev: Frontiers | null,
+  curr: Frontiers
+): string {
+  const prevKey = prev ? JSON.stringify(prev) : 'null';
+  const currKey = JSON.stringify(curr);
+  return `${prevKey}|${currKey}`;
+}
+
+/**
+ * Get affected object IDs with caching.
+ */
+function getAffectedObjectIdsCached(
+  doc: LoroDoc,
+  prevFrontier: Frontiers | null,
+  currFrontier: Frontiers
+): string[] {
+  const cacheKey = serializeFrontierPair(prevFrontier, currFrontier);
+
+  const cached = affectedObjectsCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const result = getAffectedObjectIds(doc, prevFrontier, currFrontier);
+  affectedObjectsCache.set(cacheKey, result);
+
+  return result;
+}
+
+/**
+ * Filter change points to only include those that affected a specific object.
+ *
+ * Uses cumulative frontiers (combining all peers up to each point) rather than
+ * individual change point frontiers, to properly compare document states.
+ *
+ * @param doc - The Loro document
+ * @param changePoints - Array of change points (must be sorted by timestamp)
+ * @param objectId - The object ID to filter for
+ * @returns Array of change points that affected the object
+ */
+export function filterChangePointsByObject(
+  doc: LoroDoc,
+  changePoints: ChangePoint[],
+  objectId: string
+): ChangePoint[] {
+  if (changePoints.length === 0) return [];
+
+  const filtered: ChangePoint[] = [];
+  let prevCumulativeFrontier: Frontiers | null = null;
+  let lastTimestamp: number | null = null;
+
+  for (let i = 0; i < changePoints.length; i++) {
+    const cp = changePoints[i];
+
+    // Skip if this timestamp is the same as the last one we processed
+    // (the cumulative frontier would be identical)
+    if (lastTimestamp !== null && cp.timestamp === lastTimestamp) {
+      continue;
+    }
+
+    // Build cumulative frontier up to and including this change point
+    // This includes all operations from all peers up to this timestamp
+    const currCumulativeFrontier = findFrontierAt(changePoints, cp.timestamp);
+    if (!currCumulativeFrontier) continue;
+
+    // Skip if the frontier is identical to the previous one
+    const currFrontierKey = JSON.stringify(currCumulativeFrontier);
+    const prevFrontierKey = prevCumulativeFrontier ? JSON.stringify(prevCumulativeFrontier) : 'null';
+    if (currFrontierKey === prevFrontierKey) {
+      lastTimestamp = cp.timestamp;
+      continue;
+    }
+
+    const affectedIds = getAffectedObjectIdsCached(doc, prevCumulativeFrontier, currCumulativeFrontier);
+
+    if (affectedIds.includes(objectId)) {
+      filtered.push(cp);
+    }
+
+    prevCumulativeFrontier = currCumulativeFrontier;
+    lastTimestamp = cp.timestamp;
+  }
+
+  return filtered;
+}
+
+/**
+ * Get the title of an object, handling the case where it might be deleted.
+ *
+ * @param doc - The Loro document
+ * @param objectId - The object ID
+ * @returns The object's title or 'Deleted Object'
+ */
+function getObjectTitle(doc: LoroDoc, objectId: string): string {
+  try {
+    const objectsMap = doc.getMap('objects');
+    const data = objectsMap.get(objectId) as string | undefined;
+
+    if (data) {
+      const parsed = JSON.parse(data);
+      return (parsed.properties?.title as string) ||
+        (parsed.properties?.name as string) ||
+        'Untitled';
+    }
+  } catch {
+    // Ignore errors
+  }
+
+  return 'Deleted Object';
+}
+
+/**
+ * Get version history filtered to a specific object.
+ *
+ * @param doc - The Loro document
+ * @param objectId - The object ID to filter for
+ * @returns Object-filtered version history
+ */
+export function getVersionHistoryForObject(
+  doc: LoroDoc,
+  objectId: string
+): ObjectVersionHistory {
+  const allChangePoints = extractChangePoints(doc);
+  const filteredChangePoints = filterChangePointsByObject(doc, allChangePoints, objectId);
+  const byDate = aggregateByDate(filteredChangePoints);
+  const objectTitle = getObjectTitle(doc, objectId);
+
+  return {
+    objectId,
+    objectTitle,
+    changePoints: filteredChangePoints,
+    byDate,
+    earliest: filteredChangePoints.length > 0 ? filteredChangePoints[0].timestamp : null,
+    latest:
+      filteredChangePoints.length > 0
+        ? filteredChangePoints[filteredChangePoints.length - 1].timestamp
+        : null,
+  };
+}
+
+/**
+ * Clear the affected objects cache.
+ * Call this when the document changes significantly.
+ */
+export function clearAffectedObjectsCache(): void {
+  affectedObjectsCache.clear();
 }

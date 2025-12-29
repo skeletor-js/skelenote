@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
 import './ObjectDetailView.css';
 import { ObjectHeader } from './ObjectHeader';
 import { PropertyList } from './PropertyList';
@@ -14,6 +14,7 @@ import {
   useNavigation,
   useTypeRegistry,
   useToast,
+  useKeyboardShortcuts,
 } from '@/contexts';
 import { useConfirmDialog } from '@/hooks';
 
@@ -25,10 +26,11 @@ interface ObjectDetailViewProps {
 
 export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetailViewProps) {
   const { store, isLoading, refreshData, scheduleSave } = useObjects();
-  const { navigateBack, canGoBack, closeSplit, splitPane, navigateToView } = useNavigation();
+  const { navigateBack, canGoBack, closeSplit, splitPane, navigateToView, navigateToTimeMachine } = useNavigation();
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
   const { dialogState, confirm, handleConfirm, handleCancel } = useConfirmDialog();
+  const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
 
   // Check if we're in version comparison mode
   const isVersionComparison = splitPane.mode === 'version-comparison';
@@ -38,6 +40,27 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
     closeSplit();
     navigateToView('time-machine');
   }, [closeSplit, navigateToView]);
+
+  // Handler to view object history in filtered Time Machine
+  const handleViewHistory = useCallback(() => {
+    navigateToTimeMachine(objectId);
+  }, [navigateToTimeMachine, objectId]);
+
+  // Register keyboard shortcut for viewing object history
+  useEffect(() => {
+    // Only register in primary pane and not in version comparison mode
+    if (paneType === 'primary' && !isVersionComparison) {
+      registerShortcut('view-object-history', {
+        key: 'h',
+        description: 'View object history',
+        action: handleViewHistory,
+      });
+
+      return () => {
+        unregisterShortcut('view-object-history');
+      };
+    }
+  }, [paneType, isVersionComparison, handleViewHistory, registerShortcut, unregisterShortcut]);
 
   const handleDelete = useCallback(async () => {
     if (!store) return;
@@ -222,6 +245,7 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
         canDelete={!isDailyNote}
         paneType={paneType}
         onCloseSplit={paneType === 'secondary' ? closeSplit : undefined}
+        onViewHistory={handleViewHistory}
       />
 
       {/* Properties Section */}
