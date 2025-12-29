@@ -292,10 +292,17 @@ function App() {
     });
 
     // Cmd+? to open Keyboard Shortcuts help (? is Shift+/)
+    // Register both '/' and '?' to handle browser differences
     registerShortcut('keyboard-shortcuts', {
-      key: '?',
+      key: '/',
       metaKey: true,
       shiftKey: true,
+      action: toggleShortcutsModal,
+      description: 'Keyboard Shortcuts',
+    });
+    registerShortcut('keyboard-shortcuts-alt', {
+      key: '?',
+      metaKey: true,
       action: toggleShortcutsModal,
       description: 'Keyboard Shortcuts',
     });
@@ -308,6 +315,7 @@ function App() {
       unregisterShortcut('time-machine');
       unregisterShortcut('search');
       unregisterShortcut('keyboard-shortcuts');
+      unregisterShortcut('keyboard-shortcuts-alt');
     };
   }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, toggleShortcutsModal]);
 
