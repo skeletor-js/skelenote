@@ -8,6 +8,7 @@ export { TimelineSlider } from './TimelineSlider';
 export { SnapshotPreview } from './SnapshotPreview';
 export { ObjectPreview } from './ObjectPreview';
 export { HistoricalObjectView } from './HistoricalObjectView';
+export { RestoreDialog } from './RestoreDialog';
 
 // Types
 export type * from './types';

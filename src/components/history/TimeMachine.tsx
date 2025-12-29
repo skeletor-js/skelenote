@@ -6,18 +6,26 @@
  */
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useObjects, useNavigation } from '@/contexts';
+import { useObjects, useNavigation, useToast } from '@/contexts';
 import { CalendarView } from './CalendarView';
 import { TimelineSlider } from './TimelineSlider';
 import { SnapshotPreview } from './SnapshotPreview';
 import { ObjectPreview } from './ObjectPreview';
+import { RestoreDialog, type RestoreScope } from './RestoreDialog';
 import type { DayChanges, ChangePoint } from '@/lib/loro/versions';
 import type { SkelenoteObject } from '@/lib/types';
 import './TimeMachine.css';
 
+interface RestoreDialogState {
+  isOpen: boolean;
+  scope: RestoreScope;
+  objectTitle?: string;
+}
+
 export function TimeMachine() {
   const { docStore, refreshData } = useObjects();
   const { navigateBack, openVersionComparison } = useNavigation();
+  const { addToast } = useToast();
 
   // State
   const [currentMonth, setCurrentMonth] = useState(() => {
@@ -27,6 +35,12 @@ export function TimeMachine() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedChangeIndex, setSelectedChangeIndex] = useState(0);
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
+
+  // Restore dialog state
+  const [restoreDialog, setRestoreDialog] = useState<RestoreDialogState>({
+    isOpen: false,
+    scope: 'single',
+  });
 
   // Load version history
   const { byDate } = useMemo(() => {
@@ -79,26 +93,16 @@ export function TimeMachine() {
     setSelectedObjectId(null);
   }, []);
 
+  // Open restore dialog for full restore
   const handleRestoreFull = useCallback(() => {
     if (!selectedChangePoint) return;
+    setRestoreDialog({
+      isOpen: true,
+      scope: 'full',
+    });
+  }, [selectedChangePoint]);
 
-    const confirmed = window.confirm(
-      `Restore all objects to their state at ${new Date(selectedChangePoint.timestamp).toLocaleString()}?\n\nThis will merge the historical state with your current data. All changes are preserved in history.`
-    );
-
-    if (confirmed) {
-      const success = docStore.restoreFromVersion(selectedChangePoint.frontier, {
-        type: 'full',
-      });
-      if (success) {
-        refreshData();
-        alert('State restored successfully!');
-      } else {
-        alert('Failed to restore state. Check the console for details.');
-      }
-    }
-  }, [selectedChangePoint, docStore, refreshData]);
-
+  // Open restore dialog for single object restore
   const handleRestoreObject = useCallback(() => {
     if (!selectedChangePoint || !selectedObjectId) return;
 
@@ -108,23 +112,51 @@ export function TimeMachine() {
       (obj?.properties?.name as string) ||
       'this object';
 
-    const confirmed = window.confirm(
-      `Restore "${title}" to its state at ${new Date(selectedChangePoint.timestamp).toLocaleString()}?\n\nThis will merge the historical state with your current data. All changes are preserved in history.`
-    );
+    setRestoreDialog({
+      isOpen: true,
+      scope: 'single',
+      objectTitle: title,
+    });
+  }, [selectedChangePoint, selectedObjectId, historicalObjects]);
 
-    if (confirmed) {
-      const success = docStore.restoreFromVersion(selectedChangePoint.frontier, {
+  // Actually perform the restore
+  const handleRestoreConfirm = useCallback(() => {
+    if (!selectedChangePoint) return;
+
+    const { scope } = restoreDialog;
+    let success = false;
+
+    if (scope === 'full') {
+      success = docStore.restoreFromVersion(selectedChangePoint.frontier, {
+        type: 'full',
+      });
+    } else if (selectedObjectId) {
+      success = docStore.restoreFromVersion(selectedChangePoint.frontier, {
         type: 'single',
         objectId: selectedObjectId,
       });
-      if (success) {
-        refreshData();
-        alert('Object restored successfully!');
-      } else {
-        alert('Failed to restore object. Check the console for details.');
-      }
     }
-  }, [selectedChangePoint, selectedObjectId, historicalObjects, docStore, refreshData]);
+
+    setRestoreDialog({ isOpen: false, scope: 'single' });
+
+    if (success) {
+      refreshData();
+      addToast({
+        type: 'success',
+        message: scope === 'full' ? 'All objects restored successfully!' : 'Object restored successfully!',
+      });
+    } else {
+      addToast({
+        type: 'error',
+        message: 'Failed to restore. Check the console for details.',
+      });
+    }
+  }, [selectedChangePoint, selectedObjectId, restoreDialog, docStore, refreshData, addToast]);
+
+  // Cancel the restore dialog
+  const handleRestoreCancel = useCallback(() => {
+    setRestoreDialog({ isOpen: false, scope: 'single' });
+  }, []);
 
   const handleCompareWithCurrent = useCallback(
     (objectId: string) => {
@@ -214,6 +246,17 @@ export function TimeMachine() {
           )}
         </div>
       </div>
+
+      {/* Restore Dialog */}
+      <RestoreDialog
+        isOpen={restoreDialog.isOpen}
+        scope={restoreDialog.scope}
+        timestamp={selectedChangePoint?.timestamp ?? 0}
+        objectTitle={restoreDialog.objectTitle}
+        objectCount={historicalObjects.length}
+        onConfirm={handleRestoreConfirm}
+        onCancel={handleRestoreCancel}
+      />
     </div>
   );
 }
