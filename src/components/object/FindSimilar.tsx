@@ -48,7 +48,7 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
     try {
       const results: SemanticSearchResult[] = await engine.findSimilar(objectId, {
         limit: 5,
-        threshold: 0.25, // Lower threshold to find more results
+        threshold: 0.15, // Low threshold to capture conceptual relationships
       });
 
       // Convert to display items

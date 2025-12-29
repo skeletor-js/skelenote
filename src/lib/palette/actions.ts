@@ -4,6 +4,7 @@
 
 import type { ViewType } from '@/contexts';
 import { BuiltInTypeIds } from '@/lib/types';
+import type { MatchType } from '@/lib/search';
 
 export interface PaletteAction {
   id: string;
@@ -18,6 +19,10 @@ export interface PaletteAction {
   typeId?: string;
   /** Action handler (for non-navigation actions) */
   action?: () => void;
+  /** Match type for search results (text, semantic, or hybrid) */
+  matchType?: MatchType;
+  /** Semantic similarity score (0-1) */
+  semanticScore?: number;
 }
 
 /**

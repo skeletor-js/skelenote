@@ -35,7 +35,7 @@ export interface SemanticSearchConfig {
 export const DEFAULT_SEMANTIC_CONFIG: SemanticSearchConfig = {
   enabled: false,
   modelId: 'Xenova/all-MiniLM-L6-v2',
-  similarityThreshold: 0.4,
+  similarityThreshold: 0.2, // Lower threshold to capture conceptual relationships
   semanticWeight: 0.5,
 };
 
@@ -179,5 +179,5 @@ export interface SemanticQueryOptions {
  */
 export const DEFAULT_QUERY_OPTIONS: Required<Omit<SemanticQueryOptions, 'excludeIds'>> = {
   limit: 10,
-  threshold: 0.4,
+  threshold: 0.2, // Lower threshold to capture conceptual relationships
 };
