@@ -4,6 +4,7 @@ export {
   NavigationProvider,
   useNavigation,
   type ViewType,
+  type SplitPaneState,
 } from './NavigationContext';
 export {
   ObjectProvider,
