@@ -95,3 +95,39 @@ export async function createSignedRevocation(
     signature,
   };
 }
+
+// ============================================================================
+// P2P Blocklist Commands
+// ============================================================================
+
+/**
+ * Block a device from P2P connections
+ *
+ * Adds a device to the local blocklist. Blocked devices are filtered from
+ * mDNS discovery and rejected at TCP handshake. This provides immediate
+ * local enforcement while the signed revocation syncs through the registry.
+ *
+ * @param deviceId - The device ID to block
+ */
+export async function blockDevice(deviceId: string): Promise<void> {
+  return invoke<void>('device_block', { deviceId });
+}
+
+/**
+ * Check if a device is blocked locally
+ *
+ * @param deviceId - The device ID to check
+ * @returns True if the device is in the local blocklist
+ */
+export async function isDeviceBlocked(deviceId: string): Promise<boolean> {
+  return invoke<boolean>('device_is_blocked', { deviceId });
+}
+
+/**
+ * Get all blocked device IDs from the local blocklist
+ *
+ * @returns Array of blocked device IDs
+ */
+export async function getBlockedDevices(): Promise<string[]> {
+  return invoke<string[]>('device_get_blocked');
+}

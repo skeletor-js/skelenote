@@ -42,4 +42,7 @@ export {
   signRevocation,
   verifyRevocation,
   createSignedRevocation,
+  blockDevice,
+  isDeviceBlocked,
+  getBlockedDevices,
 } from './commands';

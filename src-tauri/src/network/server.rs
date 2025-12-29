@@ -1,16 +1,21 @@
 //! TCP Server for Local Network Sync
 //!
 //! Listens for incoming peer connections on a dynamic port.
+//! Revoked devices are rejected at the TCP handshake level.
 
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::{TcpListener, TcpStream};
 use tokio::net::tcp::OwnedWriteHalf;
-use tokio::sync::{mpsc, oneshot, RwLock, Mutex};
+use tokio::net::{TcpListener, TcpStream};
+use tokio::sync::{mpsc, oneshot, Mutex, RwLock};
 
-use super::protocol::{decode_message, encode_message, HelloPayload, AckPayload, MessageType, ProtocolError, HEADER_SIZE};
+use super::blocklist::DeviceBlocklist;
+use super::protocol::{
+    decode_message, encode_message, AckPayload, HelloPayload, MessageType, ProtocolError,
+    HEADER_SIZE,
+};
 use super::state::{ConnectedPeer, ServerHandle};
 
 /// Events emitted by the server
@@ -60,6 +65,7 @@ impl LocalSyncServer {
         fingerprint: String,
         connected_peers: Arc<RwLock<HashMap<String, ConnectedPeer>>>,
         peer_streams: Arc<RwLock<HashMap<String, Arc<Mutex<OwnedWriteHalf>>>>>,
+        blocklist: DeviceBlocklist,
     ) -> Result<(ServerHandle, mpsc::Receiver<ServerEvent>, u16), std::io::Error> {
         // Bind to any available port
         let listener = TcpListener::bind("0.0.0.0:0").await?;
@@ -76,7 +82,14 @@ impl LocalSyncServer {
         };
 
         // Spawn the accept loop
-        tokio::spawn(server.accept_loop(listener, shutdown_rx, event_tx, connected_peers, peer_streams));
+        tokio::spawn(server.accept_loop(
+            listener,
+            shutdown_rx,
+            event_tx,
+            connected_peers,
+            peer_streams,
+            blocklist,
+        ));
 
         let handle = ServerHandle { shutdown_tx, port };
         Ok((handle, event_rx, port))
@@ -90,6 +103,7 @@ impl LocalSyncServer {
         event_tx: mpsc::Sender<ServerEvent>,
         connected_peers: Arc<RwLock<HashMap<String, ConnectedPeer>>>,
         peer_streams: Arc<RwLock<HashMap<String, Arc<Mutex<OwnedWriteHalf>>>>>,
+        blocklist: DeviceBlocklist,
     ) {
         loop {
             tokio::select! {
@@ -107,6 +121,7 @@ impl LocalSyncServer {
                             let device_id = self.device_id.clone();
                             let device_name = self.device_name.clone();
                             let fingerprint = self.fingerprint.clone();
+                            let blocklist = blocklist.clone();
 
                             // Handle each connection in a separate task
                             tokio::spawn(async move {
@@ -119,6 +134,7 @@ impl LocalSyncServer {
                                     event_tx,
                                     connected_peers,
                                     peer_streams,
+                                    blocklist,
                                 ).await {
                                     eprintln!("Connection error: {}", e);
                                 }
@@ -146,6 +162,7 @@ async fn handle_connection(
     event_tx: mpsc::Sender<ServerEvent>,
     connected_peers: Arc<RwLock<HashMap<String, ConnectedPeer>>>,
     peer_streams: Arc<RwLock<HashMap<String, Arc<Mutex<OwnedWriteHalf>>>>>,
+    blocklist: DeviceBlocklist,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // Read the initial HELLO message
     let mut buffer = vec![0u8; 4096];
@@ -183,6 +200,22 @@ async fn handle_connection(
         let response = encode_message(MessageType::Ack, &ack_bytes);
         stream.write_all(&response).await?;
         return Err("Fingerprint mismatch - different Skeleton Key".into());
+    }
+
+    // Check if device is blocked/revoked
+    if blocklist.is_blocked(&hello.device_id).await {
+        println!(
+            "[Server] Rejecting connection from blocked device: {}",
+            hello.device_id
+        );
+        let ack = AckPayload {
+            accepted: false,
+            reason: Some("Device has been revoked".to_string()),
+        };
+        let ack_bytes = serde_json::to_vec(&ack)?;
+        let response = encode_message(MessageType::Ack, &ack_bytes);
+        stream.write_all(&response).await?;
+        return Err("Device has been revoked".into());
     }
 
     // Send our HELLO response

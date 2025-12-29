@@ -6,8 +6,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::io::AsyncWriteExt;
 use tokio::net::tcp::OwnedWriteHalf;
-use tokio::sync::{RwLock, Mutex};
+use tokio::sync::{Mutex, RwLock};
 
+use super::blocklist::DeviceBlocklist;
 use super::protocol::{encode_message, MessageType};
 
 /// Information about a discovered peer
@@ -88,6 +89,8 @@ pub struct NetworkState {
     pub device_id: Arc<RwLock<String>>,
     /// This device's name
     pub device_name: Arc<RwLock<String>>,
+    /// Blocklist of revoked device IDs
+    pub blocklist: DeviceBlocklist,
 }
 
 impl NetworkState {
@@ -102,7 +105,39 @@ impl NetworkState {
             fingerprint: Arc::new(RwLock::new(None)),
             device_id: Arc::new(RwLock::new(generate_device_id())),
             device_name: Arc::new(RwLock::new(get_device_name())),
+            blocklist: DeviceBlocklist::new(),
         }
+    }
+
+    /// Create a new NetworkState with blocklist persistence to the given data directory
+    pub fn with_data_dir(data_dir: std::path::PathBuf) -> Self {
+        let blocklist_path = data_dir.join("blocklist.json");
+        Self {
+            server: Arc::new(RwLock::new(None)),
+            mdns: Arc::new(RwLock::new(MdnsHolder { handle: None })),
+            discovered_peers: Arc::new(RwLock::new(HashMap::new())),
+            connected_peers: Arc::new(RwLock::new(HashMap::new())),
+            peer_streams: Arc::new(RwLock::new(HashMap::new())),
+            fingerprint: Arc::new(RwLock::new(None)),
+            device_id: Arc::new(RwLock::new(generate_device_id())),
+            device_name: Arc::new(RwLock::new(get_device_name())),
+            blocklist: DeviceBlocklist::with_persistence(blocklist_path),
+        }
+    }
+
+    /// Load the blocklist from disk (call after initialization)
+    pub async fn load_blocklist(&self) -> Result<(), super::blocklist::BlocklistError> {
+        self.blocklist.load().await
+    }
+
+    /// Check if a device is blocked
+    pub async fn is_device_blocked(&self, device_id: &str) -> bool {
+        self.blocklist.is_blocked(device_id).await
+    }
+
+    /// Block a device
+    pub async fn block_device(&self, device_id: String) -> Result<(), super::blocklist::BlocklistError> {
+        self.blocklist.block(device_id).await
     }
 
     /// Check if mDNS is running

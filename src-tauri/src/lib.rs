@@ -255,14 +255,16 @@ async fn network_start_server(
     let device_name = network_state.device_name.read().await.clone();
     let connected_peers = network_state.connected_peers.clone();
     let peer_streams = network_state.peer_streams.clone();
+    let blocklist = network_state.blocklist.clone();
 
-    // Start the server
+    // Start the server (passing blocklist for revoked device filtering)
     let (handle, mut event_rx, port) = LocalSyncServer::start(
         device_id,
         device_name,
         fingerprint,
         connected_peers,
         peer_streams,
+        blocklist,
     ).await.map_err(|e| e.to_string())?;
 
     // Store the server handle
@@ -399,12 +401,14 @@ async fn network_start_discovery(
     let device_name = network_state.device_name.read().await.clone();
     let discovered_peers = network_state.discovered_peers.clone();
 
-    // Start mDNS
+    // Start mDNS (passing blocklist for revoked device filtering)
+    let blocklist = network_state.blocklist.clone();
     let (handle, mut event_rx) = MdnsHandle::start(
         device_id,
         device_name,
         port,
         fingerprint,
+        blocklist,
     )?;
 
     // Store the handle
@@ -523,6 +527,12 @@ async fn network_connect_to_peer(
 
     let peer = peer.ok_or_else(|| format!("Peer not found: {}", device_id))?;
     println!("[Connect] Found peer: {} at {:?}:{}", peer.device_name, peer.addresses, peer.port);
+
+    // Check if device is blocked/revoked
+    if network_state.is_device_blocked(&device_id).await {
+        println!("[Connect] Refusing to connect to blocked device: {}", device_id);
+        return Err("Device has been revoked".to_string());
+    }
 
     // Get our device info
     let our_device_id = network_state.device_id.read().await.clone();
@@ -744,6 +754,51 @@ fn device_verify_revocation(
     }
 }
 
+/// Block a device from P2P connections
+///
+/// Adds a device to the local blocklist. Blocked devices are filtered from
+/// mDNS discovery and rejected at TCP handshake.
+#[tauri::command]
+async fn device_block(
+    device_id: String,
+    network_state: State<'_, NetworkState>,
+) -> Result<(), String> {
+    network_state
+        .block_device(device_id.clone())
+        .await
+        .map_err(|e| format!("Failed to block device: {}", e))?;
+
+    // Also remove from connected peers and close the connection if connected
+    {
+        let mut connected = network_state.connected_peers.write().await;
+        connected.remove(&device_id);
+    }
+    {
+        let mut streams = network_state.peer_streams.write().await;
+        streams.remove(&device_id);
+    }
+
+    println!("[Device] Blocked device: {}", device_id);
+    Ok(())
+}
+
+/// Check if a device is blocked
+#[tauri::command]
+async fn device_is_blocked(
+    device_id: String,
+    network_state: State<'_, NetworkState>,
+) -> Result<bool, String> {
+    Ok(network_state.is_device_blocked(&device_id).await)
+}
+
+/// Get all blocked device IDs
+#[tauri::command]
+async fn device_get_blocked(
+    network_state: State<'_, NetworkState>,
+) -> Result<Vec<String>, String> {
+    Ok(network_state.blocklist.get_blocked().await)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -788,6 +843,9 @@ pub fn run() {
             device_get_signing_public_key,
             device_sign_revocation,
             device_verify_revocation,
+            device_block,
+            device_is_blocked,
+            device_get_blocked,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
