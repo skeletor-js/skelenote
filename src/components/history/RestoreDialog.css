@@ -1,0 +1,171 @@
+/**
+ * Restore Dialog styles
+ */
+
+/* Overlay */
+.restore-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  animation: restore-overlay-fade-in 0.15s ease-out;
+}
+
+@keyframes restore-overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Dialog */
+.restore-dialog {
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-xl);
+  min-width: 360px;
+  max-width: 480px;
+  text-align: center;
+  animation: restore-dialog-scale-in 0.15s ease-out;
+}
+
+@keyframes restore-dialog-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Icon */
+.restore-dialog__icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-md);
+}
+
+/* Title */
+.restore-dialog__title {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  line-height: var(--line-height-tight);
+}
+
+/* Description */
+.restore-dialog__description {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height);
+}
+
+/* Timestamp */
+.restore-dialog__timestamp {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: var(--tag-blue-bg);
+  color: var(--tag-blue);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Warnings */
+.restore-dialog__warnings {
+  text-align: left;
+  padding: var(--spacing-md);
+  background: var(--surface-inset);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.restore-dialog__warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: var(--line-height);
+}
+
+.restore-dialog__warning + .restore-dialog__warning {
+  margin-top: var(--spacing-sm);
+}
+
+.restore-dialog__warning-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--tag-blue-bg);
+  color: var(--tag-blue);
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Actions */
+.restore-dialog__actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: center;
+}
+
+/* Buttons */
+.restore-dialog__button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.restore-dialog__button--cancel {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+}
+
+.restore-dialog__button--cancel:hover {
+  background: var(--surface-hover);
+}
+
+.restore-dialog__button--cancel:active {
+  background: var(--surface-active);
+}
+
+.restore-dialog__button--confirm {
+  background: var(--tag-blue, #2563eb);
+  border: 1px solid transparent;
+  color: white;
+}
+
+.restore-dialog__button--confirm:hover {
+  background: var(--tag-blue-hover, #1d4ed8);
+}
+
+/* Focus States */
+.restore-dialog__button:focus-visible {
+  outline: 2px solid var(--tag-blue);
+  outline-offset: 2px;
+}

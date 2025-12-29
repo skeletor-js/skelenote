@@ -42,6 +42,7 @@ export const navigationActions: PaletteAction[] = [
   { id: 'nav-blocked', label: 'Go to Blocked', icon: '🚫', category: 'navigation', view: 'blocked' },
   { id: 'nav-eventually', label: 'Go to Eventually', icon: '📌', category: 'navigation', view: 'eventually' },
   { id: 'nav-completed', label: 'Go to Completed', icon: '✅', category: 'navigation', view: 'completed' },
+  { id: 'nav-time-machine', label: 'Go to Time Machine', icon: '🕰️', category: 'navigation', view: 'time-machine' },
 ];
 
 /**

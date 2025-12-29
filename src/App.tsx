@@ -6,6 +6,7 @@ import { CommandPalette } from '@/components/palette';
 import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
 import { SkeletonKeySetup } from '@/components/setup';
+import { TimeMachine, HistoricalObjectView } from '@/components/history';
 import { useNavigation, useObjects, useSkeletonKey, useKeyboardShortcuts, type ViewType } from '@/contexts';
 import { useCommandPalette, useTodaysDailyNote } from '@/hooks';
 import { runFirstRunSetup } from '@/lib/first-run';
@@ -26,6 +27,7 @@ function PlaceholderView({ view }: { view: ViewType }) {
     completed: 'Completed',
     object: 'Object Detail',
     settings: 'Settings',
+    'time-machine': 'Time Machine',
   };
 
   return (
@@ -121,6 +123,11 @@ function PrimaryContent() {
     return <SettingsView />;
   }
 
+  // Time Machine view
+  if (currentView === 'time-machine') {
+    return <TimeMachine />;
+  }
+
   return <PlaceholderView view={currentView} />;
 }
 
@@ -143,9 +150,16 @@ function MainContent() {
   }, [openInSplit]);
 
   // Render secondary content when split is open
-  const secondaryContent = splitPane.isOpen && splitPane.objectId ? (
-    <ObjectDetailView objectId={splitPane.objectId} paneType="secondary" />
-  ) : null;
+  let secondaryContent = null;
+  if (splitPane.isOpen && splitPane.objectId) {
+    if (splitPane.mode === 'version-comparison') {
+      // Show historical version in read-only view
+      secondaryContent = <HistoricalObjectView />;
+    } else {
+      // Normal split mode - editable object detail
+      secondaryContent = <ObjectDetailView objectId={splitPane.objectId} paneType="secondary" />;
+    }
+  }
 
   return (
     <SplitPane
@@ -163,7 +177,7 @@ function App() {
   const { store, refreshData, saveNow } = useObjects();
   const { isInitialized: isCryptoInitialized, hasSkeletonKey } = useSkeletonKey();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
-  const { splitPane, closeSplit, swapPanes } = useNavigation();
+  const { splitPane, closeSplit, swapPanes, navigateToView } = useNavigation();
   const inboxCount = store?.getInboxed().length ?? 0;
   const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
@@ -242,13 +256,23 @@ function App() {
       description: 'Close split view',
     });
 
+    // Cmd+Shift+H to open Time Machine
+    registerShortcut('time-machine', {
+      key: 'h',
+      metaKey: true,
+      shiftKey: true,
+      action: () => navigateToView('time-machine'),
+      description: 'Open Time Machine',
+    });
+
     return () => {
       unregisterShortcut('command-palette');
       unregisterShortcut('close-split');
       unregisterShortcut('swap-panes');
       unregisterShortcut('escape-close-split');
+      unregisterShortcut('time-machine');
     };
-  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes]);
+  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView]);
 
   // Show loading only during initial crypto initialization
   // (not during subsequent operations like key generation)

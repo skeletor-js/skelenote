@@ -212,6 +212,18 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
             })
           )}
         </SidebarSection>
+
+        <div className="sidebar__divider" />
+
+        {/* Time Machine */}
+        <div className="sidebar__quick">
+          <SidebarItem
+            id="time-machine"
+            icon="🕰️"
+            label="Time Machine"
+            onClick={() => handleNavigate('time-machine')}
+          />
+        </div>
       </div>
 
       {/* Add Object button */}
