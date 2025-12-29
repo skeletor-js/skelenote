@@ -17,14 +17,9 @@ export function PinnedSection() {
 
   const isCollapsed = isSectionCollapsed('pinned');
 
-  // Don't render if no pinned objects
-  if (pinnedObjects.length === 0) {
-    return null;
-  }
-
-  const handleToggle = () => {
+  const handleToggle = useCallback(() => {
     toggleSection('pinned');
-  };
+  }, [toggleSection]);
 
   const handleDragStart = useCallback((index: number) => {
     setDraggedIndex(index);
@@ -57,6 +52,11 @@ export function PinnedSection() {
   const handleContainerDrop = useCallback(() => {
     handleDragEnd();
   }, [handleDragEnd]);
+
+  // Don't render if no pinned objects
+  if (pinnedObjects.length === 0) {
+    return null;
+  }
 
   return (
     <div className="pinned-section">
