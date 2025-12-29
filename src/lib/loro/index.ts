@@ -50,3 +50,20 @@ export type {
   QueryConfig,
 } from './queries';
 export { executeQuery, QueryBuilder, query } from './queries';
+
+// Version History (Time Machine)
+export type {
+  ChangePoint,
+  DayChanges,
+  VersionHistory,
+} from './versions';
+export {
+  extractChangePoints,
+  findFrontierAt,
+  aggregateByDate,
+  getVersionHistory,
+  getDaysWithChanges,
+  getChangesForDate,
+  resolveDeviceInfo,
+  enrichWithDeviceInfo,
+} from './versions';

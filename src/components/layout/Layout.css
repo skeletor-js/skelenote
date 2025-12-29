@@ -12,21 +12,13 @@
 }
 
 .layout__content {
-  max-width: var(--content-max-width);
-  margin: 0 auto;
   padding: var(--spacing-xl);
 }
 
-/* When split pane is active, use full width */
+/* When split pane is active, remove padding */
 .layout__content--split-active {
-  max-width: none;
   padding: 0;
   height: 100%;
-}
-
-/* When sidebar is collapsed, also use full width */
-.layout--sidebar-collapsed .layout__content {
-  max-width: none;
 }
 
 .layout__menu-btn {

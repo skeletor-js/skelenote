@@ -24,10 +24,19 @@ interface ObjectDetailViewProps {
 
 export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetailViewProps) {
   const { store, isLoading, refreshData, scheduleSave } = useObjects();
-  const { navigateBack, canGoBack, closeSplit } = useNavigation();
+  const { navigateBack, canGoBack, closeSplit, splitPane, navigateToView } = useNavigation();
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
   const { dialogState, confirm, handleConfirm, handleCancel } = useConfirmDialog();
+
+  // Check if we're in version comparison mode
+  const isVersionComparison = splitPane.mode === 'version-comparison';
+
+  // Handler to go back to Time Machine from comparison view
+  const handleBackToTimeMachine = useCallback(() => {
+    closeSplit();
+    navigateToView('time-machine');
+  }, [closeSplit, navigateToView]);
 
   const handleDelete = useCallback(async () => {
     if (!store) return;
@@ -186,9 +195,13 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
 
   return (
     <div className={detailClasses}>
-      {/* Navigation: Daily note header or regular back button (primary pane only) */}
+      {/* Navigation: Back to Time Machine (in comparison mode), Daily note header, or regular back button */}
       {paneType === 'primary' && (
-        isDailyNote && typeof object.properties.date === 'number' ? (
+        isVersionComparison ? (
+          <button onClick={handleBackToTimeMachine} className="object-detail__back-btn">
+            ← Back to Time Machine
+          </button>
+        ) : isDailyNote && typeof object.properties.date === 'number' ? (
           <DailyNoteHeader dateTimestamp={object.properties.date} />
         ) : (
           canGoBack && (
