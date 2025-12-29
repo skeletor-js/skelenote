@@ -10,3 +10,4 @@ export { InboxView } from './InboxView';
 export { CalendarDay } from './CalendarDay';
 export { Calendar } from './Calendar';
 export { DailyNotesView } from './DailyNotesView';
+export { SavedViewContent } from './SavedViewContent';
