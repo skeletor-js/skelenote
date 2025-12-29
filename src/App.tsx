@@ -177,7 +177,7 @@ function App() {
   const { store, refreshData, saveNow } = useObjects();
   const { isInitialized: isCryptoInitialized, hasSkeletonKey } = useSkeletonKey();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
-  const { splitPane, closeSplit, swapPanes } = useNavigation();
+  const { splitPane, closeSplit, swapPanes, navigateToView } = useNavigation();
   const inboxCount = store?.getInboxed().length ?? 0;
   const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
@@ -256,13 +256,23 @@ function App() {
       description: 'Close split view',
     });
 
+    // Cmd+Shift+H to open Time Machine
+    registerShortcut('time-machine', {
+      key: 'h',
+      metaKey: true,
+      shiftKey: true,
+      action: () => navigateToView('time-machine'),
+      description: 'Open Time Machine',
+    });
+
     return () => {
       unregisterShortcut('command-palette');
       unregisterShortcut('close-split');
       unregisterShortcut('swap-panes');
       unregisterShortcut('escape-close-split');
+      unregisterShortcut('time-machine');
     };
-  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes]);
+  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView]);
 
   // Show loading only during initial crypto initialization
   // (not during subsequent operations like key generation)
