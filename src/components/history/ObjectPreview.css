@@ -17,6 +17,13 @@
   display: flex;
   align-items: flex-start;
   gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 500px) {
+  .object-preview__header {
+    flex-direction: column;
+  }
 }
 
 .object-preview__back {
@@ -75,6 +82,8 @@
   display: flex;
   gap: var(--spacing-xs);
   flex-shrink: 0;
+  flex-wrap: wrap;
+  margin-left: auto;
 }
 
 .object-preview__action-btn {

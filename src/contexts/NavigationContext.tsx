@@ -5,6 +5,7 @@ import {
   useCallback,
   type ReactNode,
 } from 'react';
+import type { Frontiers } from 'loro-crdt';
 
 /**
  * View types for the main content area
@@ -28,6 +29,11 @@ interface NavigationState {
 }
 
 /**
+ * Split pane mode
+ */
+export type SplitPaneMode = 'normal' | 'version-comparison';
+
+/**
  * Split pane state for side-by-side view
  */
 export interface SplitPaneState {
@@ -37,6 +43,12 @@ export interface SplitPaneState {
   objectId: string | null;
   /** Width of the secondary pane as a percentage (25-75) */
   width: number;
+  /** Mode of the split pane */
+  mode: SplitPaneMode;
+  /** Frontier for historical version (when mode is 'version-comparison') */
+  historicalFrontier: Frontiers | null;
+  /** Timestamp for historical version (when mode is 'version-comparison') */
+  historicalTimestamp: number | null;
 }
 
 interface NavigationContextValue {
@@ -66,6 +78,12 @@ interface NavigationContextValue {
   setSplitWidth: (width: number) => void;
   /** Swap primary and secondary pane objects */
   swapPanes: () => void;
+  /** Open version comparison (current vs historical) */
+  openVersionComparison: (
+    objectId: string,
+    frontier: Frontiers,
+    timestamp: number
+  ) => void;
 }
 
 const NavigationContext = createContext<NavigationContextValue | null>(null);
@@ -86,6 +104,9 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     isOpen: false,
     objectId: null,
     width: 50,
+    mode: 'normal',
+    historicalFrontier: null,
+    historicalTimestamp: null,
   });
 
   const navigateToObject = useCallback((objectId: string) => {
@@ -122,11 +143,14 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   }, []);
 
   const closeSplit = useCallback(() => {
-    setSplitPaneState((prev) => ({
-      ...prev,
+    setSplitPaneState({
       isOpen: false,
       objectId: null,
-    }));
+      width: 50,
+      mode: 'normal',
+      historicalFrontier: null,
+      historicalTimestamp: null,
+    });
   }, []);
 
   const setSplitWidth = useCallback((width: number) => {
@@ -157,6 +181,28 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     }));
   }, [splitPane.objectId, currentState]);
 
+  const openVersionComparison = useCallback(
+    (objectId: string, frontier: Frontiers, timestamp: number) => {
+      // Navigate primary pane to the current version of the object
+      setHistory((prev) => [...prev, currentState]);
+      setCurrentState({
+        view: 'object',
+        objectId,
+      });
+
+      // Open split pane with historical version
+      setSplitPaneState({
+        isOpen: true,
+        objectId,
+        width: 50,
+        mode: 'version-comparison',
+        historicalFrontier: frontier,
+        historicalTimestamp: timestamp,
+      });
+    },
+    [currentState]
+  );
+
   return (
     <NavigationContext.Provider
       value={{
@@ -173,6 +219,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         closeSplit,
         setSplitWidth,
         swapPanes,
+        openVersionComparison,
       }}
     >
       {children}

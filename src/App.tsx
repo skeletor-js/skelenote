@@ -6,7 +6,7 @@ import { CommandPalette } from '@/components/palette';
 import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
 import { SkeletonKeySetup } from '@/components/setup';
-import { TimeMachine } from '@/components/history';
+import { TimeMachine, HistoricalObjectView } from '@/components/history';
 import { useNavigation, useObjects, useSkeletonKey, useKeyboardShortcuts, type ViewType } from '@/contexts';
 import { useCommandPalette, useTodaysDailyNote } from '@/hooks';
 import { runFirstRunSetup } from '@/lib/first-run';
@@ -150,9 +150,16 @@ function MainContent() {
   }, [openInSplit]);
 
   // Render secondary content when split is open
-  const secondaryContent = splitPane.isOpen && splitPane.objectId ? (
-    <ObjectDetailView objectId={splitPane.objectId} paneType="secondary" />
-  ) : null;
+  let secondaryContent = null;
+  if (splitPane.isOpen && splitPane.objectId) {
+    if (splitPane.mode === 'version-comparison') {
+      // Show historical version in read-only view
+      secondaryContent = <HistoricalObjectView />;
+    } else {
+      // Normal split mode - editable object detail
+      secondaryContent = <ObjectDetailView objectId={splitPane.objectId} paneType="secondary" />;
+    }
+  }
 
   return (
     <SplitPane

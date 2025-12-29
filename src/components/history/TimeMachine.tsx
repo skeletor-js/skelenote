@@ -17,7 +17,7 @@ import './TimeMachine.css';
 
 export function TimeMachine() {
   const { docStore, refreshData } = useObjects();
-  const { navigateBack, openInSplit } = useNavigation();
+  const { navigateBack, openVersionComparison } = useNavigation();
 
   // State
   const [currentMonth, setCurrentMonth] = useState(() => {
@@ -128,10 +128,15 @@ export function TimeMachine() {
 
   const handleCompareWithCurrent = useCallback(
     (objectId: string) => {
-      // Open the current version in split view for comparison
-      openInSplit(objectId);
+      if (!selectedChangePoint) return;
+      // Open version comparison: current on left, historical on right
+      openVersionComparison(
+        objectId,
+        selectedChangePoint.frontier,
+        selectedChangePoint.timestamp
+      );
     },
-    [openInSplit]
+    [openVersionComparison, selectedChangePoint]
   );
 
   // Keyboard navigation
