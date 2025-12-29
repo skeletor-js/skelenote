@@ -24,6 +24,23 @@ export function SplitPane({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Auto-close split on narrow viewports
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+
+    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches && secondaryContent) {
+        onClose();
+      }
+    };
+
+    // Check initial state
+    handleChange(mediaQuery);
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [secondaryContent, onClose]);
+
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setIsDragging(true);
