@@ -18,11 +18,13 @@ import { useConfirmDialog } from '@/hooks';
 
 interface ObjectDetailViewProps {
   objectId: string;
+  /** Which pane this view is rendered in */
+  paneType?: 'primary' | 'secondary';
 }
 
-export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
+export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetailViewProps) {
   const { store, isLoading, refreshData, scheduleSave } = useObjects();
-  const { navigateBack, canGoBack } = useNavigation();
+  const { navigateBack, canGoBack, closeSplit } = useNavigation();
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
   const { dialogState, confirm, handleConfirm, handleCancel } = useConfirmDialog();
@@ -70,11 +72,14 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
         type: 'success',
         message: `"${title}" has been deleted.`,
       });
-      if (canGoBack) {
+      // Navigate based on pane type
+      if (paneType === 'secondary') {
+        closeSplit();
+      } else if (canGoBack) {
         navigateBack();
       }
     }
-  }, [store, objectId, typeRegistry, confirm, refreshData, addToast, canGoBack, navigateBack]);
+  }, [store, objectId, typeRegistry, confirm, refreshData, addToast, canGoBack, navigateBack, paneType, closeSplit]);
 
   const handleTitleChange = useCallback(
     (newTitle: string) => {
@@ -134,10 +139,16 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
     return (
       <div className="object-detail object-detail--error">
         <p>Object not found: {objectId}</p>
-        {canGoBack && (
-          <button onClick={navigateBack} className="object-detail__back-btn">
-            ← Go Back
+        {paneType === 'secondary' ? (
+          <button onClick={closeSplit} className="object-detail__back-btn">
+            Close
           </button>
+        ) : (
+          canGoBack && (
+            <button onClick={navigateBack} className="object-detail__back-btn">
+              ← Go Back
+            </button>
+          )
         )}
       </div>
     );
@@ -149,10 +160,16 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
     return (
       <div className="object-detail object-detail--error">
         <p>Unknown object type: {object.typeId}</p>
-        {canGoBack && (
-          <button onClick={navigateBack} className="object-detail__back-btn">
-            ← Go Back
+        {paneType === 'secondary' ? (
+          <button onClick={closeSplit} className="object-detail__back-btn">
+            Close
           </button>
+        ) : (
+          canGoBack && (
+            <button onClick={navigateBack} className="object-detail__back-btn">
+              ← Go Back
+            </button>
+          )
         )}
       </div>
     );
@@ -162,14 +179,16 @@ export function ObjectDetailView({ objectId }: ObjectDetailViewProps) {
 
   return (
     <div className="object-detail">
-      {/* Navigation: Daily note header or regular back button */}
-      {isDailyNote && typeof object.properties.date === 'number' ? (
-        <DailyNoteHeader dateTimestamp={object.properties.date} />
-      ) : (
-        canGoBack && (
-          <button onClick={navigateBack} className="object-detail__back-btn">
-            ← Back
-          </button>
+      {/* Navigation: Daily note header or regular back button (primary pane only) */}
+      {paneType === 'primary' && (
+        isDailyNote && typeof object.properties.date === 'number' ? (
+          <DailyNoteHeader dateTimestamp={object.properties.date} />
+        ) : (
+          canGoBack && (
+            <button onClick={navigateBack} className="object-detail__back-btn">
+              ← Back
+            </button>
+          )
         )
       )}
 

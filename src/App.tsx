@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Layout } from '@/components/layout';
+import { Layout, SplitPane } from '@/components/layout';
 import { ObjectDetailView } from '@/components/object';
 import { TaskView, InboxView, DailyNotesView } from '@/components/views';
 import { CommandPalette } from '@/components/palette';
@@ -52,9 +52,9 @@ function PlaceholderView({ view }: { view: ViewType }) {
 
 
 /**
- * Main content router based on current navigation state
+ * Renders the primary view based on current navigation state
  */
-function MainContent() {
+function PrimaryContent() {
   const { currentView, selectedObjectId } = useNavigation();
   const { isLoading, error } = useObjects();
 
@@ -88,7 +88,7 @@ function MainContent() {
   }
 
   if (currentView === 'object' && selectedObjectId) {
-    return <ObjectDetailView objectId={selectedObjectId} />;
+    return <ObjectDetailView objectId={selectedObjectId} paneType="primary" />;
   }
 
   // Task views
@@ -122,6 +122,41 @@ function MainContent() {
   }
 
   return <PlaceholderView view={currentView} />;
+}
+
+/**
+ * Main content router with split pane support
+ */
+function MainContent() {
+  const { splitPane, setSplitWidth, closeSplit, openInSplit } = useNavigation();
+
+  // Expose openInSplit for testing (dev only)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      (window as unknown as { __openInSplit: typeof openInSplit }).__openInSplit = openInSplit;
+    }
+    return () => {
+      if (process.env.NODE_ENV === 'development') {
+        delete (window as unknown as { __openInSplit?: typeof openInSplit }).__openInSplit;
+      }
+    };
+  }, [openInSplit]);
+
+  // Render secondary content when split is open
+  const secondaryContent = splitPane.isOpen && splitPane.objectId ? (
+    <ObjectDetailView objectId={splitPane.objectId} paneType="secondary" />
+  ) : null;
+
+  return (
+    <SplitPane
+      secondaryContent={secondaryContent}
+      splitWidth={splitPane.width}
+      onWidthChange={setSplitWidth}
+      onClose={closeSplit}
+    >
+      <PrimaryContent />
+    </SplitPane>
+  );
 }
 
 function App() {
