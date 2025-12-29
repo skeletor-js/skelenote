@@ -112,3 +112,45 @@
   color: var(--tag-purple);
   flex-shrink: 0;
 }
+
+/* Item row with copy button */
+.find-similar__item-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.find-similar__item-row .find-similar__item {
+  flex: 1;
+  min-width: 0;
+}
+
+.find-similar__copy-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.find-similar__copy-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-default);
+  background: var(--bg-sunken);
+}
+
+.find-similar__copy-btn--copied {
+  color: var(--tag-green);
+  border-color: var(--tag-green);
+  background: rgba(34, 197, 94, 0.1);
+}

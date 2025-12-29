@@ -12,6 +12,9 @@ import {
   editorSchema,
   serializeBlockNoteDocument,
   deserializeBlockNoteDocument,
+  getPendingMention,
+  clearPendingMention,
+  isMentionClipboardText,
 } from '@/lib/editor';
 import { getMentionMenuItems, MentionSuggestionMenu, type MentionItem } from './MentionSuggestion';
 import { useObjects, useTypeRegistry } from '@/contexts';
@@ -24,6 +27,7 @@ interface EditorProps {
 
 export function Editor({ objectId, initialContent, onContentChange }: EditorProps) {
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const lastSavedRef = useRef<string>(initialContent ?? '');
 
@@ -92,6 +96,47 @@ export function Editor({ objectId, initialContent, onContentChange }: EditorProp
     };
   }, []);
 
+  // Handle paste events to intercept mention clipboard data
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handlePaste = async (e: ClipboardEvent) => {
+      const clipboardText = e.clipboardData?.getData('text/plain') || '';
+
+      // Check if this is a Skelenote mention paste
+      if (isMentionClipboardText(clipboardText)) {
+        const pendingMention = getPendingMention();
+        if (pendingMention) {
+          // Prevent default paste behavior
+          e.preventDefault();
+          e.stopPropagation();
+
+          // Insert the mention at cursor position
+          editor.insertInlineContent([
+            {
+              type: 'mention',
+              props: {
+                objectId: pendingMention.objectId,
+                objectName: pendingMention.objectName,
+                objectTypeId: pendingMention.objectTypeId,
+              },
+            },
+            ' ', // Add space after mention
+          ]);
+
+          // Clear the pending mention
+          clearPendingMention();
+        }
+      }
+    };
+
+    container.addEventListener('paste', handlePaste, true);
+    return () => {
+      container.removeEventListener('paste', handlePaste, true);
+    };
+  }, [editor]);
+
   // Reset editor when objectId changes
   useEffect(() => {
     const newBlocks = deserializeBlockNoteDocument(initialContent);
@@ -105,7 +150,7 @@ export function Editor({ objectId, initialContent, onContentChange }: EditorProp
   }, [objectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="editor-container" data-saving={isSaving}>
+    <div ref={containerRef} className="editor-container" data-saving={isSaving}>
       <BlockNoteView
         editor={editor}
         onChange={handleEditorChange}

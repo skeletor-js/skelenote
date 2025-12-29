@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useObjects, useTypeRegistry, useNavigation, useSemanticSearchSafe } from '@/contexts';
 import { EmptyState } from '@/components/ui';
+import { copyMentionToClipboard } from '@/lib/editor';
 import type { SemanticSearchResult } from '@/lib/semantic';
 import './FindSimilar.css';
 
@@ -18,6 +19,7 @@ interface SimilarItem {
   title: string;
   typeIcon: string;
   typeName: string;
+  typeId: string;
   similarity: number;
 }
 
@@ -31,6 +33,7 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [similarItems, setSimilarItems] = useState<SimilarItem[]>([]);
   const [similarCount, setSimilarCount] = useState<number | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Check if semantic search is available
   const isSemanticEnabled = semanticContext?.isEnabled && semanticContext?.status === 'ready';
@@ -66,6 +69,7 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
             title,
             typeIcon: typeDef?.icon ?? '📄',
             typeName: typeDef?.name ?? obj.typeId,
+            typeId: obj.typeId,
             similarity: result.score,
           };
         })
@@ -128,6 +132,22 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
     navigateToObject(itemId);
   };
 
+  // Copy mention to clipboard (can be pasted as actual mention in editor)
+  const handleCopyMention = useCallback(async (item: SimilarItem, e: React.MouseEvent) => {
+    e.stopPropagation(); // Don't trigger item click
+
+    const success = await copyMentionToClipboard({
+      objectId: item.id,
+      objectName: item.title,
+      objectTypeId: item.typeId,
+    });
+
+    if (success) {
+      setCopiedId(item.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }
+  }, []);
+
   // Display count - use similarItems.length if loaded, otherwise similarCount
   const displayCount = similarItems.length > 0 ? similarItems.length : similarCount;
 
@@ -157,18 +177,27 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
             <EmptyState message="No similar objects found" size="small" />
           ) : (
             similarItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className="find-similar__item"
-                onClick={() => handleItemClick(item.id)}
-              >
-                <span className="find-similar__item-icon">{item.typeIcon}</span>
-                <span className="find-similar__item-name">{item.title}</span>
-                <span className="find-similar__item-similarity">
-                  {Math.round(item.similarity * 100)}%
-                </span>
-              </button>
+              <div key={item.id} className="find-similar__item-row">
+                <button
+                  type="button"
+                  className="find-similar__item"
+                  onClick={() => handleItemClick(item.id)}
+                >
+                  <span className="find-similar__item-icon">{item.typeIcon}</span>
+                  <span className="find-similar__item-name">{item.title}</span>
+                  <span className="find-similar__item-similarity">
+                    {Math.round(item.similarity * 100)}%
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className={`find-similar__copy-btn ${copiedId === item.id ? 'find-similar__copy-btn--copied' : ''}`}
+                  onClick={(e) => handleCopyMention(item, e)}
+                  title="Copy mention (paste in editor to link)"
+                >
+                  {copiedId === item.id ? '✓' : '@'}
+                </button>
+              </div>
             ))
           )}
         </div>
