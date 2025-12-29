@@ -44,6 +44,7 @@ hostname = "0.4"  # For device name detection
 mdns-sd = "0.11"  # mDNS service discovery (Bonjour/Avahi)
 local-ip-address = "0.6"  # For getting local network IP addresses
 flume = "0.11"  # Channel types used by mdns-sd
+tauri-plugin-dialog = "2.4.2"
 
 [dev-dependencies]
 tempfile = "3.14"  # Temporary directories for tests

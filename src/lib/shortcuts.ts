@@ -55,6 +55,7 @@ export const SHORTCUTS: Shortcut[] = [
 
   // Object shortcuts
   { keys: ['Cmd', 'N'], description: 'New object', category: 'objects' },
+  { keys: ['Cmd', 'Shift', 'E'], description: 'Export to Markdown', category: 'objects' },
   { keys: ['Cmd', 'Backspace'], description: 'Delete object', category: 'objects' },
 
   // Editing shortcuts

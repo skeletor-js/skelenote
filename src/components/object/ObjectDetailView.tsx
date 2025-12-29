@@ -8,6 +8,7 @@ import { Editor } from '@/components/editor';
 import { DailyNoteHeader } from '@/components/daily';
 import { ConfirmDialog } from '@/components/ui';
 import { removeMentionsFromContent } from '@/lib/editor';
+import { exportObjectToMarkdown } from '@/lib/export';
 import type { PropertyValue } from '@/lib/types';
 import {
   useObjects,
@@ -46,7 +47,52 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
     navigateToTimeMachine(objectId);
   }, [navigateToTimeMachine, objectId]);
 
-  // Register keyboard shortcut for viewing object history
+  // Handler to export object to Markdown
+  const handleExport = useCallback(async () => {
+    if (!store) return;
+
+    const object = store.get(objectId);
+    if (!object) return;
+
+    const objTypeDef = typeRegistry.get(object.typeId);
+    if (!objTypeDef) return;
+
+    const content = store.getContent(objectId);
+
+    // Create resolver function for object names
+    const resolveObjectName = (id: string): string | undefined => {
+      const obj = store.get(id);
+      if (!obj) return undefined;
+      const name = obj.properties.title ?? obj.properties.name;
+      return name ? String(name) : undefined;
+    };
+
+    try {
+      const filePath = await exportObjectToMarkdown(
+        object,
+        objTypeDef,
+        content,
+        resolveObjectName
+      );
+
+      if (filePath) {
+        // Extract filename from path
+        const filename = filePath.split('/').pop() || filePath;
+        addToast({
+          type: 'success',
+          message: `Exported to ${filename}`,
+        });
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+      addToast({
+        type: 'error',
+        message: 'Failed to export. Please try again.',
+      });
+    }
+  }, [store, objectId, typeRegistry, addToast]);
+
+  // Register keyboard shortcuts
   useEffect(() => {
     // Only register in primary pane and not in version comparison mode
     if (paneType === 'primary' && !isVersionComparison) {
@@ -56,11 +102,20 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
         action: handleViewHistory,
       });
 
+      registerShortcut('export-to-markdown', {
+        key: 'e',
+        metaKey: true,
+        shiftKey: true,
+        description: 'Export to Markdown',
+        action: handleExport,
+      });
+
       return () => {
         unregisterShortcut('view-object-history');
+        unregisterShortcut('export-to-markdown');
       };
     }
-  }, [paneType, isVersionComparison, handleViewHistory, registerShortcut, unregisterShortcut]);
+  }, [paneType, isVersionComparison, handleViewHistory, handleExport, registerShortcut, unregisterShortcut]);
 
   const handleDelete = useCallback(async () => {
     if (!store) return;
@@ -246,6 +301,7 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
         paneType={paneType}
         onCloseSplit={paneType === 'secondary' ? closeSplit : undefined}
         onViewHistory={handleViewHistory}
+        onExport={handleExport}
       />
 
       {/* Properties Section */}
