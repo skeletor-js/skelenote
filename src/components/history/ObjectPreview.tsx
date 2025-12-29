@@ -62,13 +62,16 @@ export function ObjectPreview({
   const typeName = typeDef?.name ?? object.typeId;
   const title = getObjectTitle(object);
 
-  // Get content from the forked document if the object has content
+  // Get content - it's stored as a property in the historical object
   const content = useMemo(() => {
     if (!object.hasContent) return null;
-    // Note: We would need to get content from the forked doc
-    // For now, we'll show a placeholder
+    // Content is stored in properties.content for historical objects
+    const contentValue = object.properties.content;
+    if (typeof contentValue === 'string') {
+      return contentValue;
+    }
     return null;
-  }, [object.hasContent]);
+  }, [object.hasContent, object.properties.content]);
 
   // Get property definitions for display
   const propertyDisplays = useMemo(() => {
@@ -152,17 +155,14 @@ export function ObjectPreview({
         <div className="object-preview__section">
           <h3 className="object-preview__section-title">Properties</h3>
           <div className="object-preview__properties">
-            {propertyDisplays.map(({ id, label }) => (
-              <div key={id} className="object-preview__prop-label">
-                {label}
-              </div>
-            ))}
-            {propertyDisplays.map(({ id, value }) => (
-              <div
-                key={`${id}-value`}
-                className={`object-preview__prop-value ${!value ? 'object-preview__prop-value--empty' : ''}`}
-              >
-                {value || '(empty)'}
+            {propertyDisplays.map(({ id, label, value }) => (
+              <div key={id} className="object-preview__prop-row">
+                <span className="object-preview__prop-label">{label}</span>
+                <span
+                  className={`object-preview__prop-value ${!value ? 'object-preview__prop-value--empty' : ''}`}
+                >
+                  {value || '(empty)'}
+                </span>
               </div>
             ))}
           </div>
@@ -175,7 +175,7 @@ export function ObjectPreview({
             <div
               className={`object-preview__text-content ${!content ? 'object-preview__text-content--empty' : ''}`}
             >
-              {content || '(Content preview will be available in a future update)'}
+              {content || '(No content at this point in time)'}
             </div>
           </div>
         )}
@@ -184,20 +184,28 @@ export function ObjectPreview({
         <div className="object-preview__section">
           <h3 className="object-preview__section-title">Metadata</h3>
           <div className="object-preview__properties">
-            <div className="object-preview__prop-label">Created</div>
-            <div className="object-preview__prop-value">
-              {new Date(object.createdAt).toLocaleString()}
+            <div className="object-preview__prop-row">
+              <span className="object-preview__prop-label">Created</span>
+              <span className="object-preview__prop-value">
+                {new Date(object.createdAt).toLocaleString()}
+              </span>
             </div>
-            <div className="object-preview__prop-label">Last Modified</div>
-            <div className="object-preview__prop-value">
-              {new Date(object.updatedAt).toLocaleString()}
+            <div className="object-preview__prop-row">
+              <span className="object-preview__prop-label">Last Modified</span>
+              <span className="object-preview__prop-value">
+                {new Date(object.updatedAt).toLocaleString()}
+              </span>
             </div>
-            <div className="object-preview__prop-label">In Inbox</div>
-            <div className="object-preview__prop-value">
-              {object.inboxed ? 'Yes' : 'No'}
+            <div className="object-preview__prop-row">
+              <span className="object-preview__prop-label">In Inbox</span>
+              <span className="object-preview__prop-value">
+                {object.inboxed ? 'Yes' : 'No'}
+              </span>
             </div>
-            <div className="object-preview__prop-label">Object ID</div>
-            <div className="object-preview__prop-value">{object.id}</div>
+            <div className="object-preview__prop-row">
+              <span className="object-preview__prop-label">Object ID</span>
+              <span className="object-preview__prop-value">{object.id}</span>
+            </div>
           </div>
         </div>
       </div>

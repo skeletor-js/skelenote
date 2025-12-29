@@ -502,7 +502,9 @@ export class LoroDocStore {
 
     try {
       const objectsMap = forkedDoc.getMap('objects');
+      const contentsMap = forkedDoc.getMap('contents');
       const entries = objectsMap.toJSON() as Record<string, string>;
+      const contents = contentsMap.toJSON() as Record<string, string>;
       const objects: Array<{
         id: string;
         typeId: string;
@@ -513,10 +515,17 @@ export class LoroDocStore {
         updatedAt: number;
       }> = [];
 
-      for (const data of Object.values(entries)) {
+      for (const [id, data] of Object.entries(entries)) {
         if (typeof data === 'string') {
           try {
             const parsed = JSON.parse(data);
+            // Include content in properties if it exists
+            if (parsed.hasContent && contents[id]) {
+              parsed.properties = {
+                ...parsed.properties,
+                content: contents[id],
+              };
+            }
             objects.push(parsed);
           } catch {
             // Skip malformed entries

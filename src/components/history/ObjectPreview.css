@@ -136,9 +136,15 @@
 }
 
 .object-preview__properties {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.object-preview__prop-row {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--spacing-xs) var(--spacing-md);
+  grid-template-columns: 140px 1fr;
+  gap: var(--spacing-md);
 }
 
 .object-preview__prop-label {
