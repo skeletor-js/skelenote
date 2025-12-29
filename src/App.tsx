@@ -8,6 +8,7 @@ import { SettingsView } from '@/components/settings';
 import { SkeletonKeySetup } from '@/components/setup';
 import { TimeMachine, HistoricalObjectView } from '@/components/history';
 import { SearchResultsView } from '@/components/search';
+import { KeyboardShortcutsModal } from '@/components/help';
 import { useNavigation, useObjects, useSkeletonKey, useKeyboardShortcuts, type ViewType } from '@/contexts';
 import { useCommandPalette, useTodaysDailyNote } from '@/hooks';
 import { runFirstRunSetup } from '@/lib/first-run';
@@ -188,6 +189,7 @@ function App() {
   const inboxCount = store?.getInboxed().length ?? 0;
   const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
+  const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const { ensureExists: ensureTodaysDailyNote } = useTodaysDailyNote();
   const startupCompleteRef = useRef(false);
 
@@ -220,6 +222,14 @@ function App() {
 
   const closeQuickCapture = useCallback(() => {
     setIsQuickCaptureOpen(false);
+  }, []);
+
+  const toggleShortcutsModal = useCallback(() => {
+    setIsShortcutsModalOpen((prev) => !prev);
+  }, []);
+
+  const closeShortcutsModal = useCallback(() => {
+    setIsShortcutsModalOpen(false);
   }, []);
 
   // Register global keyboard shortcuts
@@ -281,6 +291,15 @@ function App() {
       description: 'Open Search',
     });
 
+    // Cmd+? to open Keyboard Shortcuts help (? is Shift+/)
+    registerShortcut('keyboard-shortcuts', {
+      key: '?',
+      metaKey: true,
+      shiftKey: true,
+      action: toggleShortcutsModal,
+      description: 'Keyboard Shortcuts',
+    });
+
     return () => {
       unregisterShortcut('command-palette');
       unregisterShortcut('close-split');
@@ -288,8 +307,9 @@ function App() {
       unregisterShortcut('escape-close-split');
       unregisterShortcut('time-machine');
       unregisterShortcut('search');
+      unregisterShortcut('keyboard-shortcuts');
     };
-  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch]);
+  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, toggleShortcutsModal]);
 
   // Show loading only during initial crypto initialization
   // (not during subsequent operations like key generation)
@@ -324,8 +344,10 @@ function App() {
         isOpen={isPaletteOpen}
         onClose={closePalette}
         onQuickCapture={openQuickCapture}
+        onOpenShortcuts={toggleShortcutsModal}
       />
       <QuickCapture isOpen={isQuickCaptureOpen} onClose={closeQuickCapture} />
+      <KeyboardShortcutsModal isOpen={isShortcutsModalOpen} onClose={closeShortcutsModal} />
     </>
   );
 }

@@ -31,6 +31,7 @@ export interface PaletteAction {
 export const QUICK_CAPTURE_ACTION_ID = 'action-quick-capture';
 export const SEARCH_ACTION_ID = 'action-search';
 export const OPEN_IN_SPLIT_ACTION_ID = 'action-open-in-split';
+export const KEYBOARD_SHORTCUTS_ACTION_ID = 'action-keyboard-shortcuts';
 
 /**
  * Navigation actions for jumping to views
@@ -39,6 +40,7 @@ export const navigationActions: PaletteAction[] = [
   { id: SEARCH_ACTION_ID, label: 'Search', icon: '🔎', category: 'action' },
   { id: QUICK_CAPTURE_ACTION_ID, label: 'Quick Capture', icon: '⚡', category: 'action' },
   { id: OPEN_IN_SPLIT_ACTION_ID, label: 'Open in Split View', icon: '⊞', category: 'action' },
+  { id: KEYBOARD_SHORTCUTS_ACTION_ID, label: 'Keyboard Shortcuts', icon: '⌨️', category: 'action' },
   { id: 'nav-inbox', label: 'Go to Inbox', icon: '📥', category: 'navigation', view: 'inbox' },
   { id: 'nav-today', label: 'Go to Today', icon: '📅', category: 'navigation', view: 'today' },
   { id: 'nav-daily-notes', label: 'Go to Daily Notes', icon: '📆', category: 'navigation', view: 'daily-notes' },
