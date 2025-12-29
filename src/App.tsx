@@ -6,7 +6,7 @@ import { CommandPalette } from '@/components/palette';
 import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
 import { SkeletonKeySetup } from '@/components/setup';
-import { useNavigation, useObjects, useSkeletonKey, type ViewType } from '@/contexts';
+import { useNavigation, useObjects, useSkeletonKey, useKeyboardShortcuts, type ViewType } from '@/contexts';
 import { useCommandPalette, useTodaysDailyNote } from '@/hooks';
 import { runFirstRunSetup } from '@/lib/first-run';
 import type { TaskFilter } from '@/lib/tasks/filters';
@@ -127,6 +127,7 @@ function MainContent() {
 function App() {
   const { store, refreshData, saveNow } = useObjects();
   const { isInitialized: isCryptoInitialized, hasSkeletonKey } = useSkeletonKey();
+  const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
   const inboxCount = store?.getInboxed().length ?? 0;
   const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
@@ -164,18 +165,19 @@ function App() {
     setIsQuickCaptureOpen(false);
   }, []);
 
-  // Global Cmd+K keyboard shortcut
+  // Register global keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        togglePalette();
-      }
-    };
+    registerShortcut('command-palette', {
+      key: 'k',
+      metaKey: true,
+      action: togglePalette,
+      description: 'Open command palette',
+    });
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [togglePalette]);
+    return () => {
+      unregisterShortcut('command-palette');
+    };
+  }, [registerShortcut, unregisterShortcut, togglePalette]);
 
   // Show loading only during initial crypto initialization
   // (not during subsequent operations like key generation)

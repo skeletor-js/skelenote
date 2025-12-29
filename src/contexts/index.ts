@@ -35,3 +35,9 @@ export {
   useDeviceRegistry,
   useDeviceRegistrySafe,
 } from './DeviceRegistryContext';
+export {
+  KeyboardShortcutsProvider,
+  useKeyboardShortcuts,
+  useKeyboardShortcutsSafe,
+  type ShortcutDefinition,
+} from './KeyboardShortcutsContext';
