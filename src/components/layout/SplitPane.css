@@ -29,6 +29,7 @@
 
 .split-pane--split .split-pane__primary {
   padding: var(--spacing-lg);
+  padding-left: 48px; /* Extra space for editor side menu (drag handle, + button) */
 }
 
 /* Divider */
@@ -88,6 +89,7 @@
   flex: 1;
   overflow: auto;
   padding: var(--spacing-lg);
+  padding-left: 48px; /* Extra space for editor side menu (drag handle, + button) */
   position: relative; /* Contain absolutely positioned children like editor menus */
 }
 
