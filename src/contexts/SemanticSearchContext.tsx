@@ -24,6 +24,7 @@ import {
 const STORAGE_KEY = 'skelenote:semanticSearchEnabled';
 const THRESHOLD_KEY = 'skelenote:semanticThreshold';
 const DEFAULT_THRESHOLD = 0.2;
+const MAX_THRESHOLD = 0.6; // Cap at 60% - above this is too strict to be useful
 
 interface SemanticSearchContextValue {
   /** Whether semantic search is enabled */
@@ -65,7 +66,8 @@ function getInitialThreshold(): number {
     if (stored) {
       const val = parseFloat(stored);
       if (!isNaN(val) && val >= 0 && val <= 1) {
-        return val;
+        // Cap at max threshold
+        return Math.min(val, MAX_THRESHOLD);
       }
     }
   }
@@ -85,9 +87,9 @@ export function SemanticSearchProvider({ children }: SemanticSearchProviderProps
   const [error, setError] = useState<string | null>(null);
   const [threshold, setThresholdState] = useState(getInitialThreshold);
 
-  // Update threshold and persist
+  // Update threshold and persist (capped at MAX_THRESHOLD)
   const setThreshold = useCallback((newThreshold: number) => {
-    const clamped = Math.max(0, Math.min(1, newThreshold));
+    const clamped = Math.max(0, Math.min(MAX_THRESHOLD, newThreshold));
     setThresholdState(clamped);
     localStorage.setItem(THRESHOLD_KEY, String(clamped));
   }, []);

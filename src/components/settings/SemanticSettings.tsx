@@ -208,20 +208,9 @@ export function SemanticSettings() {
 
           <div className="semantic-settings__section">
             <label className="semantic-settings__label">Similarity Threshold</label>
-            <div className="semantic-settings__slider-row">
-              <input
-                type="range"
-                className="semantic-settings__slider"
-                min="0"
-                max="100"
-                value={Math.round(threshold * 100)}
-                onChange={(e) => setThreshold(parseInt(e.target.value, 10) / 100)}
-              />
-              <span className="semantic-settings__slider-value">{Math.round(threshold * 100)}%</span>
-            </div>
             <p className="semantic-settings__help">
-              Lower values show more results (including loosely related).
-              Higher values show only closely related content.
+              Controls how closely related results must be.
+              Lower = more results, Higher = stricter matching.
             </p>
             <div className="semantic-settings__presets">
               <button
@@ -240,10 +229,17 @@ export function SemanticSettings() {
               </button>
               <button
                 type="button"
-                className={`semantic-settings__preset ${threshold > 0.25 ? 'semantic-settings__preset--active' : ''}`}
+                className={`semantic-settings__preset ${threshold > 0.25 && threshold <= 0.45 ? 'semantic-settings__preset--active' : ''}`}
                 onClick={() => setThreshold(0.35)}
               >
                 Strict (35%)
+              </button>
+              <button
+                type="button"
+                className={`semantic-settings__preset ${threshold > 0.45 ? 'semantic-settings__preset--active' : ''}`}
+                onClick={() => setThreshold(0.5)}
+              >
+                Very Strict (50%)
               </button>
             </div>
           </div>
