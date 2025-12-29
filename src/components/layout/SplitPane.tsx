@@ -56,7 +56,7 @@ export function SplitPane({
       const containerWidth = containerRect.width;
       const mouseX = e.clientX - containerRect.left;
       const dividerWidth = 12; // Match CSS divider width
-      const minPaneWidth = 300; // Minimum pane width in pixels
+      const minPaneWidth = 380; // Minimum pane width in pixels (matches CSS)
 
       // Calculate secondary pane width (right side)
       // mouseX is where the divider is, so secondary width is containerWidth - mouseX
