@@ -26,6 +26,18 @@ interface NavigationState {
   objectId: string | null;
 }
 
+/**
+ * Split pane state for side-by-side view
+ */
+export interface SplitPaneState {
+  /** Whether the split view is open */
+  isOpen: boolean;
+  /** ID of the object displayed in the secondary pane */
+  objectId: string | null;
+  /** Width of the secondary pane as a percentage (25-75) */
+  width: number;
+}
+
 interface NavigationContextValue {
   /** Current view being displayed */
   currentView: ViewType;
@@ -41,6 +53,18 @@ interface NavigationContextValue {
   canGoBack: boolean;
   /** Navigation history stack */
   navigationHistory: NavigationState[];
+
+  // Split pane functionality
+  /** Current split pane state */
+  splitPane: SplitPaneState;
+  /** Open an object in the secondary (split) pane */
+  openInSplit: (objectId: string) => void;
+  /** Close the split view */
+  closeSplit: () => void;
+  /** Set the width of the secondary pane (25-75%) */
+  setSplitWidth: (width: number) => void;
+  /** Swap primary and secondary pane objects */
+  swapPanes: () => void;
 }
 
 const NavigationContext = createContext<NavigationContextValue | null>(null);
@@ -55,6 +79,13 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     objectId: null,
   });
   const [history, setHistory] = useState<NavigationState[]>([]);
+
+  // Split pane state
+  const [splitPane, setSplitPaneState] = useState<SplitPaneState>({
+    isOpen: false,
+    objectId: null,
+    width: 50,
+  });
 
   const navigateToObject = useCallback((objectId: string) => {
     setHistory((prev) => [...prev, currentState]);
@@ -80,6 +111,51 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     setCurrentState(previous);
   }, [history]);
 
+  // Split pane methods
+  const openInSplit = useCallback((objectId: string) => {
+    setSplitPaneState((prev) => ({
+      ...prev,
+      isOpen: true,
+      objectId,
+    }));
+  }, []);
+
+  const closeSplit = useCallback(() => {
+    setSplitPaneState((prev) => ({
+      ...prev,
+      isOpen: false,
+      objectId: null,
+    }));
+  }, []);
+
+  const setSplitWidth = useCallback((width: number) => {
+    // Clamp width between 25% and 75%
+    const clampedWidth = Math.max(25, Math.min(75, width));
+    setSplitPaneState((prev) => ({
+      ...prev,
+      width: clampedWidth,
+    }));
+  }, []);
+
+  const swapPanes = useCallback(() => {
+    if (!splitPane.objectId || !currentState.objectId) return;
+
+    const tempId = currentState.objectId;
+
+    // Navigate primary to the split object
+    setHistory((prev) => [...prev, currentState]);
+    setCurrentState({
+      view: 'object',
+      objectId: splitPane.objectId,
+    });
+
+    // Update split to show the former primary object
+    setSplitPaneState((prev) => ({
+      ...prev,
+      objectId: tempId,
+    }));
+  }, [splitPane.objectId, currentState]);
+
   return (
     <NavigationContext.Provider
       value={{
@@ -90,6 +166,12 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         navigateBack,
         canGoBack: history.length > 0,
         navigationHistory: history,
+        // Split pane
+        splitPane,
+        openInSplit,
+        closeSplit,
+        setSplitWidth,
+        swapPanes,
       }}
     >
       {children}

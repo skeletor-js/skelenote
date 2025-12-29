@@ -4,6 +4,7 @@ export {
   NavigationProvider,
   useNavigation,
   type ViewType,
+  type SplitPaneState,
 } from './NavigationContext';
 export {
   ObjectProvider,
@@ -35,3 +36,9 @@ export {
   useDeviceRegistry,
   useDeviceRegistrySafe,
 } from './DeviceRegistryContext';
+export {
+  KeyboardShortcutsProvider,
+  useKeyboardShortcuts,
+  useKeyboardShortcutsSafe,
+  type ShortcutDefinition,
+} from './KeyboardShortcutsContext';

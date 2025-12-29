@@ -1,0 +1,111 @@
+.split-pane {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.split-pane--single {
+  flex-direction: column;
+}
+
+/* Single pane inherits layout__content constraints - no additional styling needed */
+
+.split-pane--split {
+  flex-direction: row;
+}
+
+.split-pane--dragging {
+  cursor: col-resize;
+  user-select: none;
+}
+
+/* Primary pane (left) - in split mode gets padding */
+.split-pane__primary {
+  overflow: auto;
+  min-width: 380px; /* Enough room for content + editor side menu padding */
+  height: 100%;
+  /* In split mode, flex-basis is set via inline style */
+}
+
+.split-pane--split .split-pane__primary {
+  padding: var(--spacing-lg);
+  padding-left: 48px; /* Extra space for editor side menu (drag handle, + button) */
+}
+
+/* Divider */
+.split-pane__divider {
+  flex-shrink: 0;
+  width: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: col-resize;
+  background: transparent;
+  transition: background var(--transition-fast);
+}
+
+.split-pane__divider:hover,
+.split-pane--dragging .split-pane__divider {
+  background: var(--surface-hover);
+}
+
+.split-pane__divider:focus {
+  outline: none;
+}
+
+.split-pane__divider:focus-visible {
+  background: var(--surface-hover);
+}
+
+.split-pane__divider:focus-visible .split-pane__divider-handle {
+  background: var(--focus-ring-color);
+}
+
+.split-pane__divider-handle {
+  width: 4px;
+  height: 48px;
+  border-radius: 2px;
+  background: var(--border-subtle);
+  transition: background var(--transition-fast);
+}
+
+.split-pane__divider:hover .split-pane__divider-handle,
+.split-pane--dragging .split-pane__divider-handle {
+  background: var(--border-strong);
+}
+
+/* Secondary pane (right) */
+.split-pane__secondary {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 380px; /* Enough room for content + editor side menu padding */
+  height: 100%;
+  border-left: 1px solid var(--border-subtle);
+  background: var(--bg-base);
+}
+
+.split-pane__secondary-content {
+  flex: 1;
+  overflow: auto;
+  padding: var(--spacing-lg);
+  padding-left: 48px; /* Extra space for editor side menu (drag handle, + button) */
+  position: relative; /* Contain absolutely positioned children like editor menus */
+}
+
+/* Mobile: Split is auto-closed programmatically when viewport < 768px */
+/* This is just a safety fallback */
+@media (max-width: 768px) {
+  .split-pane__secondary {
+    display: none;
+  }
+
+  .split-pane__divider {
+    display: none;
+  }
+
+  .split-pane__primary {
+    min-width: 0;
+    flex: 1 1 auto !important;
+  }
+}

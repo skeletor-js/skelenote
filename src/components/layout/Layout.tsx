@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect } from 'react';
 import './Layout.css';
 import { Sidebar } from './Sidebar';
-import { useSidebar } from '@/contexts';
+import { useSidebar, useNavigation } from '@/contexts';
 
 interface LayoutProps {
   children: ReactNode;
@@ -10,6 +10,7 @@ interface LayoutProps {
 
 export function Layout({ children, inboxCount = 0 }: LayoutProps) {
   const { isCollapsed, setCollapsed, toggleCollapsed } = useSidebar();
+  const { splitPane } = useNavigation();
 
   // Handle responsive collapse
   useEffect(() => {
@@ -45,7 +46,7 @@ export function Layout({ children, inboxCount = 0 }: LayoutProps) {
             ☰
           </button>
         )}
-        <div className="layout__content">{children}</div>
+        <div className={`layout__content ${splitPane.isOpen ? 'layout__content--split-active' : ''}`}>{children}</div>
       </main>
       {/* Overlay for mobile when sidebar is open */}
       {!isCollapsed && (

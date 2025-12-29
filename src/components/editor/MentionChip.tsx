@@ -30,13 +30,17 @@ export const Mention = createReactInlineContentSpec(
     render: (props) => {
       const { objectId, objectName, objectTypeId } = props.inlineContent.props;
       const { store } = useObjects();
-      const { navigateToObject } = useNavigation();
+      const { navigateToObject, openInSplit } = useNavigation();
 
       const handleClick = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
         if (objectId) {
-          navigateToObject(objectId);
+          if (e.metaKey || e.ctrlKey) {
+            openInSplit(objectId);
+          } else {
+            navigateToObject(objectId);
+          }
         }
       };
 
@@ -44,7 +48,11 @@ export const Mention = createReactInlineContentSpec(
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           if (objectId) {
-            navigateToObject(objectId);
+            if (e.metaKey || e.ctrlKey) {
+              openInSplit(objectId);
+            } else {
+              navigateToObject(objectId);
+            }
           }
         }
       };
