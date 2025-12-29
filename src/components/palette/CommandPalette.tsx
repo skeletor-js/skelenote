@@ -13,6 +13,7 @@ import {
   type PaletteAction,
   QUICK_CAPTURE_ACTION_ID,
   SEARCH_ACTION_ID,
+  OPEN_IN_SPLIT_ACTION_ID,
 } from '@/lib/palette/actions';
 import { searchObjects, sortByRelevance } from '@/lib/palette/search';
 import { PaletteItem } from './PaletteItem';
@@ -26,7 +27,7 @@ interface CommandPaletteProps {
 }
 
 export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPaletteProps) {
-  const { navigateToView, navigateToObject } = useNavigation();
+  const { navigateToView, navigateToObject, openInSplit, selectedObjectId, currentView } = useNavigation();
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { linkToDaily } = useLinkToDaily();
@@ -120,6 +121,15 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
         return;
       }
 
+      // Open in Split View - opens current object in secondary pane
+      if (action.id === OPEN_IN_SPLIT_ACTION_ID) {
+        if (currentView === 'object' && selectedObjectId) {
+          openInSplit(selectedObjectId);
+        }
+        onClose();
+        return;
+      }
+
       if (action.view) {
         // Navigation action
         navigateToView(action.view);
@@ -149,7 +159,7 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
       }
       onClose();
     },
-    [navigateToView, navigateToObject, store, linkToDaily, refreshData, onClose, onQuickCapture, enterSearchMode]
+    [navigateToView, navigateToObject, store, linkToDaily, refreshData, onClose, onQuickCapture, enterSearchMode, currentView, selectedObjectId, openInSplit]
   );
 
   // Navigate to search result

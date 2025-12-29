@@ -14,7 +14,7 @@ interface RelationChipProps {
 export function RelationChip({ objectId, onRemove, showRemove = true }: RelationChipProps) {
   const { store } = useObjects();
   const typeRegistry = useTypeRegistry();
-  const { navigateToObject } = useNavigation();
+  const { navigateToObject, openInSplit } = useNavigation();
 
   if (!store) return null;
 
@@ -28,19 +28,34 @@ export function RelationChip({ objectId, onRemove, showRemove = true }: Relation
   const icon = typeDef?.icon ?? '📄';
   const name = (object.properties.title ?? object.properties.name ?? 'Untitled') as string;
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (e.metaKey || e.ctrlKey) {
+      e.preventDefault();
+      openInSplit(objectId);
+    } else {
+      navigateToObject(objectId);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (e.metaKey || e.ctrlKey) {
+        openInSplit(objectId);
+      } else {
+        navigateToObject(objectId);
+      }
+    }
+  };
+
   return (
     <span
       className="relation-chip"
       data-type-id={object.typeId}
-      onClick={() => navigateToObject(objectId)}
+      onClick={handleClick}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          navigateToObject(objectId);
-        }
-      }}
+      onKeyDown={handleKeyDown}
     >
       <span className="relation-chip__icon">{icon}</span>
       <span className="relation-chip__name">{name}</span>

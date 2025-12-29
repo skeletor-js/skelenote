@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigation } from '@/contexts';
 import './ObjectHeader.css';
 import type { SkelenoteObject, TypeDefinition } from '@/lib/types';
 
@@ -8,6 +9,10 @@ interface ObjectHeaderProps {
   onTitleChange: (newTitle: string) => void;
   onDelete?: () => void;
   canDelete?: boolean;
+  /** Which pane this header is in */
+  paneType?: 'primary' | 'secondary';
+  /** Callback to close split view (secondary pane only) */
+  onCloseSplit?: () => void;
 }
 
 export function ObjectHeader({
@@ -16,7 +21,10 @@ export function ObjectHeader({
   onTitleChange,
   onDelete,
   canDelete = true,
+  paneType = 'primary',
+  onCloseSplit,
 }: ObjectHeaderProps) {
+  const { openInSplit, splitPane } = useNavigation();
   // Determine which property holds the title (varies by type)
   const titlePropertyId = object.properties.title !== undefined ? 'title' : 'name';
   const currentTitle = String(object.properties[titlePropertyId] ?? 'Untitled');
@@ -116,6 +124,19 @@ export function ObjectHeader({
         </h1>
       )}
 
+      {/* Open in Split View - only show in primary pane when split is not open */}
+      {paneType === 'primary' && !splitPane.isOpen && (
+        <button
+          type="button"
+          className="object-header__split-btn"
+          onClick={() => openInSplit(object.id)}
+          aria-label="Open in split view"
+          title="Open in split view"
+        >
+          Split
+        </button>
+      )}
+
       {canDelete && onDelete && (
         <button
           type="button"
@@ -125,6 +146,18 @@ export function ObjectHeader({
           title="Delete"
         >
           Delete
+        </button>
+      )}
+
+      {paneType === 'secondary' && onCloseSplit && (
+        <button
+          type="button"
+          className="object-header__close-split"
+          onClick={onCloseSplit}
+          aria-label="Close split view"
+          title="Close"
+        >
+          ×
         </button>
       )}
     </header>
