@@ -9,6 +9,7 @@ mod network;
 use crypto::{
     derive_sync_key, derive_user_id, encrypt_bytes, decrypt_bytes, generate_mnemonic, generate_mnemonic_qr,
     mnemonic_to_master_key, parse_qr_payload, validate_mnemonic, StrongholdManager,
+    derive_signing_key, sign_revocation, verify_revocation, get_public_key_bytes,
 };
 use network::{LocalSyncServer, MdnsHandle, NetworkState, DiscoveredPeer};
 use std::sync::Mutex;
@@ -254,14 +255,16 @@ async fn network_start_server(
     let device_name = network_state.device_name.read().await.clone();
     let connected_peers = network_state.connected_peers.clone();
     let peer_streams = network_state.peer_streams.clone();
+    let blocklist = network_state.blocklist.clone();
 
-    // Start the server
+    // Start the server (passing blocklist for revoked device filtering)
     let (handle, mut event_rx, port) = LocalSyncServer::start(
         device_id,
         device_name,
         fingerprint,
         connected_peers,
         peer_streams,
+        blocklist,
     ).await.map_err(|e| e.to_string())?;
 
     // Store the server handle
@@ -398,12 +401,14 @@ async fn network_start_discovery(
     let device_name = network_state.device_name.read().await.clone();
     let discovered_peers = network_state.discovered_peers.clone();
 
-    // Start mDNS
+    // Start mDNS (passing blocklist for revoked device filtering)
+    let blocklist = network_state.blocklist.clone();
     let (handle, mut event_rx) = MdnsHandle::start(
         device_id,
         device_name,
         port,
         fingerprint,
+        blocklist,
     )?;
 
     // Store the handle
@@ -522,6 +527,12 @@ async fn network_connect_to_peer(
 
     let peer = peer.ok_or_else(|| format!("Peer not found: {}", device_id))?;
     println!("[Connect] Found peer: {} at {:?}:{}", peer.device_name, peer.addresses, peer.port);
+
+    // Check if device is blocked/revoked
+    if network_state.is_device_blocked(&device_id).await {
+        println!("[Connect] Refusing to connect to blocked device: {}", device_id);
+        return Err("Device has been revoked".to_string());
+    }
 
     // Get our device info
     let our_device_id = network_state.device_id.read().await.clone();
@@ -664,6 +675,130 @@ async fn network_peer_count(
     Ok(network_state.peer_count().await)
 }
 
+// ============================================================================
+// Device Management Commands
+// ============================================================================
+
+/// Get the Ed25519 public signing key for this device
+///
+/// Returns the public key as a base64-encoded string.
+/// All devices with the same Skeleton Key will have the same signing keypair.
+#[tauri::command]
+fn device_get_signing_public_key(state: State<'_, CryptoState>) -> Result<String, String> {
+    let stronghold_guard = state.stronghold.lock().unwrap();
+    let manager = stronghold_guard
+        .as_ref()
+        .ok_or("Crypto not initialized - call crypto_init first")?;
+
+    let master_key = manager.get_master_key().map_err(|e| e.to_string())?;
+    let signing_key = derive_signing_key(&master_key);
+    let public_key_bytes = get_public_key_bytes(&signing_key);
+
+    Ok(base64::Engine::encode(&base64::engine::general_purpose::STANDARD, public_key_bytes))
+}
+
+/// Sign a device revocation
+///
+/// Creates an Ed25519 signature over the canonical revocation message.
+/// Returns the signature as a base64-encoded string.
+#[tauri::command]
+fn device_sign_revocation(
+    device_id: String,
+    revoked_at: u64,
+    revoked_by: String,
+    state: State<'_, CryptoState>,
+) -> Result<String, String> {
+    let stronghold_guard = state.stronghold.lock().unwrap();
+    let manager = stronghold_guard
+        .as_ref()
+        .ok_or("Crypto not initialized - call crypto_init first")?;
+
+    let master_key = manager.get_master_key().map_err(|e| e.to_string())?;
+    let signing_key = derive_signing_key(&master_key);
+    let signature = sign_revocation(&signing_key, &device_id, revoked_at, &revoked_by);
+
+    Ok(base64::Engine::encode(&base64::engine::general_purpose::STANDARD, signature))
+}
+
+/// Verify a device revocation signature
+///
+/// Checks that the signature is valid for the given revocation parameters.
+/// Returns true if valid, false otherwise.
+#[tauri::command]
+fn device_verify_revocation(
+    device_id: String,
+    revoked_at: u64,
+    revoked_by: String,
+    signature: String,
+    public_key: String,
+) -> Result<bool, String> {
+    use base64::Engine;
+
+    // Decode base64 signature
+    let signature_bytes: [u8; 64] = base64::engine::general_purpose::STANDARD
+        .decode(&signature)
+        .map_err(|e| format!("Invalid signature base64: {}", e))?
+        .try_into()
+        .map_err(|_| "Invalid signature length")?;
+
+    // Decode base64 public key
+    let public_key_bytes: [u8; 32] = base64::engine::general_purpose::STANDARD
+        .decode(&public_key)
+        .map_err(|e| format!("Invalid public key base64: {}", e))?
+        .try_into()
+        .map_err(|_| "Invalid public key length")?;
+
+    match verify_revocation(&public_key_bytes, &device_id, revoked_at, &revoked_by, &signature_bytes) {
+        Ok(()) => Ok(true),
+        Err(_) => Ok(false),
+    }
+}
+
+/// Block a device from P2P connections
+///
+/// Adds a device to the local blocklist. Blocked devices are filtered from
+/// mDNS discovery and rejected at TCP handshake.
+#[tauri::command]
+async fn device_block(
+    device_id: String,
+    network_state: State<'_, NetworkState>,
+) -> Result<(), String> {
+    network_state
+        .block_device(device_id.clone())
+        .await
+        .map_err(|e| format!("Failed to block device: {}", e))?;
+
+    // Also remove from connected peers and close the connection if connected
+    {
+        let mut connected = network_state.connected_peers.write().await;
+        connected.remove(&device_id);
+    }
+    {
+        let mut streams = network_state.peer_streams.write().await;
+        streams.remove(&device_id);
+    }
+
+    println!("[Device] Blocked device: {}", device_id);
+    Ok(())
+}
+
+/// Check if a device is blocked
+#[tauri::command]
+async fn device_is_blocked(
+    device_id: String,
+    network_state: State<'_, NetworkState>,
+) -> Result<bool, String> {
+    Ok(network_state.is_device_blocked(&device_id).await)
+}
+
+/// Get all blocked device IDs
+#[tauri::command]
+async fn device_get_blocked(
+    network_state: State<'_, NetworkState>,
+) -> Result<Vec<String>, String> {
+    Ok(network_state.blocklist.get_blocked().await)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -673,7 +808,28 @@ pub fn run() {
             stronghold: Mutex::new(None),
             sync_key: Mutex::new(None),
         })
-        .manage(NetworkState::new())
+        .setup(|app| {
+            // Initialize NetworkState with persistent blocklist
+            let app_data_dir = app.path().app_data_dir()
+                .expect("Failed to get app data directory");
+            let data_dir = app_data_dir.join("data");
+
+            // Create data directory if it doesn't exist
+            std::fs::create_dir_all(&data_dir).ok();
+
+            let network_state = NetworkState::with_data_dir(data_dir);
+
+            // Load blocklist from disk in background
+            let blocklist = network_state.blocklist.clone();
+            tauri::async_runtime::spawn(async move {
+                if let Err(e) = blocklist.load().await {
+                    eprintln!("[Blocklist] Failed to load from disk: {}", e);
+                }
+            });
+
+            app.manage(network_state);
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             greet,
             // Crypto commands
@@ -704,6 +860,13 @@ pub fn run() {
             // Sync Relay commands
             network_broadcast_sync,
             network_peer_count,
+            // Device Management commands
+            device_get_signing_public_key,
+            device_sign_revocation,
+            device_verify_revocation,
+            device_block,
+            device_is_blocked,
+            device_get_blocked,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

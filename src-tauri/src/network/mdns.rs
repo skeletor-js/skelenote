@@ -2,6 +2,7 @@
 //!
 //! Uses mDNS/Bonjour to advertise this device and discover peers on the local network.
 //! Only peers with matching fingerprints (same Skeleton Key) are reported.
+//! Revoked devices are filtered out using the device blocklist.
 
 use mdns_sd::{ServiceDaemon, ServiceEvent, ServiceInfo};
 use std::collections::HashMap;
@@ -9,6 +10,7 @@ use std::net::IpAddr;
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
 
+use super::blocklist::DeviceBlocklist;
 use super::state::DiscoveredPeer;
 
 /// Service type for Skelenote local sync
@@ -70,12 +72,13 @@ impl MdnsHandle {
     /// - `device_name`: Human-readable device name
     /// - `port`: TCP port the server is listening on
     /// - `fingerprint`: Key fingerprint for peer filtering
-    /// - `our_fingerprint`: Our fingerprint for filtering discovered peers
+    /// - `blocklist`: Device blocklist for filtering revoked peers
     pub fn start(
         device_id: String,
         device_name: String,
         port: u16,
         fingerprint: String,
+        blocklist: DeviceBlocklist,
     ) -> Result<(Self, mpsc::Receiver<MdnsEvent>), String> {
         // Create the mDNS daemon
         println!("[mDNS] Creating ServiceDaemon...");
@@ -152,7 +155,7 @@ impl MdnsHandle {
 
         // Spawn the event handler
         tokio::spawn(async move {
-            Self::browse_loop(receiver, event_tx, our_device_id, our_fingerprint, shutdown_clone).await;
+            Self::browse_loop(receiver, event_tx, our_device_id, our_fingerprint, blocklist, shutdown_clone).await;
         });
 
         Ok((
@@ -171,6 +174,7 @@ impl MdnsHandle {
         event_tx: mpsc::Sender<MdnsEvent>,
         our_device_id: String,
         our_fingerprint: String,
+        blocklist: DeviceBlocklist,
         shutdown: Arc<RwLock<bool>>,
     ) {
         loop {
@@ -232,6 +236,14 @@ impl MdnsHandle {
                                 // No fingerprint = skip
                                 println!("[mDNS] Skipping peer with no fingerprint");
                                 continue;
+                            }
+
+                            // Check blocklist - filter revoked devices
+                            if let Some(ref peer_id) = id {
+                                if blocklist.is_blocked(peer_id).await {
+                                    println!("[mDNS] Skipping blocked/revoked device: {}", peer_id);
+                                    continue;
+                                }
                             }
 
                             println!("[mDNS] Peer passed all filters! Adding to discovered peers");

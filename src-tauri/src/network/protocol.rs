@@ -9,6 +9,7 @@ use thiserror::Error;
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MessageType {
+    // Core sync messages (0x01-0x0a)
     /// Client/peer handshake
     Hello = 0x01,
     /// Loro update bytes (encrypted)
@@ -29,6 +30,18 @@ pub enum MessageType {
     History = 0x09,
     /// Compaction request
     Compact = 0x0a,
+
+    // Device management messages (0x10-0x14)
+    /// Full device registry sync (Loro snapshot)
+    DeviceRegistry = 0x10,
+    /// Incremental device registry update (Loro update)
+    DeviceUpdate = 0x11,
+    /// Device revocation message
+    DeviceRevoke = 0x12,
+    /// Revocation acknowledgment
+    DeviceRevokeAck = 0x13,
+    /// Device rename request
+    DeviceRename = 0x14,
 }
 
 impl TryFrom<u8> for MessageType {
@@ -36,6 +49,7 @@ impl TryFrom<u8> for MessageType {
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
+            // Core sync messages
             0x01 => Ok(MessageType::Hello),
             0x02 => Ok(MessageType::Update),
             0x03 => Ok(MessageType::SnapshotRequest),
@@ -46,6 +60,12 @@ impl TryFrom<u8> for MessageType {
             0x08 => Ok(MessageType::CatchUp),
             0x09 => Ok(MessageType::History),
             0x0a => Ok(MessageType::Compact),
+            // Device management messages
+            0x10 => Ok(MessageType::DeviceRegistry),
+            0x11 => Ok(MessageType::DeviceUpdate),
+            0x12 => Ok(MessageType::DeviceRevoke),
+            0x13 => Ok(MessageType::DeviceRevokeAck),
+            0x14 => Ok(MessageType::DeviceRename),
             _ => Err(ProtocolError::InvalidMessageType(value)),
         }
     }
@@ -133,6 +153,81 @@ pub struct AckPayload {
     pub accepted: bool,
     /// Reason if rejected
     pub reason: Option<String>,
+}
+
+// ============================================================================
+// Device Management Payloads
+// ============================================================================
+
+/// Device revocation payload
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct DeviceRevokePayload {
+    /// Device ID that was revoked
+    pub device_id: String,
+    /// Unix timestamp (ms) when revocation occurred
+    pub revoked_at: u64,
+    /// Device ID that performed the revocation
+    pub revoked_by: String,
+    /// Optional reason for revocation
+    pub reason: Option<String>,
+    /// Base64-encoded Ed25519 signature
+    pub signature: String,
+}
+
+/// Device revocation acknowledgment payload
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct DeviceRevokeAckPayload {
+    /// Device ID that was revoked
+    pub device_id: String,
+    /// Device ID acknowledging the revocation
+    pub acknowledged_by: String,
+}
+
+/// Device rename payload
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct DeviceRenamePayload {
+    /// Device ID being renamed
+    pub device_id: String,
+    /// New device name
+    pub new_name: String,
+    /// Unix timestamp (ms) when rename occurred
+    pub renamed_at: u64,
+}
+
+/// Extended hello payload with device registry info
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct ExtendedHelloPayload {
+    /// Unique device identifier
+    pub device_id: String,
+    /// Device name (user-friendly)
+    pub device_name: String,
+    /// Protocol version
+    pub protocol_version: u32,
+    /// Whether E2EE is enabled
+    pub encrypted: bool,
+    /// Key fingerprint for verification
+    pub fingerprint: String,
+    /// Device registry version (Loro lamport clock)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub registry_version: Option<u64>,
+    /// Base64-encoded Ed25519 public signing key
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub signing_public_key: Option<String>,
+    /// Device IDs this device knows are revoked
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub known_revocations: Option<Vec<String>>,
+}
+
+/// Check if a message type is a device management message
+pub fn is_device_management_message(msg_type: MessageType) -> bool {
+    matches!(
+        msg_type,
+        MessageType::DeviceRegistry
+            | MessageType::DeviceUpdate
+            | MessageType::DeviceRevoke
+            | MessageType::DeviceRevokeAck
+            | MessageType::DeviceRename
+    )
 }
 
 #[cfg(test)]

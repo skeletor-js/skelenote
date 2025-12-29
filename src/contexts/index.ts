@@ -30,3 +30,8 @@ export {
   useLocalSync,
   useLocalSyncSafe,
 } from './LocalSyncContext';
+export {
+  DeviceRegistryProvider,
+  useDeviceRegistry,
+  useDeviceRegistrySafe,
+} from './DeviceRegistryContext';

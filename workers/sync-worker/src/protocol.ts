@@ -7,6 +7,7 @@
 
 // Message type constants
 export const MessageType = {
+  // Core sync messages (0x01-0x0a)
   HELLO: 0x01, // Client handshake
   UPDATE: 0x02, // Loro update bytes (encrypted in E2EE mode)
   SNAPSHOT_REQUEST: 0x03, // Request full snapshot from another device
@@ -14,10 +15,16 @@ export const MessageType = {
   ACK: 0x05, // Acknowledgment
   PING: 0x06, // Keep-alive ping
   PONG: 0x07, // Keep-alive pong
-  // New: Server-side persistence for E2EE
   CATCH_UP: 0x08, // Request historical updates from server
   HISTORY: 0x09, // Batch of historical encrypted updates
   COMPACT: 0x0a, // Client-initiated compaction
+
+  // Device management messages (0x10-0x14)
+  DEVICE_REGISTRY: 0x10, // Full device registry sync (Loro snapshot)
+  DEVICE_UPDATE: 0x11, // Incremental device registry update (Loro update)
+  DEVICE_REVOKE: 0x12, // Device revocation message
+  DEVICE_REVOKE_ACK: 0x13, // Revocation acknowledgment
+  DEVICE_RENAME: 0x14, // Device rename request
 } as const;
 
 export type MessageTypeValue = (typeof MessageType)[keyof typeof MessageType];
@@ -60,6 +67,50 @@ export interface HistoryHeaderPayload {
 export interface CompactPayload {
   /** Compact all updates up to this sequence */
   upToSequence: number;
+}
+
+// Device management payload interfaces
+
+/** Device revocation message */
+export interface DeviceRevokePayload {
+  /** ID of the device being revoked */
+  deviceId: string;
+  /** Timestamp of revocation */
+  revokedAt: number;
+  /** ID of the device performing revocation */
+  revokedBy: string;
+  /** Optional reason for revocation */
+  reason?: string;
+  /** Ed25519 signature over canonical data */
+  signature: string;
+}
+
+/** Revocation acknowledgment */
+export interface DeviceRevokeAckPayload {
+  /** ID of the revoked device */
+  deviceId: string;
+  /** Whether revocation was accepted */
+  accepted: boolean;
+  /** Optional error message if rejected */
+  error?: string;
+}
+
+/** Device rename request */
+export interface DeviceRenamePayload {
+  /** ID of the device being renamed */
+  deviceId: string;
+  /** New name for the device */
+  newName: string;
+}
+
+/** Device update message (incremental registry changes) */
+export interface DeviceUpdatePayload {
+  /** ID of the device being updated */
+  deviceId: string;
+  /** Last seen timestamp */
+  lastSeen?: number;
+  /** Connection status */
+  connectionStatus?: 'online' | 'offline' | 'connecting';
 }
 
 /**
@@ -110,4 +161,11 @@ export function decodeJsonPayload<T>(payload: Uint8Array): T {
  */
 export function isValidMessageType(type: number): type is MessageTypeValue {
   return Object.values(MessageType).includes(type as MessageTypeValue);
+}
+
+/**
+ * Check if a message type is a device management message
+ */
+export function isDeviceManagementMessage(type: MessageTypeValue): boolean {
+  return type >= MessageType.DEVICE_REGISTRY && type <= MessageType.DEVICE_RENAME;
 }

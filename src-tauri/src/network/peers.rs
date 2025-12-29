@@ -1,14 +1,16 @@
 //! Peer Connection Manager
 //!
 //! Manages active connections to peers for sync message relay.
+//! Includes blocklist checking to prevent connections to revoked devices.
 
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpStream;
-use tokio::sync::{mpsc, RwLock, Mutex};
+use tokio::sync::{mpsc, Mutex, RwLock};
 
+use super::blocklist::DeviceBlocklist;
 use super::client::{PeerConnection, PeerEvent};
 use super::protocol::{encode_message, MessageType};
 use super::state::DiscoveredPeer;
@@ -48,6 +50,8 @@ pub struct PeerManager {
     our_fingerprint: String,
     /// Channel for events
     event_tx: mpsc::Sender<PeerManagerEvent>,
+    /// Device blocklist for filtering revoked devices
+    blocklist: DeviceBlocklist,
 }
 
 /// Events from the peer manager
@@ -70,6 +74,7 @@ impl PeerManager {
         our_device_name: String,
         our_fingerprint: String,
         event_tx: mpsc::Sender<PeerManagerEvent>,
+        blocklist: DeviceBlocklist,
     ) -> Self {
         Self {
             peers: Arc::new(RwLock::new(HashMap::new())),
@@ -77,6 +82,7 @@ impl PeerManager {
             our_device_name,
             our_fingerprint,
             event_tx,
+            blocklist,
         }
     }
 
@@ -91,6 +97,15 @@ impl PeerManager {
             if peers.contains_key(&peer.device_id) {
                 return Ok(()); // Already connected
             }
+        }
+
+        // Check if device is blocked/revoked
+        if self.blocklist.is_blocked(&peer.device_id).await {
+            println!(
+                "[PeerManager] Refusing to connect to blocked device: {}",
+                peer.device_id
+            );
+            return Err("Device has been revoked".into());
         }
 
         // Try each address until one works

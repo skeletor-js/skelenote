@@ -1,0 +1,402 @@
+/* Device Manager */
+.device-manager {
+  padding: var(--spacing-md);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.device-manager__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xs);
+}
+
+.device-manager__title {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.device-manager__refresh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.device-manager__refresh:hover {
+  background: var(--bg-sunken);
+  color: var(--text-primary);
+}
+
+.device-manager__description {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.device-manager__loading,
+.device-manager__empty {
+  padding: var(--spacing-lg);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  text-align: center;
+  background: var(--bg-sunken);
+  border-radius: var(--radius-sm);
+}
+
+.device-manager__error {
+  padding: var(--spacing-sm);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  color: var(--tag-red);
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Device List */
+.device-manager__list {
+  margin-bottom: var(--spacing-md);
+}
+
+.device-manager__list:last-child {
+  margin-bottom: 0;
+}
+
+.device-manager__list--revoked {
+  opacity: 0.7;
+}
+
+.device-manager__list-title {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-sm) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.device-manager__devices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Device Item */
+.device-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: var(--bg-sunken);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-xs);
+  transition: var(--transition-fast);
+}
+
+.device-item:last-child {
+  margin-bottom: 0;
+}
+
+.device-item:hover:not(.device-item--revoked) {
+  background: var(--bg-base);
+}
+
+.device-item--current {
+  border-left: 3px solid var(--tag-green);
+}
+
+.device-item--revoked {
+  opacity: 0.6;
+}
+
+.device-item__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--text-secondary);
+  background: var(--bg-base);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.device-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.device-item__name-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.device-item__name {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.device-item__badge {
+  padding: 2px 6px;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--tag-green);
+  background: rgba(34, 197, 94, 0.15);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.device-item__badge--revoked {
+  color: var(--tag-red);
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.device-item__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: 2px;
+}
+
+.device-item__platform,
+.device-item__last-seen {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.device-item__separator {
+  color: var(--text-muted);
+}
+
+.device-item__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+.device-item__action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.device-item__action:hover {
+  background: var(--bg-raised);
+  color: var(--text-primary);
+}
+
+.device-item__action--danger:hover {
+  color: var(--tag-red);
+}
+
+/* Dialog Overlay */
+.device-dialog__overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Dialog */
+.device-dialog {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.15s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.device-dialog__header {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.device-dialog__title {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.device-dialog__content {
+  padding: var(--spacing-md);
+}
+
+.device-dialog__warning {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--tag-yellow);
+  background: rgba(234, 179, 8, 0.1);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.device-dialog__description {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.device-dialog__description strong {
+  color: var(--text-primary);
+}
+
+.device-dialog__field {
+  margin-bottom: 0;
+}
+
+.device-dialog__label {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.device-dialog__input {
+  width: 100%;
+  padding: var(--spacing-sm);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: var(--transition-fast);
+}
+
+.device-dialog__input:focus {
+  border-color: var(--accent-primary);
+}
+
+.device-dialog__input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.device-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.device-dialog__button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.device-dialog__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.device-dialog__button--primary {
+  color: white;
+  background: var(--accent-primary);
+  border: none;
+}
+
+.device-dialog__button--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.device-dialog__button--secondary {
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+}
+
+.device-dialog__button--secondary:hover:not(:disabled) {
+  background: var(--bg-raised);
+}
+
+.device-dialog__button--danger {
+  color: white;
+  background: var(--tag-red);
+  border: none;
+}
+
+.device-dialog__button--danger:hover:not(:disabled) {
+  background: #dc2626;
+}

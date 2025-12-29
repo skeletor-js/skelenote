@@ -24,6 +24,9 @@ pub enum CryptoError {
 
     #[error("Key derivation failed")]
     KeyDerivationFailed,
+
+    #[error("Signature error: {0}")]
+    SignatureError(String),
 }
 
 /// Errors that can occur during Stronghold operations

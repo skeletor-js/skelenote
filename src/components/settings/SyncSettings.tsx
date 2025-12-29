@@ -9,6 +9,7 @@ import {
   isValidWebSocketUrl,
 } from '@/lib/sync';
 import { LocalSyncSettings } from './LocalSyncSettings';
+import { DeviceManager } from './DeviceManager';
 import './SyncSettings.css';
 
 export function SyncSettings() {
@@ -126,6 +127,10 @@ export function SyncSettings() {
           before leaving this device.
         </p>
       </div>
+
+      <div className="sync-settings__divider" />
+
+      <DeviceManager />
 
       <div className="sync-settings__divider" />
 
