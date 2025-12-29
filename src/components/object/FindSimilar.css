@@ -1,0 +1,114 @@
+/**
+ * Find Similar Section Styles
+ */
+
+.find-similar {
+  margin-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--spacing-md);
+}
+
+.find-similar__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-xs);
+  margin: 0;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.find-similar__header:hover {
+  background: var(--bg-raised);
+}
+
+.find-similar__collapse-icon {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  width: 1em;
+  text-align: center;
+}
+
+.find-similar__title {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0;
+  flex: 1;
+}
+
+.find-similar__badge {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--tag-purple);
+  background: rgba(168, 85, 247, 0.1);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.find-similar__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) 0;
+  padding-left: calc(var(--spacing-sm) + 1em);
+}
+
+.find-similar__loading {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  font-style: italic;
+  padding: var(--spacing-xs) 0;
+}
+
+/* Similar Item styles */
+.find-similar__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.find-similar__item:hover {
+  background: var(--bg-sunken);
+  border-color: var(--border-default);
+}
+
+.find-similar__item-icon {
+  font-size: var(--font-size-base);
+  flex-shrink: 0;
+}
+
+.find-similar__item-name {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.find-similar__item-similarity {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--tag-purple);
+  flex-shrink: 0;
+}
