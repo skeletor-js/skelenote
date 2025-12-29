@@ -7,6 +7,7 @@ import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
 import { SkeletonKeySetup } from '@/components/setup';
 import { TimeMachine, HistoricalObjectView } from '@/components/history';
+import { SearchResultsView } from '@/components/search';
 import { useNavigation, useObjects, useSkeletonKey, useKeyboardShortcuts, type ViewType } from '@/contexts';
 import { useCommandPalette, useTodaysDailyNote } from '@/hooks';
 import { runFirstRunSetup } from '@/lib/first-run';
@@ -28,6 +29,7 @@ function PlaceholderView({ view }: { view: ViewType }) {
     object: 'Object Detail',
     settings: 'Settings',
     'time-machine': 'Time Machine',
+    search: 'Search',
   };
 
   return (
@@ -128,6 +130,11 @@ function PrimaryContent() {
     return <TimeMachine />;
   }
 
+  // Search view
+  if (currentView === 'search') {
+    return <SearchResultsView />;
+  }
+
   return <PlaceholderView view={currentView} />;
 }
 
@@ -177,7 +184,7 @@ function App() {
   const { store, refreshData, saveNow } = useObjects();
   const { isInitialized: isCryptoInitialized, hasSkeletonKey } = useSkeletonKey();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
-  const { splitPane, closeSplit, swapPanes, navigateToView } = useNavigation();
+  const { splitPane, closeSplit, swapPanes, navigateToView, navigateToSearch } = useNavigation();
   const inboxCount = store?.getInboxed().length ?? 0;
   const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
@@ -265,14 +272,24 @@ function App() {
       description: 'Open Time Machine',
     });
 
+    // Cmd+Shift+F to open Search
+    registerShortcut('search', {
+      key: 'f',
+      metaKey: true,
+      shiftKey: true,
+      action: () => navigateToSearch(),
+      description: 'Open Search',
+    });
+
     return () => {
       unregisterShortcut('command-palette');
       unregisterShortcut('close-split');
       unregisterShortcut('swap-panes');
       unregisterShortcut('escape-close-split');
       unregisterShortcut('time-machine');
+      unregisterShortcut('search');
     };
-  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView]);
+  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch]);
 
   // Show loading only during initial crypto initialization
   // (not during subsequent operations like key generation)
