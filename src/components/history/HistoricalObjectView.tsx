@@ -4,8 +4,10 @@
  * Used in the split pane for side-by-side version comparison.
  */
 
-import { useMemo } from 'react';
-import { useObjects, useTypeRegistry, useNavigation } from '@/contexts';
+import { useMemo, useCallback, useState } from 'react';
+import { useObjects, useTypeRegistry, useNavigation, useToast } from '@/contexts';
+import { extractPlainTextFromContent } from '@/lib/search';
+import { RestoreDialog } from './RestoreDialog';
 import type { SkelenoteObject } from '@/lib/types';
 import './HistoricalObjectView.css';
 
@@ -24,26 +26,39 @@ function getObjectTitle(obj: SkelenoteObject): string {
 }
 
 /**
- * Format a date property value
+ * Format a property value for display
  */
-function formatDateValue(value: unknown): string {
-  if (typeof value === 'number') {
-    return new Date(value).toLocaleDateString();
+function formatPropertyValue(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '';
   }
-  if (typeof value === 'string') {
-    const date = new Date(value);
-    if (!isNaN(date.getTime())) {
-      return date.toLocaleDateString();
+  if (typeof value === 'boolean') {
+    return value ? 'Yes' : 'No';
+  }
+  if (typeof value === 'number') {
+    // Check if it looks like a timestamp (ms since epoch)
+    if (value > 1000000000000 && value < 2000000000000) {
+      return new Date(value).toLocaleString();
     }
-    return value;
+    return value.toLocaleString();
+  }
+  if (Array.isArray(value)) {
+    return value.join(', ');
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value);
   }
   return String(value);
 }
 
 export function HistoricalObjectView() {
-  const { docStore } = useObjects();
+  const { docStore, refreshData } = useObjects();
   const { splitPane, closeSplit } = useNavigation();
   const typeRegistry = useTypeRegistry();
+  const { addToast } = useToast();
+
+  // Restore dialog state
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
 
   // Get the historical object from the frontier
   const historicalObject = useMemo((): SkelenoteObject | null => {
@@ -66,6 +81,40 @@ export function HistoricalObjectView() {
     });
   }, [splitPane.historicalTimestamp]);
 
+  // Handle restore
+  const handleRestoreClick = useCallback(() => {
+    setRestoreDialogOpen(true);
+  }, []);
+
+  const handleRestoreConfirm = useCallback(() => {
+    if (!splitPane.historicalFrontier || !splitPane.objectId) return;
+
+    const success = docStore.restoreFromVersion(splitPane.historicalFrontier, {
+      type: 'single',
+      objectId: splitPane.objectId,
+    });
+
+    setRestoreDialogOpen(false);
+
+    if (success) {
+      refreshData();
+      addToast({
+        type: 'success',
+        message: 'Object restored successfully!',
+      });
+      closeSplit();
+    } else {
+      addToast({
+        type: 'error',
+        message: 'Failed to restore. Check the console for details.',
+      });
+    }
+  }, [splitPane.historicalFrontier, splitPane.objectId, docStore, refreshData, addToast, closeSplit]);
+
+  const handleRestoreCancel = useCallback(() => {
+    setRestoreDialogOpen(false);
+  }, []);
+
   if (!historicalObject) {
     return (
       <div className="historical-object-view historical-object-view--empty">
@@ -80,13 +129,30 @@ export function HistoricalObjectView() {
   const typeName = typeDef?.name ?? historicalObject.typeId;
   const title = getObjectTitle(historicalObject);
 
-  // Get content text if available
-  const contentText = historicalObject.properties.content as string | undefined;
+  // Get content text if available and parse it from BlockNote JSON
+  const rawContent = historicalObject.properties.content as string | undefined;
+  const contentText = rawContent ? extractPlainTextFromContent(rawContent) : null;
 
-  // Get properties to display (exclude content)
-  const displayProperties = Object.entries(historicalObject.properties).filter(
-    ([key]) => !['content'].includes(key)
-  );
+  // Get property definitions from type schema for proper labels
+  const propertyDisplays = useMemo(() => {
+    if (!typeDef) {
+      // If no type def, show all properties except content
+      return Object.entries(historicalObject.properties)
+        .filter(([key]) => key !== 'content')
+        .map(([key, value]) => ({
+          id: key,
+          label: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
+          value: formatPropertyValue(value),
+        }));
+    }
+
+    // Use schema to get proper labels
+    return typeDef.schema.map((propDef) => ({
+      id: propDef.id,
+      label: propDef.name,
+      value: formatPropertyValue(historicalObject.properties[propDef.id]),
+    }));
+  }, [typeDef, historicalObject.properties]);
 
   return (
     <div className="historical-object-view">
@@ -114,50 +180,52 @@ export function HistoricalObjectView() {
 
         <div className="historical-object-view__meta">
           <span className="historical-object-view__type-badge">{typeName}</span>
+          <button
+            className="historical-object-view__restore-btn"
+            onClick={handleRestoreClick}
+            title="Restore this object to this historical state"
+          >
+            Restore This
+          </button>
         </div>
 
         {/* Properties Section */}
-        {displayProperties.length > 0 && (
+        {propertyDisplays.length > 0 && (
           <div className="historical-object-view__section">
             <h3 className="historical-object-view__section-title">Properties</h3>
             <div className="historical-object-view__properties">
-              {displayProperties.map(([key, value]) => {
-                let displayValue: string;
-                if (value === null || value === undefined) {
-                  displayValue = '—';
-                } else if (key.toLowerCase().includes('date') || key === 'dueDate' || key === 'scheduledDate') {
-                  displayValue = formatDateValue(value);
-                } else if (typeof value === 'boolean') {
-                  displayValue = value ? 'Yes' : 'No';
-                } else if (typeof value === 'object') {
-                  displayValue = JSON.stringify(value);
-                } else {
-                  displayValue = String(value);
-                }
-
-                return (
-                  <div key={key} className="historical-object-view__prop-row">
-                    <span className="historical-object-view__prop-label">{key}</span>
-                    <span className={`historical-object-view__prop-value ${value === null || value === undefined ? 'historical-object-view__prop-value--empty' : ''}`}>
-                      {displayValue}
-                    </span>
-                  </div>
-                );
-              })}
+              {propertyDisplays.map(({ id, label, value }) => (
+                <div key={id} className="historical-object-view__prop-row">
+                  <span className="historical-object-view__prop-label">{label}</span>
+                  <span className={`historical-object-view__prop-value ${!value ? 'historical-object-view__prop-value--empty' : ''}`}>
+                    {value || '(empty)'}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
         {/* Content Section */}
-        {contentText !== undefined && (
+        {historicalObject.hasContent && (
           <div className="historical-object-view__section">
             <h3 className="historical-object-view__section-title">Content</h3>
             <div className={`historical-object-view__text-content ${!contentText ? 'historical-object-view__text-content--empty' : ''}`}>
-              {contentText || 'No content'}
+              {contentText || '(No content at this point in time)'}
             </div>
           </div>
         )}
       </div>
+
+      {/* Restore Dialog */}
+      <RestoreDialog
+        isOpen={restoreDialogOpen}
+        scope="single"
+        timestamp={splitPane.historicalTimestamp ?? 0}
+        objectTitle={title}
+        onConfirm={handleRestoreConfirm}
+        onCancel={handleRestoreCancel}
+      />
     </div>
   );
 }

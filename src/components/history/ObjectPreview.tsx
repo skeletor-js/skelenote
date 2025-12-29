@@ -4,6 +4,7 @@
 
 import { useMemo } from 'react';
 import { useTypeRegistry, useObjects } from '@/contexts';
+import { extractPlainTextFromContent } from '@/lib/search';
 import type { ObjectPreviewProps } from './types';
 import './ObjectPreview.css';
 
@@ -62,13 +63,14 @@ export function ObjectPreview({
   const typeName = typeDef?.name ?? object.typeId;
   const title = getObjectTitle(object);
 
-  // Get content - it's stored as a property in the historical object
+  // Get content - it's stored as a property in the historical object (BlockNote JSON)
   const content = useMemo(() => {
     if (!object.hasContent) return null;
-    // Content is stored in properties.content for historical objects
+    // Content is stored in properties.content for historical objects as BlockNote JSON
     const contentValue = object.properties.content;
     if (typeof contentValue === 'string') {
-      return contentValue;
+      // Parse BlockNote JSON to plain text
+      return extractPlainTextFromContent(contentValue);
     }
     return null;
   }, [object.hasContent, object.properties.content]);
@@ -76,12 +78,14 @@ export function ObjectPreview({
   // Get property definitions for display
   const propertyDisplays = useMemo(() => {
     if (!typeDef) {
-      // If no type def, show all properties
-      return Object.entries(object.properties).map(([key, value]) => ({
-        id: key,
-        label: key.charAt(0).toUpperCase() + key.slice(1),
-        value: formatPropertyValue(value),
-      }));
+      // If no type def, show all properties except content (shown separately)
+      return Object.entries(object.properties)
+        .filter(([key]) => key !== 'content')
+        .map(([key, value]) => ({
+          id: key,
+          label: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
+          value: formatPropertyValue(value),
+        }));
     }
 
     // Use schema to get proper labels
