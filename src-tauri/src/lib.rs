@@ -1,15 +1,18 @@
 //! Skelenote Tauri backend
 //!
-//! Provides cryptographic operations for zero-knowledge sync.
+//! Provides cryptographic operations for zero-knowledge sync
+//! and local network sync capabilities.
 
 mod crypto;
+mod network;
 
 use crypto::{
     derive_sync_key, derive_user_id, encrypt_bytes, decrypt_bytes, generate_mnemonic, generate_mnemonic_qr,
     mnemonic_to_master_key, parse_qr_payload, validate_mnemonic, StrongholdManager,
 };
+use network::{LocalSyncServer, MdnsHandle, NetworkState, DiscoveredPeer};
 use std::sync::Mutex;
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 use zeroize::Zeroizing;
 
 /// Shared crypto state managed by Tauri
@@ -199,6 +202,468 @@ fn crypto_clear_key(state: State<'_, CryptoState>) -> Result<(), String> {
 // The in-app QuickCapture modal (via Cmd+K Command Palette) works and is the
 // recommended approach for now.
 
+// ============================================================================
+// Network Commands - Local Network Sync
+// ============================================================================
+
+/// Derive fingerprint from user ID for peer verification
+///
+/// Returns first 8 characters of SHA-256 hash of user ID.
+fn derive_fingerprint(user_id: &str) -> String {
+    use sha2::{Sha256, Digest};
+    let hash = Sha256::digest(user_id.as_bytes());
+    hex::encode(&hash[..4]) // 8 hex chars
+}
+
+/// Start the local sync TCP server
+///
+/// Returns the port number the server is listening on.
+#[tauri::command]
+async fn network_start_server(
+    app: AppHandle,
+    crypto_state: State<'_, CryptoState>,
+    network_state: State<'_, NetworkState>,
+) -> Result<u16, String> {
+    // Check if server is already running
+    {
+        let server = network_state.server.read().await;
+        if server.is_some() {
+            return Err("Server already running".to_string());
+        }
+    }
+
+    // Get fingerprint from user ID
+    let fingerprint = {
+        let stronghold_guard = crypto_state.stronghold.lock().unwrap();
+        let manager = stronghold_guard
+            .as_ref()
+            .ok_or("Crypto not initialized - call crypto_init first")?;
+        let master_key = manager.get_master_key().map_err(|e| e.to_string())?;
+        let user_id = derive_user_id(&master_key);
+        derive_fingerprint(&user_id)
+    };
+
+    // Store fingerprint
+    {
+        let mut fp = network_state.fingerprint.write().await;
+        *fp = Some(fingerprint.clone());
+    }
+
+    // Get device info
+    let device_id = network_state.device_id.read().await.clone();
+    let device_name = network_state.device_name.read().await.clone();
+    let connected_peers = network_state.connected_peers.clone();
+    let peer_streams = network_state.peer_streams.clone();
+
+    // Start the server
+    let (handle, mut event_rx, port) = LocalSyncServer::start(
+        device_id,
+        device_name,
+        fingerprint,
+        connected_peers,
+        peer_streams,
+    ).await.map_err(|e| e.to_string())?;
+
+    // Store the server handle
+    {
+        let mut server = network_state.server.write().await;
+        *server = Some(handle);
+    }
+
+    // Spawn event handler to emit events to frontend
+    let app_handle = app.clone();
+    tokio::spawn(async move {
+        while let Some(event) = event_rx.recv().await {
+            match event {
+                network::server::ServerEvent::PeerConnected { device_id, device_name, address } => {
+                    let _ = app_handle.emit("local-peer-connected", serde_json::json!({
+                        "deviceId": device_id,
+                        "deviceName": device_name,
+                        "address": address,
+                    }));
+                }
+                network::server::ServerEvent::PeerDisconnected { device_id } => {
+                    let _ = app_handle.emit("local-peer-disconnected", serde_json::json!({
+                        "deviceId": device_id,
+                    }));
+                }
+                network::server::ServerEvent::MessageReceived { device_id, msg_type, payload } => {
+                    let _ = app_handle.emit("local-sync-message", serde_json::json!({
+                        "deviceId": device_id,
+                        "msgType": msg_type,
+                        "payload": payload,
+                    }));
+                }
+                network::server::ServerEvent::Error { message } => {
+                    let _ = app_handle.emit("local-sync-error", serde_json::json!({
+                        "message": message,
+                    }));
+                }
+            }
+        }
+    });
+
+    Ok(port)
+}
+
+/// Stop the local sync TCP server
+#[tauri::command]
+async fn network_stop_server(
+    network_state: State<'_, NetworkState>,
+) -> Result<(), String> {
+    let mut server = network_state.server.write().await;
+    if let Some(handle) = server.take() {
+        // Send shutdown signal (receiver will be dropped, causing the accept loop to exit)
+        let _ = handle.shutdown_tx.send(());
+    }
+    Ok(())
+}
+
+/// Get server info (running status and port)
+#[tauri::command]
+async fn network_get_server_info(
+    network_state: State<'_, NetworkState>,
+) -> Result<network::state::ServerInfo, String> {
+    Ok(network_state.get_server_info().await)
+}
+
+/// Get list of connected peers
+#[tauri::command]
+async fn network_get_connected_peers(
+    network_state: State<'_, NetworkState>,
+) -> Result<Vec<network::state::ConnectedPeer>, String> {
+    let peers = network_state.connected_peers.read().await;
+    Ok(peers.values().cloned().collect())
+}
+
+/// Get this device's info
+#[tauri::command]
+async fn network_get_device_info(
+    network_state: State<'_, NetworkState>,
+) -> Result<serde_json::Value, String> {
+    let device_id = network_state.device_id.read().await.clone();
+    let device_name = network_state.device_name.read().await.clone();
+    let fingerprint = network_state.fingerprint.read().await.clone();
+    let server_info = network_state.get_server_info().await;
+
+    Ok(serde_json::json!({
+        "deviceId": device_id,
+        "deviceName": device_name,
+        "fingerprint": fingerprint,
+        "server": server_info,
+    }))
+}
+
+// ============================================================================
+// mDNS Discovery Commands
+// ============================================================================
+
+/// Start mDNS discovery and advertising
+///
+/// Advertises this device on the local network and starts browsing for peers.
+/// Requires the TCP server to be running first (to know the port to advertise).
+#[tauri::command]
+async fn network_start_discovery(
+    app: AppHandle,
+    crypto_state: State<'_, CryptoState>,
+    network_state: State<'_, NetworkState>,
+) -> Result<(), String> {
+    // Check if already running
+    if network_state.is_mdns_running().await {
+        return Err("mDNS discovery already running".to_string());
+    }
+
+    // Get server port - server must be running
+    let port = {
+        let server = network_state.server.read().await;
+        server
+            .as_ref()
+            .map(|h| h.port)
+            .ok_or("Server must be running before starting discovery")?
+    };
+
+    // Get fingerprint from user ID
+    let fingerprint = {
+        let stronghold_guard = crypto_state.stronghold.lock().unwrap();
+        let manager = stronghold_guard
+            .as_ref()
+            .ok_or("Crypto not initialized - call crypto_init first")?;
+        let master_key = manager.get_master_key().map_err(|e| e.to_string())?;
+        let user_id = derive_user_id(&master_key);
+        derive_fingerprint(&user_id)
+    };
+
+    // Get device info
+    let device_id = network_state.device_id.read().await.clone();
+    let device_name = network_state.device_name.read().await.clone();
+    let discovered_peers = network_state.discovered_peers.clone();
+
+    // Start mDNS
+    let (handle, mut event_rx) = MdnsHandle::start(
+        device_id,
+        device_name,
+        port,
+        fingerprint,
+    )?;
+
+    // Store the handle
+    {
+        let mut mdns = network_state.mdns.write().await;
+        mdns.handle = Some(handle);
+    }
+
+    // Spawn event handler to emit events to frontend and update discovered peers
+    let app_handle = app.clone();
+    tokio::spawn(async move {
+        while let Some(event) = event_rx.recv().await {
+            match event {
+                network::mdns::MdnsEvent::PeerDiscovered(peer) => {
+                    // Add to discovered peers map
+                    {
+                        let mut peers = discovered_peers.write().await;
+                        peers.insert(peer.device_id.clone(), peer.clone());
+                    }
+                    // Emit to frontend
+                    let _ = app_handle.emit("local-peer-discovered", serde_json::json!({
+                        "deviceId": peer.device_id,
+                        "deviceName": peer.device_name,
+                        "addresses": peer.addresses,
+                        "port": peer.port,
+                        "fingerprint": peer.fingerprint,
+                    }));
+                }
+                network::mdns::MdnsEvent::PeerLost { device_id } => {
+                    // Remove from discovered peers map
+                    {
+                        let mut peers = discovered_peers.write().await;
+                        peers.remove(&device_id);
+                    }
+                    // Emit to frontend
+                    let _ = app_handle.emit("local-peer-lost", serde_json::json!({
+                        "deviceId": device_id,
+                    }));
+                }
+                network::mdns::MdnsEvent::Error { message } => {
+                    let _ = app_handle.emit("local-discovery-error", serde_json::json!({
+                        "message": message,
+                    }));
+                }
+            }
+        }
+    });
+
+    Ok(())
+}
+
+/// Stop mDNS discovery and advertising
+#[tauri::command]
+async fn network_stop_discovery(
+    network_state: State<'_, NetworkState>,
+) -> Result<(), String> {
+    // Take the handle
+    let handle = {
+        let mut mdns = network_state.mdns.write().await;
+        mdns.handle.take()
+    };
+
+    // Stop if running
+    if let Some(handle) = handle {
+        handle.stop().await?;
+    }
+
+    // Clear discovered peers
+    {
+        let mut peers = network_state.discovered_peers.write().await;
+        peers.clear();
+    }
+
+    Ok(())
+}
+
+/// Get list of discovered peers on the local network
+#[tauri::command]
+async fn network_get_discovered_peers(
+    network_state: State<'_, NetworkState>,
+) -> Result<Vec<DiscoveredPeer>, String> {
+    let peers = network_state.discovered_peers.read().await;
+    Ok(peers.values().cloned().collect())
+}
+
+/// Check if mDNS discovery is running
+#[tauri::command]
+async fn network_is_discovery_running(
+    network_state: State<'_, NetworkState>,
+) -> Result<bool, String> {
+    Ok(network_state.is_mdns_running().await)
+}
+
+// ============================================================================
+// Peer Connection Commands
+// ============================================================================
+
+/// Connect to a discovered peer by device ID
+#[tauri::command]
+async fn network_connect_to_peer(
+    device_id: String,
+    app: tauri::AppHandle,
+    network_state: State<'_, NetworkState>,
+) -> Result<(), String> {
+    use std::net::SocketAddr;
+    use network::client::PeerConnection;
+    use network::protocol::MessageType;
+
+    println!("[Connect] Attempting to connect to peer: {}", device_id);
+
+    // Get the peer info from discovered peers
+    let peer = {
+        let peers = network_state.discovered_peers.read().await;
+        peers.get(&device_id).cloned()
+    };
+
+    let peer = peer.ok_or_else(|| format!("Peer not found: {}", device_id))?;
+    println!("[Connect] Found peer: {} at {:?}:{}", peer.device_name, peer.addresses, peer.port);
+
+    // Get our device info
+    let our_device_id = network_state.device_id.read().await.clone();
+    let our_device_name = network_state.device_name.read().await.clone();
+    let our_fingerprint = network_state.fingerprint.read().await
+        .clone()
+        .ok_or("No fingerprint set - start discovery first")?;
+
+    // Try each address until one works
+    let mut last_error = String::from("No addresses to try");
+    for addr_str in &peer.addresses {
+        // Parse the IP address and add the port
+        let addr: SocketAddr = match format!("{}:{}", addr_str, peer.port).parse() {
+            Ok(a) => a,
+            Err(e) => {
+                println!("[Connect] Invalid address {}: {}", addr_str, e);
+                continue;
+            }
+        };
+
+        println!("[Connect] Trying {}...", addr);
+
+        match PeerConnection::connect(
+            addr,
+            our_device_id.clone(),
+            our_device_name.clone(),
+            our_fingerprint.clone(),
+        ).await {
+            Ok((connection, mut event_rx)) => {
+                println!("[Connect] Connected to {} ({})", connection.device_name, connection.device_id);
+
+                let peer_device_id = connection.device_id.clone();
+                let peer_device_name = connection.device_name.clone();
+
+                // Store in connected peers
+                {
+                    let mut peers = network_state.connected_peers.write().await;
+                    peers.insert(peer_device_id.clone(), network::state::ConnectedPeer {
+                        device_id: peer_device_id.clone(),
+                        device_name: peer_device_name.clone(),
+                        address: addr.to_string(),
+                        connected_at: std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap()
+                            .as_secs(),
+                    });
+                }
+
+                // Store the write stream in peer_streams so broadcast_sync can send to it
+                let write_stream = connection.get_write_stream();
+                network_state.add_peer_write_stream_arc(peer_device_id.clone(), write_stream).await;
+                println!("[Connect] Added write stream to peer_streams for {}", peer_device_id);
+
+                // Emit connected event
+                println!("[Connect] Emitting local-peer-connected event for {}", peer_device_id);
+                match app.emit("local-peer-connected", serde_json::json!({
+                    "deviceId": peer_device_id.clone(),
+                    "deviceName": peer_device_name.clone(),
+                    "address": addr.to_string(),
+                })) {
+                    Ok(()) => println!("[Connect] Event emitted successfully"),
+                    Err(e) => println!("[Connect] Failed to emit event: {:?}", e),
+                }
+
+                // Spawn event handler for incoming messages
+                let app_clone = app.clone();
+                let peer_id_clone = peer_device_id.clone();
+                let connected_peers = network_state.connected_peers.clone();
+                let peer_streams = network_state.peer_streams.clone();
+                tokio::spawn(async move {
+                    while let Some(event) = event_rx.recv().await {
+                        match event {
+                            network::client::PeerEvent::MessageReceived { msg_type, payload } => {
+                                if msg_type == MessageType::Update as u8 {
+                                    let _ = app_clone.emit("local-sync-message", serde_json::json!({
+                                        "deviceId": peer_id_clone,
+                                        "msgType": msg_type,
+                                        "payload": payload,
+                                    }));
+                                }
+                            }
+                            network::client::PeerEvent::Disconnected => {
+                                // Remove from connected peers
+                                {
+                                    let mut peers = connected_peers.write().await;
+                                    peers.remove(&peer_id_clone);
+                                }
+                                // Remove from peer streams
+                                {
+                                    let mut streams = peer_streams.write().await;
+                                    streams.remove(&peer_id_clone);
+                                }
+                                let _ = app_clone.emit("local-peer-disconnected", serde_json::json!({
+                                    "deviceId": peer_id_clone,
+                                }));
+                                break;
+                            }
+                            network::client::PeerEvent::Error { message } => {
+                                eprintln!("[Connect] Peer error: {}", message);
+                            }
+                            _ => {}
+                        }
+                    }
+                });
+
+                return Ok(());
+            }
+            Err(e) => {
+                println!("[Connect] Failed to connect to {}: {}", addr, e);
+                last_error = e.to_string();
+            }
+        }
+    }
+
+    Err(format!("Failed to connect to peer: {}", last_error))
+}
+
+// ============================================================================
+// Sync Relay Commands
+// ============================================================================
+
+/// Broadcast sync data to all connected local peers
+///
+/// The data should be encrypted Loro update bytes.
+/// Returns the number of peers the data was sent to.
+#[tauri::command]
+async fn network_broadcast_sync(
+    data: Vec<u8>,
+    network_state: State<'_, NetworkState>,
+) -> Result<usize, String> {
+    let count = network_state.broadcast_sync(&data).await;
+    Ok(count)
+}
+
+/// Get number of connected peers for sync
+#[tauri::command]
+async fn network_peer_count(
+    network_state: State<'_, NetworkState>,
+) -> Result<usize, String> {
+    Ok(network_state.peer_count().await)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -208,8 +673,10 @@ pub fn run() {
             stronghold: Mutex::new(None),
             sync_key: Mutex::new(None),
         })
+        .manage(NetworkState::new())
         .invoke_handler(tauri::generate_handler![
             greet,
+            // Crypto commands
             crypto_init,
             crypto_generate_key,
             crypto_import_key,
@@ -221,6 +688,22 @@ pub fn run() {
             crypto_validate_mnemonic,
             crypto_get_user_id,
             crypto_clear_key,
+            // Network commands
+            network_start_server,
+            network_stop_server,
+            network_get_server_info,
+            network_get_connected_peers,
+            network_get_device_info,
+            // mDNS Discovery commands
+            network_start_discovery,
+            network_stop_discovery,
+            network_get_discovered_peers,
+            network_is_discovery_running,
+            // Peer Connection commands
+            network_connect_to_peer,
+            // Sync Relay commands
+            network_broadcast_sync,
+            network_peer_count,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

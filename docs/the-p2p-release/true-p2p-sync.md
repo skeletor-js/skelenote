@@ -1,5 +1,7 @@
 # Local Network Sync
 
+> **Status: IMPLEMENTED**
+
 > Direct device-to-device sync on your local network with zero external dependencies. Your data never leaves your WiFi.
 
 ---

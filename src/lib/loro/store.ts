@@ -15,6 +15,8 @@ export class LoroDocStore {
   private onRemoteChangeCallback: (() => void) | null = null;
   private isImporting = false; // Flag to prevent sync loops
   private syncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private localSyncBroadcast: ((data: Uint8Array) => Promise<number>) | null = null;
+  private localSyncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   /**
    * Initialize the store by setting up the data directory
@@ -161,24 +163,49 @@ export class LoroDocStore {
   /**
    * Broadcast current state to connected devices (debounced, no disk write)
    * Call this frequently - it will debounce to avoid flooding
+   * Broadcasts to both cloud sync and local network peers
    */
   sync(): void {
-    if (!this.syncClient || !this.isSyncConnected() || this.isImporting) {
+    if (this.isImporting) {
+      console.log('[LoroDocStore] sync() skipped - isImporting');
       return;
     }
 
-    // Debounce: wait 100ms before actually sending
-    if (this.syncDebounceTimer) {
-      clearTimeout(this.syncDebounceTimer);
+    // Cloud sync (debounced)
+    if (this.syncClient && this.isSyncConnected()) {
+      if (this.syncDebounceTimer) {
+        clearTimeout(this.syncDebounceTimer);
+      }
+
+      this.syncDebounceTimer = setTimeout(() => {
+        this.syncDebounceTimer = null;
+        if (this.syncClient && this.isSyncConnected() && !this.isImporting) {
+          const data = this.exportAll();
+          this.syncClient.sendUpdate(data);
+        }
+      }, 100);
     }
 
-    this.syncDebounceTimer = setTimeout(() => {
-      this.syncDebounceTimer = null;
-      if (this.syncClient && this.isSyncConnected() && !this.isImporting) {
-        const data = this.exportAll();
-        this.syncClient.sendUpdate(data);
+    // Local network sync (debounced separately, faster)
+    console.log('[LoroDocStore] sync() called, localSyncBroadcast =', !!this.localSyncBroadcast);
+    if (this.localSyncBroadcast) {
+      if (this.localSyncDebounceTimer) {
+        clearTimeout(this.localSyncDebounceTimer);
       }
-    }, 100);
+
+      this.localSyncDebounceTimer = setTimeout(() => {
+        this.localSyncDebounceTimer = null;
+        if (this.localSyncBroadcast && !this.isImporting) {
+          const data = this.exportAll();
+          console.log('[LoroDocStore] Broadcasting local sync, data size:', data.length);
+          this.localSyncBroadcast(data).then((count) => {
+            console.log('[LoroDocStore] Broadcast sent to', count, 'peers');
+          }).catch((err) => {
+            console.warn('[LoroDocStore] Local sync broadcast failed:', err);
+          });
+        }
+      }, 50); // Faster debounce for local network (lower latency)
+    }
   }
 
   /**
@@ -222,7 +249,7 @@ export class LoroDocStore {
   }
 
   /**
-   * Set the sync client for cross-device synchronization
+   * Set the sync client for cross-device synchronization (cloud relay)
    */
   setSyncClient(client: SyncClient): void {
     this.syncClient = client;
@@ -241,6 +268,43 @@ export class LoroDocStore {
     client.onHistory((updates: Uint8Array[]) => {
       this.applyHistoricalUpdates(updates);
     });
+  }
+
+  /**
+   * Set the local network sync broadcast function
+   * This is called by LocalSyncContext to wire up local peer broadcasting
+   */
+  setLocalSyncBroadcast(broadcast: ((data: Uint8Array) => Promise<number>) | null): void {
+    this.localSyncBroadcast = broadcast;
+  }
+
+  /**
+   * Handle an update received from a local network peer
+   * Uses the same CRDT merge logic as cloud sync
+   */
+  handleLocalSyncUpdate(data: Uint8Array): void {
+    console.log('[LoroDocStore] Received local sync update, size:', data.length);
+    this.isImporting = true;
+    try {
+      // Try to import as a full snapshot (JSON-wrapped)
+      if (this.isJsonWrapped(data)) {
+        this.importAll(data);
+        console.log('[LoroDocStore] Local sync import successful');
+      } else {
+        // Raw Loro binary
+        this.importRaw(data);
+        console.log('[LoroDocStore] Local sync raw import successful');
+      }
+
+      // Notify listeners that data has changed
+      if (this.onRemoteChangeCallback) {
+        this.onRemoteChangeCallback();
+      }
+    } catch (err) {
+      console.warn('[LoroDocStore] Failed to import local sync update:', err);
+    } finally {
+      this.isImporting = false;
+    }
   }
 
   /**

@@ -8,6 +8,7 @@ import {
   setSyncServerUrl,
   isValidWebSocketUrl,
 } from '@/lib/sync';
+import { LocalSyncSettings } from './LocalSyncSettings';
 import './SyncSettings.css';
 
 export function SyncSettings() {
@@ -93,31 +94,6 @@ export function SyncSettings() {
       <h2 className="sync-settings__title">Sync Settings</h2>
 
       <div className="sync-settings__section">
-        <label className="sync-settings__label">Sync Server URL</label>
-        <div className="sync-settings__input-row">
-          <input
-            type="text"
-            className="sync-settings__input"
-            placeholder="wss://your-worker.workers.dev"
-            value={serverUrl}
-            onChange={(e) => setServerUrl(e.target.value)}
-            disabled={isConnected}
-          />
-        </div>
-        {urlError && <p className="sync-settings__error">{urlError}</p>}
-      </div>
-
-      <div className="sync-settings__section">
-        <label className="sync-settings__label">Status</label>
-        <div className="sync-settings__status">
-          <span
-            className={`sync-settings__status-dot sync-settings__status-dot--${status}`}
-          />
-          <span>{getStatusLabel()}</span>
-        </div>
-      </div>
-
-      <div className="sync-settings__section">
         <label className="sync-settings__label">Encryption</label>
         <div className="sync-settings__encryption">
           {hasSkeletonKey ? (
@@ -146,12 +122,47 @@ export function SyncSettings() {
           )}
         </div>
         <p className="sync-settings__help">
-          Your notes are encrypted before leaving this device. The sync server
-          cannot read your data.
+          All sync methods use end-to-end encryption. Your data is encrypted
+          before leaving this device.
         </p>
       </div>
 
+      <div className="sync-settings__divider" />
+
+      <LocalSyncSettings />
+
+      <div className="sync-settings__divider" />
+
       <div className="sync-settings__section">
+        <label className="sync-settings__label">Cloud Relay</label>
+        <p className="sync-settings__help">
+          Sync through a relay server when devices aren't on the same network.
+        </p>
+
+        <div className="sync-settings__subsection">
+          <label className="sync-settings__sublabel">Server URL</label>
+          <div className="sync-settings__input-row">
+            <input
+              type="text"
+              className="sync-settings__input"
+              placeholder="wss://your-worker.workers.dev"
+              value={serverUrl}
+              onChange={(e) => setServerUrl(e.target.value)}
+              disabled={isConnected}
+            />
+          </div>
+          {urlError && <p className="sync-settings__error">{urlError}</p>}
+        </div>
+
+        <div className="sync-settings__subsection">
+          <div className="sync-settings__status">
+            <span
+              className={`sync-settings__status-dot sync-settings__status-dot--${status}`}
+            />
+            <span>{getStatusLabel()}</span>
+          </div>
+        </div>
+
         <div className="sync-settings__button-row">
           {isConnected ? (
             <button

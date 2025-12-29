@@ -9,6 +9,7 @@ import {
   SyncProvider,
   ToastProvider,
   SkeletonKeyProvider,
+  LocalSyncProvider,
 } from '@/contexts';
 import { ToastContainer } from '@/components/ui';
 import { migrateLocalStorageKeys } from '@/lib/migration';
@@ -23,13 +24,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <ToastProvider>
         <SkeletonKeyProvider>
           <ObjectProvider>
-            <SyncProvider>
-              <NavigationProvider>
-                <SidebarProvider>
-                  <App />
-                </SidebarProvider>
-              </NavigationProvider>
-            </SyncProvider>
+            <LocalSyncProvider>
+              <SyncProvider>
+                <NavigationProvider>
+                  <SidebarProvider>
+                    <App />
+                  </SidebarProvider>
+                </NavigationProvider>
+              </SyncProvider>
+            </LocalSyncProvider>
           </ObjectProvider>
         </SkeletonKeyProvider>
         <ToastContainer />
