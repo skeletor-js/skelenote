@@ -1,0 +1,196 @@
+/* Semantic Enable Modal */
+
+.semantic-modal__backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  z-index: 1000;
+}
+
+.semantic-modal {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.semantic-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.semantic-modal__title {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.semantic-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.semantic-modal__close:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.semantic-modal__body {
+  padding: var(--spacing-lg);
+}
+
+.semantic-modal__description {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-md) 0;
+  line-height: 1.5;
+}
+
+.semantic-modal__section {
+  margin-bottom: var(--spacing-md);
+}
+
+.semantic-modal__section:last-child {
+  margin-bottom: 0;
+}
+
+.semantic-modal__section-title {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-xs) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.semantic-modal__list {
+  margin: 0;
+  padding: 0 0 0 var(--spacing-lg);
+  list-style: disc;
+}
+
+.semantic-modal__list li {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.4;
+}
+
+.semantic-modal__list li:last-child {
+  margin-bottom: 0;
+}
+
+.semantic-modal__error {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--tag-red);
+  margin: 0 0 var(--spacing-sm) 0;
+  padding: var(--spacing-sm);
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: var(--radius-sm);
+}
+
+.semantic-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-sunken);
+}
+
+.semantic-modal__button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.semantic-modal__button--primary {
+  color: var(--bg-base);
+  background: var(--text-primary);
+  border: 1px solid var(--text-primary);
+}
+
+.semantic-modal__button--primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.semantic-modal__button--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.semantic-modal__button--secondary {
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+}
+
+.semantic-modal__button--secondary:hover {
+  background: var(--surface-hover);
+}
+
+/* Progress bar */
+.semantic-modal__progress {
+  margin-top: var(--spacing-md);
+}
+
+.semantic-modal__progress-bar {
+  height: 4px;
+  background: var(--bg-sunken);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: var(--spacing-sm);
+}
+
+.semantic-modal__progress-fill {
+  height: 100%;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.semantic-modal__progress-text {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.semantic-modal__progress-count {
+  color: var(--text-muted);
+}

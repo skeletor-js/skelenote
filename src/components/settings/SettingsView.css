@@ -23,3 +23,9 @@
   overflow-y: auto;
   padding: var(--spacing-xl);
 }
+
+.settings-view__divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 24px 0;
+}

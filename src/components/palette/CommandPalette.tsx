@@ -37,8 +37,10 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Search mode state
+  // Search mode state (explicit search mode for dedicated search)
   const [isSearchMode, setIsSearchMode] = useState(false);
+
+  // Unified search - used for both normal mode object search and explicit search mode
   const {
     query: searchQuery,
     setQuery: setSearchQuery,
@@ -56,17 +58,46 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture }: CommandPalet
     return sortByRelevance(store.getAll());
   }, [store]);
 
+  // Sync normal mode query with search hook
+  useEffect(() => {
+    if (!isSearchMode && query.trim()) {
+      setSearchQuery(query);
+    }
+  }, [query, isSearchMode, setSearchQuery]);
+
   // Filter and combine results (normal mode)
   const filteredActions = useMemo(() => {
     // Filter static actions
     const filteredStatic = filterActions(staticActions, query);
 
-    // Search objects (only when there's a query)
-    const objectResults = searchObjects(allObjects, query, typeRegistry, 8);
+    // If there's a query and we have search results (including semantic), use them
+    // Otherwise fall back to basic object search
+    const hasQuery = query.trim().length > 0;
+    let objectResults: PaletteAction[];
+
+    if (hasQuery && searchResults.length > 0) {
+      // Convert search results to palette actions
+      objectResults = searchResults.slice(0, 8).map((result) => {
+        const typeDef = typeRegistry.get(result.item.typeId);
+        return {
+          id: `object-${result.item.id}`,
+          label: result.item.title || 'Untitled',
+          icon: typeDef?.icon ?? '📄',
+          category: 'object' as const,
+          objectId: result.item.id,
+          // Include semantic info for display
+          matchType: result.matchType,
+          semanticScore: result.semanticScore,
+        };
+      });
+    } else {
+      // Fall back to basic search for immediate results
+      objectResults = searchObjects(allObjects, query, typeRegistry, 8);
+    }
 
     // Combine: static actions first, then object results
     return [...filteredStatic, ...objectResults];
-  }, [staticActions, allObjects, typeRegistry, query]);
+  }, [staticActions, allObjects, typeRegistry, query, searchResults]);
 
   // Items to display (depends on mode)
   const displayItemCount = isSearchMode ? searchResults.length : filteredActions.length;

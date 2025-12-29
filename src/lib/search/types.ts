@@ -32,15 +32,24 @@ export interface SearchMatch {
 }
 
 /**
+ * How a result was matched
+ */
+export type MatchType = 'text' | 'semantic' | 'hybrid';
+
+/**
  * A search result with matching information
  */
 export interface SearchResult {
   /** The matched item */
   item: SearchableItem;
-  /** Search relevance score (lower is better in Fuse.js) */
+  /** Search relevance score (lower is better in Fuse.js, normalized 0-1 for combined) */
   score: number;
   /** Match details for highlighting */
   matches: SearchMatch[];
+  /** How this result was matched (text, semantic, or hybrid) */
+  matchType?: MatchType;
+  /** Semantic similarity score (0-1, only present for semantic/hybrid matches) */
+  semanticScore?: number;
 }
 
 /**

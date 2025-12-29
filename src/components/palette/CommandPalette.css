@@ -127,6 +127,17 @@
   text-transform: capitalize;
 }
 
+/* Semantic match badge */
+.palette-item__semantic-badge {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--tag-purple);
+  background: rgba(168, 85, 247, 0.1);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+}
+
 /* Keyboard hint footer */
 .command-palette__footer {
   display: flex;
