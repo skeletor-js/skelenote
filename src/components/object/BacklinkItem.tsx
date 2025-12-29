@@ -11,7 +11,7 @@ interface BacklinkItemProps {
 
 export function BacklinkItem({ sourceId, propertyName }: BacklinkItemProps) {
   const { store } = useObjects();
-  const { navigateToObject } = useNavigation();
+  const { navigateToObject, openInSplit } = useNavigation();
   const typeRegistry = useTypeRegistry();
 
   const sourceObject = store?.get(sourceId);
@@ -23,11 +23,20 @@ export function BacklinkItem({ sourceId, propertyName }: BacklinkItemProps) {
     sourceObject.properties.name ??
     'Untitled') as string;
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (e.metaKey || e.ctrlKey) {
+      e.preventDefault();
+      openInSplit(sourceId);
+    } else {
+      navigateToObject(sourceId);
+    }
+  };
+
   return (
     <button
       type="button"
       className="backlink-item"
-      onClick={() => navigateToObject(sourceId)}
+      onClick={handleClick}
     >
       <span className="backlink-item__icon">{icon}</span>
       <span className="backlink-item__name">{name}</span>
