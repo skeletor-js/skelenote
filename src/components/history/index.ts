@@ -5,6 +5,8 @@
 export { TimeMachine } from './TimeMachine';
 export { CalendarView } from './CalendarView';
 export { TimelineSlider } from './TimelineSlider';
+export { SnapshotPreview } from './SnapshotPreview';
+export { ObjectPreview } from './ObjectPreview';
 
 // Types
 export type * from './types';

@@ -478,6 +478,60 @@ export class LoroDocStore {
   }
 
   /**
+   * Get all objects at a historical frontier.
+   *
+   * Creates a forked document at the frontier and extracts all objects.
+   * Returns an empty array if the fork fails.
+   *
+   * @param frontier - The frontier to get objects at
+   * @returns Array of objects at that historical state
+   */
+  getObjectsAtVersion(frontier: Frontiers): Array<{
+    id: string;
+    typeId: string;
+    properties: Record<string, unknown>;
+    hasContent: boolean;
+    inboxed: boolean;
+    createdAt: number;
+    updatedAt: number;
+  }> {
+    const forkedDoc = this.forkAtVersion(frontier);
+    if (!forkedDoc) {
+      return [];
+    }
+
+    try {
+      const objectsMap = forkedDoc.getMap('objects');
+      const entries = objectsMap.toJSON() as Record<string, string>;
+      const objects: Array<{
+        id: string;
+        typeId: string;
+        properties: Record<string, unknown>;
+        hasContent: boolean;
+        inboxed: boolean;
+        createdAt: number;
+        updatedAt: number;
+      }> = [];
+
+      for (const data of Object.values(entries)) {
+        if (typeof data === 'string') {
+          try {
+            const parsed = JSON.parse(data);
+            objects.push(parsed);
+          } catch {
+            // Skip malformed entries
+          }
+        }
+      }
+
+      return objects;
+    } catch (error) {
+      console.error('[LoroDocStore] Failed to get objects at version:', error);
+      return [];
+    }
+  }
+
+  /**
    * Restore from a historical version using CRDT merge.
    *
    * This operation is safe and preserves all history. The historical state
