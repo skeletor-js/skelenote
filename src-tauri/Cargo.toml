@@ -28,6 +28,7 @@ hkdf = "0.12"                 # Key derivation function
 sha2 = "0.10"                 # SHA-256 for HKDF
 bip39 = "2.0"                 # BIP39 mnemonic generation
 zeroize = { version = "1.7", features = ["derive"] }  # Secure memory cleanup
+ed25519-dalek = "2.1"        # Ed25519 signatures for device revocations
 
 # QR code generation
 qrcode = "0.14"

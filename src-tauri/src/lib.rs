@@ -9,6 +9,7 @@ mod network;
 use crypto::{
     derive_sync_key, derive_user_id, encrypt_bytes, decrypt_bytes, generate_mnemonic, generate_mnemonic_qr,
     mnemonic_to_master_key, parse_qr_payload, validate_mnemonic, StrongholdManager,
+    derive_signing_key, sign_revocation, verify_revocation, get_public_key_bytes,
 };
 use network::{LocalSyncServer, MdnsHandle, NetworkState, DiscoveredPeer};
 use std::sync::Mutex;
@@ -664,6 +665,85 @@ async fn network_peer_count(
     Ok(network_state.peer_count().await)
 }
 
+// ============================================================================
+// Device Management Commands
+// ============================================================================
+
+/// Get the Ed25519 public signing key for this device
+///
+/// Returns the public key as a base64-encoded string.
+/// All devices with the same Skeleton Key will have the same signing keypair.
+#[tauri::command]
+fn device_get_signing_public_key(state: State<'_, CryptoState>) -> Result<String, String> {
+    let stronghold_guard = state.stronghold.lock().unwrap();
+    let manager = stronghold_guard
+        .as_ref()
+        .ok_or("Crypto not initialized - call crypto_init first")?;
+
+    let master_key = manager.get_master_key().map_err(|e| e.to_string())?;
+    let signing_key = derive_signing_key(&master_key);
+    let public_key_bytes = get_public_key_bytes(&signing_key);
+
+    Ok(base64::Engine::encode(&base64::engine::general_purpose::STANDARD, public_key_bytes))
+}
+
+/// Sign a device revocation
+///
+/// Creates an Ed25519 signature over the canonical revocation message.
+/// Returns the signature as a base64-encoded string.
+#[tauri::command]
+fn device_sign_revocation(
+    device_id: String,
+    revoked_at: u64,
+    revoked_by: String,
+    state: State<'_, CryptoState>,
+) -> Result<String, String> {
+    let stronghold_guard = state.stronghold.lock().unwrap();
+    let manager = stronghold_guard
+        .as_ref()
+        .ok_or("Crypto not initialized - call crypto_init first")?;
+
+    let master_key = manager.get_master_key().map_err(|e| e.to_string())?;
+    let signing_key = derive_signing_key(&master_key);
+    let signature = sign_revocation(&signing_key, &device_id, revoked_at, &revoked_by);
+
+    Ok(base64::Engine::encode(&base64::engine::general_purpose::STANDARD, signature))
+}
+
+/// Verify a device revocation signature
+///
+/// Checks that the signature is valid for the given revocation parameters.
+/// Returns true if valid, false otherwise.
+#[tauri::command]
+fn device_verify_revocation(
+    device_id: String,
+    revoked_at: u64,
+    revoked_by: String,
+    signature: String,
+    public_key: String,
+) -> Result<bool, String> {
+    use base64::Engine;
+
+    // Decode base64 signature
+    let signature_bytes: [u8; 64] = base64::engine::general_purpose::STANDARD
+        .decode(&signature)
+        .map_err(|e| format!("Invalid signature base64: {}", e))?
+        .try_into()
+        .map_err(|_| "Invalid signature length")?;
+
+    // Decode base64 public key
+    let public_key_bytes: [u8; 32] = base64::engine::general_purpose::STANDARD
+        .decode(&public_key)
+        .map_err(|e| format!("Invalid public key base64: {}", e))?
+        .try_into()
+        .map_err(|_| "Invalid public key length")?;
+
+    match verify_revocation(&public_key_bytes, &device_id, revoked_at, &revoked_by, &signature_bytes) {
+        Ok(()) => Ok(true),
+        Err(_) => Ok(false),
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -704,6 +784,10 @@ pub fn run() {
             // Sync Relay commands
             network_broadcast_sync,
             network_peer_count,
+            // Device Management commands
+            device_get_signing_public_key,
+            device_sign_revocation,
+            device_verify_revocation,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
