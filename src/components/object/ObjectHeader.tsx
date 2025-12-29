@@ -13,6 +13,8 @@ interface ObjectHeaderProps {
   paneType?: 'primary' | 'secondary';
   /** Callback to close split view (secondary pane only) */
   onCloseSplit?: () => void;
+  /** Callback to view object history in Time Machine */
+  onViewHistory?: () => void;
 }
 
 export function ObjectHeader({
@@ -23,6 +25,7 @@ export function ObjectHeader({
   canDelete = true,
   paneType = 'primary',
   onCloseSplit,
+  onViewHistory,
 }: ObjectHeaderProps) {
   const { openInSplit, splitPane } = useNavigation();
   // Determine which property holds the title (varies by type)
@@ -134,6 +137,19 @@ export function ObjectHeader({
           title="Open in split view"
         >
           Split
+        </button>
+      )}
+
+      {/* History button - only show in primary pane when not in version comparison mode */}
+      {paneType === 'primary' && onViewHistory && splitPane.mode !== 'version-comparison' && (
+        <button
+          type="button"
+          className="object-header__history-btn"
+          onClick={onViewHistory}
+          aria-label={`View history for ${currentTitle}`}
+          title="View history"
+        >
+          History
         </button>
       )}
 

@@ -29,6 +29,8 @@ interface NavigationState {
   objectId: string | null;
   /** Search query when view is 'search' */
   searchQuery: string | null;
+  /** Object ID to filter Time Machine view */
+  timeMachineFilter: string | null;
 }
 
 /**
@@ -61,12 +63,16 @@ interface NavigationContextValue {
   selectedObjectId: string | null;
   /** Current search query (when view is 'search') */
   searchQuery: string | null;
+  /** Object ID filter for Time Machine view */
+  timeMachineObjectFilter: string | null;
   /** Navigate to an object detail view */
   navigateToObject: (objectId: string) => void;
   /** Navigate to a specific view */
   navigateToView: (view: ViewType) => void;
   /** Navigate to search view with optional initial query */
   navigateToSearch: (query?: string) => void;
+  /** Navigate to Time Machine view with optional object filter */
+  navigateToTimeMachine: (objectId?: string) => void;
   /** Go back to the previous view */
   navigateBack: () => void;
   /** Check if we can go back */
@@ -104,6 +110,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     view: 'inbox',
     objectId: null,
     searchQuery: null,
+    timeMachineFilter: null,
   });
   const [history, setHistory] = useState<NavigationState[]>([]);
 
@@ -123,6 +130,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       view: 'object',
       objectId,
       searchQuery: null,
+      timeMachineFilter: null,
     });
   }, [currentState]);
 
@@ -132,6 +140,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       view,
       objectId: null,
       searchQuery: null,
+      timeMachineFilter: null,
     });
   }, [currentState]);
 
@@ -141,6 +150,17 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       view: 'search',
       objectId: null,
       searchQuery: query ?? null,
+      timeMachineFilter: null,
+    });
+  }, [currentState]);
+
+  const navigateToTimeMachine = useCallback((objectId?: string) => {
+    setHistory((prev) => [...prev, currentState]);
+    setCurrentState({
+      view: 'time-machine',
+      objectId: null,
+      searchQuery: null,
+      timeMachineFilter: objectId ?? null,
     });
   }, [currentState]);
 
@@ -192,6 +212,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       view: 'object',
       objectId: splitPane.objectId,
       searchQuery: null,
+      timeMachineFilter: null,
     });
 
     // Update split to show the former primary object
@@ -209,6 +230,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         view: 'object',
         objectId,
         searchQuery: null,
+        timeMachineFilter: null,
       });
 
       // Open split pane with historical version
@@ -230,9 +252,11 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         currentView: currentState.view,
         selectedObjectId: currentState.objectId,
         searchQuery: currentState.searchQuery,
+        timeMachineObjectFilter: currentState.timeMachineFilter,
         navigateToObject,
         navigateToView,
         navigateToSearch,
+        navigateToTimeMachine,
         navigateBack,
         canGoBack: history.length > 0,
         navigationHistory: history,
