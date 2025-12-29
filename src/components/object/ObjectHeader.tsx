@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigation } from '@/contexts';
 import './ObjectHeader.css';
 import type { SkelenoteObject, TypeDefinition } from '@/lib/types';
 
@@ -23,6 +24,7 @@ export function ObjectHeader({
   paneType = 'primary',
   onCloseSplit,
 }: ObjectHeaderProps) {
+  const { openInSplit, splitPane } = useNavigation();
   // Determine which property holds the title (varies by type)
   const titlePropertyId = object.properties.title !== undefined ? 'title' : 'name';
   const currentTitle = String(object.properties[titlePropertyId] ?? 'Untitled');
@@ -120,6 +122,19 @@ export function ObjectHeader({
           {currentTitle}
           <span className="object-header__edit-hint">Click to edit</span>
         </h1>
+      )}
+
+      {/* Open in Split View - only show in primary pane when split is not open */}
+      {paneType === 'primary' && !splitPane.isOpen && (
+        <button
+          type="button"
+          className="object-header__split-btn"
+          onClick={() => openInSplit(object.id)}
+          aria-label="Open in split view"
+          title="Open in split view"
+        >
+          Split
+        </button>
       )}
 
       {canDelete && onDelete && (
