@@ -29,3 +29,7 @@ export {
   ProjectStatusOptions,
 } from './built-in-types';
 export type { TaskStatus, TaskPriority, ProjectStatus } from './built-in-types';
+
+// Saved views
+export type { SavedView, CreateSavedViewInput, UpdateSavedViewInput } from './saved-view';
+export { generateViewId, createSavedView, isSavedView } from './saved-view';
