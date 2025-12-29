@@ -808,7 +808,28 @@ pub fn run() {
             stronghold: Mutex::new(None),
             sync_key: Mutex::new(None),
         })
-        .manage(NetworkState::new())
+        .setup(|app| {
+            // Initialize NetworkState with persistent blocklist
+            let app_data_dir = app.path().app_data_dir()
+                .expect("Failed to get app data directory");
+            let data_dir = app_data_dir.join("data");
+
+            // Create data directory if it doesn't exist
+            std::fs::create_dir_all(&data_dir).ok();
+
+            let network_state = NetworkState::with_data_dir(data_dir);
+
+            // Load blocklist from disk in background
+            let blocklist = network_state.blocklist.clone();
+            tauri::async_runtime::spawn(async move {
+                if let Err(e) = blocklist.load().await {
+                    eprintln!("[Blocklist] Failed to load from disk: {}", e);
+                }
+            });
+
+            app.manage(network_state);
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             greet,
             // Crypto commands
