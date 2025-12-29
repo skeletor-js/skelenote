@@ -15,10 +15,12 @@ pub mod encryption;
 pub mod error;
 pub mod keys;
 pub mod qr;
+pub mod signing;
 pub mod stronghold;
 
 // Re-export commonly used items
 pub use encryption::{decrypt_bytes, encrypt_bytes};
 pub use keys::{derive_sync_key, derive_user_id, generate_mnemonic, mnemonic_to_master_key, validate_mnemonic};
 pub use qr::{generate_mnemonic_qr, parse_qr_payload};
+pub use signing::{derive_signing_key, sign_revocation, verify_revocation, get_public_key_bytes};
 pub use stronghold::StrongholdManager;

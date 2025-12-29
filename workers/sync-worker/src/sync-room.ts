@@ -6,10 +6,13 @@ import {
   encodeJsonPayload,
   decodeJsonPayload,
   isValidMessageType,
+  isDeviceManagementMessage,
   type HelloPayload,
   type AckPayload,
   type CatchUpPayload,
   type HistoryHeaderPayload,
+  type DeviceRevokePayload,
+  type DeviceRevokeAckPayload,
 } from './protocol';
 
 /**
@@ -60,6 +63,26 @@ export class SyncRoom extends DurableObject {
           data BLOB NOT NULL,
           timestamp INTEGER NOT NULL,
           is_snapshot INTEGER DEFAULT 0
+        )
+      `);
+
+      // Create revoked devices table
+      this.sql.exec(`
+        CREATE TABLE IF NOT EXISTS revoked_devices (
+          device_id TEXT PRIMARY KEY,
+          revoked_at INTEGER NOT NULL,
+          revoked_by TEXT NOT NULL,
+          reason TEXT,
+          signature TEXT NOT NULL
+        )
+      `);
+
+      // Create device registry updates table (stores encrypted Loro updates)
+      this.sql.exec(`
+        CREATE TABLE IF NOT EXISTS device_registry (
+          sequence INTEGER PRIMARY KEY AUTOINCREMENT,
+          data BLOB NOT NULL,
+          timestamp INTEGER NOT NULL
         )
       `);
 
@@ -134,6 +157,73 @@ export class SyncRoom extends DurableObject {
     this.sql.exec('DELETE FROM updates');
     this.currentSequence = 0;
     console.log('[SyncRoom] All updates cleared');
+  }
+
+  /**
+   * Check if a device has been revoked
+   */
+  private isDeviceRevoked(deviceId: string): boolean {
+    const result = this.sql.exec(
+      'SELECT 1 FROM revoked_devices WHERE device_id = ?',
+      deviceId
+    ).one();
+    return result !== null;
+  }
+
+  /**
+   * Store a device revocation
+   */
+  private storeRevocation(revocation: DeviceRevokePayload): void {
+    this.sql.exec(
+      `INSERT OR REPLACE INTO revoked_devices (device_id, revoked_at, revoked_by, reason, signature)
+       VALUES (?, ?, ?, ?, ?)`,
+      revocation.deviceId,
+      revocation.revokedAt,
+      revocation.revokedBy,
+      revocation.reason ?? null,
+      revocation.signature
+    );
+    console.log(`[SyncRoom] Stored revocation for device ${revocation.deviceId}`);
+  }
+
+  /**
+   * Get all revoked device IDs
+   */
+  private getRevokedDevices(): string[] {
+    const results = this.sql.exec('SELECT device_id FROM revoked_devices').toArray();
+    return results.map((row) => row.device_id as string);
+  }
+
+  /**
+   * Store a device registry update (Loro update bytes)
+   */
+  private storeDeviceRegistryUpdate(data: Uint8Array): number {
+    const timestamp = Date.now();
+    this.sql.exec(
+      'INSERT INTO device_registry (data, timestamp) VALUES (?, ?)',
+      data,
+      timestamp
+    );
+    const result = this.sql.exec('SELECT last_insert_rowid() as seq').one();
+    return (result?.seq as number) ?? 0;
+  }
+
+  /**
+   * Get device registry updates after a given sequence
+   */
+  private getDeviceRegistryUpdatesAfter(sequence: number, limit: number = 100): { sequence: number; data: ArrayBuffer }[] {
+    const results = this.sql.exec(
+      `SELECT sequence, data FROM device_registry
+       WHERE sequence > ?
+       ORDER BY sequence ASC
+       LIMIT ?`,
+      sequence,
+      limit
+    ).toArray();
+    return results.map((row) => ({
+      sequence: row.sequence as number,
+      data: row.data as ArrayBuffer,
+    }));
   }
 
   /**
@@ -234,6 +324,23 @@ export class SyncRoom extends DurableObject {
           // Ignore pong messages
           break;
 
+        // Device management messages
+        case MessageType.DEVICE_REGISTRY:
+          await this.handleDeviceRegistry(ws, payload);
+          break;
+
+        case MessageType.DEVICE_UPDATE:
+          await this.handleDeviceUpdate(ws, payload);
+          break;
+
+        case MessageType.DEVICE_REVOKE:
+          await this.handleDeviceRevoke(ws, payload);
+          break;
+
+        case MessageType.DEVICE_RENAME:
+          await this.handleDeviceRename(ws, payload);
+          break;
+
         default:
           console.warn(`[SyncRoom] Unhandled message type: ${type}`);
       }
@@ -248,6 +355,27 @@ export class SyncRoom extends DurableObject {
   private async handleHello(ws: WebSocket, payload: Uint8Array): Promise<void> {
     try {
       const hello = decodeJsonPayload<HelloPayload>(payload);
+
+      // Check if device has been revoked
+      if (this.isDeviceRevoked(hello.deviceId)) {
+        console.log(`[SyncRoom] Rejecting revoked device: ${hello.deviceId}`);
+
+        // Send rejection ACK
+        const rejectAck = {
+          sessionCount: 0,
+          rejected: true,
+          reason: 'Device has been revoked',
+        };
+        const rejectMessage = encodeMessage(
+          MessageType.ACK,
+          encodeJsonPayload(rejectAck)
+        );
+        ws.send(rejectMessage);
+
+        // Close the connection
+        ws.close(4001, 'Device revoked');
+        return;
+      }
 
       // Store session data with the WebSocket
       const sessionData: SessionData = {
@@ -470,6 +598,140 @@ export class SyncRoom extends DurableObject {
   private handlePing(ws: WebSocket): void {
     const pongMessage = encodeMessage(MessageType.PONG, new Uint8Array(0));
     ws.send(pongMessage);
+  }
+
+  /**
+   * Handle DEVICE_REGISTRY - full device registry sync (Loro snapshot)
+   * Store and broadcast to other devices
+   */
+  private async handleDeviceRegistry(ws: WebSocket, payload: Uint8Array): Promise<void> {
+    console.log(`[SyncRoom] Received DEVICE_REGISTRY (${payload.byteLength} bytes)`);
+
+    // Store the registry update
+    const seq = this.storeDeviceRegistryUpdate(payload);
+    console.log(`[SyncRoom] Stored device registry #${seq}`);
+
+    // Broadcast to other connected devices
+    const otherSockets = this.ctx.getWebSockets().filter((s) => s !== ws);
+    const message = encodeMessage(MessageType.DEVICE_REGISTRY, payload);
+
+    for (const socket of otherSockets) {
+      try {
+        socket.send(message);
+      } catch (err) {
+        console.error('[SyncRoom] Failed to broadcast device registry:', err);
+      }
+    }
+  }
+
+  /**
+   * Handle DEVICE_UPDATE - incremental device registry update
+   * Store and broadcast to other devices
+   */
+  private async handleDeviceUpdate(ws: WebSocket, payload: Uint8Array): Promise<void> {
+    console.log(`[SyncRoom] Received DEVICE_UPDATE (${payload.byteLength} bytes)`);
+
+    // Store the update
+    const seq = this.storeDeviceRegistryUpdate(payload);
+    console.log(`[SyncRoom] Stored device update #${seq}`);
+
+    // Broadcast to other connected devices
+    const otherSockets = this.ctx.getWebSockets().filter((s) => s !== ws);
+    const message = encodeMessage(MessageType.DEVICE_UPDATE, payload);
+
+    for (const socket of otherSockets) {
+      try {
+        socket.send(message);
+      } catch (err) {
+        console.error('[SyncRoom] Failed to broadcast device update:', err);
+      }
+    }
+  }
+
+  /**
+   * Handle DEVICE_REVOKE - device revocation with Ed25519 signature
+   * Store in revocations table, broadcast, and disconnect revoked device
+   */
+  private async handleDeviceRevoke(ws: WebSocket, payload: Uint8Array): Promise<void> {
+    try {
+      const revocation = decodeJsonPayload<DeviceRevokePayload>(payload);
+
+      console.log(`[SyncRoom] Received DEVICE_REVOKE for ${revocation.deviceId} from ${revocation.revokedBy}`);
+
+      // Note: Signature verification should happen client-side since server
+      // doesn't have access to the public signing keys (E2EE). The server
+      // just stores and relays the revocation. Clients verify the signature.
+
+      // Store the revocation
+      this.storeRevocation(revocation);
+
+      // Send acknowledgment to the sender
+      const ack: DeviceRevokeAckPayload = {
+        deviceId: revocation.deviceId,
+        accepted: true,
+      };
+      const ackMessage = encodeMessage(
+        MessageType.DEVICE_REVOKE_ACK,
+        encodeJsonPayload(ack)
+      );
+      ws.send(ackMessage);
+
+      // Broadcast revocation to all OTHER devices
+      const otherSockets = this.ctx.getWebSockets().filter((s) => s !== ws);
+      const revokeMessage = encodeMessage(MessageType.DEVICE_REVOKE, payload);
+
+      for (const socket of otherSockets) {
+        try {
+          // Check if this is the revoked device
+          const sessionData = socket.deserializeAttachment() as SessionData | null;
+          if (sessionData?.deviceId === revocation.deviceId) {
+            // This is the revoked device - send revocation then close
+            socket.send(revokeMessage);
+            socket.close(4001, 'Device has been revoked');
+            console.log(`[SyncRoom] Disconnected revoked device: ${revocation.deviceId}`);
+          } else {
+            // Regular device - just forward the revocation
+            socket.send(revokeMessage);
+          }
+        } catch (err) {
+          console.error('[SyncRoom] Failed to send revocation:', err);
+        }
+      }
+    } catch (err) {
+      console.error('[SyncRoom] Error handling DEVICE_REVOKE:', err);
+
+      // Send error acknowledgment
+      const errorAck: DeviceRevokeAckPayload = {
+        deviceId: 'unknown',
+        accepted: false,
+        error: 'Failed to process revocation',
+      };
+      const errorMessage = encodeMessage(
+        MessageType.DEVICE_REVOKE_ACK,
+        encodeJsonPayload(errorAck)
+      );
+      ws.send(errorMessage);
+    }
+  }
+
+  /**
+   * Handle DEVICE_RENAME - device rename request
+   * Broadcast to other devices (client-side CRDT handles the actual update)
+   */
+  private async handleDeviceRename(ws: WebSocket, payload: Uint8Array): Promise<void> {
+    console.log(`[SyncRoom] Received DEVICE_RENAME (${payload.byteLength} bytes)`);
+
+    // Just broadcast to other devices - the rename is handled in the CRDT
+    const otherSockets = this.ctx.getWebSockets().filter((s) => s !== ws);
+    const message = encodeMessage(MessageType.DEVICE_RENAME, payload);
+
+    for (const socket of otherSockets) {
+      try {
+        socket.send(message);
+      } catch (err) {
+        console.error('[SyncRoom] Failed to broadcast device rename:', err);
+      }
+    }
   }
 
   /**
