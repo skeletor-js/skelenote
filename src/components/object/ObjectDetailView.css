@@ -1,18 +1,10 @@
 .object-detail {
   padding: var(--spacing-lg);
-  max-width: var(--content-max-width);
-  margin: 0 auto;
 }
 
-/* When in secondary pane, use full available width */
+/* When in secondary pane, remove padding */
 .object-detail--secondary {
-  max-width: none;
   padding: 0;
-}
-
-/* When sidebar is collapsed, use full width for object view */
-.layout--sidebar-collapsed .object-detail {
-  max-width: none;
 }
 
 .object-detail--loading,
