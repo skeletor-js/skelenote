@@ -26,3 +26,4 @@ export {
   type ContextMenuPosition,
   type UseContextMenuResult,
 } from './useContextMenu';
+export { usePinnedObjects, type UsePinnedObjectsResult } from './usePinnedObjects';

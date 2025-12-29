@@ -15,6 +15,7 @@ import { generateId, validatePropertyValue } from '../types';
 import {
   getObjectsMap,
   getContentText,
+  getPinnedOrderList,
   serializeObject,
   deserializeObject,
   initializeDocument,
@@ -77,6 +78,7 @@ export class ObjectStore {
       properties,
       hasContent: input.withContent ?? typeDef.hasContent,
       inboxed: input.inboxed ?? true,
+      pinned: false,
       createdAt: now,
       updatedAt: now,
     };
@@ -193,6 +195,14 @@ export class ObjectStore {
 
     if (exists) {
       objectsMap.delete(id);
+
+      // Also remove from pinned order if present
+      const pinnedOrder = getPinnedOrderList(this.doc);
+      const orderArray = pinnedOrder.toArray() as string[];
+      const index = orderArray.indexOf(id);
+      if (index !== -1) {
+        pinnedOrder.delete(index, 1);
+      }
     }
 
     return exists;
@@ -254,6 +264,103 @@ export class ObjectStore {
    */
   getInboxed(): SkelenoteObject[] {
     return this.getAll().filter((obj) => obj.inboxed);
+  }
+
+  /**
+   * Pin an object to the sidebar
+   */
+  pin(objectId: string): SkelenoteObject {
+    const obj = this.getOrThrow(objectId);
+
+    // Already pinned - no-op
+    if (obj.pinned) {
+      return obj;
+    }
+
+    // Update the object's pinned state
+    const updated: SkelenoteObject = {
+      ...obj,
+      pinned: true,
+      updatedAt: Date.now(),
+    };
+
+    const objectsMap = getObjectsMap(this.doc);
+    objectsMap.set(objectId, serializeObject(updated));
+
+    // Add to pinned order list
+    const pinnedOrder = getPinnedOrderList(this.doc);
+    pinnedOrder.push(objectId);
+
+    return updated;
+  }
+
+  /**
+   * Unpin an object from the sidebar
+   */
+  unpin(objectId: string): SkelenoteObject {
+    const obj = this.getOrThrow(objectId);
+
+    // Already unpinned - no-op
+    if (!obj.pinned) {
+      return obj;
+    }
+
+    // Update the object's pinned state
+    const updated: SkelenoteObject = {
+      ...obj,
+      pinned: false,
+      updatedAt: Date.now(),
+    };
+
+    const objectsMap = getObjectsMap(this.doc);
+    objectsMap.set(objectId, serializeObject(updated));
+
+    // Remove from pinned order list
+    const pinnedOrder = getPinnedOrderList(this.doc);
+    const orderArray = pinnedOrder.toArray() as string[];
+    const index = orderArray.indexOf(objectId);
+    if (index !== -1) {
+      pinnedOrder.delete(index, 1);
+    }
+
+    return updated;
+  }
+
+  /**
+   * Reorder pinned objects
+   */
+  reorderPinned(objectIds: string[]): void {
+    const pinnedOrder = getPinnedOrderList(this.doc);
+
+    // Clear existing order
+    const currentLength = pinnedOrder.length;
+    if (currentLength > 0) {
+      pinnedOrder.delete(0, currentLength);
+    }
+
+    // Add new order
+    for (const id of objectIds) {
+      pinnedOrder.push(id);
+    }
+  }
+
+  /**
+   * Get all pinned objects in order
+   */
+  getPinnedObjects(): SkelenoteObject[] {
+    const pinnedOrder = getPinnedOrderList(this.doc);
+    const orderArray = pinnedOrder.toArray() as string[];
+
+    const objects: SkelenoteObject[] = [];
+    for (const id of orderArray) {
+      const obj = this.get(id);
+      // Only include objects that exist and are still pinned
+      if (obj && obj.pinned) {
+        objects.push(obj);
+      }
+    }
+
+    return objects;
   }
 
   /**

@@ -8,7 +8,7 @@ import type { SkelenoteObject } from '@/lib/types';
 import { formatRelativeDate } from '@/lib/utils/date';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
 import { Tag, ContextMenu, ConfirmDialog, type TagColor, type ContextMenuItem } from '@/components/ui';
-import { useContextMenu, useConfirmDialog } from '@/hooks';
+import { useContextMenu, useConfirmDialog, usePinnedObjects } from '@/hooks';
 import './InboxRow.css';
 
 interface InboxRowProps {
@@ -28,6 +28,7 @@ export function InboxRow({ item, onClick, onProcess, onDelete }: InboxRowProps) 
   const { addToast } = useToast();
   const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
   const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
+  const { isPinned, pin, unpin } = usePinnedObjects();
 
   // Get type info
   const typeDef = typeRegistry.get(item.typeId);
@@ -86,8 +87,26 @@ export function InboxRow({ item, onClick, onProcess, onDelete }: InboxRowProps) 
     }
   }, [confirm, typeName, title, item.id, onDelete, addToast]);
 
+  // Handle pin/unpin
+  const itemIsPinned = isPinned(item.id);
+  const handleTogglePin = useCallback(() => {
+    if (itemIsPinned) {
+      unpin(item.id);
+      addToast({ type: 'success', message: 'Removed from pins' });
+    } else {
+      pin(item.id);
+      addToast({ type: 'success', message: 'Pinned to sidebar' });
+    }
+  }, [itemIsPinned, pin, unpin, item.id, addToast]);
+
   // Context menu items
   const contextMenuItems: ContextMenuItem[] = [
+    {
+      id: 'pin',
+      label: itemIsPinned ? 'Unpin from Sidebar' : 'Pin to Sidebar',
+      icon: '📌',
+      onClick: handleTogglePin,
+    },
     {
       id: 'delete',
       label: 'Delete',

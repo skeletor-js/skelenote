@@ -6,9 +6,10 @@
  *   - "objects" LoroMap: Map of object ID -> serialized object data
  *   - "content:{id}" LoroText: Rich text content for objects with hasContent=true
  *   - "types" LoroMap: Map of type ID -> serialized type definition (for custom types)
+ *   - "pinnedOrder" LoroList: Ordered list of pinned object IDs
  */
 
-import type { LoroDoc, LoroMap, LoroText } from 'loro-crdt';
+import type { LoroDoc, LoroMap, LoroText, LoroList } from 'loro-crdt';
 import type { SkelenoteObject } from '../types/object';
 import type { TypeDefinition } from '../types/type-definition';
 
@@ -17,6 +18,9 @@ export const OBJECTS_MAP_KEY = 'objects';
 
 /** Key for the types map in the root document */
 export const TYPES_MAP_KEY = 'types';
+
+/** Key for the pinned order list in the root document */
+export const PINNED_ORDER_KEY = 'pinnedOrder';
 
 /** Prefix for content text containers */
 export const CONTENT_PREFIX = 'content:';
@@ -50,6 +54,14 @@ export function getContentText(doc: LoroDoc, objectId: string): LoroText {
 }
 
 /**
+ * Gets the pinned order list from a Loro document
+ * The list contains object IDs in display order
+ */
+export function getPinnedOrderList(doc: LoroDoc): LoroList {
+  return doc.getList(PINNED_ORDER_KEY);
+}
+
+/**
  * Serializes an SkelenoteObject to a JSON string for storage
  */
 export function serializeObject(obj: SkelenoteObject): string {
@@ -58,9 +70,15 @@ export function serializeObject(obj: SkelenoteObject): string {
 
 /**
  * Deserializes a JSON string back to an SkelenoteObject
+ * Handles backward compatibility for objects without the pinned property
  */
 export function deserializeObject(data: string): SkelenoteObject {
-  return JSON.parse(data) as SkelenoteObject;
+  const obj = JSON.parse(data) as SkelenoteObject;
+  // Handle backward compatibility for objects created before pinned was added
+  if (obj.pinned === undefined) {
+    obj.pinned = false;
+  }
+  return obj;
 }
 
 /**
