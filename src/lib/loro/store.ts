@@ -1,7 +1,11 @@
-import { LoroDoc } from 'loro-crdt';
+import { LoroDoc, type Frontiers } from 'loro-crdt';
 import { appDataDir, join } from '@tauri-apps/api/path';
 import { exists, mkdir, readFile, writeFile } from '@tauri-apps/plugin-fs';
 import type { SyncClient } from '../sync';
+import {
+  getVersionHistory as extractVersionHistory,
+  type VersionHistory,
+} from './versions';
 
 /**
  * LoroDocStore manages Loro CRDT documents with persistence to the local file system.
@@ -412,6 +416,128 @@ export class LoroDocStore {
     if (this.syncClient) {
       const snapshot = this.exportAll();
       this.syncClient.sendSnapshot(snapshot);
+    }
+  }
+
+  // ============================================
+  // Version History Methods (Time Machine)
+  // ============================================
+
+  /**
+   * Get the complete version history from the main document.
+   *
+   * Returns all change points sorted by timestamp, grouped by date,
+   * with earliest and latest timestamps.
+   */
+  getVersionHistory(): VersionHistory {
+    const mainDoc = this.documents.get('main');
+    if (!mainDoc) {
+      return {
+        changePoints: [],
+        byDate: new Map(),
+        earliest: null,
+        latest: null,
+      };
+    }
+
+    return extractVersionHistory(mainDoc);
+  }
+
+  /**
+   * Create a forked document at a specific frontier for safe preview.
+   *
+   * This creates an independent copy of the document at the historical state,
+   * which can be safely read without affecting the live document.
+   *
+   * @param frontier - The frontier to fork at
+   * @returns A new LoroDoc at the historical state, or null if fork fails
+   */
+  forkAtVersion(frontier: Frontiers): LoroDoc | null {
+    const mainDoc = this.documents.get('main');
+    if (!mainDoc) {
+      console.warn('[LoroDocStore] Cannot fork: no main document');
+      return null;
+    }
+
+    try {
+      return mainDoc.forkAt(frontier);
+    } catch (error) {
+      console.error('[LoroDocStore] Failed to fork at version:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Restore from a historical version using CRDT merge.
+   *
+   * This operation is safe and preserves all history. The historical state
+   * is merged into the current document, and the change syncs automatically
+   * to connected devices.
+   *
+   * @param frontier - The frontier to restore from
+   * @param scope - Whether to restore full state or a single object
+   * @returns True if restore succeeded, false otherwise
+   */
+  restoreFromVersion(
+    frontier: Frontiers,
+    scope: { type: 'full' } | { type: 'single'; objectId: string }
+  ): boolean {
+    const mainDoc = this.documents.get('main');
+    if (!mainDoc) {
+      console.warn('[LoroDocStore] Cannot restore: no main document');
+      return false;
+    }
+
+    try {
+      // Fork at the historical version
+      const forkedDoc = mainDoc.forkAt(frontier);
+      if (!forkedDoc) {
+        console.error('[LoroDocStore] Failed to fork for restore');
+        return false;
+      }
+
+      if (scope.type === 'single') {
+        // For single object restore, we need to get the historical object
+        // and update it in the main document
+        const objectsMap = forkedDoc.getMap('objects');
+        const historicalData = objectsMap.get(scope.objectId);
+
+        if (historicalData !== undefined) {
+          // Update the object in the main document
+          const mainObjectsMap = mainDoc.getMap('objects');
+          mainObjectsMap.set(scope.objectId, historicalData);
+
+          // Also restore content if it exists
+          const contentKey = `content:${scope.objectId}`;
+          const historicalContent = forkedDoc.getText(contentKey);
+          if (historicalContent) {
+            const mainContent = mainDoc.getText(contentKey);
+            // Clear and restore content
+            const contentStr = historicalContent.toString();
+            const currentLength = mainContent.length;
+            if (currentLength > 0) {
+              mainContent.delete(0, currentLength);
+            }
+            mainContent.insert(0, contentStr);
+          }
+        }
+      } else {
+        // For full restore, export the forked state and import into main
+        // This will merge via CRDT, preserving all history
+        const snapshot = forkedDoc.export({ mode: 'snapshot' });
+        mainDoc.import(snapshot);
+      }
+
+      // Trigger sync to connected devices
+      this.sync();
+
+      console.log(
+        `[LoroDocStore] Restored ${scope.type === 'single' ? `object ${scope.objectId}` : 'full state'}`
+      );
+      return true;
+    } catch (error) {
+      console.error('[LoroDocStore] Failed to restore from version:', error);
+      return false;
     }
   }
 }
