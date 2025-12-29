@@ -9,15 +9,19 @@ export { LoroDocStore } from './store';
 export {
   OBJECTS_MAP_KEY,
   TYPES_MAP_KEY,
+  VIEWS_MAP_KEY,
   CONTENT_PREFIX,
   getContentKey,
   getObjectsMap,
   getTypesMap,
+  getViewsMap,
   getContentText,
   serializeObject,
   deserializeObject,
   serializeType,
   deserializeType,
+  serializeSavedView,
+  deserializeSavedView,
   SCHEMA_VERSION,
   initializeDocument,
   getSchemaVersion,
@@ -30,6 +34,13 @@ export {
   ValidationError,
   createObjectStore,
 } from './objects';
+
+// Views (CRUD)
+export {
+  ViewStore,
+  ViewNotFoundError,
+  createViewStore,
+} from './views';
 
 // Relations
 export type { Backlink } from './relations';
