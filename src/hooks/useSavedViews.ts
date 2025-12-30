@@ -2,7 +2,7 @@
  * Hook for managing saved views
  */
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { useObjects } from '@/contexts';
 import { ViewStore, createViewStore } from '@/lib/loro';
 import type { SavedView, CreateSavedViewInput, UpdateSavedViewInput } from '@/lib/types';
@@ -49,23 +49,28 @@ export interface UseSavedViewsResult {
 export function useSavedViews(): UseSavedViewsResult {
   const { doc, isLoading, refreshData } = useObjects();
 
+  // Version counter to force view list refresh
+  const [version, setVersion] = useState(0);
+
   // Create ViewStore when doc is ready
   const viewStore = useMemo(() => {
     if (!doc) return null;
     return createViewStore(doc);
   }, [doc]);
 
-  // Get all views
+  // Get all views (re-fetches when version changes)
   const views = useMemo(() => {
     if (!viewStore) return [];
     return viewStore.getAll();
-  }, [viewStore]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewStore, version]);
 
   // Create a new view
   const createView = useCallback(
     (input: CreateSavedViewInput): SavedView | null => {
       if (!viewStore) return null;
       const view = viewStore.create(input);
+      setVersion((v) => v + 1);
       refreshData();
       return view;
     },
@@ -87,6 +92,7 @@ export function useSavedViews(): UseSavedViewsResult {
       if (!viewStore) return null;
       try {
         const view = viewStore.update(id, input);
+        setVersion((v) => v + 1);
         refreshData();
         return view;
       } catch {
@@ -102,6 +108,7 @@ export function useSavedViews(): UseSavedViewsResult {
       if (!viewStore) return false;
       const deleted = viewStore.delete(id);
       if (deleted) {
+        setVersion((v) => v + 1);
         refreshData();
       }
       return deleted;

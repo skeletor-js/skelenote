@@ -366,8 +366,8 @@
 
 .saved-view-editor__btn--primary {
   background: var(--text-primary);
-  border: 1px solid transparent;
-  color: var(--bg-primary);
+  border: 1px solid var(--text-primary);
+  color: var(--bg-base);
 }
 
 .saved-view-editor__btn--primary:hover:not(:disabled) {
