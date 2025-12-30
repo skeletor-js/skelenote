@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Layout, SplitPane } from '@/components/layout';
 import { ObjectDetailView } from '@/components/object';
-import { TaskView, InboxView, DailyNotesView } from '@/components/views';
+import { TaskView, InboxView, DailyNotesView, SavedViewContent } from '@/components/views';
 import { CommandPalette } from '@/components/palette';
 import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
@@ -31,6 +31,7 @@ function PlaceholderView({ view }: { view: ViewType }) {
     settings: 'Settings',
     'time-machine': 'Time Machine',
     search: 'Search',
+    'saved-view': 'Saved View',
   };
 
   return (
@@ -134,6 +135,11 @@ function PrimaryContent() {
   // Search view
   if (currentView === 'search') {
     return <SearchResultsView />;
+  }
+
+  // Saved view
+  if (currentView === 'saved-view') {
+    return <SavedViewContent />;
   }
 
   return <PlaceholderView view={currentView} />;

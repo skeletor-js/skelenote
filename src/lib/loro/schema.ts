@@ -7,11 +7,13 @@
  *   - "content:{id}" LoroText: Rich text content for objects with hasContent=true
  *   - "types" LoroMap: Map of type ID -> serialized type definition (for custom types)
  *   - "pinnedOrder" LoroList: Ordered list of pinned object IDs
+ *   - "_views" LoroMap: Map of view ID -> serialized saved view configuration
  */
 
 import type { LoroDoc, LoroMap, LoroText, LoroList } from 'loro-crdt';
 import type { SkelenoteObject } from '../types/object';
 import type { TypeDefinition } from '../types/type-definition';
+import type { SavedView } from '../types/saved-view';
 
 /** Key for the objects map in the root document */
 export const OBJECTS_MAP_KEY = 'objects';
@@ -21,6 +23,9 @@ export const TYPES_MAP_KEY = 'types';
 
 /** Key for the pinned order list in the root document */
 export const PINNED_ORDER_KEY = 'pinnedOrder';
+
+/** Key for the saved views map in the root document */
+export const VIEWS_MAP_KEY = '_views';
 
 /** Prefix for content text containers */
 export const CONTENT_PREFIX = 'content:';
@@ -62,6 +67,13 @@ export function getPinnedOrderList(doc: LoroDoc): LoroList {
 }
 
 /**
+ * Gets the saved views map from a Loro document
+ */
+export function getViewsMap(doc: LoroDoc): LoroMap {
+  return doc.getMap(VIEWS_MAP_KEY);
+}
+
+/**
  * Serializes an SkelenoteObject to a JSON string for storage
  */
 export function serializeObject(obj: SkelenoteObject): string {
@@ -93,6 +105,20 @@ export function serializeType(type: TypeDefinition): string {
  */
 export function deserializeType(data: string): TypeDefinition {
   return JSON.parse(data) as TypeDefinition;
+}
+
+/**
+ * Serializes a SavedView to a JSON string for storage
+ */
+export function serializeSavedView(view: SavedView): string {
+  return JSON.stringify(view);
+}
+
+/**
+ * Deserializes a JSON string back to a SavedView
+ */
+export function deserializeSavedView(data: string): SavedView {
+  return JSON.parse(data) as SavedView;
 }
 
 /**
