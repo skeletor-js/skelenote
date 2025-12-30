@@ -9,7 +9,7 @@ import { SkeletonKeySetup } from '@/components/setup';
 import { TimeMachine, HistoricalObjectView } from '@/components/history';
 import { SearchResultsView } from '@/components/search';
 import { KeyboardShortcutsModal } from '@/components/help';
-import { TemplatePicker } from '@/components/templates';
+import { TemplatePicker, TemplateEditor } from '@/components/templates';
 import { useNavigation, useObjects, useSkeletonKey, useKeyboardShortcuts, type ViewType } from '@/contexts';
 import { useCommandPalette, useTodaysDailyNote, useTemplates } from '@/hooks';
 import type { Template } from '@/lib/templates';
@@ -199,6 +199,7 @@ function App() {
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
+  const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false);
   const { ensureExists: ensureTodaysDailyNote } = useTodaysDailyNote();
   const { createObject: createFromTemplate } = useTemplates();
   const startupCompleteRef = useRef(false);
@@ -248,6 +249,14 @@ function App() {
 
   const closeTemplatePicker = useCallback(() => {
     setIsTemplatePickerOpen(false);
+  }, []);
+
+  const openTemplateEditor = useCallback(() => {
+    setIsTemplateEditorOpen(true);
+  }, []);
+
+  const closeTemplateEditor = useCallback(() => {
+    setIsTemplateEditorOpen(false);
   }, []);
 
   const handleTemplateSelect = useCallback(
@@ -380,6 +389,7 @@ function App() {
         onQuickCapture={openQuickCapture}
         onOpenShortcuts={toggleShortcutsModal}
         onCreateFromTemplate={openTemplatePicker}
+        onNewTemplate={openTemplateEditor}
       />
       <QuickCapture isOpen={isQuickCaptureOpen} onClose={closeQuickCapture} />
       <KeyboardShortcutsModal isOpen={isShortcutsModalOpen} onClose={closeShortcutsModal} />
@@ -387,6 +397,10 @@ function App() {
         isOpen={isTemplatePickerOpen}
         onClose={closeTemplatePicker}
         onSelect={handleTemplateSelect}
+      />
+      <TemplateEditor
+        isOpen={isTemplateEditorOpen}
+        onClose={closeTemplateEditor}
       />
     </>
   );
