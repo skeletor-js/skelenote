@@ -342,6 +342,15 @@ function App() {
       description: 'Keyboard Shortcuts',
     });
 
+    // Cmd+Shift+T to create new template
+    registerShortcut('new-template', {
+      key: 't',
+      metaKey: true,
+      shiftKey: true,
+      action: openTemplateEditor,
+      description: 'New Template',
+    });
+
     return () => {
       unregisterShortcut('command-palette');
       unregisterShortcut('close-split');
@@ -351,8 +360,9 @@ function App() {
       unregisterShortcut('search');
       unregisterShortcut('keyboard-shortcuts');
       unregisterShortcut('keyboard-shortcuts-alt');
+      unregisterShortcut('new-template');
     };
-  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, toggleShortcutsModal]);
+  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, toggleShortcutsModal, openTemplateEditor]);
 
   // Show loading only during initial crypto initialization
   // (not during subsequent operations like key generation)
