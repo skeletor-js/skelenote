@@ -1,7 +1,8 @@
 import { type ReactNode, useEffect } from 'react';
-import './Layout.css';
+import { AppShell, ActionIcon, Box, Overlay } from '@mantine/core';
+import { Menu } from 'lucide-react';
 import { Sidebar } from './Sidebar';
-import { useSidebar, useNavigation } from '@/contexts';
+import { useSidebar } from '@/contexts';
 
 interface LayoutProps {
   children: ReactNode;
@@ -11,7 +12,6 @@ interface LayoutProps {
 
 export function Layout({ children, inboxCount = 0, onCreateFromTemplate }: LayoutProps) {
   const { isCollapsed, setCollapsed, toggleCollapsed } = useSidebar();
-  const { splitPane } = useNavigation();
 
   // Handle responsive collapse
   useEffect(() => {
@@ -32,31 +32,60 @@ export function Layout({ children, inboxCount = 0, onCreateFromTemplate }: Layou
   }, [setCollapsed]);
 
   return (
-    <div
-      className={`layout ${isCollapsed ? 'layout--sidebar-collapsed' : ''}`}
+    <AppShell
+      navbar={{
+        width: 260,
+        breakpoint: 'sm',
+        collapsed: { mobile: isCollapsed, desktop: isCollapsed },
+      }}
+      padding={0}
     >
-      <Sidebar inboxCount={inboxCount} onCreateFromTemplate={onCreateFromTemplate} />
-      <main className="layout__main">
+      <AppShell.Navbar p={0}>
+        <Sidebar inboxCount={inboxCount} onCreateFromTemplate={onCreateFromTemplate} />
+      </AppShell.Navbar>
+
+      <AppShell.Main
+        style={{
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
         {/* Show menu button when sidebar is collapsed */}
         {isCollapsed && (
-          <button
-            className="layout__menu-btn"
-            onClick={toggleCollapsed}
-            aria-label="Open sidebar"
+          <Box
+            style={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              zIndex: 100,
+            }}
           >
-            ☰
-          </button>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              onClick={toggleCollapsed}
+              aria-label="Open sidebar"
+            >
+              <Menu size={20} />
+            </ActionIcon>
+          </Box>
         )}
-        <div className={`layout__content ${splitPane.isOpen ? 'layout__content--split-active' : ''}`}>{children}</div>
-      </main>
+
+        <Box style={{ flex: 1, overflow: 'auto' }}>
+          {children}
+        </Box>
+      </AppShell.Main>
+
       {/* Overlay for mobile when sidebar is open */}
       {!isCollapsed && (
-        <div
-          className="layout__overlay"
+        <Overlay
           onClick={() => setCollapsed(true)}
-          aria-hidden="true"
+          zIndex={99}
+          hiddenFrom="sm"
         />
       )}
-    </div>
+    </AppShell>
   );
 }

@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
-import './SidebarSection.css';
+import { NavLink, Box } from '@mantine/core';
+import { ChevronRight } from 'lucide-react';
 import { useSidebar } from '@/contexts';
 
 interface SidebarSectionProps {
@@ -25,25 +26,36 @@ export function SidebarSection({
   };
 
   return (
-    <div className="sidebar-section">
-      <button
-        className={`sidebar-section__header ${collapsible ? 'sidebar-section__header--collapsible' : ''}`}
+    <Box mb="xs">
+      <NavLink
+        label={title}
+        leftSection={
+          collapsible ? (
+            <ChevronRight
+              size={14}
+              style={{
+                transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
+                transition: 'transform 150ms ease',
+              }}
+            />
+          ) : undefined
+        }
         onClick={handleToggle}
-        aria-expanded={!isCollapsed}
-        disabled={!collapsible}
+        opened={!isCollapsed}
+        disableRightSectionRotation
+        variant="subtle"
+        styles={{
+          label: {
+            fontWeight: 600,
+            fontSize: 'var(--mantine-font-size-xs)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            color: 'var(--mantine-color-dimmed)',
+          },
+        }}
       >
-        {collapsible && (
-          <span
-            className={`sidebar-section__chevron ${isCollapsed ? 'sidebar-section__chevron--collapsed' : ''}`}
-          >
-            &#9656;
-          </span>
-        )}
-        <span className="sidebar-section__title">{title}</span>
-      </button>
-      {!isCollapsed && (
-        <div className="sidebar-section__content">{children}</div>
-      )}
-    </div>
+        {children}
+      </NavLink>
+    </Box>
   );
 }

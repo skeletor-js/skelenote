@@ -3,50 +3,14 @@
  */
 
 import { useCallback, useState } from 'react';
-import { createPortal } from 'react-dom';
-import './SavedViewsSection.css';
+import { NavLink, Badge, Box, Group, ActionIcon, Menu, Text, Stack } from '@mantine/core';
+import { ChevronRight, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useSidebar } from '@/contexts';
 import { useSavedViews, useConfirmDialog } from '@/hooks';
 import { SavedViewEditor } from '@/components/views';
 import { ConfirmDialog } from '@/components/ui';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import type { SavedView } from '@/lib/types';
-
-interface SavedViewsContextMenuProps {
-  view: SavedView;
-  position: { x: number; y: number };
-  onClose: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-}
-
-function SavedViewsContextMenu({
-  view: _view,
-  position,
-  onClose,
-  onEdit,
-  onDelete,
-}: SavedViewsContextMenuProps) {
-  return createPortal(
-    <div className="saved-views-context-menu__overlay" onClick={onClose}>
-      <div
-        className="saved-views-context-menu"
-        style={{ top: position.y, left: position.x }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button className="saved-views-context-menu__item" onClick={onEdit}>
-          Edit View
-        </button>
-        <button
-          className="saved-views-context-menu__item saved-views-context-menu__item--danger"
-          onClick={onDelete}
-        >
-          Delete View
-        </button>
-      </div>
-    </div>,
-    document.body
-  );
-}
 
 interface SavedViewsSectionProps {
   /** Callback when a view is selected */
@@ -63,10 +27,7 @@ export function SavedViewsSection({
   const { views, deleteView } = useSavedViews();
   const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
 
-  const [contextMenu, setContextMenu] = useState<{
-    view: SavedView;
-    position: { x: number; y: number };
-  } | null>(null);
+  const [contextMenuView, setContextMenuView] = useState<SavedView | null>(null);
 
   // Editor modal state
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -78,21 +39,6 @@ export function SavedViewsSection({
     toggleSection('saved-views');
   }, [toggleSection]);
 
-  const handleContextMenu = useCallback(
-    (e: React.MouseEvent, view: SavedView) => {
-      e.preventDefault();
-      setContextMenu({
-        view,
-        position: { x: e.clientX, y: e.clientY },
-      });
-    },
-    []
-  );
-
-  const handleCloseContextMenu = useCallback(() => {
-    setContextMenu(null);
-  }, []);
-
   // Open editor for creating new view
   const handleCreateView = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -101,37 +47,32 @@ export function SavedViewsSection({
   }, []);
 
   // Open editor for editing existing view
-  const handleEdit = useCallback(() => {
-    if (contextMenu) {
-      setEditingView(contextMenu.view);
-      setIsEditorOpen(true);
-    }
-    setContextMenu(null);
-  }, [contextMenu]);
+  const handleEdit = useCallback((view: SavedView) => {
+    setEditingView(view);
+    setIsEditorOpen(true);
+    setContextMenuView(null);
+  }, []);
 
   const handleCloseEditor = useCallback(() => {
     setIsEditorOpen(false);
     setEditingView(null);
   }, []);
 
-  const handleDelete = useCallback(async () => {
-    if (!contextMenu) return;
-
-    const viewToDelete = contextMenu.view;
-    setContextMenu(null);
+  const handleDelete = useCallback(async (view: SavedView) => {
+    setContextMenuView(null);
 
     const confirmed = await confirm({
       title: 'Delete View',
-      message: `Are you sure you want to delete "${viewToDelete.name}"? This action cannot be undone.`,
+      message: `Are you sure you want to delete "${view.name}"? This action cannot be undone.`,
       confirmLabel: 'Delete',
       cancelLabel: 'Cancel',
       variant: 'danger',
     });
 
     if (confirmed) {
-      deleteView(viewToDelete.id);
+      deleteView(view.id);
     }
-  }, [contextMenu, confirm, deleteView]);
+  }, [confirm, deleteView]);
 
   const handleViewClick = useCallback(
     (view: SavedView) => {
@@ -140,69 +81,111 @@ export function SavedViewsSection({
     [onViewSelect]
   );
 
+  // Render icon - either as Lucide icon name or emoji fallback
+  const renderIcon = (icon: string | undefined) => {
+    const iconValue = icon || 'clipboard';
+    if (/^[a-z-]+$/.test(iconValue)) {
+      return <Icon name={iconValue as IconName} size={16} />;
+    }
+    return <span style={{ fontSize: 14 }}>{iconValue}</span>;
+  };
+
   return (
-    <div className="saved-views-section">
-      <div className="saved-views-section__header-row">
-        <button
-          className="saved-views-section__header"
+    <Box mb="xs">
+      <Group gap={0} wrap="nowrap">
+        <NavLink
+          label="Saved Views"
+          leftSection={
+            <ChevronRight
+              size={14}
+              style={{
+                transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
+                transition: 'transform 150ms ease',
+              }}
+            />
+          }
+          rightSection={
+            views.length > 0 ? (
+              <Badge size="xs" variant="filled" color="gray" circle>
+                {views.length}
+              </Badge>
+            ) : undefined
+          }
           onClick={handleToggle}
-          aria-expanded={!isCollapsed}
+          opened={!isCollapsed}
+          disableRightSectionRotation
+          variant="subtle"
+          styles={{
+            root: { flex: 1 },
+            label: {
+              fontWeight: 600,
+              fontSize: 'var(--mantine-font-size-xs)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              color: 'var(--mantine-color-dimmed)',
+            },
+          }}
         >
-          <span
-            className={`saved-views-section__chevron ${isCollapsed ? 'saved-views-section__chevron--collapsed' : ''}`}
-          >
-            &#9656;
-          </span>
-          <span className="saved-views-section__title">Saved Views</span>
-          {views.length > 0 && (
-            <span className="saved-views-section__count">{views.length}</span>
-          )}
-        </button>
-        <button
-          className="saved-views-section__add-btn"
+          <Stack gap={0} role="listbox" aria-label="Saved views">
+            {views.length === 0 ? (
+              <Text size="xs" c="dimmed" py="xs" pl="md">
+                No saved views yet
+              </Text>
+            ) : (
+              views.map((view) => (
+                <Menu
+                  key={view.id}
+                  opened={contextMenuView?.id === view.id}
+                  onClose={() => setContextMenuView(null)}
+                  position="right-start"
+                >
+                  <Menu.Target>
+                    <Box
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        setContextMenuView(view);
+                      }}
+                    >
+                      <NavLink
+                        label={view.name}
+                        leftSection={renderIcon(view.icon)}
+                        active={activeViewId === view.id}
+                        onClick={() => handleViewClick(view)}
+                        variant="subtle"
+                      />
+                    </Box>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item
+                      leftSection={<Pencil size={14} />}
+                      onClick={() => handleEdit(view)}
+                    >
+                      Edit View
+                    </Menu.Item>
+                    <Menu.Item
+                      leftSection={<Trash2 size={14} />}
+                      color="red"
+                      onClick={() => handleDelete(view)}
+                    >
+                      Delete View
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              ))
+            )}
+          </Stack>
+        </NavLink>
+        <ActionIcon
+          variant="subtle"
+          color="gray"
+          size="sm"
           onClick={handleCreateView}
           aria-label="Create new saved view"
           title="Create new saved view"
         >
-          +
-        </button>
-      </div>
-
-      {!isCollapsed && (
-        <div className="saved-views-section__content" role="listbox" aria-label="Saved views">
-          {views.length === 0 ? (
-            <div className="saved-views-section__empty">
-              No saved views yet
-            </div>
-          ) : (
-            views.map((view) => (
-              <button
-                key={view.id}
-                className={`saved-views-section__item ${activeViewId === view.id ? 'saved-views-section__item--active' : ''}`}
-                onClick={() => handleViewClick(view)}
-                onContextMenu={(e) => handleContextMenu(e, view)}
-                role="option"
-                aria-selected={activeViewId === view.id}
-              >
-                <span className="saved-views-section__item-icon">
-                  {view.icon || '📋'}
-                </span>
-                <span className="saved-views-section__item-name">{view.name}</span>
-              </button>
-            ))
-          )}
-        </div>
-      )}
-
-      {contextMenu && (
-        <SavedViewsContextMenu
-          view={contextMenu.view}
-          position={contextMenu.position}
-          onClose={handleCloseContextMenu}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
-      )}
+          <Plus size={14} />
+        </ActionIcon>
+      </Group>
 
       <SavedViewEditor
         view={editingView}
@@ -220,6 +203,6 @@ export function SavedViewsSection({
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
-    </div>
+    </Box>
   );
 }

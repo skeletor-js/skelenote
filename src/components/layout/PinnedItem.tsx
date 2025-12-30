@@ -3,10 +3,11 @@
  */
 
 import { useCallback } from 'react';
-import './PinnedItem.css';
+import { NavLink, Menu, Box } from '@mantine/core';
+import { GripVertical, Pin } from 'lucide-react';
 import { useSidebar, useTypeRegistry, useNavigation } from '@/contexts';
 import { useContextMenu, usePinnedObjects } from '@/hooks';
-import { ContextMenu, type ContextMenuItem } from '@/components/ui';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import type { SkelenoteObject } from '@/lib/types';
 
 interface PinnedItemProps {
@@ -36,7 +37,7 @@ export function PinnedItem({
 
   // Get type info for icon
   const typeDef = typeRegistry.get(object.typeId);
-  const icon = typeDef?.icon ?? '📄';
+  const icon = typeDef?.icon ?? 'file';
 
   // Get display title
   const title =
@@ -51,16 +52,6 @@ export function PinnedItem({
     setSelectedItem(itemId);
     navigateToObject(object.id);
   }, [setSelectedItem, itemId, navigateToObject, object.id]);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        handleClick();
-      }
-    },
-    [handleClick]
-  );
 
   const handleDragStart = useCallback(
     (e: React.DragEvent) => {
@@ -84,53 +75,54 @@ export function PinnedItem({
     onDragEnd();
   }, [onDragEnd]);
 
-  // Context menu items
-  const contextMenuItems: ContextMenuItem[] = [
-    {
-      id: 'unpin',
-      label: 'Unpin from Sidebar',
-      icon: '📌',
-      onClick: () => unpin(object.id),
-    },
-  ];
+  // Render icon - either as Lucide icon name or emoji fallback
+  const renderIcon = () => {
+    if (/^[a-z-]+$/.test(icon)) {
+      return <Icon name={icon as IconName} size={16} />;
+    }
+    return <span style={{ fontSize: 14 }}>{icon}</span>;
+  };
 
-  // Build class names
-  const classNames = ['pinned-item'];
-  if (isSelected) classNames.push('pinned-item--selected');
-  if (isDragging) classNames.push('pinned-item--dragging');
-  if (isDragOver) classNames.push('pinned-item--drag-over');
+  // Suppress unused variable warning - position is from useContextMenu but Menu handles its own positioning
+  void position;
 
   return (
-    <>
-      <div
-        className={classNames.join(' ')}
-        draggable
-        onClick={handleClick}
-        onKeyDown={handleKeyDown}
-        onContextMenu={openContextMenu}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-        role="button"
-        tabIndex={0}
-        aria-current={isSelected ? 'page' : undefined}
-        aria-grabbed={isDragging}
-      >
-        <span className="pinned-item__drag-handle" aria-hidden="true">
-          ⠿
-        </span>
-        <span className="pinned-item__icon" aria-hidden="true">
-          {icon}
-        </span>
-        <span className="pinned-item__label">{title}</span>
-      </div>
-
-      <ContextMenu
-        items={contextMenuItems}
-        position={position}
-        isOpen={isOpen}
-        onClose={closeContextMenu}
-      />
-    </>
+    <Menu opened={isOpen} onClose={closeContextMenu} position="right-start">
+      <Menu.Target>
+        <Box
+          draggable
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+          onContextMenu={openContextMenu}
+          style={{
+            opacity: isDragging ? 0.5 : 1,
+            borderTop: isDragOver ? '2px solid var(--mantine-color-blue-5)' : undefined,
+            cursor: 'grab',
+          }}
+        >
+          <NavLink
+            label={title}
+            leftSection={
+              <Box style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <GripVertical size={12} style={{ color: 'var(--mantine-color-dimmed)' }} />
+                {renderIcon()}
+              </Box>
+            }
+            active={isSelected}
+            onClick={handleClick}
+            variant="subtle"
+          />
+        </Box>
+      </Menu.Target>
+      <Menu.Dropdown>
+        <Menu.Item
+          leftSection={<Pin size={14} />}
+          onClick={() => unpin(object.id)}
+        >
+          Unpin from Sidebar
+        </Menu.Item>
+      </Menu.Dropdown>
+    </Menu>
   );
 }

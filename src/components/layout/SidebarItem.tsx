@@ -1,5 +1,5 @@
-import './SidebarItem.css';
-import { Badge } from '@/components/ui';
+import { NavLink, Badge } from '@mantine/core';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import { useSidebar } from '@/contexts';
 
 interface SidebarItemProps {
@@ -27,23 +27,32 @@ export function SidebarItem({
     onClick?.();
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleClick();
+  // Render icon - either as Lucide icon name or emoji fallback
+  const renderIcon = () => {
+    if (!icon) return undefined;
+    // Check if it's a Lucide icon name (kebab-case) or emoji
+    if (/^[a-z-]+$/.test(icon)) {
+      return <Icon name={icon as IconName} size={16} />;
     }
+    // Emoji fallback
+    return <span style={{ fontSize: 14 }}>{icon}</span>;
   };
 
   return (
-    <button
-      className={`sidebar-item ${isSelected ? 'sidebar-item--selected' : ''} ${indent ? 'sidebar-item--indent' : ''}`}
+    <NavLink
+      label={label}
+      leftSection={renderIcon()}
+      rightSection={
+        count !== undefined && count > 0 ? (
+          <Badge size="xs" variant="filled" color="gray" circle>
+            {count}
+          </Badge>
+        ) : undefined
+      }
+      active={isSelected}
       onClick={handleClick}
-      onKeyDown={handleKeyDown}
-      aria-current={isSelected ? 'page' : undefined}
-    >
-      {icon && <span className="sidebar-item__icon">{icon}</span>}
-      <span className="sidebar-item__label">{label}</span>
-      {count !== undefined && count > 0 && <Badge count={count} />}
-    </button>
+      variant="subtle"
+      style={indent ? { paddingLeft: 32 } : undefined}
+    />
   );
 }
