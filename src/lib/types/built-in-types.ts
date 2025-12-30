@@ -36,7 +36,7 @@ export type TagColor = (typeof TagColorOptions)[number];
 export const TaskType: TypeDefinition = {
   id: BuiltInTypeIds.TASK,
   name: 'Task',
-  icon: '✓',
+  icon: 'circle-check',
   hasContent: true,
   isBuiltIn: true,
   schema: [
@@ -140,7 +140,7 @@ export const TaskType: TypeDefinition = {
 export const NoteType: TypeDefinition = {
   id: BuiltInTypeIds.NOTE,
   name: 'Note',
-  icon: '📝',
+  icon: 'file-text',
   hasContent: true,
   isBuiltIn: true,
   schema: [
@@ -206,7 +206,7 @@ export const NoteType: TypeDefinition = {
 export const ProjectType: TypeDefinition = {
   id: BuiltInTypeIds.PROJECT,
   name: 'Project',
-  icon: '📁',
+  icon: 'folder',
   hasContent: true,
   isBuiltIn: true,
   schema: [
@@ -258,7 +258,7 @@ export const ProjectType: TypeDefinition = {
 export const LinkType: TypeDefinition = {
   id: BuiltInTypeIds.LINK,
   name: 'Link',
-  icon: '🔗',
+  icon: 'link',
   hasContent: false,
   isBuiltIn: true,
   schema: [
@@ -314,7 +314,7 @@ export const LinkType: TypeDefinition = {
 export const MeetingType: TypeDefinition = {
   id: BuiltInTypeIds.MEETING,
   name: 'Meeting',
-  icon: '📅',
+  icon: 'calendar',
   hasContent: true,
   isBuiltIn: true,
   schema: [
@@ -401,7 +401,7 @@ export const MeetingType: TypeDefinition = {
 export const TagType: TypeDefinition = {
   id: BuiltInTypeIds.TAG,
   name: 'Tag',
-  icon: '🏷️',
+  icon: 'tag',
   hasContent: false,
   isBuiltIn: true,
   schema: [
@@ -450,7 +450,7 @@ export const TagType: TypeDefinition = {
 export const PersonType: TypeDefinition = {
   id: BuiltInTypeIds.PERSON,
   name: 'Person',
-  icon: '👤',
+  icon: 'user',
   hasContent: true,
   isBuiltIn: true,
   schema: [
@@ -521,7 +521,7 @@ export const PersonType: TypeDefinition = {
 export const TemplateType: TypeDefinition = {
   id: BuiltInTypeIds.TEMPLATE,
   name: 'Template',
-  icon: '📋',
+  icon: 'clipboard',
   hasContent: true, // Template body with placeholders
   isBuiltIn: true,
   schema: [
