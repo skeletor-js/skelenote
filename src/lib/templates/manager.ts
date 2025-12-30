@@ -239,6 +239,13 @@ export function createFromTemplate(
     }
   }
 
+  // Ensure a title is set (required by most object types)
+  if (!appliedProperties.title && !appliedProperties.name) {
+    // Use template name + date as default title
+    const defaultTitle = `${template.name} - ${new Date().toLocaleDateString()}`;
+    appliedProperties.title = defaultTitle;
+  }
+
   // Create the object with the target type
   const obj = store.create({
     typeId: template.targetTypeId,
