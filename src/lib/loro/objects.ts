@@ -556,6 +556,124 @@ export class ObjectStore {
   }
 
   /**
+   * Set priority for multiple tasks
+   */
+  setPriorityMany(
+    ids: string[],
+    priority: string | null
+  ): { updated: number; errors: string[] } {
+    let updated = 0;
+    const errors: string[] = [];
+
+    for (const id of ids) {
+      try {
+        const obj = this.getOrThrow(id);
+        // Only update tasks
+        if (obj.typeId !== 'task') continue;
+        this.update(id, { properties: { priority } });
+        updated++;
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { updated, errors };
+  }
+
+  /**
+   * Set status for multiple tasks (e.g., mark complete/incomplete)
+   */
+  setStatusMany(ids: string[], status: string): { updated: number; errors: string[] } {
+    let updated = 0;
+    const errors: string[] = [];
+
+    for (const id of ids) {
+      try {
+        const obj = this.getOrThrow(id);
+        // Only update tasks
+        if (obj.typeId !== 'task') continue;
+        // Skip if already the target status
+        if (obj.properties.status === status) continue;
+        this.update(id, { properties: { status } });
+        updated++;
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { updated, errors };
+  }
+
+  /**
+   * Pin multiple objects
+   */
+  pinMany(ids: string[]): { pinned: number; errors: string[] } {
+    let pinned = 0;
+    const errors: string[] = [];
+
+    for (const id of ids) {
+      try {
+        const obj = this.getOrThrow(id);
+        if (!obj.pinned) {
+          this.pin(id);
+          pinned++;
+        }
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { pinned, errors };
+  }
+
+  /**
+   * Unpin multiple objects
+   */
+  unpinMany(ids: string[]): { unpinned: number; errors: string[] } {
+    let unpinned = 0;
+    const errors: string[] = [];
+
+    for (const id of ids) {
+      try {
+        const obj = this.getOrThrow(id);
+        if (obj.pinned) {
+          this.unpin(id);
+          unpinned++;
+        }
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { unpinned, errors };
+  }
+
+  /**
+   * Assign multiple objects to a project
+   */
+  assignToProjectMany(
+    ids: string[],
+    projectId: string | null
+  ): { updated: number; errors: string[] } {
+    let updated = 0;
+    const errors: string[] = [];
+
+    for (const id of ids) {
+      try {
+        const obj = this.getOrThrow(id);
+        // Skip types that don't have project property (tags, projects themselves)
+        if (['tag', 'project'].includes(obj.typeId)) continue;
+        this.update(id, { properties: { project: projectId } });
+        updated++;
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { updated, errors };
+  }
+
+  /**
    * Validate properties against a type definition
    */
   private validateProperties(
