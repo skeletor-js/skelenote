@@ -117,15 +117,6 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
   return (
     <aside className="sidebar">
       <div className="sidebar__content">
-        {/* Pinned section */}
-        <PinnedSection />
-
-        {/* Saved views section */}
-        <SavedViewsSection
-          onViewSelect={handleSavedViewSelect}
-          activeViewId={activeSavedViewId}
-        />
-
         {/* Primary navigation */}
         <div className="sidebar__primary">
           <SidebarItem
@@ -168,6 +159,15 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
         </div>
 
         <div className="sidebar__divider" />
+
+        {/* Saved views section */}
+        <SavedViewsSection
+          onViewSelect={handleSavedViewSelect}
+          activeViewId={activeSavedViewId}
+        />
+
+        {/* Pinned section */}
+        <PinnedSection />
 
         {/* Tasks section */}
         <SidebarSection id="tasks" title="Tasks">
