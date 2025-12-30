@@ -8,6 +8,7 @@ import './SavedViewsSection.css';
 import { useSidebar } from '@/contexts';
 import { useSavedViews, useConfirmDialog } from '@/hooks';
 import { SavedViewEditor } from '@/components/views';
+import { ConfirmDialog } from '@/components/ui';
 import type { SavedView } from '@/lib/types';
 
 interface SavedViewsContextMenuProps {
@@ -60,7 +61,7 @@ export function SavedViewsSection({
 }: SavedViewsSectionProps) {
   const { isSectionCollapsed, toggleSection } = useSidebar();
   const { views, deleteView } = useSavedViews();
-  const { confirm } = useConfirmDialog();
+  const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
 
   const [contextMenu, setContextMenu] = useState<{
     view: SavedView;
@@ -207,6 +208,17 @@ export function SavedViewsSection({
         view={editingView}
         isOpen={isEditorOpen}
         onClose={handleCloseEditor}
+      />
+
+      <ConfirmDialog
+        isOpen={dialogState.isOpen}
+        title={dialogState.title}
+        message={dialogState.message}
+        confirmLabel={dialogState.confirmLabel}
+        cancelLabel={dialogState.cancelLabel}
+        variant={dialogState.variant}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
       />
     </div>
   );
