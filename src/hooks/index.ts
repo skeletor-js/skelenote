@@ -28,3 +28,10 @@ export {
 } from './useContextMenu';
 export { usePinnedObjects, type UsePinnedObjectsResult } from './usePinnedObjects';
 export { useSavedViews, type UseSavedViewsResult } from './useSavedViews';
+export {
+  useSelection,
+  type UseSelectionOptions,
+  type UseSelectionResult,
+  type SelectionState,
+  type SelectionActions,
+} from './useSelection';

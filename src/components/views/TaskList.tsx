@@ -17,6 +17,12 @@ interface TaskListProps {
   onDeleteTask: (taskId: string) => void;
   /** Message to show when list is empty */
   emptyMessage?: string;
+  /** Check if a task is selected */
+  isSelected?: (id: string) => boolean;
+  /** Callback when selection changes */
+  onSelectionChange?: (id: string, shiftKey: boolean) => void;
+  /** Whether any item is selected (selecting mode) */
+  hasSelection?: boolean;
 }
 
 export function TaskList({
@@ -24,6 +30,9 @@ export function TaskList({
   onToggleComplete,
   onDeleteTask,
   emptyMessage = 'No tasks',
+  isSelected,
+  onSelectionChange,
+  hasSelection = false,
 }: TaskListProps) {
   const { navigateToObject } = useNavigation();
 
@@ -40,6 +49,9 @@ export function TaskList({
           onToggleComplete={onToggleComplete}
           onDelete={onDeleteTask}
           onClick={() => navigateToObject(task.id)}
+          isSelected={isSelected?.(task.id)}
+          onSelectionChange={onSelectionChange}
+          isSelectingMode={hasSelection}
         />
       ))}
     </div>

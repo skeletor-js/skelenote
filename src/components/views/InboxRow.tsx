@@ -20,9 +20,23 @@ interface InboxRowProps {
   onProcess: (itemId: string) => void;
   /** Callback when item is deleted */
   onDelete: (itemId: string) => void;
+  /** Whether this item is selected */
+  isSelected?: boolean;
+  /** Callback when selection checkbox is toggled */
+  onSelectionChange?: (id: string, shiftKey: boolean) => void;
+  /** Whether any item in the list is selected (enables "selecting mode") */
+  isSelectingMode?: boolean;
 }
 
-export function InboxRow({ item, onClick, onProcess, onDelete }: InboxRowProps) {
+export function InboxRow({
+  item,
+  onClick,
+  onProcess,
+  onDelete,
+  isSelected = false,
+  onSelectionChange,
+  isSelectingMode = false,
+}: InboxRowProps) {
   const { store } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
@@ -47,6 +61,27 @@ export function InboxRow({ item, onClick, onProcess, onDelete }: InboxRowProps) 
         color: firstTag.properties.color as TagColor | undefined,
       }
     : null;
+
+  // Handle selection checkbox click
+  const handleCheckboxClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onSelectionChange?.(item.id, e.shiftKey);
+    },
+    [onSelectionChange, item.id]
+  );
+
+  // Handle keyboard on selection checkbox
+  const handleCheckboxKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        onSelectionChange?.(item.id, e.shiftKey);
+      }
+    },
+    [onSelectionChange, item.id]
+  );
 
   // Handle process button click without triggering row click
   const handleProcessClick = useCallback(
@@ -116,20 +151,40 @@ export function InboxRow({ item, onClick, onProcess, onDelete }: InboxRowProps) 
     },
   ];
 
+  // Build class names
+  const classNames = ['inbox-row'];
+  if (isSelected) classNames.push('inbox-row--selected');
+  if (isSelectingMode) classNames.push('inbox-row--selecting-mode');
+
   return (
     <>
     <div
-      className="inbox-row"
+      className={classNames.join(' ')}
       onClick={onClick}
       onContextMenu={openContextMenu}
       role="button"
       tabIndex={0}
+      aria-selected={isSelected}
       onKeyDown={(e) => {
         if (e.key === 'Enter' && e.target === e.currentTarget) {
           onClick();
         }
       }}
     >
+      {/* Selection checkbox */}
+      {onSelectionChange && (
+        <button
+          type="button"
+          className={`inbox-row__checkbox ${isSelected ? 'inbox-row__checkbox--checked' : ''}`}
+          onClick={handleCheckboxClick}
+          onKeyDown={handleCheckboxKeyDown}
+          aria-label={`Select ${title}`}
+          aria-pressed={isSelected}
+        >
+          {isSelected && <span className="inbox-row__check-icon">✓</span>}
+        </button>
+      )}
+
       {/* Type icon */}
       <span className="inbox-row__icon" title={typeName}>
         {icon}
