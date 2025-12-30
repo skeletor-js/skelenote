@@ -20,6 +20,12 @@ interface TaskRowProps {
   onClick: () => void;
   /** Callback when task is deleted */
   onDelete: (taskId: string) => void;
+  /** Whether this item is selected for bulk operations */
+  isSelected?: boolean;
+  /** Callback when selection checkbox is toggled */
+  onSelectionChange?: (id: string, shiftKey: boolean) => void;
+  /** Whether any item in the list is selected (enables "selecting mode") */
+  isSelectingMode?: boolean;
 }
 
 export function TaskRow({
@@ -27,6 +33,9 @@ export function TaskRow({
   onToggleComplete,
   onClick,
   onDelete,
+  isSelected = false,
+  onSelectionChange,
+  isSelectingMode = false,
 }: TaskRowProps) {
   const { store } = useObjects();
   const { addToast } = useToast();
@@ -58,7 +67,28 @@ export function TaskRow({
   // Check if overdue
   const isTaskOverdue = dueDate !== null && !isComplete && isOverdue(dueDate);
 
-  // Handle checkbox click without triggering row click
+  // Handle selection checkbox click
+  const handleSelectionClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onSelectionChange?.(task.id, e.shiftKey);
+    },
+    [onSelectionChange, task.id]
+  );
+
+  // Handle keyboard on selection checkbox
+  const handleSelectionKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        onSelectionChange?.(task.id, e.shiftKey);
+      }
+    },
+    [onSelectionChange, task.id]
+  );
+
+  // Handle completion checkbox click without triggering row click
   const handleCheckboxClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -129,6 +159,8 @@ export function TaskRow({
   // Build class names
   const classNames = ['task-row'];
   if (isComplete) classNames.push('task-row--complete');
+  if (isSelected) classNames.push('task-row--selected');
+  if (isSelectingMode) classNames.push('task-row--selecting-mode');
 
   return (
     <>
@@ -138,13 +170,28 @@ export function TaskRow({
       onContextMenu={openContextMenu}
       role="button"
       tabIndex={0}
+      aria-selected={isSelected}
       onKeyDown={(e) => {
         if (e.key === 'Enter' && e.target === e.currentTarget) {
           onClick();
         }
       }}
     >
-      {/* Checkbox */}
+      {/* Selection checkbox (separate from completion) */}
+      {onSelectionChange && (
+        <button
+          type="button"
+          className={`task-row__select-checkbox ${isSelected ? 'task-row__select-checkbox--checked' : ''}`}
+          onClick={handleSelectionClick}
+          onKeyDown={handleSelectionKeyDown}
+          aria-label={`Select ${title}`}
+          aria-pressed={isSelected}
+        >
+          {isSelected && <span className="task-row__select-check-icon">✓</span>}
+        </button>
+      )}
+
+      {/* Completion checkbox */}
       <button
         className={`task-row__checkbox ${isComplete ? 'task-row__checkbox--checked' : ''}`}
         onClick={handleCheckboxClick}
