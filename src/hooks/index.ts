@@ -27,3 +27,4 @@ export {
   type UseContextMenuResult,
 } from './useContextMenu';
 export { usePinnedObjects, type UsePinnedObjectsResult } from './usePinnedObjects';
+export { useSavedViews, type UseSavedViewsResult } from './useSavedViews';

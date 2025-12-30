@@ -22,7 +22,8 @@ export type ViewType =
   | 'object'
   | 'settings'
   | 'time-machine'
-  | 'search';
+  | 'search'
+  | 'saved-view';
 
 interface NavigationState {
   view: ViewType;
@@ -31,6 +32,8 @@ interface NavigationState {
   searchQuery: string | null;
   /** Object ID to filter Time Machine view */
   timeMachineFilter: string | null;
+  /** Saved view ID when view is 'saved-view' */
+  savedViewId: string | null;
 }
 
 /**
@@ -65,6 +68,8 @@ interface NavigationContextValue {
   searchQuery: string | null;
   /** Object ID filter for Time Machine view */
   timeMachineObjectFilter: string | null;
+  /** Active saved view ID (when view is 'saved-view') */
+  activeSavedViewId: string | null;
   /** Navigate to an object detail view */
   navigateToObject: (objectId: string) => void;
   /** Navigate to a specific view */
@@ -73,6 +78,8 @@ interface NavigationContextValue {
   navigateToSearch: (query?: string) => void;
   /** Navigate to Time Machine view with optional object filter */
   navigateToTimeMachine: (objectId?: string) => void;
+  /** Navigate to a saved view */
+  navigateToSavedView: (viewId: string) => void;
   /** Go back to the previous view */
   navigateBack: () => void;
   /** Check if we can go back */
@@ -111,6 +118,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     objectId: null,
     searchQuery: null,
     timeMachineFilter: null,
+    savedViewId: null,
   });
   const [history, setHistory] = useState<NavigationState[]>([]);
 
@@ -131,6 +139,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       objectId,
       searchQuery: null,
       timeMachineFilter: null,
+      savedViewId: null,
     });
   }, [currentState]);
 
@@ -141,6 +150,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       objectId: null,
       searchQuery: null,
       timeMachineFilter: null,
+      savedViewId: null,
     });
   }, [currentState]);
 
@@ -151,6 +161,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       objectId: null,
       searchQuery: query ?? null,
       timeMachineFilter: null,
+      savedViewId: null,
     });
   }, [currentState]);
 
@@ -161,6 +172,18 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       objectId: null,
       searchQuery: null,
       timeMachineFilter: objectId ?? null,
+      savedViewId: null,
+    });
+  }, [currentState]);
+
+  const navigateToSavedView = useCallback((viewId: string) => {
+    setHistory((prev) => [...prev, currentState]);
+    setCurrentState({
+      view: 'saved-view',
+      objectId: null,
+      searchQuery: null,
+      timeMachineFilter: null,
+      savedViewId: viewId,
     });
   }, [currentState]);
 
@@ -213,6 +236,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       objectId: splitPane.objectId,
       searchQuery: null,
       timeMachineFilter: null,
+      savedViewId: null,
     });
 
     // Update split to show the former primary object
@@ -231,6 +255,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         objectId,
         searchQuery: null,
         timeMachineFilter: null,
+        savedViewId: null,
       });
 
       // Open split pane with historical version
@@ -253,10 +278,12 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         selectedObjectId: currentState.objectId,
         searchQuery: currentState.searchQuery,
         timeMachineObjectFilter: currentState.timeMachineFilter,
+        activeSavedViewId: currentState.savedViewId,
         navigateToObject,
         navigateToView,
         navigateToSearch,
         navigateToTimeMachine,
+        navigateToSavedView,
         navigateBack,
         canGoBack: history.length > 0,
         navigationHistory: history,

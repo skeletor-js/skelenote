@@ -3,10 +3,11 @@ import './Sidebar.css';
 import { SidebarSection } from './SidebarSection';
 import { SidebarItem } from './SidebarItem';
 import { PinnedSection } from './PinnedSection';
+import { SavedViewsSection } from './SavedViewsSection';
 import { Tag, type TagColor, SyncIndicator } from '@/components/ui';
 import { useSidebar, useNavigation, useObjects, useTypeRegistry, type ViewType } from '@/contexts';
 import { useTheme, useLinkToDaily } from '@/hooks';
-import { BuiltInTypeIds, type PropertyValue } from '@/lib/types';
+import { BuiltInTypeIds, type PropertyValue, type SavedView } from '@/lib/types';
 
 // Default properties for each type when creating
 const defaultPropertiesForType: Record<string, Record<string, PropertyValue>> = {
@@ -25,7 +26,7 @@ interface SidebarProps {
 
 export function Sidebar({ inboxCount = 0 }: SidebarProps) {
   const { isCollapsed, toggleCollapsed, selectedItem, setSelectedItem } = useSidebar();
-  const { navigateToView, navigateToObject } = useNavigation();
+  const { navigateToView, navigateToObject, navigateToSavedView, activeSavedViewId } = useNavigation();
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { theme, toggleTheme } = useTheme();
@@ -33,6 +34,14 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
 
   const [showTypeSelector, setShowTypeSelector] = useState(false);
   const typeSelectorRef = useRef<HTMLDivElement>(null);
+
+  // Handle saved view selection
+  const handleSavedViewSelect = useCallback(
+    (view: SavedView) => {
+      navigateToSavedView(view.id);
+    },
+    [navigateToSavedView]
+  );
 
   // Get all available types for the selector
   const availableTypes = useMemo(() => {
@@ -108,9 +117,6 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
   return (
     <aside className="sidebar">
       <div className="sidebar__content">
-        {/* Pinned section */}
-        <PinnedSection />
-
         {/* Primary navigation */}
         <div className="sidebar__primary">
           <SidebarItem
@@ -153,6 +159,15 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
         </div>
 
         <div className="sidebar__divider" />
+
+        {/* Saved views section */}
+        <SavedViewsSection
+          onViewSelect={handleSavedViewSelect}
+          activeViewId={activeSavedViewId}
+        />
+
+        {/* Pinned section */}
+        <PinnedSection />
 
         {/* Tasks section */}
         <SidebarSection id="tasks" title="Tasks">
