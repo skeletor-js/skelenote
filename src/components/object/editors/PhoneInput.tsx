@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
+import { TextInput, ActionIcon, Tooltip } from '@mantine/core';
 import { open } from '@tauri-apps/plugin-shell';
-import './editors.css';
+import { Phone } from 'lucide-react';
 
 interface PhoneInputProps {
   id?: string;
@@ -9,6 +10,9 @@ interface PhoneInputProps {
   placeholder?: string;
 }
 
+/**
+ * Phone input with call button
+ */
 export function PhoneInput({
   id,
   value,
@@ -56,27 +60,30 @@ export function PhoneInput({
   };
 
   return (
-    <div className="editor-phone">
-      <input
-        id={id}
-        type="tel"
-        className="editor-phone__input"
-        value={localValue}
-        onChange={(e) => setLocalValue(e.target.value)}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-      />
-      {value && (
-        <button
-          type="button"
-          className="editor-phone__call"
-          onClick={handleCall}
-          title="Call number"
-        >
-          ☎
-        </button>
-      )}
-    </div>
+    <TextInput
+      id={id}
+      type="tel"
+      value={localValue}
+      onChange={(e) => setLocalValue(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      placeholder={placeholder}
+      size="sm"
+      variant="filled"
+      rightSection={
+        value && (
+          <Tooltip label="Call number" withArrow>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="sm"
+              onClick={handleCall}
+            >
+              <Phone size={14} />
+            </ActionIcon>
+          </Tooltip>
+        )
+      }
+    />
   );
 }

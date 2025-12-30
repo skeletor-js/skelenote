@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import './editors.css';
+import { NumberInput as MantineNumberInput } from '@mantine/core';
 
 interface NumberInputProps {
   id?: string;
@@ -11,6 +11,9 @@ interface NumberInputProps {
   placeholder?: string;
 }
 
+/**
+ * Number input that commits value on blur or Enter key
+ */
 export function NumberInput({
   id,
   value,
@@ -20,29 +23,29 @@ export function NumberInput({
   step = 1,
   placeholder = 'Enter number...',
 }: NumberInputProps) {
-  const [localValue, setLocalValue] = useState(value?.toString() ?? '');
+  const [localValue, setLocalValue] = useState<number | string>(value ?? '');
 
   // Sync local state when prop value changes
   useEffect(() => {
-    setLocalValue(value?.toString() ?? '');
+    setLocalValue(value ?? '');
   }, [value]);
 
   const handleBlur = useCallback(() => {
-    if (localValue === '') {
+    if (localValue === '' || localValue === undefined) {
       if (value !== null) {
         onChange(null);
       }
       return;
     }
 
-    const numValue = parseFloat(localValue);
+    const numValue = typeof localValue === 'string' ? parseFloat(localValue) : localValue;
     if (!isNaN(numValue) && numValue !== value) {
       // Apply min/max constraints
       let constrainedValue = numValue;
       if (min !== undefined && constrainedValue < min) constrainedValue = min;
       if (max !== undefined && constrainedValue > max) constrainedValue = max;
       onChange(constrainedValue);
-      setLocalValue(constrainedValue.toString());
+      setLocalValue(constrainedValue);
     }
   }, [localValue, value, onChange, min, max]);
 
@@ -58,18 +61,20 @@ export function NumberInput({
   );
 
   return (
-    <input
+    <MantineNumberInput
       id={id}
-      type="number"
-      className="editor-input editor-input--number"
       value={localValue}
-      onChange={(e) => setLocalValue(e.target.value)}
+      onChange={setLocalValue}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       min={min}
       max={max}
       step={step}
       placeholder={placeholder}
+      size="sm"
+      variant="filled"
+      allowDecimal
+      hideControls
     />
   );
 }
