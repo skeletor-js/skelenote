@@ -3,15 +3,60 @@
  * Displays all objects with inboxed: true
  */
 
-import { useInbox } from '@/hooks/useInbox';
-import { useNavigation } from '@/contexts';
+import { useMemo, useCallback, useEffect } from 'react';
+import { useInbox, useSelection } from '@/hooks';
+import { useNavigation, useObjects } from '@/contexts';
 import { EmptyState } from '@/components/ui';
+import { BulkActions } from '@/components/actions';
 import { InboxRow } from './InboxRow';
 import './InboxView.css';
 
 export function InboxView() {
   const { items, isLoading, count, processItem, deleteItem } = useInbox();
   const { navigateToObject } = useNavigation();
+  const { refreshData } = useObjects();
+
+  // Get item IDs for selection hook
+  const itemIds = useMemo(() => items.map((item) => item.id), [items]);
+
+  // Initialize selection
+  const selection = useSelection({ allItems: itemIds });
+
+  // Handle selection change (toggle or range)
+  const handleSelectionChange = useCallback(
+    (id: string, shiftKey: boolean) => {
+      if (shiftKey) {
+        selection.selectRange(id);
+      } else {
+        selection.toggle(id);
+      }
+    },
+    [selection]
+  );
+
+  // Keyboard shortcuts for selection
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl+A to select all
+      if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
+        // Only handle if focus is in the inbox view area
+        const activeElement = document.activeElement;
+        if (activeElement?.closest('.inbox-view')) {
+          e.preventDefault();
+          selection.selectAll();
+        }
+      }
+
+      // Escape to clear selection
+      if (e.key === 'Escape' && selection.hasSelection) {
+        e.preventDefault();
+        selection.clear();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selection]);
 
   if (isLoading) {
     return (
@@ -44,11 +89,22 @@ export function InboxView() {
                 onClick={() => navigateToObject(item.id)}
                 onProcess={processItem}
                 onDelete={deleteItem}
+                isSelected={selection.isSelected(item.id)}
+                onSelectionChange={handleSelectionChange}
+                isSelectingMode={selection.hasSelection}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* Bulk Actions Bar */}
+      <BulkActions
+        selectedIds={selection.selectedArray}
+        onClearSelection={selection.clear}
+        onActionComplete={refreshData}
+        viewType="inbox"
+      />
     </div>
   );
 }

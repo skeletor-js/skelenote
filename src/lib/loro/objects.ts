@@ -11,6 +11,7 @@ import type {
   TypeDefinition,
   TypeRegistry,
 } from '../types';
+import { removeMentionsFromContent } from '../editor';
 import { generateId, validatePropertyValue } from '../types';
 import {
   getObjectsMap,
@@ -361,6 +362,197 @@ export class ObjectStore {
     }
 
     return objects;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Batch Operations
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Result type for batch operations
+   */
+
+  /**
+   * Delete multiple objects with cleanup
+   * - Removes @mentions from all object content
+   * - Removes references from relation properties
+   */
+  deleteMany(ids: string[]): { deleted: number; errors: string[] } {
+    const errors: string[] = [];
+    const targetIds = new Set(ids);
+    const allObjects = this.getAll();
+
+    // 1. Clean up @mentions in content (single pass for all targets)
+    for (const obj of allObjects) {
+      if (targetIds.has(obj.id)) continue;
+      try {
+        const content = this.getContent(obj.id);
+        if (!content) continue;
+
+        let cleaned = content;
+        for (const targetId of targetIds) {
+          const result = removeMentionsFromContent(cleaned, targetId);
+          if (result) {
+            cleaned = result;
+          }
+        }
+        if (cleaned !== content) {
+          this.setContent(obj.id, cleaned);
+        }
+      } catch {
+        /* skip objects without content */
+      }
+    }
+
+    // 2. Clean up relation references
+    for (const obj of allObjects) {
+      if (targetIds.has(obj.id)) continue;
+      // Check all relation properties for references to deleted objects
+      for (const [propId, value] of Object.entries(obj.properties)) {
+        if (Array.isArray(value)) {
+          const filtered = value.filter((v) => !targetIds.has(v as string));
+          if (filtered.length !== value.length) {
+            this.update(obj.id, { properties: { [propId]: filtered } });
+          }
+        }
+      }
+    }
+
+    // 3. Delete all targets
+    let deleted = 0;
+    for (const id of targetIds) {
+      try {
+        if (this.delete(id)) deleted++;
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { deleted, errors };
+  }
+
+  /**
+   * Update multiple objects with the same changes
+   */
+  updateMany(
+    ids: string[],
+    input: UpdateObjectInput
+  ): { updated: SkelenoteObject[]; errors: string[] } {
+    const updated: SkelenoteObject[] = [];
+    const errors: string[] = [];
+
+    for (const id of ids) {
+      try {
+        updated.push(this.update(id, input));
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { updated, errors };
+  }
+
+  /**
+   * Add a tag to multiple objects (skips if already tagged)
+   */
+  addTagToMany(ids: string[], tagId: string): { updated: number; errors: string[] } {
+    let updated = 0;
+    const errors: string[] = [];
+
+    for (const id of ids) {
+      try {
+        const obj = this.getOrThrow(id);
+        const currentTags = (obj.properties.tags as string[]) ?? [];
+        if (!currentTags.includes(tagId)) {
+          this.update(id, { properties: { tags: [...currentTags, tagId] } });
+          updated++;
+        }
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { updated, errors };
+  }
+
+  /**
+   * Remove a tag from multiple objects
+   */
+  removeTagFromMany(ids: string[], tagId: string): { updated: number; errors: string[] } {
+    let updated = 0;
+    const errors: string[] = [];
+
+    for (const id of ids) {
+      try {
+        const obj = this.getOrThrow(id);
+        const currentTags = (obj.properties.tags as string[]) ?? [];
+        if (currentTags.includes(tagId)) {
+          this.update(id, { properties: { tags: currentTags.filter((t) => t !== tagId) } });
+          updated++;
+        }
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { updated, errors };
+  }
+
+  /**
+   * Mark multiple objects as processed (removes from inbox)
+   */
+  markProcessedMany(ids: string[]): { processed: number; errors: string[] } {
+    let processed = 0;
+    const errors: string[] = [];
+
+    for (const id of ids) {
+      try {
+        this.markProcessed(id);
+        processed++;
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { processed, errors };
+  }
+
+  /**
+   * Change the type of multiple objects
+   * Note: Properties that don't exist on the new type will become invisible but data is preserved
+   */
+  changeTypeMany(ids: string[], newTypeId: string): { updated: number; errors: string[] } {
+    const typeDef = this.typeRegistry.get(newTypeId);
+    if (!typeDef) {
+      return { updated: 0, errors: ids };
+    }
+
+    let updated = 0;
+    const errors: string[] = [];
+
+    for (const id of ids) {
+      try {
+        const obj = this.getOrThrow(id);
+        // Skip if already the target type
+        if (obj.typeId === newTypeId) continue;
+
+        // Update the typeId directly in the serialized object
+        const now = Date.now();
+        const updatedObj: SkelenoteObject = {
+          ...obj,
+          typeId: newTypeId,
+          updatedAt: now,
+        };
+
+        const objectsMap = getObjectsMap(this.doc);
+        objectsMap.set(id, serializeObject(updatedObj));
+        updated++;
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { updated, errors };
   }
 
   /**

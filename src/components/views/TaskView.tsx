@@ -3,8 +3,11 @@
  * Displays tasks in a list format
  */
 
-import { useTasks } from '@/hooks/useTasks';
+import { useMemo, useCallback, useEffect } from 'react';
+import { useTasks, useSelection } from '@/hooks';
+import { useObjects } from '@/contexts';
 import type { TaskFilter } from '@/lib/tasks/filters';
+import { BulkActions } from '@/components/actions';
 import { TaskList } from './TaskList';
 import './TaskView.css';
 
@@ -27,6 +30,49 @@ const EMPTY_MESSAGES: Record<TaskFilter, string> = {
 
 export function TaskView({ filter, title }: TaskViewProps) {
   const { tasks, isLoading, toggleComplete, deleteTask } = useTasks({ filter });
+  const { refreshData } = useObjects();
+
+  // Get task IDs for selection hook
+  const taskIds = useMemo(() => tasks.map((task) => task.id), [tasks]);
+
+  // Initialize selection
+  const selection = useSelection({ allItems: taskIds });
+
+  // Handle selection change (toggle or range)
+  const handleSelectionChange = useCallback(
+    (id: string, shiftKey: boolean) => {
+      if (shiftKey) {
+        selection.selectRange(id);
+      } else {
+        selection.toggle(id);
+      }
+    },
+    [selection]
+  );
+
+  // Keyboard shortcuts for selection
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl+A to select all
+      if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
+        // Only handle if focus is in the task view area
+        const activeElement = document.activeElement;
+        if (activeElement?.closest('.task-view')) {
+          e.preventDefault();
+          selection.selectAll();
+        }
+      }
+
+      // Escape to clear selection
+      if (e.key === 'Escape' && selection.hasSelection) {
+        e.preventDefault();
+        selection.clear();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selection]);
 
   if (isLoading) {
     return (
@@ -50,8 +96,19 @@ export function TaskView({ filter, title }: TaskViewProps) {
           onToggleComplete={toggleComplete}
           onDeleteTask={deleteTask}
           emptyMessage={EMPTY_MESSAGES[filter]}
+          isSelected={selection.isSelected}
+          onSelectionChange={handleSelectionChange}
+          hasSelection={selection.hasSelection}
         />
       </div>
+
+      {/* Bulk Actions Bar */}
+      <BulkActions
+        selectedIds={selection.selectedArray}
+        onClearSelection={selection.clear}
+        onActionComplete={refreshData}
+        viewType="tasks"
+      />
     </div>
   );
 }
