@@ -263,6 +263,62 @@
   color: var(--text-muted);
 }
 
+.template-editor__placeholder-example {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Placeholder help grid */
+.template-editor__placeholder-help {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--bg-sunken);
+  border-radius: var(--radius-md);
+}
+
+.template-editor__hint-text--title {
+  margin-bottom: var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.template-editor__placeholder-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.template-editor__placeholder-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background-color: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+}
+
+.template-editor__placeholder-code {
+  font-family: var(--font-mono);
+  color: var(--accent-primary);
+  background: none;
+  padding: 0;
+}
+
+.template-editor__placeholder-arrow {
+  color: var(--text-muted);
+}
+
+.template-editor__placeholder-arrow::before {
+  content: '\2192';
+}
+
+.template-editor__placeholder-result {
+  color: var(--text-secondary);
+}
+
 /* Note for edit mode */
 .template-editor__note {
   font-size: var(--font-size-sm);

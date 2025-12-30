@@ -265,9 +265,10 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
                           type="button"
                           className="template-editor__placeholder-option"
                           onClick={() => insertPlaceholder(p.label)}
+                          title={`Example: ${p.example}`}
                         >
                           <span className="template-editor__placeholder-label">{p.label}</span>
-                          <span className="template-editor__placeholder-desc">{p.description}</span>
+                          <span className="template-editor__placeholder-example">{p.example}</span>
                         </button>
                       ))}
                     </div>
@@ -282,9 +283,20 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
                 onChange={(e) => setContent(e.target.value)}
                 rows={6}
               />
-              <p className="template-editor__hint-text">
-                Use placeholders like {'{{date}}'}, {'{{title}}'}, {'{{tomorrow}}'} for dynamic content
-              </p>
+              <div className="template-editor__placeholder-help">
+                <p className="template-editor__hint-text template-editor__hint-text--title">
+                  Available placeholders:
+                </p>
+                <div className="template-editor__placeholder-grid">
+                  {PLACEHOLDERS.map((p) => (
+                    <div key={p.type} className="template-editor__placeholder-chip">
+                      <code className="template-editor__placeholder-code">{p.label}</code>
+                      <span className="template-editor__placeholder-arrow"></span>
+                      <span className="template-editor__placeholder-result">{p.example}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

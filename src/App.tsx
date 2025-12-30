@@ -390,7 +390,7 @@ function App() {
 
   return (
     <>
-      <Layout inboxCount={inboxCount}>
+      <Layout inboxCount={inboxCount} onCreateFromTemplate={openTemplatePicker}>
         <MainContent />
       </Layout>
       <CommandPalette
