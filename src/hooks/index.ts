@@ -35,3 +35,4 @@ export {
   type SelectionState,
   type SelectionActions,
 } from './useSelection';
+export { useTemplates, type UseTemplatesResult } from './useTemplates';
