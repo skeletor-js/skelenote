@@ -22,9 +22,10 @@ const defaultPropertiesForType: Record<string, Record<string, PropertyValue>> = 
 
 interface SidebarProps {
   inboxCount?: number;
+  onCreateFromTemplate?: () => void;
 }
 
-export function Sidebar({ inboxCount = 0 }: SidebarProps) {
+export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) {
   const { isCollapsed, toggleCollapsed, selectedItem, setSelectedItem } = useSidebar();
   const { navigateToView, navigateToObject, navigateToSavedView, activeSavedViewId } = useNavigation();
   const { store, refreshData } = useObjects();
@@ -55,6 +56,13 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
   // Handle creating a new object of the selected type
   const handleCreateObject = useCallback(
     (typeId: string) => {
+      // Special handling for template type - open template picker
+      if (typeId === BuiltInTypeIds.TEMPLATE) {
+        setShowTypeSelector(false);
+        onCreateFromTemplate?.();
+        return;
+      }
+
       if (!store) return;
 
       const defaultProps = defaultPropertiesForType[typeId] || {};
@@ -70,7 +78,7 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
       setShowTypeSelector(false);
       navigateToObject(newObject.id);
     },
-    [store, linkToDaily, refreshData, navigateToObject]
+    [store, linkToDaily, refreshData, navigateToObject, onCreateFromTemplate]
   );
 
   // Close type selector when clicking outside

@@ -15,6 +15,8 @@ import {
   SEARCH_ACTION_ID,
   OPEN_IN_SPLIT_ACTION_ID,
   KEYBOARD_SHORTCUTS_ACTION_ID,
+  CREATE_FROM_TEMPLATE_ACTION_ID,
+  NEW_TEMPLATE_ACTION_ID,
 } from '@/lib/palette/actions';
 import { searchObjects, sortByRelevance } from '@/lib/palette/search';
 import { PaletteItem } from './PaletteItem';
@@ -26,9 +28,11 @@ interface CommandPaletteProps {
   onClose: () => void;
   onQuickCapture?: () => void;
   onOpenShortcuts?: () => void;
+  onCreateFromTemplate?: () => void;
+  onNewTemplate?: () => void;
 }
 
-export function CommandPalette({ isOpen, onClose, onQuickCapture, onOpenShortcuts }: CommandPaletteProps) {
+export function CommandPalette({ isOpen, onClose, onQuickCapture, onOpenShortcuts, onCreateFromTemplate, onNewTemplate }: CommandPaletteProps) {
   const { navigateToView, navigateToObject, openInSplit, selectedObjectId, currentView } = useNavigation();
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
@@ -170,6 +174,20 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture, onOpenShortcut
         return;
       }
 
+      // Create from Template action - open template picker
+      if (action.id === CREATE_FROM_TEMPLATE_ACTION_ID) {
+        onClose();
+        onCreateFromTemplate?.();
+        return;
+      }
+
+      // New Template action - open template editor
+      if (action.id === NEW_TEMPLATE_ACTION_ID) {
+        onClose();
+        onNewTemplate?.();
+        return;
+      }
+
       if (action.view) {
         // Navigation action
         navigateToView(action.view);
@@ -199,7 +217,7 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture, onOpenShortcut
       }
       onClose();
     },
-    [navigateToView, navigateToObject, store, linkToDaily, refreshData, onClose, onQuickCapture, onOpenShortcuts, enterSearchMode, currentView, selectedObjectId, openInSplit]
+    [navigateToView, navigateToObject, store, linkToDaily, refreshData, onClose, onQuickCapture, onOpenShortcuts, onCreateFromTemplate, onNewTemplate, enterSearchMode, currentView, selectedObjectId, openInSplit]
   );
 
   // Navigate to search result

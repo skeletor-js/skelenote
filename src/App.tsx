@@ -9,8 +9,10 @@ import { SkeletonKeySetup } from '@/components/setup';
 import { TimeMachine, HistoricalObjectView } from '@/components/history';
 import { SearchResultsView } from '@/components/search';
 import { KeyboardShortcutsModal } from '@/components/help';
+import { TemplatePicker, TemplateEditor } from '@/components/templates';
 import { useNavigation, useObjects, useSkeletonKey, useKeyboardShortcuts, type ViewType } from '@/contexts';
-import { useCommandPalette, useTodaysDailyNote } from '@/hooks';
+import { useCommandPalette, useTodaysDailyNote, useTemplates } from '@/hooks';
+import type { Template } from '@/lib/templates';
 import { runFirstRunSetup } from '@/lib/first-run';
 import type { TaskFilter } from '@/lib/tasks/filters';
 
@@ -196,7 +198,10 @@ function App() {
   const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
+  const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false);
   const { ensureExists: ensureTodaysDailyNote } = useTodaysDailyNote();
+  const { createObject: createFromTemplate } = useTemplates();
   const startupCompleteRef = useRef(false);
 
   // Auto-create today's daily note and run first-run setup on app launch
@@ -237,6 +242,30 @@ function App() {
   const closeShortcutsModal = useCallback(() => {
     setIsShortcutsModalOpen(false);
   }, []);
+
+  const openTemplatePicker = useCallback(() => {
+    setIsTemplatePickerOpen(true);
+  }, []);
+
+  const closeTemplatePicker = useCallback(() => {
+    setIsTemplatePickerOpen(false);
+  }, []);
+
+  const openTemplateEditor = useCallback(() => {
+    setIsTemplateEditorOpen(true);
+  }, []);
+
+  const closeTemplateEditor = useCallback(() => {
+    setIsTemplateEditorOpen(false);
+  }, []);
+
+  const handleTemplateSelect = useCallback(
+    (template: Template) => {
+      createFromTemplate(template.id, { navigate: true });
+      closeTemplatePicker();
+    },
+    [createFromTemplate, closeTemplatePicker]
+  );
 
   // Register global keyboard shortcuts
   useEffect(() => {
@@ -313,6 +342,15 @@ function App() {
       description: 'Keyboard Shortcuts',
     });
 
+    // Cmd+Shift+T to create new template
+    registerShortcut('new-template', {
+      key: 't',
+      metaKey: true,
+      shiftKey: true,
+      action: openTemplateEditor,
+      description: 'New Template',
+    });
+
     return () => {
       unregisterShortcut('command-palette');
       unregisterShortcut('close-split');
@@ -322,8 +360,9 @@ function App() {
       unregisterShortcut('search');
       unregisterShortcut('keyboard-shortcuts');
       unregisterShortcut('keyboard-shortcuts-alt');
+      unregisterShortcut('new-template');
     };
-  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, toggleShortcutsModal]);
+  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, toggleShortcutsModal, openTemplateEditor]);
 
   // Show loading only during initial crypto initialization
   // (not during subsequent operations like key generation)
@@ -351,7 +390,7 @@ function App() {
 
   return (
     <>
-      <Layout inboxCount={inboxCount}>
+      <Layout inboxCount={inboxCount} onCreateFromTemplate={openTemplatePicker}>
         <MainContent />
       </Layout>
       <CommandPalette
@@ -359,9 +398,20 @@ function App() {
         onClose={closePalette}
         onQuickCapture={openQuickCapture}
         onOpenShortcuts={toggleShortcutsModal}
+        onCreateFromTemplate={openTemplatePicker}
+        onNewTemplate={openTemplateEditor}
       />
       <QuickCapture isOpen={isQuickCaptureOpen} onClose={closeQuickCapture} />
       <KeyboardShortcutsModal isOpen={isShortcutsModalOpen} onClose={closeShortcutsModal} />
+      <TemplatePicker
+        isOpen={isTemplatePickerOpen}
+        onClose={closeTemplatePicker}
+        onSelect={handleTemplateSelect}
+      />
+      <TemplateEditor
+        isOpen={isTemplateEditorOpen}
+        onClose={closeTemplateEditor}
+      />
     </>
   );
 }

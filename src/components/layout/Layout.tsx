@@ -6,9 +6,10 @@ import { useSidebar, useNavigation } from '@/contexts';
 interface LayoutProps {
   children: ReactNode;
   inboxCount?: number;
+  onCreateFromTemplate?: () => void;
 }
 
-export function Layout({ children, inboxCount = 0 }: LayoutProps) {
+export function Layout({ children, inboxCount = 0, onCreateFromTemplate }: LayoutProps) {
   const { isCollapsed, setCollapsed, toggleCollapsed } = useSidebar();
   const { splitPane } = useNavigation();
 
@@ -34,7 +35,7 @@ export function Layout({ children, inboxCount = 0 }: LayoutProps) {
     <div
       className={`layout ${isCollapsed ? 'layout--sidebar-collapsed' : ''}`}
     >
-      <Sidebar inboxCount={inboxCount} />
+      <Sidebar inboxCount={inboxCount} onCreateFromTemplate={onCreateFromTemplate} />
       <main className="layout__main">
         {/* Show menu button when sidebar is collapsed */}
         {isCollapsed && (

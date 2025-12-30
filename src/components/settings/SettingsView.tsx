@@ -1,6 +1,7 @@
 import { SyncSettings } from './SyncSettings';
 import { SemanticSettings } from './SemanticSettings';
 import { ExportSettings } from './ExportSettings';
+import { TemplateSettings } from './TemplateSettings';
 import './SettingsView.css';
 
 export function SettingsView() {
@@ -11,6 +12,8 @@ export function SettingsView() {
       </header>
 
       <div className="settings-view__content">
+        <TemplateSettings />
+        <div className="settings-view__divider" />
         <SemanticSettings />
         <div className="settings-view__divider" />
         <ExportSettings />
