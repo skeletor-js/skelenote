@@ -7,74 +7,18 @@ import { createPortal } from 'react-dom';
 import './SavedViewEditor.css';
 import { useTypeRegistry } from '@/contexts';
 import { useSavedViews } from '@/hooks';
-import type { SavedView, CreateSavedViewInput, UpdateSavedViewInput, PropertyType } from '@/lib/types';
+import type { SavedView, CreateSavedViewInput, UpdateSavedViewInput } from '@/lib/types';
 import type { FilterCondition, FilterOperator, SortConfig } from '@/lib/loro';
-
-/** Extended field info including options for select types */
-interface FieldInfo {
-  id: string;
-  name: string;
-  type: PropertyType | 'boolean';
-  options?: string[];
-}
-
-/** Operators appropriate for different field types */
-const TEXT_OPERATORS: FilterOperator[] = ['eq', 'neq', 'contains', 'startsWith', 'endsWith', 'isNull', 'isNotNull'];
-const NUMBER_OPERATORS: FilterOperator[] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'isNull', 'isNotNull'];
-const DATE_OPERATORS: FilterOperator[] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'isNull', 'isNotNull'];
-const SELECT_OPERATORS: FilterOperator[] = ['eq', 'neq', 'isNull', 'isNotNull'];
-const BOOLEAN_OPERATORS: FilterOperator[] = ['eq', 'neq'];
-
-const ALL_OPERATORS: { value: FilterOperator; label: string }[] = [
-  { value: 'eq', label: 'equals' },
-  { value: 'neq', label: 'not equals' },
-  { value: 'contains', label: 'contains' },
-  { value: 'startsWith', label: 'starts with' },
-  { value: 'endsWith', label: 'ends with' },
-  { value: 'gt', label: 'greater than' },
-  { value: 'gte', label: 'greater or equal' },
-  { value: 'lt', label: 'less than' },
-  { value: 'lte', label: 'less or equal' },
-  { value: 'isNull', label: 'is empty' },
-  { value: 'isNotNull', label: 'is not empty' },
-];
-
-/** Get operators appropriate for a field type */
-function getOperatorsForType(type: PropertyType | 'boolean'): FilterOperator[] {
-  switch (type) {
-    case 'text':
-    case 'url':
-    case 'email':
-    case 'phone':
-    case 'file':
-      return TEXT_OPERATORS;
-    case 'number':
-      return NUMBER_OPERATORS;
-    case 'date':
-      return DATE_OPERATORS;
-    case 'select':
-    case 'recurrence':
-      return SELECT_OPERATORS;
-    case 'checkbox':
-    case 'boolean':
-      return BOOLEAN_OPERATORS;
-    case 'relation':
-      return SELECT_OPERATORS;
-    default:
-      return TEXT_OPERATORS;
-  }
-}
-
-/** Recurrence frequency options for filtering */
-const RECURRENCE_OPTIONS = ['none', 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'];
+import {
+  type FieldInfo,
+  ALL_OPERATORS,
+  BUILT_IN_FIELDS,
+  TEXT_OPERATORS,
+  RECURRENCE_OPTIONS,
+  getOperatorsForType,
+} from '@/lib/views';
 
 const COMMON_ICONS = ['📋', '📁', '⭐', '🔖', '📝', '✅', '🎯', '📌', '🔍', '📊', '🗂️', '💡'];
-
-const BUILT_IN_FIELDS: FieldInfo[] = [
-  { id: 'createdAt', name: 'Created Date', type: 'date' },
-  { id: 'updatedAt', name: 'Updated Date', type: 'date' },
-  { id: 'inboxed', name: 'In Inbox', type: 'boolean' },
-];
 
 /** Props for the FilterValueInput component */
 interface FilterValueInputProps {

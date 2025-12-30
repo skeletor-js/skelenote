@@ -2,13 +2,19 @@
  * SavedViewContent - Displays filtered objects based on a saved view configuration
  */
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import './SavedViewContent.css';
 import { useNavigation, useObjects, useTypeRegistry } from '@/contexts';
 import { useSavedViews } from '@/hooks';
-import { executeQuery } from '@/lib/loro';
+import { executeQuery, type FilterCondition } from '@/lib/loro';
 import { formatRelativeDate } from '@/lib/utils/date';
 import { EmptyState } from '@/components/ui';
+import {
+  BUILT_IN_FIELDS,
+  OPERATOR_LABELS,
+  formatDateValue,
+  formatBooleanValue,
+} from '@/lib/views';
 
 export function SavedViewContent() {
   const { activeSavedViewId, navigateToObject } = useNavigation();
@@ -42,9 +48,60 @@ export function SavedViewContent() {
   }, [view, store]);
 
   // Get type definition for display
-  const getTypeDef = (typeId: string) => {
+  const getTypeDef = useCallback((typeId: string) => {
     return typeRegistry.get(typeId);
-  };
+  }, [typeRegistry]);
+
+  // Format a filter for display
+  const formatFilter = useCallback((filter: FilterCondition, typeFilter?: string) => {
+    // Get field name - first check built-in fields
+    const builtInField = BUILT_IN_FIELDS.find((f) => f.id === filter.field);
+    let fieldName = builtInField?.name || filter.field;
+    let fieldType = builtInField?.type;
+
+    // Try to get field info from type schema
+    if (typeFilter) {
+      const typeDef = getTypeDef(typeFilter);
+      if (typeDef) {
+        const fieldDef = typeDef.schema.find((f) => f.id === filter.field);
+        if (fieldDef) {
+          fieldName = fieldDef.name;
+          fieldType = fieldDef.type;
+        }
+      }
+    }
+
+    // Get operator label
+    const operatorLabel = OPERATOR_LABELS[filter.operator] || filter.operator;
+
+    // Format value based on field type or field name
+    let formattedValue = '';
+
+    // Skip value for isNull/isNotNull operators
+    if (filter.operator !== 'isNull' && filter.operator !== 'isNotNull') {
+      const isDateField = fieldType === 'date' ||
+        filter.field === 'createdAt' ||
+        filter.field === 'updatedAt' ||
+        filter.field === 'dueDate' ||
+        filter.field === 'startTime' ||
+        filter.field === 'endTime';
+
+      const isBooleanField = fieldType === 'checkbox' ||
+        fieldType === 'boolean' ||
+        filter.field === 'inboxed' ||
+        filter.field === 'isDailyNote';
+
+      if (isDateField) {
+        formattedValue = formatDateValue(filter.value);
+      } else if (isBooleanField) {
+        formattedValue = formatBooleanValue(filter.value);
+      } else {
+        formattedValue = String(filter.value ?? '');
+      }
+    }
+
+    return { fieldName, operatorLabel, formattedValue };
+  }, [getTypeDef]);
 
   if (!view) {
     return (
@@ -66,11 +123,14 @@ export function SavedViewContent() {
 
       {view.filters.length > 0 && (
         <div className="saved-view-content__filters">
-          {view.filters.map((filter, index) => (
-            <span key={index} className="saved-view-content__filter-tag">
-              {filter.field} {filter.operator} {String(filter.value ?? '')}
-            </span>
-          ))}
+          {view.filters.map((filter, index) => {
+            const { fieldName, operatorLabel, formattedValue } = formatFilter(filter, view.typeFilter ?? undefined);
+            return (
+              <span key={index} className="saved-view-content__filter-tag">
+                {fieldName} {operatorLabel}{formattedValue ? ` ${formattedValue}` : ''}
+              </span>
+            );
+          })}
         </div>
       )}
 
