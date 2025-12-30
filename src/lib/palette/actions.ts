@@ -32,6 +32,8 @@ export const QUICK_CAPTURE_ACTION_ID = 'action-quick-capture';
 export const SEARCH_ACTION_ID = 'action-search';
 export const OPEN_IN_SPLIT_ACTION_ID = 'action-open-in-split';
 export const KEYBOARD_SHORTCUTS_ACTION_ID = 'action-keyboard-shortcuts';
+export const CREATE_FROM_TEMPLATE_ACTION_ID = 'action-create-from-template';
+export const MANAGE_TEMPLATES_ACTION_ID = 'action-manage-templates';
 
 /**
  * Navigation actions for jumping to views
@@ -39,6 +41,7 @@ export const KEYBOARD_SHORTCUTS_ACTION_ID = 'action-keyboard-shortcuts';
 export const navigationActions: PaletteAction[] = [
   { id: SEARCH_ACTION_ID, label: 'Search', icon: '🔎', category: 'action' },
   { id: QUICK_CAPTURE_ACTION_ID, label: 'Quick Capture', icon: '⚡', category: 'action' },
+  { id: CREATE_FROM_TEMPLATE_ACTION_ID, label: 'Create from Template', icon: '📋', category: 'action' },
   { id: OPEN_IN_SPLIT_ACTION_ID, label: 'Open in Split View', icon: '⊞', category: 'action' },
   { id: KEYBOARD_SHORTCUTS_ACTION_ID, label: 'Keyboard Shortcuts', icon: '⌨️', category: 'action' },
   { id: 'nav-inbox', label: 'Go to Inbox', icon: '📥', category: 'navigation', view: 'inbox' },

@@ -9,8 +9,10 @@ import { SkeletonKeySetup } from '@/components/setup';
 import { TimeMachine, HistoricalObjectView } from '@/components/history';
 import { SearchResultsView } from '@/components/search';
 import { KeyboardShortcutsModal } from '@/components/help';
+import { TemplatePicker } from '@/components/templates';
 import { useNavigation, useObjects, useSkeletonKey, useKeyboardShortcuts, type ViewType } from '@/contexts';
-import { useCommandPalette, useTodaysDailyNote } from '@/hooks';
+import { useCommandPalette, useTodaysDailyNote, useTemplates } from '@/hooks';
+import type { Template } from '@/lib/templates';
 import { runFirstRunSetup } from '@/lib/first-run';
 import type { TaskFilter } from '@/lib/tasks/filters';
 
@@ -196,7 +198,9 @@ function App() {
   const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
   const { ensureExists: ensureTodaysDailyNote } = useTodaysDailyNote();
+  const { createObject: createFromTemplate } = useTemplates();
   const startupCompleteRef = useRef(false);
 
   // Auto-create today's daily note and run first-run setup on app launch
@@ -237,6 +241,22 @@ function App() {
   const closeShortcutsModal = useCallback(() => {
     setIsShortcutsModalOpen(false);
   }, []);
+
+  const openTemplatePicker = useCallback(() => {
+    setIsTemplatePickerOpen(true);
+  }, []);
+
+  const closeTemplatePicker = useCallback(() => {
+    setIsTemplatePickerOpen(false);
+  }, []);
+
+  const handleTemplateSelect = useCallback(
+    (template: Template) => {
+      createFromTemplate(template.id, { navigate: true });
+      closeTemplatePicker();
+    },
+    [createFromTemplate, closeTemplatePicker]
+  );
 
   // Register global keyboard shortcuts
   useEffect(() => {
@@ -359,9 +379,15 @@ function App() {
         onClose={closePalette}
         onQuickCapture={openQuickCapture}
         onOpenShortcuts={toggleShortcutsModal}
+        onCreateFromTemplate={openTemplatePicker}
       />
       <QuickCapture isOpen={isQuickCaptureOpen} onClose={closeQuickCapture} />
       <KeyboardShortcutsModal isOpen={isShortcutsModalOpen} onClose={closeShortcutsModal} />
+      <TemplatePicker
+        isOpen={isTemplatePickerOpen}
+        onClose={closeTemplatePicker}
+        onSelect={handleTemplateSelect}
+      />
     </>
   );
 }
