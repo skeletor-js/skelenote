@@ -22,6 +22,9 @@ export {
   getPlaceholderValue,
   isValidPlaceholder,
   createDefaultContext,
+  textToBlockNoteJson,
+  isValidBlockNoteJson,
+  ensureBlockNoteFormat,
 } from './placeholders';
 
 // Template manager

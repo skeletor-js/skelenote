@@ -362,14 +362,13 @@
 }
 
 .template-editor__btn--primary {
-  background-color: var(--accent-primary);
-  border: 1px solid var(--accent-primary);
-  color: white;
+  background-color: var(--text-primary);
+  border: 1px solid var(--text-primary);
+  color: var(--bg-base);
 }
 
-.template-editor__btn--primary:hover {
-  background-color: var(--accent-primary-hover);
-  border-color: var(--accent-primary-hover);
+.template-editor__btn--primary:hover:not(:disabled) {
+  opacity: 0.9;
 }
 
 .template-editor__btn--primary:disabled {

@@ -13,7 +13,7 @@ import type {
   PlaceholderContext,
 } from './types';
 import { TemplatePropertyIds } from './types';
-import { expandPlaceholders, expandPlaceholdersInContent, createDefaultContext } from './placeholders';
+import { expandPlaceholders, expandPlaceholdersInContent, createDefaultContext, ensureBlockNoteFormat } from './placeholders';
 
 /**
  * Template type ID - added to BuiltInTypeIds
@@ -112,9 +112,10 @@ export function createTemplate(store: ObjectStore, input: CreateTemplateInput): 
     inboxed: false, // Templates don't go to inbox
   });
 
-  // Set initial content if provided
+  // Set initial content if provided (convert to BlockNote JSON if plain text)
   if (input.content) {
-    store.setContent(obj.id, input.content);
+    const blockNoteContent = ensureBlockNoteFormat(input.content);
+    store.setContent(obj.id, blockNoteContent);
   }
 
   return parseTemplate(obj);

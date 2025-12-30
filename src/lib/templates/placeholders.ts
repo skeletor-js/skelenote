@@ -166,9 +166,14 @@ export function expandPlaceholdersInContent(
   if (typeof content === 'string') {
     try {
       parsed = JSON.parse(content);
+      // Verify it's valid BlockNote format (array of blocks)
+      if (!Array.isArray(parsed)) {
+        throw new Error('Not an array');
+      }
     } catch {
-      // If not valid JSON, treat as plain text
-      return expandPlaceholders(content, context);
+      // If not valid JSON or not BlockNote format, convert plain text to BlockNote first
+      const expanded = expandPlaceholders(content, context);
+      return textToBlockNoteJson(expanded);
     }
   } else {
     parsed = content;
@@ -246,4 +251,54 @@ export function createDefaultContext(title?: string): PlaceholderContext {
     date: new Date(),
     title,
   };
+}
+
+/**
+ * Generate a unique block ID
+ */
+function generateBlockId(): string {
+  return `block-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+/**
+ * Convert plain text to BlockNote JSON format
+ * Each line becomes a paragraph block
+ */
+export function textToBlockNoteJson(text: string): string {
+  const lines = text.split('\n');
+  const blocks = lines.map((line) => ({
+    id: generateBlockId(),
+    type: 'paragraph',
+    props: {},
+    content: line ? [{ type: 'text', text: line, styles: {} }] : [],
+    children: [],
+  }));
+  return JSON.stringify(blocks);
+}
+
+/**
+ * Check if a string is valid BlockNote JSON
+ */
+export function isValidBlockNoteJson(content: string): boolean {
+  try {
+    const parsed = JSON.parse(content);
+    return Array.isArray(parsed) && parsed.every((block) =>
+      typeof block === 'object' &&
+      block !== null &&
+      'type' in block
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Ensure content is in BlockNote JSON format
+ * If plain text, convert it to BlockNote JSON
+ */
+export function ensureBlockNoteFormat(content: string): string {
+  if (isValidBlockNoteJson(content)) {
+    return content;
+  }
+  return textToBlockNoteJson(content);
 }
