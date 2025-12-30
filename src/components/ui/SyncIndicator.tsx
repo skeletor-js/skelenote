@@ -1,5 +1,14 @@
+import { UnstyledButton, Group, Text, Box, Tooltip, MantineColor, Loader } from '@mantine/core';
+import { Icon } from './Icon';
 import { useSyncContextSafe, useSkeletonKeySafe, useLocalSyncSafe } from '@/contexts';
-import './SyncIndicator.css';
+
+interface StatusConfig {
+  color: MantineColor;
+  label: string;
+  clickable: boolean;
+  showLocalIcon: boolean;
+  isLoading: boolean;
+}
 
 export function SyncIndicator() {
   const syncContext = useSyncContextSafe();
@@ -18,75 +27,83 @@ export function SyncIndicator() {
   const isLocalSyncConnected = localSyncContext?.isEnabled && localSyncContext?.connectedPeerCount > 0;
   const localPeerCount = localSyncContext?.connectedPeerCount ?? 0;
 
-  const getStatusConfig = () => {
+  const getStatusConfig = (): StatusConfig => {
     // If local sync is connected but cloud is not
     if (isLocalSyncConnected && status !== 'connected') {
       return {
-        dotClass: 'sync-indicator__dot--local-sync',
+        color: 'cyan',
         label: `Local (${localPeerCount})`,
         clickable: false,
         showLocalIcon: true,
+        isLoading: false,
       };
     }
 
     // If both cloud and local sync are connected
     if (isLocalSyncConnected && status === 'connected') {
       return {
-        dotClass: 'sync-indicator__dot--connected',
+        color: 'green',
         label: `Synced +${localPeerCount} local`,
         clickable: false,
         showLocalIcon: true,
+        isLoading: false,
       };
     }
 
     if (!hasSyncProvider) {
       return {
-        dotClass: 'sync-indicator__dot--local',
+        color: 'gray',
         label: 'Local only',
         clickable: false,
         showLocalIcon: false,
+        isLoading: false,
       };
     }
 
     // Show error state if there's an error
     if (hasError) {
       return {
-        dotClass: 'sync-indicator__dot--error',
+        color: 'red',
         label: 'Sync error',
         clickable: true,
         showLocalIcon: false,
+        isLoading: false,
       };
     }
 
     switch (status) {
       case 'connected':
         return {
-          dotClass: 'sync-indicator__dot--connected',
+          color: 'green',
           label: 'Synced',
           clickable: false,
           showLocalIcon: false,
+          isLoading: false,
         };
       case 'syncing':
         return {
-          dotClass: 'sync-indicator__dot--syncing',
+          color: 'blue',
           label: 'Syncing...',
           clickable: false,
           showLocalIcon: false,
+          isLoading: true,
         };
       case 'connecting':
         return {
-          dotClass: 'sync-indicator__dot--connecting',
+          color: 'yellow',
           label: 'Connecting...',
           clickable: false,
           showLocalIcon: false,
+          isLoading: true,
         };
       case 'disconnected':
       default:
         return {
-          dotClass: 'sync-indicator__dot--disconnected',
+          color: 'gray',
           label: 'Offline',
           clickable: true,
           showLocalIcon: false,
+          isLoading: false,
         };
     }
   };
@@ -99,50 +116,55 @@ export function SyncIndicator() {
     }
   };
 
-  return (
-    <button
-      className={`sync-indicator ${config.clickable ? 'sync-indicator--clickable' : ''}`}
-      onClick={handleClick}
-      disabled={!config.clickable}
-      title={config.clickable ? 'Click to reconnect' : undefined}
-    >
+  const buttonContent = (
+    <Group gap={6} wrap="nowrap">
       {isEncrypted && (
-        <span className="sync-indicator__lock" title="End-to-end encrypted">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-        </span>
+        <Tooltip label="End-to-end encrypted" withArrow>
+          <Box component="span" style={{ display: 'flex' }}>
+            <Icon name="lock" size={12} color="var(--mantine-color-gray-6)" />
+          </Box>
+        </Tooltip>
       )}
       {config.showLocalIcon && (
-        <span className="sync-indicator__local" title="Local network sync active">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M5 12.55a11 11 0 0 1 14.08 0" />
-            <path d="M1.42 9a16 16 0 0 1 21.16 0" />
-            <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
-            <circle cx="12" cy="20" r="1" fill="currentColor" />
-          </svg>
-        </span>
+        <Tooltip label="Local network sync active" withArrow>
+          <Box component="span" style={{ display: 'flex' }}>
+            <Icon name="wifi" size={12} color={`var(--mantine-color-${config.color}-6)`} />
+          </Box>
+        </Tooltip>
       )}
-      <span className={`sync-indicator__dot ${config.dotClass}`} />
-      <span className="sync-indicator__label">{config.label}</span>
+      {config.isLoading ? (
+        <Loader size={8} color={config.color} />
+      ) : (
+        <Box
+          component="span"
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            backgroundColor: `var(--mantine-color-${config.color}-6)`,
+          }}
+        />
+      )}
+      <Text size="xs" c="dimmed">
+        {config.label}
+      </Text>
       {pendingCount > 0 && (
-        <span className="sync-indicator__pending">({pendingCount})</span>
+        <Text size="xs" c="dimmed">
+          ({pendingCount})
+        </Text>
       )}
-    </button>
+    </Group>
   );
+
+  if (config.clickable) {
+    return (
+      <Tooltip label="Click to reconnect" withArrow>
+        <UnstyledButton onClick={handleClick}>
+          {buttonContent}
+        </UnstyledButton>
+      </Tooltip>
+    );
+  }
+
+  return <Box>{buttonContent}</Box>;
 }
