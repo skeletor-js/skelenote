@@ -43,12 +43,6 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
     [navigateToSavedView]
   );
 
-  // Handle saved view edit (placeholder for now)
-  const handleEditSavedView = useCallback((view: SavedView) => {
-    // TODO: Open edit dialog
-    console.log('Edit view:', view);
-  }, []);
-
   // Get all available types for the selector
   const availableTypes = useMemo(() => {
     return typeRegistry.getAll().map((typeDef) => ({
@@ -129,7 +123,6 @@ export function Sidebar({ inboxCount = 0 }: SidebarProps) {
         {/* Saved views section */}
         <SavedViewsSection
           onViewSelect={handleSavedViewSelect}
-          onEditView={handleEditSavedView}
           activeViewId={activeSavedViewId}
         />
 
