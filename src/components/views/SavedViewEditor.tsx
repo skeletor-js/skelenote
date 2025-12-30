@@ -2,15 +2,30 @@
  * SavedViewEditor - Modal for creating and editing saved views
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import './SavedViewEditor.css';
 import { useTypeRegistry } from '@/contexts';
 import { useSavedViews } from '@/hooks';
-import type { SavedView, CreateSavedViewInput, UpdateSavedViewInput } from '@/lib/types';
+import type { SavedView, CreateSavedViewInput, UpdateSavedViewInput, PropertyType } from '@/lib/types';
 import type { FilterCondition, FilterOperator, SortConfig } from '@/lib/loro';
 
-const FILTER_OPERATORS: { value: FilterOperator; label: string }[] = [
+/** Extended field info including options for select types */
+interface FieldInfo {
+  id: string;
+  name: string;
+  type: PropertyType | 'boolean';
+  options?: string[];
+}
+
+/** Operators appropriate for different field types */
+const TEXT_OPERATORS: FilterOperator[] = ['eq', 'neq', 'contains', 'startsWith', 'endsWith', 'isNull', 'isNotNull'];
+const NUMBER_OPERATORS: FilterOperator[] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'isNull', 'isNotNull'];
+const DATE_OPERATORS: FilterOperator[] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'isNull', 'isNotNull'];
+const SELECT_OPERATORS: FilterOperator[] = ['eq', 'neq', 'isNull', 'isNotNull'];
+const BOOLEAN_OPERATORS: FilterOperator[] = ['eq', 'neq'];
+
+const ALL_OPERATORS: { value: FilterOperator; label: string }[] = [
   { value: 'eq', label: 'equals' },
   { value: 'neq', label: 'not equals' },
   { value: 'contains', label: 'contains' },
@@ -24,13 +39,158 @@ const FILTER_OPERATORS: { value: FilterOperator; label: string }[] = [
   { value: 'isNotNull', label: 'is not empty' },
 ];
 
+/** Get operators appropriate for a field type */
+function getOperatorsForType(type: PropertyType | 'boolean'): FilterOperator[] {
+  switch (type) {
+    case 'text':
+    case 'url':
+    case 'email':
+    case 'phone':
+    case 'file':
+      return TEXT_OPERATORS;
+    case 'number':
+      return NUMBER_OPERATORS;
+    case 'date':
+      return DATE_OPERATORS;
+    case 'select':
+    case 'recurrence':
+      return SELECT_OPERATORS;
+    case 'checkbox':
+    case 'boolean':
+      return BOOLEAN_OPERATORS;
+    case 'relation':
+      return SELECT_OPERATORS;
+    default:
+      return TEXT_OPERATORS;
+  }
+}
+
+/** Recurrence frequency options for filtering */
+const RECURRENCE_OPTIONS = ['none', 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'];
+
 const COMMON_ICONS = ['📋', '📁', '⭐', '🔖', '📝', '✅', '🎯', '📌', '🔍', '📊', '🗂️', '💡'];
 
-const BUILT_IN_FIELDS = [
+const BUILT_IN_FIELDS: FieldInfo[] = [
   { id: 'createdAt', name: 'Created Date', type: 'date' },
   { id: 'updatedAt', name: 'Updated Date', type: 'date' },
   { id: 'inboxed', name: 'In Inbox', type: 'boolean' },
 ];
+
+/** Props for the FilterValueInput component */
+interface FilterValueInputProps {
+  field: FieldInfo;
+  value: string | number | boolean | null;
+  onChange: (value: string | number | boolean | null) => void;
+}
+
+/** Renders appropriate input based on field type */
+function FilterValueInput({ field, value, onChange }: FilterValueInputProps) {
+  const stringValue = String(value ?? '');
+
+  // Date input
+  if (field.type === 'date') {
+    // Convert timestamp to date string for input
+    const dateValue = value && typeof value === 'number'
+      ? new Date(value).toISOString().split('T')[0]
+      : typeof value === 'string' && value
+        ? value
+        : '';
+
+    return (
+      <input
+        type="date"
+        className="saved-view-editor__filter-value"
+        value={dateValue}
+        onChange={(e) => {
+          if (e.target.value) {
+            // Convert date string to timestamp
+            onChange(new Date(e.target.value).getTime());
+          } else {
+            onChange(null);
+          }
+        }}
+      />
+    );
+  }
+
+  // Boolean/checkbox input
+  if (field.type === 'checkbox' || field.type === 'boolean') {
+    return (
+      <select
+        className="saved-view-editor__filter-value"
+        value={stringValue}
+        onChange={(e) => onChange(e.target.value === 'true')}
+      >
+        <option value="">Select...</option>
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+      </select>
+    );
+  }
+
+  // Select with options
+  if (field.type === 'select' && field.options) {
+    return (
+      <select
+        className="saved-view-editor__filter-value"
+        value={stringValue}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        <option value="">Select...</option>
+        {field.options.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  // Recurrence
+  if (field.type === 'recurrence') {
+    return (
+      <select
+        className="saved-view-editor__filter-value"
+        value={stringValue}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        <option value="">Select...</option>
+        {RECURRENCE_OPTIONS.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt.charAt(0).toUpperCase() + opt.slice(1)}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  // Number input
+  if (field.type === 'number') {
+    return (
+      <input
+        type="number"
+        className="saved-view-editor__filter-value"
+        placeholder="Value"
+        value={stringValue}
+        onChange={(e) => {
+          const num = parseFloat(e.target.value);
+          onChange(isNaN(num) ? null : num);
+        }}
+      />
+    );
+  }
+
+  // Default: text input
+  return (
+    <input
+      type="text"
+      className="saved-view-editor__filter-value"
+      placeholder="Value"
+      value={stringValue}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  );
+}
 
 interface SavedViewEditorProps {
   /** Existing view to edit (null for create mode) */
@@ -63,38 +223,50 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
   // Get available types
   const availableTypes = typeRegistry.getAll();
 
-  // Get fields for the selected type
-  const getFieldsForType = useCallback(() => {
-    const fields = [...BUILT_IN_FIELDS];
+  // Get fields for the selected type, including options for select types
+  const fields = useMemo((): FieldInfo[] => {
+    const result: FieldInfo[] = [...BUILT_IN_FIELDS];
 
     if (typeFilter) {
       const typeDef = typeRegistry.get(typeFilter);
       if (typeDef) {
         typeDef.schema.forEach((prop) => {
-          fields.push({
-            id: prop.id,
-            name: prop.name,
-            type: prop.type,
-          });
+          if (!prop.hidden) {
+            result.push({
+              id: prop.id,
+              name: prop.name,
+              type: prop.type,
+              options: prop.config?.options,
+            });
+          }
         });
       }
     } else {
       // When no type filter, show common fields from all types
       availableTypes.forEach((typeDef) => {
         typeDef.schema.forEach((prop) => {
-          if (!fields.find((f) => f.id === prop.id)) {
-            fields.push({
+          if (!prop.hidden && !result.find((f) => f.id === prop.id)) {
+            result.push({
               id: prop.id,
               name: prop.name,
               type: prop.type,
+              options: prop.config?.options,
             });
           }
         });
       });
     }
 
-    return fields;
+    return result;
   }, [typeFilter, typeRegistry, availableTypes]);
+
+  // Get field info by id
+  const getFieldById = useCallback(
+    (fieldId: string): FieldInfo | undefined => {
+      return fields.find((f) => f.id === fieldId);
+    },
+    [fields]
+  );
 
   // Initialize form when view changes
   useEffect(() => {
@@ -150,13 +322,14 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
 
   // Add a new filter
   const handleAddFilter = useCallback(() => {
-    const fields = getFieldsForType();
     const defaultField = fields[0]?.id || 'title';
+    const fieldInfo = fields[0];
+    const operators = fieldInfo ? getOperatorsForType(fieldInfo.type) : TEXT_OPERATORS;
     setFilters((prev) => [
       ...prev,
-      { field: defaultField, operator: 'eq' as FilterOperator, value: '' },
+      { field: defaultField, operator: operators[0] as FilterOperator, value: '' },
     ]);
-  }, [getFieldsForType]);
+  }, [fields]);
 
   // Update a filter
   const handleUpdateFilter = useCallback(
@@ -223,8 +396,6 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
   ]);
 
   if (!isOpen) return null;
-
-  const fields = getFieldsForType();
 
   return createPortal(
     <div className="saved-view-editor__overlay" onClick={onClose}>
@@ -310,58 +481,78 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
           <div className="saved-view-editor__field">
             <label className="saved-view-editor__label">Filters</label>
             <div className="saved-view-editor__filters">
-              {filters.map((filter, index) => (
-                <div key={index} className="saved-view-editor__filter-row">
-                  <select
-                    className="saved-view-editor__filter-field"
-                    value={filter.field}
-                    onChange={(e) =>
-                      handleUpdateFilter(index, { field: e.target.value })
-                    }
-                  >
-                    {fields.map((field) => (
-                      <option key={field.id} value={field.id}>
-                        {field.name}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    className="saved-view-editor__filter-operator"
-                    value={filter.operator}
-                    onChange={(e) =>
-                      handleUpdateFilter(index, {
-                        operator: e.target.value as FilterOperator,
-                      })
-                    }
-                  >
-                    {FILTER_OPERATORS.map((op) => (
-                      <option key={op.value} value={op.value}>
-                        {op.label}
-                      </option>
-                    ))}
-                  </select>
-                  {filter.operator !== 'isNull' &&
-                    filter.operator !== 'isNotNull' && (
-                      <input
-                        type="text"
-                        className="saved-view-editor__filter-value"
-                        placeholder="Value"
-                        value={String(filter.value ?? '')}
-                        onChange={(e) =>
-                          handleUpdateFilter(index, { value: e.target.value })
-                        }
-                      />
-                    )}
-                  <button
-                    type="button"
-                    className="saved-view-editor__filter-remove"
-                    onClick={() => handleRemoveFilter(index)}
-                    aria-label="Remove filter"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+              {filters.map((filter, index) => {
+                const fieldInfo = getFieldById(filter.field) || fields[0];
+                const availableOperators = fieldInfo
+                  ? getOperatorsForType(fieldInfo.type)
+                  : TEXT_OPERATORS;
+
+                return (
+                  <div key={index} className="saved-view-editor__filter-row">
+                    <select
+                      className="saved-view-editor__filter-field"
+                      value={filter.field}
+                      onChange={(e) => {
+                        const newFieldInfo = getFieldById(e.target.value);
+                        const newOperators = newFieldInfo
+                          ? getOperatorsForType(newFieldInfo.type)
+                          : TEXT_OPERATORS;
+                        // Reset operator if current one is not valid for new field type
+                        const newOperator = newOperators.includes(filter.operator)
+                          ? filter.operator
+                          : newOperators[0];
+                        handleUpdateFilter(index, {
+                          field: e.target.value,
+                          operator: newOperator,
+                          value: '', // Reset value when field changes
+                        });
+                      }}
+                    >
+                      {fields.map((field) => (
+                        <option key={field.id} value={field.id}>
+                          {field.name}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      className="saved-view-editor__filter-operator"
+                      value={filter.operator}
+                      onChange={(e) =>
+                        handleUpdateFilter(index, {
+                          operator: e.target.value as FilterOperator,
+                        })
+                      }
+                    >
+                      {ALL_OPERATORS.filter((op) =>
+                        availableOperators.includes(op.value)
+                      ).map((op) => (
+                        <option key={op.value} value={op.value}>
+                          {op.label}
+                        </option>
+                      ))}
+                    </select>
+                    {filter.operator !== 'isNull' &&
+                      filter.operator !== 'isNotNull' &&
+                      fieldInfo && (
+                        <FilterValueInput
+                          field={fieldInfo}
+                          value={filter.value as string | number | boolean | null}
+                          onChange={(value) =>
+                            handleUpdateFilter(index, { value })
+                          }
+                        />
+                      )}
+                    <button
+                      type="button"
+                      className="saved-view-editor__filter-remove"
+                      onClick={() => handleRemoveFilter(index)}
+                      aria-label="Remove filter"
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
               <button
                 type="button"
                 className="saved-view-editor__add-filter"
