@@ -5,9 +5,11 @@
 import { useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useObjects, useNavigation } from '@/contexts';
-import { useLinkToDaily } from '@/hooks';
+import { useLinkToDaily, useTemplates } from '@/hooks';
 import { TypeSelector, type CaptureType } from './TypeSelector';
 import { CaptureForm } from './CaptureForm';
+import { TemplatePicker } from '@/components/templates';
+import type { Template } from '@/lib/templates';
 import './QuickCapture.css';
 
 /**
@@ -31,16 +33,55 @@ export function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
   const { store, refreshData } = useObjects();
   const { navigateToObject } = useNavigation();
   const { linkToDaily } = useLinkToDaily();
+  const { templates, createObject: createFromTemplate } = useTemplates();
   const [selectedType, setSelectedType] = useState<CaptureType>('task');
   const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
 
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
       setSelectedType('task');
       setFormValues({});
+      setShowTemplatePicker(false);
     }
   }, [isOpen]);
+
+  // Handle type selection - open template picker when template is selected
+  const handleTypeSelect = useCallback((type: CaptureType) => {
+    setSelectedType(type);
+    if (type === 'template') {
+      setShowTemplatePicker(true);
+    }
+  }, []);
+
+  // Handle template selection from picker
+  const handleTemplateSelect = useCallback(
+    (template: Template) => {
+      setShowTemplatePicker(false);
+
+      // Create object from template
+      const objectId = createFromTemplate(template.id, { navigate: false });
+      if (objectId && store) {
+        // Link to today's daily note
+        const newObject = store.get(objectId);
+        if (newObject) {
+          linkToDaily(newObject);
+        }
+        refreshData();
+        onClose();
+        navigateToObject(objectId);
+      }
+    },
+    [createFromTemplate, store, linkToDaily, refreshData, onClose, navigateToObject]
+  );
+
+  // Handle template picker close
+  const handleTemplatePickerClose = useCallback(() => {
+    setShowTemplatePicker(false);
+    // Reset to task type when closing without selection
+    setSelectedType('task');
+  }, []);
 
   // Handle form field change
   const handleFieldChange = useCallback((field: string, value: string) => {
@@ -146,15 +187,25 @@ export function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
         <div className="quick-capture__body">
           <TypeSelector
             selectedType={selectedType}
-            onSelectType={setSelectedType}
+            onSelectType={handleTypeSelect}
+            hideTemplate={templates.length === 0}
           />
-          <CaptureForm
-            type={selectedType}
-            values={formValues}
-            onChange={handleFieldChange}
-            onSubmit={handleSubmit}
-          />
+          {selectedType !== 'template' && (
+            <CaptureForm
+              type={selectedType}
+              values={formValues}
+              onChange={handleFieldChange}
+              onSubmit={handleSubmit}
+            />
+          )}
         </div>
+
+        {/* Template Picker */}
+        <TemplatePicker
+          isOpen={showTemplatePicker}
+          onClose={handleTemplatePickerClose}
+          onSelect={handleTemplateSelect}
+        />
 
         {/* Footer */}
         <div className="quick-capture__footer">

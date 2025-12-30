@@ -6,6 +6,7 @@ import type { ObjectStore } from '../loro/objects';
 import type { SkelenoteObject } from '../types';
 import { BuiltInTypeIds } from '../types';
 import { formatDateTitle, formatDateId } from './date-utils';
+import { applyDailyNoteTemplate } from '../templates';
 
 /**
  * Generate a deterministic ID for a daily note based on the date
@@ -60,6 +61,7 @@ function getStartOfDay(date: Date): number {
  * - Uses a deterministic ID based on the date
  * - Returns existing note if already created
  * - Creates new note with proper properties if not
+ * - Applies daily note template if configured
  */
 export function getOrCreateDailyNote(store: ObjectStore, date: Date): SkelenoteObject {
   const id = getDailyNoteId(date);
@@ -85,6 +87,9 @@ export function getOrCreateDailyNote(store: ObjectStore, date: Date): SkelenoteO
     inboxed: false, // Daily notes skip the inbox
     withContent: true,
   });
+
+  // Apply daily note template if configured
+  applyDailyNoteTemplate(store, dailyNote.id, date);
 
   return dailyNote;
 }

@@ -33,6 +33,7 @@ export const BuiltInTypeIds = {
   MEETING: 'meeting',
   TAG: 'tag',
   PERSON: 'person',
+  TEMPLATE: 'template',
 } as const;
 
 export type BuiltInTypeId = (typeof BuiltInTypeIds)[keyof typeof BuiltInTypeIds];

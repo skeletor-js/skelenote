@@ -514,6 +514,57 @@ export const PersonType: TypeDefinition = {
 };
 
 /**
+ * Template type definition
+ * Properties: title, description, targetTypeId, isDailyNoteTemplate, templateProperties
+ * Templates store reusable blueprints for creating new objects
+ */
+export const TemplateType: TypeDefinition = {
+  id: BuiltInTypeIds.TEMPLATE,
+  name: 'Template',
+  icon: '📋',
+  hasContent: true, // Template body with placeholders
+  isBuiltIn: true,
+  schema: [
+    {
+      id: 'title',
+      name: 'Title',
+      type: 'text',
+      required: true,
+      multiple: false,
+    },
+    {
+      id: 'description',
+      name: 'Description',
+      type: 'text',
+      required: false,
+      multiple: false,
+    },
+    {
+      id: 'targetTypeId',
+      name: 'Target Type',
+      type: 'text',
+      required: true,
+      multiple: false,
+    },
+    {
+      id: 'isDailyNoteTemplate',
+      name: 'Daily Note Template',
+      type: 'checkbox',
+      required: false,
+      multiple: false,
+    },
+    {
+      id: 'templateProperties',
+      name: 'Template Properties',
+      type: 'text',
+      required: false,
+      multiple: false,
+      hidden: true, // JSON-encoded default properties
+    },
+  ],
+};
+
+/**
  * All built-in type definitions
  */
 export const builtInTypes: TypeDefinition[] = [
@@ -524,6 +575,7 @@ export const builtInTypes: TypeDefinition[] = [
   MeetingType,
   TagType,
   PersonType,
+  TemplateType,
 ];
 
 /**
