@@ -9,6 +9,8 @@ import { useTemplates } from '@/hooks';
 import type { Template, CreateTemplateInput } from '@/lib/templates';
 import { PLACEHOLDERS } from '@/lib/templates';
 import { BuiltInTypeIds } from '@/lib/types';
+import type { PropertyValue } from '@/lib/types';
+import { PropertyEditor } from '@/components/object/PropertyEditor';
 import './TemplateEditor.css';
 
 interface TemplateEditorProps {
@@ -36,11 +38,19 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
   const [isDailyNoteTemplate, setIsDailyNoteTemplate] = useState(false);
   const [content, setContent] = useState('');
   const [showPlaceholders, setShowPlaceholders] = useState(false);
+  const [defaultProperties, setDefaultProperties] = useState<Record<string, PropertyValue>>({});
 
   // Get available types (exclude template type itself)
   const availableTypes = useMemo(() => {
     return typeRegistry.getAll().filter((t) => t.id !== BuiltInTypeIds.TEMPLATE);
   }, [typeRegistry]);
+
+  // Get the selected type's editable properties (exclude hidden ones)
+  const targetTypeProperties = useMemo(() => {
+    const typeDef = typeRegistry.get(targetTypeId);
+    if (!typeDef) return [];
+    return typeDef.schema.filter((prop) => !prop.hidden);
+  }, [typeRegistry, targetTypeId]);
 
   // Initialize form when template changes or modal opens
   useEffect(() => {
@@ -50,6 +60,7 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
         setDescription(template.description ?? '');
         setTargetTypeId(template.targetTypeId);
         setIsDailyNoteTemplate(template.isDailyNoteTemplate);
+        setDefaultProperties(template.defaultProperties ?? {});
         // Content would need to be loaded from the store
         setContent('');
       } else {
@@ -57,10 +68,25 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
         setDescription('');
         setTargetTypeId(BuiltInTypeIds.NOTE);
         setIsDailyNoteTemplate(false);
+        setDefaultProperties({});
         setContent('');
       }
     }
   }, [template, isOpen]);
+
+  // Reset default properties when target type changes (but keep title if it exists)
+  const handleTargetTypeChange = useCallback((newTypeId: string) => {
+    setTargetTypeId(newTypeId);
+    // Keep title property if set, reset everything else
+    setDefaultProperties((prev) => {
+      const title = prev.title;
+      const result: Record<string, PropertyValue> = {};
+      if (title !== undefined) {
+        result.title = title;
+      }
+      return result;
+    });
+  }, []);
 
   // Focus name input when opened
   useEffect(() => {
@@ -101,9 +127,34 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
     setShowPlaceholders(false);
   }, []);
 
+  // Update a single default property
+  const handlePropertyChange = useCallback((propertyId: string, value: PropertyValue) => {
+    setDefaultProperties((prev) => {
+      // If value is null/undefined/empty, remove the property
+      if (value === null || value === undefined || value === '') {
+        const { [propertyId]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [propertyId]: value };
+    });
+  }, []);
+
+  // Build the final defaultProperties (filter out empty values)
+  const getCleanDefaultProperties = useCallback(() => {
+    const clean: Record<string, PropertyValue> = {};
+    for (const [key, value] of Object.entries(defaultProperties)) {
+      if (value !== null && value !== undefined && value !== '') {
+        clean[key] = value;
+      }
+    }
+    return Object.keys(clean).length > 0 ? clean : undefined;
+  }, [defaultProperties]);
+
   // Handle save
   const handleSave = useCallback(() => {
     if (!name.trim()) return;
+
+    const cleanProps = getCleanDefaultProperties();
 
     if (isEditMode && template) {
       const updated = update(template.id, {
@@ -111,6 +162,7 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
         description: description.trim() || undefined,
         targetTypeId,
         isDailyNoteTemplate,
+        defaultProperties: cleanProps,
       });
       if (updated) {
         onSave?.(updated);
@@ -122,6 +174,7 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
         description: description.trim() || undefined,
         targetTypeId,
         isDailyNoteTemplate,
+        defaultProperties: cleanProps,
         content: content.trim() || undefined,
       };
       const created = create(input);
@@ -130,7 +183,7 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
         onClose();
       }
     }
-  }, [name, description, targetTypeId, isDailyNoteTemplate, content, isEditMode, template, create, update, onSave, onClose]);
+  }, [name, description, targetTypeId, isDailyNoteTemplate, content, getCleanDefaultProperties, isEditMode, template, create, update, onSave, onClose]);
 
   // Handle form submission via Enter
   const handleKeyPress = useCallback(
@@ -196,7 +249,7 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
               id="template-type"
               className="template-editor__select"
               value={targetTypeId}
-              onChange={(e) => setTargetTypeId(e.target.value)}
+              onChange={(e) => handleTargetTypeChange(e.target.value)}
             >
               {availableTypes.map((type) => (
                 <option key={type.id} value={type.id}>
@@ -223,6 +276,41 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
+
+          {/* Default Properties Section */}
+          {targetTypeProperties.length > 0 && (
+            <div className="template-editor__properties-section">
+              <h3 className="template-editor__section-title">
+                Default {selectedType?.name} Properties
+              </h3>
+              <p className="template-editor__hint-text">
+                Set default values for properties. Text fields support placeholders like {'{{date}}'}.
+              </p>
+              <div className="template-editor__properties-list">
+                {targetTypeProperties.map((propDef) => (
+                  <div key={propDef.id} className="template-editor__property-item">
+                    <label
+                      className="template-editor__property-label"
+                      htmlFor={`prop-${propDef.id}`}
+                    >
+                      {propDef.name}
+                      {propDef.required && (
+                        <span className="template-editor__required">*</span>
+                      )}
+                    </label>
+                    <div className="template-editor__property-editor">
+                      <PropertyEditor
+                        id={`prop-${propDef.id}`}
+                        definition={propDef}
+                        value={defaultProperties[propDef.id] ?? null}
+                        onChange={(value) => handlePropertyChange(propDef.id, value)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Daily Note Template */}
           <div className="template-editor__field template-editor__field--checkbox">

@@ -188,30 +188,25 @@ export function useTemplates(): UseTemplatesResult {
         navigate?: boolean;
       }
     ): string | null => {
-      console.log('[useTemplates.createObject] templateId:', templateId, 'store:', !!store);
       if (!store) {
-        console.error('[useTemplates.createObject] No store available');
         return null;
       }
       try {
-        console.log('[useTemplates.createObject] Calling createFromTemplate...');
         const result = createFromTemplate(store, templateId, {
           properties: options?.properties,
           title: options?.title,
           context: options?.context,
         });
-        console.log('[useTemplates.createObject] Result:', result);
         refreshData();
 
         // Optionally navigate to the new object
         if (options?.navigate) {
-          console.log('[useTemplates.createObject] Navigating to:', result.objectId);
           navigateToObject(result.objectId);
         }
 
         return result.objectId;
       } catch (error) {
-        console.error('[useTemplates.createObject] Failed:', error);
+        console.error('Failed to create object from template:', error);
         return null;
       }
     },

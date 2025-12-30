@@ -261,9 +261,7 @@ function App() {
 
   const handleTemplateSelect = useCallback(
     (template: Template) => {
-      console.log('[handleTemplateSelect] template:', template);
-      const objectId = createFromTemplate(template.id, { navigate: true });
-      console.log('[handleTemplateSelect] created objectId:', objectId);
+      createFromTemplate(template.id, { navigate: true });
       closeTemplatePicker();
     },
     [createFromTemplate, closeTemplatePicker]
