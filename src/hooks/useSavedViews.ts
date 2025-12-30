@@ -2,7 +2,7 @@
  * Hook for managing saved views
  */
 
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useObjects } from '@/contexts';
 import { ViewStore, createViewStore } from '@/lib/loro';
 import type { SavedView, CreateSavedViewInput, UpdateSavedViewInput } from '@/lib/types';
@@ -47,10 +47,7 @@ export interface UseSavedViewsResult {
  * ```
  */
 export function useSavedViews(): UseSavedViewsResult {
-  const { doc, isLoading, refreshData } = useObjects();
-
-  // Version counter to force view list refresh
-  const [version, setVersion] = useState(0);
+  const { doc, isLoading, refreshData, dataVersion } = useObjects();
 
   // Create ViewStore when doc is ready
   const viewStore = useMemo(() => {
@@ -58,20 +55,19 @@ export function useSavedViews(): UseSavedViewsResult {
     return createViewStore(doc);
   }, [doc]);
 
-  // Get all views (re-fetches when version changes)
+  // Get all views (re-fetches when dataVersion changes - shared across all hook instances)
   const views = useMemo(() => {
     if (!viewStore) return [];
     return viewStore.getAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewStore, version]);
+  }, [viewStore, dataVersion]);
 
   // Create a new view
   const createView = useCallback(
     (input: CreateSavedViewInput): SavedView | null => {
       if (!viewStore) return null;
       const view = viewStore.create(input);
-      setVersion((v) => v + 1);
-      refreshData();
+      refreshData(); // This increments shared dataVersion, triggering re-render in all hook instances
       return view;
     },
     [viewStore, refreshData]
@@ -92,8 +88,7 @@ export function useSavedViews(): UseSavedViewsResult {
       if (!viewStore) return null;
       try {
         const view = viewStore.update(id, input);
-        setVersion((v) => v + 1);
-        refreshData();
+        refreshData(); // This increments shared dataVersion, triggering re-render in all hook instances
         return view;
       } catch {
         return null;
@@ -108,8 +103,7 @@ export function useSavedViews(): UseSavedViewsResult {
       if (!viewStore) return false;
       const deleted = viewStore.delete(id);
       if (deleted) {
-        setVersion((v) => v + 1);
-        refreshData();
+        refreshData(); // This increments shared dataVersion, triggering re-render in all hook instances
       }
       return deleted;
     },

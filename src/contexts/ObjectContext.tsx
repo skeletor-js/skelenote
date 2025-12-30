@@ -43,6 +43,8 @@ interface ObjectContextValue {
   saveNow: () => Promise<void>;
   /** Trigger a debounced save without re-render (for content changes) */
   scheduleSave: () => void;
+  /** Data version counter - increments on each refresh for cache invalidation */
+  dataVersion: number;
 }
 
 const ObjectContext = createContext<ObjectContextValue | null>(null);
@@ -178,6 +180,7 @@ export function ObjectProvider({ children }: ObjectProviderProps) {
         refreshData,
         saveNow,
         scheduleSave: debouncedSave,
+        dataVersion: refreshCounter,
       }}
     >
       {children}
