@@ -224,6 +224,37 @@ impl NetworkState {
         let streams = self.peer_streams.read().await;
         streams.len()
     }
+
+    /// Broadcast a raw message (with message type) to all connected peers
+    ///
+    /// Returns the number of peers the data was sent to.
+    pub async fn broadcast_raw(&self, msg_type: MessageType, payload: &[u8]) -> usize {
+        let streams = self.peer_streams.read().await;
+        println!("[NetworkState] broadcast_raw called, type={:?}, {} peers, {} bytes",
+            msg_type, streams.len(), payload.len());
+
+        if streams.is_empty() {
+            return 0;
+        }
+
+        let message = encode_message(msg_type, payload);
+        let mut sent_count = 0;
+
+        for (device_id, stream) in streams.iter() {
+            let mut s = stream.lock().await;
+            match s.write_all(&message).await {
+                Ok(()) => {
+                    sent_count += 1;
+                }
+                Err(e) => {
+                    eprintln!("[NetworkState] Failed to send to {}: {}", device_id, e);
+                }
+            }
+        }
+
+        println!("[NetworkState] Broadcast complete, sent to {} peers", sent_count);
+        sent_count
+    }
 }
 
 impl Default for NetworkState {

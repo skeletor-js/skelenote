@@ -698,6 +698,48 @@ async fn network_peer_count(
     Ok(network_state.peer_count().await)
 }
 
+/// Broadcast device registry to all connected local peers
+///
+/// The data should be Loro snapshot bytes of the device registry.
+/// Returns the number of peers the data was sent to.
+#[tauri::command]
+async fn network_broadcast_device_registry(
+    data: Vec<u8>,
+    network_state: State<'_, NetworkState>,
+) -> Result<usize, String> {
+    use crate::network::protocol::MessageType;
+    let count = network_state.broadcast_raw(MessageType::DeviceRegistry, &data).await;
+    Ok(count)
+}
+
+/// Broadcast device revocation to all connected local peers
+///
+/// The payload should be a JSON-stringified DeviceRevokePayload.
+/// Returns the number of peers the message was sent to.
+#[tauri::command]
+async fn network_broadcast_device_revoke(
+    payload: String,
+    network_state: State<'_, NetworkState>,
+) -> Result<usize, String> {
+    use crate::network::protocol::MessageType;
+    let count = network_state.broadcast_raw(MessageType::DeviceRevoke, payload.as_bytes()).await;
+    Ok(count)
+}
+
+/// Broadcast device rename to all connected local peers
+///
+/// The payload should be a JSON-stringified DeviceRenamePayload.
+/// Returns the number of peers the message was sent to.
+#[tauri::command]
+async fn network_broadcast_device_rename(
+    payload: String,
+    network_state: State<'_, NetworkState>,
+) -> Result<usize, String> {
+    use crate::network::protocol::MessageType;
+    let count = network_state.broadcast_raw(MessageType::DeviceRename, payload.as_bytes()).await;
+    Ok(count)
+}
+
 // ============================================================================
 // Device Management Commands
 // ============================================================================
@@ -886,6 +928,10 @@ pub fn run() {
             // Sync Relay commands
             network_broadcast_sync,
             network_peer_count,
+            // Device Registry Sync commands
+            network_broadcast_device_registry,
+            network_broadcast_device_revoke,
+            network_broadcast_device_rename,
             // Device Management commands
             device_get_signing_public_key,
             device_sign_revocation,
