@@ -439,11 +439,11 @@ export const theme = createTheme({
       styles: {
         root: {
           borderRadius: rem(4),
-          // Warm hover - use stronger variant for visibility on sidebar
+          // Hover uses same glow as selection for consistent warmth
           '&:hover': {
-            backgroundColor: 'var(--hover-warm-strong)',
+            backgroundColor: 'var(--selection-glow)',
           },
-          // Active state uses selection glow
+          // Active state uses selection glow with ember text
           '&[data-active="true"]': {
             backgroundColor: 'var(--selection-glow)',
             color: 'var(--mantine-color-ember-6)',
