@@ -14,15 +14,16 @@ interface TitleBarSpacerProps {
 /**
  * TitleBarSpacer - Provides spacing for window controls and drag area.
  *
- * On macOS with overlay title bar, this component creates space for the
- * traffic light buttons and provides a draggable region for window movement.
- * On Windows/Linux, this component renders nothing.
+ * Creates space for window controls and provides a draggable region for
+ * window movement on all platforms:
+ * - macOS: Clears traffic light buttons (top-left)
+ * - Windows/Linux: Provides title bar area for window controls (top-right)
  */
 export function TitleBarSpacer({ variant = 'full' }: TitleBarSpacerProps) {
-  const { isMacOS, windowControlsHeight } = usePlatform();
+  const { windowControlsHeight } = usePlatform();
 
-  // Only render on macOS where traffic lights need clearance
-  if (!isMacOS) {
+  // Don't render if no window controls height is needed
+  if (windowControlsHeight === 0) {
     return null;
   }
 
