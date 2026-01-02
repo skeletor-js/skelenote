@@ -63,8 +63,10 @@ export const SHORTCUTS: Shortcut[] = [
   { keys: ['Cmd', 'B'], description: 'Bold', category: 'editing' },
   { keys: ['Cmd', 'I'], description: 'Italic', category: 'editing' },
   { keys: ['Cmd', 'U'], description: 'Underline', category: 'editing' },
+  // Undo/Redo - works in editor (text) and globally (object operations)
   { keys: ['Cmd', 'Z'], description: 'Undo', category: 'editing' },
   { keys: ['Cmd', 'Shift', 'Z'], description: 'Redo', category: 'editing' },
+  { keys: ['Cmd', 'Y'], description: 'Redo (alternative)', category: 'editing' },
 ];
 
 /**

@@ -5,7 +5,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { Portal, Group, ActionIcon, Text, Divider, Box, Tooltip, Menu } from '@mantine/core';
-import { useObjects, useTypeRegistry, useToast } from '@/contexts';
+import { useObjects, useTypeRegistry, useToast, useUndo } from '@/contexts';
 import { useConfirmDialog } from '@/hooks';
 import { ConfirmDialog } from '@/components/ui';
 import { ObjectSearchModal } from '@/components/object/editors';
@@ -20,7 +20,7 @@ export interface BulkActionsProps {
   /** Callback after successful action (triggers data refresh) */
   onActionComplete?: () => void;
   /** View type for context-specific actions */
-  viewType?: 'inbox' | 'tasks' | 'all';
+  viewType?: 'inbox' | 'tasks' | 'archive' | 'all';
 }
 
 export function BulkActions({
@@ -32,6 +32,7 @@ export function BulkActions({
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
+  const { groupStart, groupEnd } = useUndo();
   const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
 
   // Modal states
@@ -71,30 +72,36 @@ export function BulkActions({
 
     const confirmed = await confirm({
       title: `Delete ${count} item${count === 1 ? '' : 's'}?`,
-      message: `Are you sure you want to delete ${count} selected item${count === 1 ? '' : 's'}? This action cannot be undone.`,
+      message: `Are you sure you want to delete ${count} selected item${count === 1 ? '' : 's'}? This can be undone with Cmd+Z.`,
       confirmLabel: 'Delete',
       variant: 'danger',
     });
 
     if (confirmed) {
-      const result = store.deleteMany(selectedIds);
-      refreshData();
-      onClearSelection();
-      onActionComplete?.();
+      // Group all deletions into a single undo step
+      groupStart();
+      try {
+        const result = store.deleteMany(selectedIds);
+        refreshData();
+        onClearSelection();
+        onActionComplete?.();
 
-      if (result.errors.length > 0) {
-        addToast({
-          type: 'warning',
-          message: `Deleted ${result.deleted} of ${count} items`,
-        });
-      } else {
-        addToast({
-          type: 'success',
-          message: `Deleted ${result.deleted} item${result.deleted === 1 ? '' : 's'}`,
-        });
+        if (result.errors.length > 0) {
+          addToast({
+            type: 'warning',
+            message: `Deleted ${result.deleted} of ${count} items`,
+          });
+        } else {
+          addToast({
+            type: 'success',
+            message: `Deleted ${result.deleted} item${result.deleted === 1 ? '' : 's'}`,
+          });
+        }
+      } finally {
+        groupEnd();
       }
     }
-  }, [store, selectedIds, count, confirm, refreshData, onClearSelection, onActionComplete, addToast]);
+  }, [store, selectedIds, count, confirm, refreshData, onClearSelection, onActionComplete, addToast, groupStart, groupEnd]);
 
   // Handle process action (mark as processed - inbox only)
   const handleProcess = useCallback(() => {
@@ -246,6 +253,48 @@ export function BulkActions({
       message: `Unpinned ${result.unpinned} item${result.unpinned === 1 ? '' : 's'}`,
     });
   }, [store, selectedIds, refreshData, onActionComplete, addToast]);
+
+  // Handle archive
+  const handleArchive = useCallback(() => {
+    if (!store) return;
+
+    // Group all archive operations into a single undo step
+    groupStart();
+    try {
+      const result = store.archiveMany(selectedIds);
+      refreshData();
+      onClearSelection();
+      onActionComplete?.();
+
+      addToast({
+        type: 'success',
+        message: `Archived ${result.archived} item${result.archived === 1 ? '' : 's'}`,
+      });
+    } finally {
+      groupEnd();
+    }
+  }, [store, selectedIds, refreshData, onClearSelection, onActionComplete, addToast, groupStart, groupEnd]);
+
+  // Handle unarchive (restore)
+  const handleUnarchive = useCallback(() => {
+    if (!store) return;
+
+    // Group all unarchive operations into a single undo step
+    groupStart();
+    try {
+      const result = store.unarchiveMany(selectedIds);
+      refreshData();
+      onClearSelection();
+      onActionComplete?.();
+
+      addToast({
+        type: 'success',
+        message: `Restored ${result.unarchived} item${result.unarchived === 1 ? '' : 's'}`,
+      });
+    } finally {
+      groupEnd();
+    }
+  }, [store, selectedIds, refreshData, onClearSelection, onActionComplete, addToast, groupStart, groupEnd]);
 
   // Handle assign to project
   const handleAssignProject = useCallback(
@@ -443,18 +492,46 @@ export function BulkActions({
 
           <Divider orientation="vertical" />
 
-          {/* Delete button - separated for visual weight */}
-          <Tooltip label="Delete items" position="top" withArrow>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              color="brick"
-              onClick={handleDelete}
-              aria-label="Delete items"
-            >
-              <Icon name="trash-2" size={14} />
-            </ActionIcon>
-          </Tooltip>
+          {/* Archive/Restore button - show Archive in normal views, Restore in archive view */}
+          {viewType === 'archive' ? (
+            <Tooltip label="Restore items" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                color="sage"
+                onClick={handleUnarchive}
+                aria-label="Restore items"
+              >
+                <Icon name="archive-restore" size={14} />
+              </ActionIcon>
+            </Tooltip>
+          ) : (
+            <Tooltip label="Archive items" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleArchive}
+                aria-label="Archive items"
+              >
+                <Icon name="archive" size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+
+          {/* Delete button - only available in archive view */}
+          {viewType === 'archive' && (
+            <Tooltip label="Delete permanently" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                color="brick"
+                onClick={handleDelete}
+                aria-label="Delete permanently"
+              >
+                <Icon name="trash-2" size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
 
           <Divider orientation="vertical" />
 

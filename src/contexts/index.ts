@@ -47,3 +47,8 @@ export {
   useSemanticSearch,
   useSemanticSearchSafe,
 } from './SemanticSearchContext';
+export {
+  UndoProvider,
+  useUndo,
+  useUndoSafe,
+} from './UndoContext';
