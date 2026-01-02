@@ -4,34 +4,26 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: 0.1em 0.4em;
+  padding: 0.1em 0.2em;
   margin: 0 0.1em;
-  /* Light mode: warm selection glow */
-  background: var(--selection-glow);
+  /* No background - rely on text color for differentiation */
+  background: transparent;
   color: var(--mantine-color-text);
-  border-radius: var(--mantine-radius-sm);
   font-size: 0.95em;
   font-weight: 500;
   cursor: pointer;
   user-select: none;
   vertical-align: baseline;
-  transition: background-color 150ms ease;
 }
 
 .mention-chip:hover {
-  background: var(--hover-warm-strong);
   text-decoration: underline;
 }
 
 /* Dark mode overrides */
 [data-mantine-color-scheme="dark"] .mention-chip {
-  /* Dark mode: neutral gray background, standard text color */
-  background: var(--mantine-color-gray-8);
+  background: transparent;
   color: var(--mantine-color-text);
-}
-
-[data-mantine-color-scheme="dark"] .mention-chip:hover {
-  background: var(--mantine-color-gray-7);
 }
 
 /* Different colors for different object types */
