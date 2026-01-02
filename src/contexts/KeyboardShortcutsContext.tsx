@@ -21,8 +21,13 @@ export interface ShortcutDefinition {
   shiftKey?: boolean;
   /** Require Alt key */
   altKey?: boolean;
-  /** Callback to execute when shortcut is triggered */
-  action: () => void;
+  /**
+   * Callback to execute when shortcut is triggered.
+   * Return false to indicate the event was not handled (allows default behavior).
+   * Return void/undefined/true to prevent default behavior.
+   * Can be async.
+   */
+  action: () => void | boolean | Promise<void> | Promise<boolean>;
   /** Human-readable description of the shortcut */
   description: string;
   /** Whether the shortcut is currently enabled (default: true) */
@@ -92,8 +97,16 @@ export function KeyboardShortcutsProvider({ children }: KeyboardShortcutsProvide
         }
 
         if (keyMatches && metaMatches && ctrlMatches && shiftMatches && altMatches) {
-          e.preventDefault();
-          shortcut.action();
+          // Execute the action and check return value
+          // If action returns false, it indicates the event was not handled
+          // and should propagate (allows BlockNote undo/redo when editor focused)
+          const result = shortcut.action();
+
+          // For sync actions, check immediately; for async, prevent default by default
+          // (async actions that want to allow default should be sync and return false)
+          if (result !== false && !(result instanceof Promise)) {
+            e.preventDefault();
+          }
           return; // Only trigger one shortcut per key event
         }
       }

@@ -17,7 +17,7 @@ import {
   isMentionClipboardText,
 } from '@/lib/editor';
 import { getMentionMenuItems, MentionSuggestionMenu, type MentionItem } from './MentionSuggestion';
-import { useObjects, useTypeRegistry, useTheme } from '@/contexts';
+import { useObjects, useTypeRegistry, useTheme, useNavigation } from '@/contexts';
 
 interface EditorProps {
   objectId: string;
@@ -30,11 +30,14 @@ export function Editor({ objectId, initialContent, onContentChange }: EditorProp
   const containerRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const lastSavedRef = useRef<string>(initialContent ?? '');
+  // Track when we're updating from external source (e.g., undo/redo) to skip saving
+  const isExternalUpdateRef = useRef(false);
 
   // Get object store and type registry for mentions
   const { store } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { theme } = useTheme();
+  const { setEditorFocused } = useNavigation();
 
   // Parse initial content
   const initialBlocks = useMemo(() => {
@@ -59,6 +62,11 @@ export function Editor({ objectId, initialContent, onContentChange }: EditorProp
   const handleSave = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (blocks: any[]) => {
+      // Skip saving during external updates (e.g., undo/redo sync)
+      if (isExternalUpdateRef.current) {
+        return;
+      }
+
       const serialized = serializeBlockNoteDocument(blocks);
 
       // Don't save if content hasn't changed
@@ -140,6 +148,7 @@ export function Editor({ objectId, initialContent, onContentChange }: EditorProp
 
   // Reset editor when objectId changes
   useEffect(() => {
+    isExternalUpdateRef.current = true;
     const newBlocks = deserializeBlockNoteDocument(initialContent);
     if (newBlocks) {
       editor.replaceBlocks(editor.document, newBlocks);
@@ -148,10 +157,51 @@ export function Editor({ objectId, initialContent, onContentChange }: EditorProp
       editor.replaceBlocks(editor.document, []);
     }
     lastSavedRef.current = initialContent ?? '';
+    // Use setTimeout to ensure onChange from replaceBlocks is skipped
+    setTimeout(() => {
+      isExternalUpdateRef.current = false;
+    }, 0);
   }, [objectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Sync editor when content changes externally (e.g., from undo/redo)
+  useEffect(() => {
+    // Skip if this is the initial render or if content matches what we last saved
+    if (initialContent === lastSavedRef.current) {
+      return;
+    }
+
+    // Content changed externally (e.g., via undo/redo) - sync the editor
+    isExternalUpdateRef.current = true;
+    const newBlocks = deserializeBlockNoteDocument(initialContent);
+    if (newBlocks) {
+      editor.replaceBlocks(editor.document, newBlocks);
+    } else {
+      editor.replaceBlocks(editor.document, []);
+    }
+    lastSavedRef.current = initialContent ?? '';
+    // Use setTimeout to ensure onChange from replaceBlocks is skipped
+    setTimeout(() => {
+      isExternalUpdateRef.current = false;
+    }, 0);
+  }, [initialContent]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle focus/blur for undo/redo routing
+  const handleFocus = useCallback(() => {
+    setEditorFocused(true);
+  }, [setEditorFocused]);
+
+  const handleBlur = useCallback(() => {
+    setEditorFocused(false);
+  }, [setEditorFocused]);
+
   return (
-    <div ref={containerRef} className="editor-container" data-saving={isSaving}>
+    <div
+      ref={containerRef}
+      className="editor-container"
+      data-saving={isSaving}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+    >
       <BlockNoteView
         editor={editor}
         onChange={handleEditorChange}
