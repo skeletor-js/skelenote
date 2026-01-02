@@ -3,10 +3,21 @@
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+import {
+  Modal,
+  TextInput,
+  ScrollArea,
+  UnstyledButton,
+  Group,
+  Text,
+  Stack,
+  Badge,
+} from '@mantine/core';
 import { useObjects, useTypeRegistry } from '@/contexts';
+import { Icon } from '@/components/ui/Icon';
+import { getIconFromEmoji } from '@/lib/icons';
 import type { SkelenoteObject } from '@/lib/types';
-import './RelationPicker.css';
+import type { IconName } from '@/lib/icons';
 
 interface ObjectSearchModalProps {
   isOpen: boolean;
@@ -15,6 +26,8 @@ interface ObjectSearchModalProps {
   targetTypeIds?: string[];
   excludeIds?: string[];
   title?: string;
+  /** Optional custom filter function for additional filtering */
+  filterFn?: (object: SkelenoteObject) => boolean;
 }
 
 export function ObjectSearchModal({
@@ -24,6 +37,7 @@ export function ObjectSearchModal({
   targetTypeIds,
   excludeIds = [],
   title = 'Select Object',
+  filterFn,
 }: ObjectSearchModalProps) {
   const { store } = useObjects();
   const typeRegistry = useTypeRegistry();
@@ -47,11 +61,14 @@ export function ObjectSearchModal({
       // Exclude already selected objects
       if (excludeIds.includes(obj.id)) return false;
 
+      // Apply custom filter if provided
+      if (filterFn && !filterFn(obj)) return false;
+
       // Filter by name/title
       const name = (obj.properties.title ?? obj.properties.name ?? '') as string;
       return name.toLowerCase().includes(lowerQuery);
     });
-  }, [store, query, targetTypeIds, excludeIds]);
+  }, [store, query, targetTypeIds, excludeIds, filterFn]);
 
   // Focus input when modal opens
   useEffect(() => {
@@ -95,74 +112,79 @@ export function ObjectSearchModal({
     [filteredObjects, selectedIndex, onSelect, onClose]
   );
 
-  // Handle click outside to close
-  const handleBackdropClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget) {
-        onClose();
-      }
-    },
-    [onClose]
-  );
+  // Get icon for object type
+  const getTypeIcon = (typeId: string): IconName => {
+    const typeDef = typeRegistry.get(typeId);
+    if (!typeDef?.icon) return 'file';
+    // If it's already a valid icon name, use it; otherwise convert from emoji
+    if (typeDef.icon.length <= 2) {
+      return getIconFromEmoji(typeDef.icon);
+    }
+    return typeDef.icon as IconName;
+  };
 
-  if (!isOpen) return null;
-
-  const modalContent = (
-    <div className="object-search-modal__backdrop" onClick={handleBackdropClick}>
-      <div className="object-search-modal" role="dialog" aria-modal="true" aria-label={title}>
-        <div className="object-search-modal__header">
-          <h3 className="object-search-modal__title">{title}</h3>
-          <button
-            type="button"
-            className="object-search-modal__close"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            x
-          </button>
-        </div>
-
-        <input
+  return (
+    <Modal
+      opened={isOpen}
+      onClose={onClose}
+      title={title}
+      centered
+      size="md"
+    >
+      <Stack gap="sm">
+        <TextInput
           ref={inputRef}
-          type="text"
-          className="object-search-modal__input"
+          leftSection={<Icon name="search" size={16} />}
           placeholder="Search objects..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
         />
 
-        <div className="object-search-modal__results">
+        <ScrollArea.Autosize mah={300}>
           {filteredObjects.length === 0 ? (
-            <div className="object-search-modal__empty">No objects found</div>
+            <Text c="dimmed" ta="center" py="md">
+              No objects found
+            </Text>
           ) : (
-            filteredObjects.slice(0, 20).map((obj, index) => {
-              const typeDef = typeRegistry.get(obj.typeId);
-              const icon = typeDef?.icon ?? '📄';
-              const name = (obj.properties.title ?? obj.properties.name ?? 'Untitled') as string;
+            <Stack gap={2}>
+              {filteredObjects.slice(0, 20).map((obj, index) => {
+                const iconName = getTypeIcon(obj.typeId);
+                const name = (obj.properties.title ?? obj.properties.name ?? 'Untitled') as string;
+                const isSelected = index === selectedIndex;
 
-              return (
-                <div
-                  key={obj.id}
-                  className={`object-search-modal__item ${index === selectedIndex ? 'object-search-modal__item--selected' : ''}`}
-                  onClick={() => {
-                    onSelect(obj.id);
-                    onClose();
-                  }}
-                  onMouseEnter={() => setSelectedIndex(index)}
-                >
-                  <span className="object-search-modal__item-icon">{icon}</span>
-                  <span className="object-search-modal__item-name">{name}</span>
-                  <span className="object-search-modal__item-type">{obj.typeId}</span>
-                </div>
-              );
-            })
+                return (
+                  <UnstyledButton
+                    key={obj.id}
+                    onClick={() => {
+                      onSelect(obj.id);
+                      onClose();
+                    }}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                    p="xs"
+                    style={{
+                      borderRadius: 'var(--mantine-radius-sm)',
+                      backgroundColor: isSelected
+                        ? 'var(--mantine-color-slate-light)'
+                        : 'transparent',
+                    }}
+                  >
+                    <Group gap="sm" wrap="nowrap">
+                      <Icon name={iconName} size={16} />
+                      <Text size="sm" truncate style={{ flex: 1 }}>
+                        {name}
+                      </Text>
+                      <Badge size="xs" variant="light" color="gray" radius="sm">
+                        {obj.typeId}
+                      </Badge>
+                    </Group>
+                  </UnstyledButton>
+                );
+              })}
+            </Stack>
           )}
-        </div>
-      </div>
-    </div>
+        </ScrollArea.Autosize>
+      </Stack>
+    </Modal>
   );
-
-  // Use portal to render modal at document body level
-  return createPortal(modalContent, document.body);
 }

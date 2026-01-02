@@ -188,6 +188,16 @@ impl PeerConnection {
                     Err(ProtocolError::PayloadLengthMismatch { .. }) => {
                         break;
                     }
+                    Err(ProtocolError::MessageTooLarge { size, max }) => {
+                        // Disconnect immediately - likely malicious peer
+                        let _ = event_tx.send(PeerEvent::Error {
+                            message: format!(
+                                "Disconnecting - message too large: {} bytes (max {})",
+                                size, max
+                            ),
+                        }).await;
+                        return;
+                    }
                     Err(e) => {
                         let _ = event_tx.send(PeerEvent::Error {
                             message: format!("Protocol error: {}", e),

@@ -323,6 +323,14 @@ async fn handle_connection(
                     // Need more data
                     break;
                 }
+                Err(ProtocolError::MessageTooLarge { size, max }) => {
+                    // Disconnect immediately - likely DoS attempt
+                    eprintln!(
+                        "Disconnecting peer {} - message too large: {} bytes (max {})",
+                        peer_device_id, size, max
+                    );
+                    return Ok(());
+                }
                 Err(e) => {
                     eprintln!("Protocol error: {}", e);
                     break;

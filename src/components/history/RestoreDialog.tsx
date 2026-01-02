@@ -4,9 +4,9 @@
  * Shows timestamp, scope info, and warnings about the restore operation.
  */
 
-import { useEffect, useRef, useMemo } from 'react';
-import { createPortal } from 'react-dom';
-import './RestoreDialog.css';
+import { useMemo } from 'react';
+import { Modal, Stack, Group, Text, Button, ThemeIcon } from '@mantine/core';
+import { Icon } from '@/components/ui/Icon';
 
 export type RestoreScope = 'single' | 'full';
 
@@ -33,9 +33,6 @@ export function RestoreDialog({
   onConfirm,
   onCancel,
 }: RestoreDialogProps) {
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const confirmButtonRef = useRef<HTMLButtonElement>(null);
-
   // Format the timestamp
   const formattedTimestamp = useMemo(() => {
     return new Date(timestamp).toLocaleString(undefined, {
@@ -48,125 +45,61 @@ export function RestoreDialog({
     });
   }, [timestamp]);
 
-  // Focus trap and keyboard handling
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const timer = setTimeout(() => {
-      confirmButtonRef.current?.focus();
-    }, 0);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onCancel();
-      }
-
-      // Focus trap
-      if (e.key === 'Tab' && dialogRef.current) {
-        const focusableElements = dialogRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
-        const firstElement = focusableElements[0];
-        const lastElement = focusableElements[focusableElements.length - 1];
-
-        if (e.shiftKey && document.activeElement === firstElement) {
-          e.preventDefault();
-          lastElement?.focus();
-        } else if (!e.shiftKey && document.activeElement === lastElement) {
-          e.preventDefault();
-          firstElement?.focus();
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen, onCancel]);
-
-  // Prevent body scroll when open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
   const title = scope === 'single' ? 'Restore Object' : 'Restore All Objects';
   const description =
     scope === 'single'
       ? `Restore "${objectTitle}" to its state at:`
       : `Restore all ${objectCount} objects to their state at:`;
 
-  return createPortal(
-    <div className="restore-dialog-overlay" onClick={onCancel}>
-      <div
-        ref={dialogRef}
-        className="restore-dialog"
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="restore-dialog-title"
-        aria-describedby="restore-dialog-description"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="restore-dialog__icon">
-          {scope === 'single' ? '📄' : '📚'}
-        </div>
+  const warnings = [
+    'This operation merges historical data with your current state using CRDT.',
+    'All changes are preserved in history - nothing is permanently lost.',
+    'Changes will sync to all connected devices.',
+  ];
 
-        <h2 id="restore-dialog-title" className="restore-dialog__title">
-          {title}
-        </h2>
+  return (
+    <Modal
+      opened={isOpen}
+      onClose={onCancel}
+      title={title}
+      centered
+      size="sm"
+    >
+      <Stack gap="md">
+        <Group justify="center">
+          <ThemeIcon size="xl" variant="light" color="ember">
+            <Icon name={scope === 'single' ? 'file-text' : 'history'} size={24} />
+          </ThemeIcon>
+        </Group>
 
-        <p id="restore-dialog-description" className="restore-dialog__description">
-          {description}
-        </p>
+        <Text ta="center">{description}</Text>
 
-        <div className="restore-dialog__timestamp">
+        <Text ta="center" fw={600} size="lg" c="ember">
           {formattedTimestamp}
-        </div>
+        </Text>
 
-        <div className="restore-dialog__warnings">
-          <div className="restore-dialog__warning">
-            <span className="restore-dialog__warning-icon">i</span>
-            <span>This operation merges historical data with your current state using CRDT.</span>
-          </div>
-          <div className="restore-dialog__warning">
-            <span className="restore-dialog__warning-icon">i</span>
-            <span>All changes are preserved in history - nothing is permanently lost.</span>
-          </div>
-          <div className="restore-dialog__warning">
-            <span className="restore-dialog__warning-icon">i</span>
-            <span>Changes will sync to all connected devices.</span>
-          </div>
-        </div>
+        <Stack gap="xs">
+          {warnings.map((warning, index) => (
+            <Group key={index} gap="xs" wrap="nowrap" align="flex-start">
+              <ThemeIcon size="sm" variant="subtle" color="gray">
+                <Icon name="info" size={14} />
+              </ThemeIcon>
+              <Text size="sm" c="dimmed">
+                {warning}
+              </Text>
+            </Group>
+          ))}
+        </Stack>
 
-        <div className="restore-dialog__actions">
-          <button
-            type="button"
-            className="restore-dialog__button restore-dialog__button--cancel"
-            onClick={onCancel}
-          >
+        <Group justify="flex-end" gap="sm" mt="md">
+          <Button variant="subtle" color="gray" onClick={onCancel}>
             Cancel
-          </button>
-          <button
-            ref={confirmButtonRef}
-            type="button"
-            className="restore-dialog__button restore-dialog__button--confirm"
-            onClick={onConfirm}
-          >
+          </Button>
+          <Button color="ember" onClick={onConfirm} autoFocus>
             Restore
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body
+          </Button>
+        </Group>
+      </Stack>
+    </Modal>
   );
 }

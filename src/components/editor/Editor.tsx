@@ -17,7 +17,7 @@ import {
   isMentionClipboardText,
 } from '@/lib/editor';
 import { getMentionMenuItems, MentionSuggestionMenu, type MentionItem } from './MentionSuggestion';
-import { useObjects, useTypeRegistry } from '@/contexts';
+import { useObjects, useTypeRegistry, useTheme } from '@/contexts';
 
 interface EditorProps {
   objectId: string;
@@ -34,6 +34,7 @@ export function Editor({ objectId, initialContent, onContentChange }: EditorProp
   // Get object store and type registry for mentions
   const { store } = useObjects();
   const typeRegistry = useTypeRegistry();
+  const { theme } = useTheme();
 
   // Parse initial content
   const initialBlocks = useMemo(() => {
@@ -154,7 +155,8 @@ export function Editor({ objectId, initialContent, onContentChange }: EditorProp
       <BlockNoteView
         editor={editor}
         onChange={handleEditorChange}
-        theme="dark"
+        theme={theme}
+        sideMenu={false}
       >
         <SuggestionMenuController<(query: string) => Promise<MentionItem[]>>
           triggerCharacter="@"

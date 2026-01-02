@@ -6,3 +6,6 @@ export { ToastContainer } from './ToastContainer';
 export { ConfirmDialog, type ConfirmDialogProps, type ConfirmDialogVariant } from './ConfirmDialog';
 export { ContextMenu, type ContextMenuItem, type ContextMenuProps } from './ContextMenu';
 export { EmptyState } from './EmptyState';
+export { Icon, type IconProps } from './Icon';
+export type { IconName } from '@/lib/icons';
+export { ViewHeader, type ViewHeaderProps } from './ViewHeader';

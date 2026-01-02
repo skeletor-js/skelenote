@@ -1,0 +1,80 @@
+/**
+ * PropertyBar.module.css
+ * Tight-layout property container with hover effects
+ */
+
+.propertyBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  padding: var(--mantine-spacing-xs) 0;
+}
+
+/* Add button - slightly dimmed until hover */
+.addButton {
+  opacity: 0.6;
+  transition: opacity 150ms ease;
+}
+
+.propertyBar:hover .addButton {
+  opacity: 1;
+}
+
+/* Property chip base styling */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--mantine-radius-sm);
+  background-color: var(--mantine-color-gray-0);
+  font-size: var(--mantine-font-size-xs);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+  white-space: nowrap;
+}
+
+.chip:hover {
+  background-color: var(--mantine-color-gray-1);
+}
+
+.chipLabel {
+  color: var(--mantine-color-dimmed);
+  font-weight: 400;
+}
+
+.chipValue {
+  font-weight: 500;
+}
+
+.chipIcon {
+  color: var(--mantine-color-dimmed);
+  flex-shrink: 0;
+}
+
+/* Edit icon - hover reveal */
+.editIcon {
+  opacity: 0;
+  transition: opacity 150ms ease;
+  margin-left: 2px;
+}
+
+.chip:hover .editIcon {
+  opacity: 1;
+}
+
+/* Empty value styling */
+.chipEmpty {
+  color: var(--mantine-color-dimmed);
+  font-style: italic;
+}
+
+/* Dark mode */
+:global([data-mantine-color-scheme="dark"]) .chip {
+  background-color: var(--mantine-color-dark-6);
+}
+
+:global([data-mantine-color-scheme="dark"]) .chip:hover {
+  background-color: var(--mantine-color-dark-5);
+}

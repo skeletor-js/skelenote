@@ -1,12 +1,16 @@
+/**
+ * ObjectDetailView - Main container for viewing and editing objects
+ * Redesigned with high-density layout and Linear-inspired styling
+ */
+
 import { useCallback, useMemo, useEffect } from 'react';
-import './ObjectDetailView.css';
+import { Stack, Box, Text, Button, Loader, Center } from '@mantine/core';
 import { ObjectHeader } from './ObjectHeader';
-import { PropertyList } from './PropertyList';
+import { PropertyBar } from './PropertyBar';
 import { Backlinks } from './Backlinks';
-import { FindSimilar } from './FindSimilar';
+import { RelatedObjectsSection } from './RelatedObjectsSection';
 import { Editor } from '@/components/editor';
-import { DailyNoteHeader } from '@/components/daily';
-import { ConfirmDialog } from '@/components/ui';
+import { ConfirmDialog, Icon } from '@/components/ui';
 import { removeMentionsFromContent } from '@/lib/editor';
 import { exportObjectToMarkdown } from '@/lib/export';
 import type { PropertyValue } from '@/lib/types';
@@ -18,6 +22,7 @@ import {
   useKeyboardShortcuts,
 } from '@/contexts';
 import { useConfirmDialog } from '@/hooks';
+import styles from './ObjectDetailView.module.css';
 
 interface ObjectDetailViewProps {
   objectId: string;
@@ -213,13 +218,12 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
     }
   }, [store, objectId]);
 
-  const secondaryClass = paneType === 'secondary' ? ' object-detail--secondary' : '';
-
   if (isLoading || !store) {
     return (
-      <div className={`object-detail object-detail--loading${secondaryClass}`}>
-        <p>Loading...</p>
-      </div>
+      <Center className={styles.loadingContainer}>
+        <Loader size="sm" />
+        <Text ml="sm" c="dimmed">Loading...</Text>
+      </Center>
     );
   }
 
@@ -227,20 +231,20 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
 
   if (!object) {
     return (
-      <div className={`object-detail object-detail--error${secondaryClass}`}>
-        <p>Object not found: {objectId}</p>
+      <Box className={styles.errorContainer}>
+        <Text c="red" mb="sm">Object not found: {objectId}</Text>
         {paneType === 'secondary' ? (
-          <button onClick={closeSplit} className="object-detail__back-btn">
+          <Button variant="subtle" onClick={closeSplit} leftSection={<Icon name="x" size={14} />}>
             Close
-          </button>
+          </Button>
         ) : (
           canGoBack && (
-            <button onClick={navigateBack} className="object-detail__back-btn">
-              ← Go Back
-            </button>
+            <Button variant="subtle" onClick={navigateBack} leftSection={<Icon name="chevron-left" size={14} />}>
+              Go Back
+            </Button>
           )
         )}
-      </div>
+      </Box>
     );
   }
 
@@ -248,86 +252,80 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
 
   if (!typeDef) {
     return (
-      <div className={`object-detail object-detail--error${secondaryClass}`}>
-        <p>Unknown object type: {object.typeId}</p>
+      <Box className={styles.errorContainer}>
+        <Text c="red" mb="sm">Unknown object type: {object.typeId}</Text>
         {paneType === 'secondary' ? (
-          <button onClick={closeSplit} className="object-detail__back-btn">
+          <Button variant="subtle" onClick={closeSplit} leftSection={<Icon name="x" size={14} />}>
             Close
-          </button>
+          </Button>
         ) : (
           canGoBack && (
-            <button onClick={navigateBack} className="object-detail__back-btn">
-              ← Go Back
-            </button>
+            <Button variant="subtle" onClick={navigateBack} leftSection={<Icon name="chevron-left" size={14} />}>
+              Go Back
+            </Button>
           )
         )}
-      </div>
+      </Box>
     );
   }
 
   const isDailyNote = object.properties.isDailyNote === true;
 
-  const detailClasses = [
-    'object-detail',
-    paneType === 'secondary' ? 'object-detail--secondary' : '',
-  ].filter(Boolean).join(' ');
-
   return (
-    <div className={detailClasses}>
-      {/* Navigation: Back to Time Machine (in comparison mode), Daily note header, or regular back button */}
-      {paneType === 'primary' && (
-        isVersionComparison ? (
-          <button onClick={handleBackToTimeMachine} className="object-detail__back-btn">
-            ← Back to Time Machine
-          </button>
-        ) : isDailyNote && typeof object.properties.date === 'number' ? (
-          <DailyNoteHeader dateTimestamp={object.properties.date} />
-        ) : (
-          canGoBack && (
-            <button onClick={navigateBack} className="object-detail__back-btn">
-              ← Back
-            </button>
-          )
-        )
-      )}
-
-      {/* Header with inline title editing and delete */}
+    <Box className={styles.container}>
+      {/* Header with inline title editing, back button, and hover-reveal actions */}
       <ObjectHeader
         object={object}
         typeDef={typeDef}
         onTitleChange={handleTitleChange}
         onDelete={handleDelete}
         canDelete={!isDailyNote}
+        titleEditable={!isDailyNote}
         paneType={paneType}
         onCloseSplit={paneType === 'secondary' ? closeSplit : undefined}
         onViewHistory={handleViewHistory}
         onExport={handleExport}
+        canGoBack={canGoBack && !isVersionComparison}
+        onNavigateBack={navigateBack}
+        showBackToTimeMachine={isVersionComparison}
+        onBackToTimeMachine={handleBackToTimeMachine}
       />
 
-      {/* Properties Section */}
-      <PropertyList
-        object={object}
-        typeDef={typeDef}
-        onPropertyChange={handlePropertyChange}
-      />
-
-      {/* Content Section with BlockNote Editor */}
-      {typeDef.hasContent && (
-        <section className="object-detail__content">
-          <h2 className="object-detail__section-title">Content</h2>
-          <Editor
-            objectId={objectId}
-            initialContent={currentContent}
-            onContentChange={handleContentChange}
+      {/* Scrollable content area */}
+      <Box className={styles.content}>
+        <Stack gap="sm">
+          {/* Properties as inline chips with prominent status/priority badges */}
+          <PropertyBar
+            object={object}
+            typeDef={typeDef}
+            onPropertyChange={handlePropertyChange}
           />
-        </section>
-      )}
 
-      {/* Backlinks Section */}
-      <Backlinks objectId={objectId} />
+          {/* Content Section with BlockNote Editor */}
+          {typeDef.hasContent && (
+            <Box component="section" className={styles.section}>
+              <Editor
+                objectId={objectId}
+                initialContent={currentContent}
+                onContentChange={handleContentChange}
+              />
+            </Box>
+          )}
 
-      {/* Find Similar Section (AI-powered, only when semantic search enabled) */}
-      <FindSimilar objectId={objectId} />
+          {/* Related Objects Section (for Projects, Areas, Tags) */}
+          {(object.typeId === 'project' || object.typeId === 'area' || object.typeId === 'tag') && (
+            <RelatedObjectsSection
+              objectId={objectId}
+              objectTypeId={object.typeId as 'project' | 'area' | 'tag'}
+            />
+          )}
+
+          {/* Backlinks Section - hidden for project/area/tag which have RelatedObjectsSection */}
+          {object.typeId !== 'project' && object.typeId !== 'area' && object.typeId !== 'tag' && (
+            <Backlinks objectId={objectId} />
+          )}
+        </Stack>
+      </Box>
 
       {/* Confirm Dialog for Delete */}
       <ConfirmDialog
@@ -340,6 +338,6 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
-    </div>
+    </Box>
   );
 }

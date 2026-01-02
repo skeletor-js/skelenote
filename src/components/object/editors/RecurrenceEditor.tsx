@@ -10,7 +10,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import './editors.css';
+import { Select, Button, Stack, Group, Text, Collapse, Box } from '@mantine/core';
 
 /**
  * Recurrence value structure
@@ -38,7 +38,7 @@ const FREQUENCIES = [
   { value: 'monthly', label: 'Monthly' },
   { value: 'quarterly', label: 'Quarterly' },
   { value: 'yearly', label: 'Yearly' },
-] as const;
+];
 
 const DAYS_OF_WEEK = [
   { value: 0, label: 'Sun', fullLabel: 'Sunday' },
@@ -51,27 +51,33 @@ const DAYS_OF_WEEK = [
 ];
 
 const WEEK_OF_MONTH = [
-  { value: 1, label: 'First' },
-  { value: 2, label: 'Second' },
-  { value: 3, label: 'Third' },
-  { value: 4, label: 'Fourth' },
-  { value: 5, label: 'Last' },
+  { value: '1', label: 'First' },
+  { value: '2', label: 'Second' },
+  { value: '3', label: 'Third' },
+  { value: '4', label: 'Fourth' },
+  { value: '5', label: 'Last' },
 ];
 
 const MONTHS = [
-  { value: 1, label: 'January' },
-  { value: 2, label: 'February' },
-  { value: 3, label: 'March' },
-  { value: 4, label: 'April' },
-  { value: 5, label: 'May' },
-  { value: 6, label: 'June' },
-  { value: 7, label: 'July' },
-  { value: 8, label: 'August' },
-  { value: 9, label: 'September' },
-  { value: 10, label: 'October' },
-  { value: 11, label: 'November' },
-  { value: 12, label: 'December' },
+  { value: '1', label: 'January' },
+  { value: '2', label: 'February' },
+  { value: '3', label: 'March' },
+  { value: '4', label: 'April' },
+  { value: '5', label: 'May' },
+  { value: '6', label: 'June' },
+  { value: '7', label: 'July' },
+  { value: '8', label: 'August' },
+  { value: '9', label: 'September' },
+  { value: '10', label: 'October' },
+  { value: '11', label: 'November' },
+  { value: '12', label: 'December' },
 ];
+
+// Generate day options (1-31)
+const DAY_OPTIONS = Array.from({ length: 31 }, (_, i) => ({
+  value: String(i + 1),
+  label: String(i + 1),
+}));
 
 /**
  * Parse a JSON string to RecurrenceValue, handling legacy string formats
@@ -128,28 +134,29 @@ export function RecurrenceEditor({
   const isNthWeekday = recurrence.weekOfMonth !== undefined && recurrence.dayOfWeek !== undefined;
 
   const handleFrequencyChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newFrequency = e.target.value as RecurrenceValue['frequency'];
+    (newFrequency: string | null) => {
+      if (!newFrequency) return;
 
-      let newValue: RecurrenceValue = { frequency: newFrequency };
+      const freq = newFrequency as RecurrenceValue['frequency'];
+      let newValue: RecurrenceValue = { frequency: freq };
 
       // Set sensible defaults for each frequency
-      if (newFrequency === 'weekly') {
+      if (freq === 'weekly') {
         // Default to current day of week
         const today = new Date().getDay();
         newValue.daysOfWeek = [today];
-      } else if (newFrequency === 'monthly' || newFrequency === 'quarterly') {
+      } else if (freq === 'monthly' || freq === 'quarterly') {
         // Default to current day of month
         const today = new Date().getDate();
         newValue.dayOfMonth = Math.min(today, 28); // Cap at 28 for safety
-      } else if (newFrequency === 'yearly') {
+      } else if (freq === 'yearly') {
         // Default to current month and day
         const today = new Date();
         newValue.month = today.getMonth() + 1;
         newValue.dayOfMonth = today.getDate();
       }
 
-      setIsExpanded(newFrequency !== 'none');
+      setIsExpanded(freq !== 'none');
       onChange(serializeRecurrenceValue(newValue));
     },
     [onChange]
@@ -181,8 +188,9 @@ export function RecurrenceEditor({
   );
 
   const handleDayOfMonthChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const day = parseInt(e.target.value, 10);
+    (val: string | null) => {
+      if (!val) return;
+      const day = parseInt(val, 10);
       // When switching to day of month mode, remove weekOfMonth and dayOfWeek
       const { weekOfMonth: _, dayOfWeek: __, ...rest } = recurrence;
       onChange(
@@ -196,8 +204,8 @@ export function RecurrenceEditor({
   );
 
   const handleMonthlyModeChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const mode = e.target.value;
+    (mode: string | null) => {
+      if (!mode) return;
       if (mode === 'day') {
         // Switch to day of month mode
         const { weekOfMonth: _, dayOfWeek: __, ...rest } = recurrence;
@@ -225,8 +233,9 @@ export function RecurrenceEditor({
   );
 
   const handleWeekOfMonthChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const week = parseInt(e.target.value, 10);
+    (val: string | null) => {
+      if (!val) return;
+      const week = parseInt(val, 10);
       onChange(
         serializeRecurrenceValue({
           ...recurrence,
@@ -238,8 +247,9 @@ export function RecurrenceEditor({
   );
 
   const handleDayOfWeekChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const day = parseInt(e.target.value, 10);
+    (val: string | null) => {
+      if (!val) return;
+      const day = parseInt(val, 10);
       onChange(
         serializeRecurrenceValue({
           ...recurrence,
@@ -251,8 +261,9 @@ export function RecurrenceEditor({
   );
 
   const handleMonthChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const month = parseInt(e.target.value, 10);
+    (val: string | null) => {
+      if (!val) return;
+      const month = parseInt(val, 10);
       onChange(
         serializeRecurrenceValue({
           ...recurrence,
@@ -263,160 +274,123 @@ export function RecurrenceEditor({
     [recurrence, onChange]
   );
 
-  // Generate day options (1-31)
-  const dayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
-
   return (
-    <div className="recurrence-editor" id={id}>
+    <Stack gap="sm" id={id}>
       {/* Frequency selector */}
-      <select
-        className="editor-select"
+      <Select
+        data={FREQUENCIES}
         value={recurrence.frequency}
         onChange={handleFrequencyChange}
         aria-label="Recurrence frequency"
-      >
-        {FREQUENCIES.map((freq) => (
-          <option key={freq.value} value={freq.value}>
-            {freq.label}
-          </option>
-        ))}
-      </select>
+        size="sm"
+      />
 
       {/* Additional options based on frequency */}
-      {isExpanded && recurrence.frequency !== 'none' && (
-        <div className="recurrence-editor__options">
+      <Collapse in={isExpanded && recurrence.frequency !== 'none'}>
+        <Stack gap="sm">
           {/* Weekly: Day of week selector */}
           {recurrence.frequency === 'weekly' && (
-            <div className="recurrence-editor__days">
-              <label className="recurrence-editor__label">Repeat on:</label>
-              <div className="recurrence-editor__day-buttons">
+            <Box>
+              <Text size="sm" c="dimmed" mb="xs">Repeat on:</Text>
+              <Group gap={4}>
                 {DAYS_OF_WEEK.map((day) => (
-                  <button
+                  <Button
                     key={day.value}
-                    type="button"
-                    className={`recurrence-editor__day-btn ${
-                      recurrence.daysOfWeek?.includes(day.value)
-                        ? 'recurrence-editor__day-btn--active'
-                        : ''
-                    }`}
+                    size="xs"
+                    variant={recurrence.daysOfWeek?.includes(day.value) ? 'filled' : 'light'}
                     onClick={() => handleDaysOfWeekChange(day.value)}
                     aria-pressed={recurrence.daysOfWeek?.includes(day.value)}
                   >
                     {day.label}
-                  </button>
+                  </Button>
                 ))}
-              </div>
-            </div>
+              </Group>
+            </Box>
           )}
 
           {/* Monthly: Day of month or nth weekday selector */}
           {recurrence.frequency === 'monthly' && (
-            <div className="recurrence-editor__monthly">
-              <div className="recurrence-editor__monthly-mode">
-                <select
-                  className="editor-select"
-                  value={isNthWeekday ? 'nth' : 'day'}
-                  onChange={handleMonthlyModeChange}
-                >
-                  <option value="day">On day of month</option>
-                  <option value="nth">On the nth weekday</option>
-                </select>
-              </div>
+            <Stack gap="xs">
+              <Select
+                size="sm"
+                data={[
+                  { value: 'day', label: 'On day of month' },
+                  { value: 'nth', label: 'On the nth weekday' },
+                ]}
+                value={isNthWeekday ? 'nth' : 'day'}
+                onChange={handleMonthlyModeChange}
+              />
               {isNthWeekday ? (
-                <div className="recurrence-editor__nth-weekday">
-                  <label className="recurrence-editor__label">On the:</label>
-                  <select
-                    className="editor-select editor-select--narrow"
-                    value={recurrence.weekOfMonth ?? 1}
+                <Group gap="xs">
+                  <Text size="sm" c="dimmed">On the:</Text>
+                  <Select
+                    size="sm"
+                    data={WEEK_OF_MONTH}
+                    value={String(recurrence.weekOfMonth ?? 1)}
                     onChange={handleWeekOfMonthChange}
-                  >
-                    {WEEK_OF_MONTH.map((week) => (
-                      <option key={week.value} value={week.value}>
-                        {week.label}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    className="editor-select"
-                    value={recurrence.dayOfWeek ?? 1}
+                    style={{ width: 100 }}
+                  />
+                  <Select
+                    size="sm"
+                    data={DAYS_OF_WEEK.map((d) => ({ value: String(d.value), label: d.fullLabel }))}
+                    value={String(recurrence.dayOfWeek ?? 1)}
                     onChange={handleDayOfWeekChange}
-                  >
-                    {DAYS_OF_WEEK.map((day) => (
-                      <option key={day.value} value={day.value}>
-                        {day.fullLabel}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    style={{ width: 120 }}
+                  />
+                </Group>
               ) : (
-                <div className="recurrence-editor__day-of-month">
-                  <label className="recurrence-editor__label">On day:</label>
-                  <select
-                    className="editor-select editor-select--narrow"
-                    value={recurrence.dayOfMonth ?? 1}
+                <Group gap="xs">
+                  <Text size="sm" c="dimmed">On day:</Text>
+                  <Select
+                    size="sm"
+                    data={DAY_OPTIONS}
+                    value={String(recurrence.dayOfMonth ?? 1)}
                     onChange={handleDayOfMonthChange}
-                  >
-                    {dayOptions.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    style={{ width: 80 }}
+                  />
+                </Group>
               )}
-            </div>
+            </Stack>
           )}
 
           {/* Quarterly: Day of month (first month of quarter) */}
           {recurrence.frequency === 'quarterly' && (
-            <div className="recurrence-editor__day-of-month">
-              <label className="recurrence-editor__label">On day:</label>
-              <select
-                className="editor-select editor-select--narrow"
-                value={recurrence.dayOfMonth ?? 1}
+            <Group gap="xs">
+              <Text size="sm" c="dimmed">On day:</Text>
+              <Select
+                size="sm"
+                data={DAY_OPTIONS}
+                value={String(recurrence.dayOfMonth ?? 1)}
                 onChange={handleDayOfMonthChange}
-              >
-                {dayOptions.map((day) => (
-                  <option key={day} value={day}>
-                    {day}
-                  </option>
-                ))}
-              </select>
-              <span className="recurrence-editor__hint">of each quarter</span>
-            </div>
+                style={{ width: 80 }}
+              />
+              <Text size="sm" c="dimmed">of each quarter</Text>
+            </Group>
           )}
 
           {/* Yearly: Month and day */}
           {recurrence.frequency === 'yearly' && (
-            <div className="recurrence-editor__yearly">
-              <label className="recurrence-editor__label">On:</label>
-              <select
-                className="editor-select"
-                value={recurrence.month ?? 1}
+            <Group gap="xs">
+              <Text size="sm" c="dimmed">On:</Text>
+              <Select
+                size="sm"
+                data={MONTHS}
+                value={String(recurrence.month ?? 1)}
                 onChange={handleMonthChange}
-              >
-                {MONTHS.map((month) => (
-                  <option key={month.value} value={month.value}>
-                    {month.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="editor-select editor-select--narrow"
-                value={recurrence.dayOfMonth ?? 1}
+                style={{ width: 120 }}
+              />
+              <Select
+                size="sm"
+                data={DAY_OPTIONS}
+                value={String(recurrence.dayOfMonth ?? 1)}
                 onChange={handleDayOfMonthChange}
-              >
-                {dayOptions.map((day) => (
-                  <option key={day} value={day}>
-                    {day}
-                  </option>
-                ))}
-              </select>
-            </div>
+                style={{ width: 80 }}
+              />
+            </Group>
           )}
-        </div>
-      )}
-    </div>
+        </Stack>
+      </Collapse>
+    </Stack>
   );
 }
 
@@ -447,7 +421,7 @@ export function formatRecurrenceDisplay(value: string | null): string {
     }
     case 'monthly': {
       if (recurrence.weekOfMonth !== undefined && recurrence.dayOfWeek !== undefined) {
-        const weekLabel = WEEK_OF_MONTH.find((w) => w.value === recurrence.weekOfMonth)?.label ?? 'First';
+        const weekLabel = WEEK_OF_MONTH.find((w) => w.value === String(recurrence.weekOfMonth))?.label ?? 'First';
         const dayLabel = DAYS_OF_WEEK.find((d) => d.value === recurrence.dayOfWeek)?.fullLabel ?? 'Monday';
         return `Monthly on ${weekLabel} ${dayLabel}`;
       }
@@ -456,7 +430,7 @@ export function formatRecurrenceDisplay(value: string | null): string {
     case 'quarterly':
       return `Quarterly on day ${recurrence.dayOfMonth ?? 1}`;
     case 'yearly': {
-      const monthName = MONTHS.find((m) => m.value === recurrence.month)?.label ?? 'January';
+      const monthName = MONTHS.find((m) => m.value === String(recurrence.month))?.label ?? 'January';
       return `Yearly on ${monthName} ${recurrence.dayOfMonth ?? 1}`;
     }
     default:

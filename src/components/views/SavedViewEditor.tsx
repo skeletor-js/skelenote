@@ -3,10 +3,28 @@
  */
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { createPortal } from 'react-dom';
-import './SavedViewEditor.css';
+import {
+  Modal,
+  TextInput,
+  Select,
+  NumberInput,
+  Button,
+  ActionIcon,
+  Menu,
+  Stack,
+  Group,
+  Text,
+  Box,
+  SimpleGrid,
+  Divider,
+  ScrollArea,
+} from '@mantine/core';
+import { DatePickerInput } from '@mantine/dates';
+import dayjs from 'dayjs';
 import { useTypeRegistry } from '@/contexts';
 import { useSavedViews } from '@/hooks';
+import { Icon } from '@/components/ui/Icon';
+import { getIconFromEmoji } from '@/lib/icons';
 import type { SavedView, CreateSavedViewInput, UpdateSavedViewInput } from '@/lib/types';
 import type { FilterCondition, FilterOperator, SortConfig } from '@/lib/loro';
 import {
@@ -33,26 +51,25 @@ function FilterValueInput({ field, value, onChange }: FilterValueInputProps) {
 
   // Date input
   if (field.type === 'date') {
-    // Convert timestamp to date string for input
     const dateValue = value && typeof value === 'number'
-      ? new Date(value).toISOString().split('T')[0]
+      ? dayjs(value).format('YYYY-MM-DD')
       : typeof value === 'string' && value
         ? value
-        : '';
+        : null;
 
     return (
-      <input
-        type="date"
-        className="saved-view-editor__filter-value"
+      <DatePickerInput
+        size="xs"
+        placeholder="Select date"
         value={dateValue}
-        onChange={(e) => {
-          if (e.target.value) {
-            // Convert date string to timestamp
-            onChange(new Date(e.target.value).getTime());
+        onChange={(newValue) => {
+          if (newValue) {
+            onChange(dayjs(newValue, 'YYYY-MM-DD').valueOf());
           } else {
             onChange(null);
           }
         }}
+        style={{ flex: 1 }}
       />
     );
   }
@@ -60,78 +77,72 @@ function FilterValueInput({ field, value, onChange }: FilterValueInputProps) {
   // Boolean/checkbox input
   if (field.type === 'checkbox' || field.type === 'boolean') {
     return (
-      <select
-        className="saved-view-editor__filter-value"
-        value={stringValue}
-        onChange={(e) => onChange(e.target.value === 'true')}
-      >
-        <option value="">Select...</option>
-        <option value="true">Yes</option>
-        <option value="false">No</option>
-      </select>
+      <Select
+        size="xs"
+        placeholder="Select..."
+        data={[
+          { value: 'true', label: 'Yes' },
+          { value: 'false', label: 'No' },
+        ]}
+        value={stringValue || null}
+        onChange={(val) => onChange(val === 'true')}
+        style={{ flex: 1 }}
+      />
     );
   }
 
   // Select with options
   if (field.type === 'select' && field.options) {
     return (
-      <select
-        className="saved-view-editor__filter-value"
-        value={stringValue}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        <option value="">Select...</option>
-        {field.options.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
+      <Select
+        size="xs"
+        placeholder="Select..."
+        data={field.options.map((opt) => ({ value: opt, label: opt }))}
+        value={stringValue || null}
+        onChange={(val) => onChange(val)}
+        style={{ flex: 1 }}
+      />
     );
   }
 
   // Recurrence
   if (field.type === 'recurrence') {
     return (
-      <select
-        className="saved-view-editor__filter-value"
-        value={stringValue}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        <option value="">Select...</option>
-        {RECURRENCE_OPTIONS.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt.charAt(0).toUpperCase() + opt.slice(1)}
-          </option>
-        ))}
-      </select>
+      <Select
+        size="xs"
+        placeholder="Select..."
+        data={RECURRENCE_OPTIONS.map((opt) => ({
+          value: opt,
+          label: opt.charAt(0).toUpperCase() + opt.slice(1),
+        }))}
+        value={stringValue || null}
+        onChange={(val) => onChange(val)}
+        style={{ flex: 1 }}
+      />
     );
   }
 
   // Number input
   if (field.type === 'number') {
     return (
-      <input
-        type="number"
-        className="saved-view-editor__filter-value"
+      <NumberInput
+        size="xs"
         placeholder="Value"
-        value={stringValue}
-        onChange={(e) => {
-          const num = parseFloat(e.target.value);
-          onChange(isNaN(num) ? null : num);
-        }}
+        value={typeof value === 'number' ? value : ''}
+        onChange={(val) => onChange(typeof val === 'number' ? val : null)}
+        style={{ flex: 1 }}
       />
     );
   }
 
   // Default: text input
   return (
-    <input
-      type="text"
-      className="saved-view-editor__filter-value"
+    <TextInput
+      size="xs"
       placeholder="Value"
       value={stringValue}
       onChange={(e) => onChange(e.target.value)}
+      style={{ flex: 1 }}
     />
   );
 }
@@ -150,7 +161,6 @@ interface SavedViewEditorProps {
 export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEditorProps) {
   const typeRegistry = useTypeRegistry();
   const { createView, updateView } = useSavedViews();
-  const dialogRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const isEditMode = !!view;
@@ -162,10 +172,18 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
   const [filters, setFilters] = useState<FilterCondition[]>([]);
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [showIconPicker, setShowIconPicker] = useState(false);
 
   // Get available types
   const availableTypes = typeRegistry.getAll();
+
+  // Type select data
+  const typeSelectData = useMemo(() => [
+    { value: '', label: 'All Types' },
+    ...availableTypes.map((type) => ({
+      value: type.id,
+      label: type.name,
+    })),
+  ], [availableTypes]);
 
   // Get fields for the selected type, including options for select types
   const fields = useMemo((): FieldInfo[] => {
@@ -204,6 +222,18 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
     return result;
   }, [typeFilter, typeRegistry, availableTypes]);
 
+  // Field select data
+  const fieldSelectData = useMemo(() =>
+    fields.map((f) => ({ value: f.id, label: f.name })),
+    [fields]
+  );
+
+  // Sort field select data (includes "No sorting" option)
+  const sortFieldSelectData = useMemo(() => [
+    { value: '', label: 'No sorting' },
+    ...fields.map((f) => ({ value: f.id, label: f.name })),
+  ], [fields]);
+
   // Get field info by id
   const getFieldById = useCallback(
     (fieldId: string): FieldInfo | undefined => {
@@ -214,20 +244,22 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
 
   // Initialize form when view changes
   useEffect(() => {
-    if (view) {
-      setName(view.name);
-      setIcon(view.icon || '📋');
-      setTypeFilter(view.typeFilter || null);
-      setFilters(view.filters || []);
-      setSortField(view.sort?.field || '');
-      setSortDirection(view.sort?.direction || 'desc');
-    } else {
-      setName('');
-      setIcon('📋');
-      setTypeFilter(null);
-      setFilters([]);
-      setSortField('');
-      setSortDirection('desc');
+    if (isOpen) {
+      if (view) {
+        setName(view.name);
+        setIcon(view.icon || '📋');
+        setTypeFilter(view.typeFilter || null);
+        setFilters(view.filters || []);
+        setSortField(view.sort?.field || '');
+        setSortDirection(view.sort?.direction || 'desc');
+      } else {
+        setName('');
+        setIcon('📋');
+        setTypeFilter(null);
+        setFilters([]);
+        setSortField('');
+        setSortDirection('desc');
+      }
     }
   }, [view, isOpen]);
 
@@ -236,32 +268,6 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
     if (isOpen) {
       setTimeout(() => nameInputRef.current?.focus(), 0);
     }
-  }, [isOpen]);
-
-  // Handle keyboard
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  // Prevent body scroll
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [isOpen]);
 
   // Add a new filter
@@ -339,225 +345,182 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
     onClose,
   ]);
 
-  if (!isOpen) return null;
-
-  return createPortal(
-    <div className="saved-view-editor__overlay" onClick={onClose}>
-      <div
-        ref={dialogRef}
-        className="saved-view-editor"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="saved-view-editor-title"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <header className="saved-view-editor__header">
-          <h2 id="saved-view-editor-title" className="saved-view-editor__title">
-            {isEditMode ? 'Edit View' : 'Create Saved View'}
-          </h2>
-          <button
-            className="saved-view-editor__close"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            ×
-          </button>
-        </header>
-
-        <div className="saved-view-editor__content">
+  return (
+    <Modal
+      opened={isOpen}
+      onClose={onClose}
+      title={isEditMode ? 'Edit View' : 'Create Saved View'}
+      centered
+      size="lg"
+    >
+      <ScrollArea.Autosize mah="70vh">
+        <Stack gap="md" pr="xs">
           {/* Name and Icon */}
-          <div className="saved-view-editor__row">
-            <div className="saved-view-editor__icon-picker">
-              <button
-                type="button"
-                className="saved-view-editor__icon-btn"
-                onClick={() => setShowIconPicker(!showIconPicker)}
-                aria-label="Choose icon"
-              >
-                {icon}
-              </button>
-              {showIconPicker && (
-                <div className="saved-view-editor__icon-dropdown">
+          <Group gap="sm">
+            <Menu shadow="md" width={200}>
+              <Menu.Target>
+                <ActionIcon
+                  variant="light"
+                  size="lg"
+                  aria-label="Choose icon"
+                >
+                  <Icon name={getIconFromEmoji(icon)} size={20} />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <SimpleGrid cols={6} spacing={4} p="xs">
                   {COMMON_ICONS.map((emoji) => (
-                    <button
+                    <ActionIcon
                       key={emoji}
-                      type="button"
-                      className="saved-view-editor__icon-option"
-                      onClick={() => {
-                        setIcon(emoji);
-                        setShowIconPicker(false);
-                      }}
+                      variant={icon === emoji ? 'filled' : 'subtle'}
+                      size="lg"
+                      onClick={() => setIcon(emoji)}
                     >
-                      {emoji}
-                    </button>
+                      <Icon name={getIconFromEmoji(emoji)} size={18} />
+                    </ActionIcon>
                   ))}
-                </div>
-              )}
-            </div>
-            <input
+                </SimpleGrid>
+              </Menu.Dropdown>
+            </Menu>
+            <TextInput
               ref={nameInputRef}
-              type="text"
-              className="saved-view-editor__name-input"
               placeholder="View name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              style={{ flex: 1 }}
             />
-          </div>
+          </Group>
 
           {/* Type Filter */}
-          <div className="saved-view-editor__field">
-            <label className="saved-view-editor__label">Filter by Type</label>
-            <select
-              className="saved-view-editor__select"
-              value={typeFilter || ''}
-              onChange={(e) => setTypeFilter(e.target.value || null)}
-            >
-              <option value="">All Types</option>
-              {availableTypes.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.icon} {type.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Filter by Type"
+            data={typeSelectData}
+            value={typeFilter || ''}
+            onChange={(val) => setTypeFilter(val || null)}
+          />
+
+          <Divider />
 
           {/* Filters */}
-          <div className="saved-view-editor__field">
-            <label className="saved-view-editor__label">Filters</label>
-            <div className="saved-view-editor__filters">
+          <Box>
+            <Text size="sm" fw={500} mb="xs">
+              Filters
+            </Text>
+            <Stack gap="xs">
               {filters.map((filter, index) => {
                 const fieldInfo = getFieldById(filter.field) || fields[0];
                 const availableOperators = fieldInfo
                   ? getOperatorsForType(fieldInfo.type)
                   : TEXT_OPERATORS;
 
+                const operatorSelectData = ALL_OPERATORS
+                  .filter((op) => availableOperators.includes(op.value))
+                  .map((op) => ({ value: op.value, label: op.label }));
+
                 return (
-                  <div key={index} className="saved-view-editor__filter-row">
-                    <select
-                      className="saved-view-editor__filter-field"
+                  <Group key={index} gap="xs" wrap="nowrap">
+                    <Select
+                      size="xs"
+                      data={fieldSelectData}
                       value={filter.field}
-                      onChange={(e) => {
-                        const newFieldInfo = getFieldById(e.target.value);
+                      onChange={(val) => {
+                        if (!val) return;
+                        const newFieldInfo = getFieldById(val);
                         const newOperators = newFieldInfo
                           ? getOperatorsForType(newFieldInfo.type)
                           : TEXT_OPERATORS;
-                        // Reset operator if current one is not valid for new field type
                         const newOperator = newOperators.includes(filter.operator)
                           ? filter.operator
                           : newOperators[0];
                         handleUpdateFilter(index, {
-                          field: e.target.value,
+                          field: val,
                           operator: newOperator,
-                          value: '', // Reset value when field changes
+                          value: '',
                         });
                       }}
-                    >
-                      {fields.map((field) => (
-                        <option key={field.id} value={field.id}>
-                          {field.name}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className="saved-view-editor__filter-operator"
+                      style={{ flex: 1 }}
+                    />
+                    <Select
+                      size="xs"
+                      data={operatorSelectData}
                       value={filter.operator}
-                      onChange={(e) =>
-                        handleUpdateFilter(index, {
-                          operator: e.target.value as FilterOperator,
-                        })
-                      }
-                    >
-                      {ALL_OPERATORS.filter((op) =>
-                        availableOperators.includes(op.value)
-                      ).map((op) => (
-                        <option key={op.value} value={op.value}>
-                          {op.label}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(val) => {
+                        if (val) {
+                          handleUpdateFilter(index, { operator: val as FilterOperator });
+                        }
+                      }}
+                      style={{ width: 120 }}
+                    />
                     {filter.operator !== 'isNull' &&
                       filter.operator !== 'isNotNull' &&
                       fieldInfo && (
                         <FilterValueInput
                           field={fieldInfo}
                           value={filter.value as string | number | boolean | null}
-                          onChange={(value) =>
-                            handleUpdateFilter(index, { value })
-                          }
+                          onChange={(value) => handleUpdateFilter(index, { value })}
                         />
                       )}
-                    <button
-                      type="button"
-                      className="saved-view-editor__filter-remove"
+                    <ActionIcon
+                      variant="subtle"
+                      color="brick"
+                      size="sm"
                       onClick={() => handleRemoveFilter(index)}
                       aria-label="Remove filter"
                     >
-                      ×
-                    </button>
-                  </div>
+                      <Icon name="x" size={14} />
+                    </ActionIcon>
+                  </Group>
                 );
               })}
-              <button
-                type="button"
-                className="saved-view-editor__add-filter"
+              <Button
+                variant="subtle"
+                size="xs"
+                leftSection={<Icon name="plus" size={14} />}
                 onClick={handleAddFilter}
               >
-                + Add Filter
-              </button>
-            </div>
-          </div>
+                Add Filter
+              </Button>
+            </Stack>
+          </Box>
+
+          <Divider />
 
           {/* Sort */}
-          <div className="saved-view-editor__field">
-            <label className="saved-view-editor__label">Sort By</label>
-            <div className="saved-view-editor__sort-row">
-              <select
-                className="saved-view-editor__sort-field"
+          <Box>
+            <Text size="sm" fw={500} mb="xs">
+              Sort By
+            </Text>
+            <Group gap="sm">
+              <Select
+                data={sortFieldSelectData}
                 value={sortField}
-                onChange={(e) => setSortField(e.target.value)}
-              >
-                <option value="">No sorting</option>
-                {fields.map((field) => (
-                  <option key={field.id} value={field.id}>
-                    {field.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setSortField(val || '')}
+                style={{ flex: 1 }}
+              />
               {sortField && (
-                <select
-                  className="saved-view-editor__sort-direction"
+                <Select
+                  data={[
+                    { value: 'asc', label: 'Ascending' },
+                    { value: 'desc', label: 'Descending' },
+                  ]}
                   value={sortDirection}
-                  onChange={(e) =>
-                    setSortDirection(e.target.value as 'asc' | 'desc')
-                  }
-                >
-                  <option value="asc">Ascending</option>
-                  <option value="desc">Descending</option>
-                </select>
+                  onChange={(val) => setSortDirection((val as 'asc' | 'desc') || 'desc')}
+                  style={{ width: 140 }}
+                />
               )}
-            </div>
-          </div>
-        </div>
+            </Group>
+          </Box>
+        </Stack>
+      </ScrollArea.Autosize>
 
-        <footer className="saved-view-editor__footer">
-          <button
-            type="button"
-            className="saved-view-editor__btn saved-view-editor__btn--secondary"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="saved-view-editor__btn saved-view-editor__btn--primary"
-            onClick={handleSave}
-            disabled={!name.trim()}
-          >
-            {isEditMode ? 'Save Changes' : 'Create View'}
-          </button>
-        </footer>
-      </div>
-    </div>,
-    document.body
+      <Group justify="flex-end" gap="sm" mt="lg">
+        <Button variant="subtle" color="gray" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button color="ember" onClick={handleSave} disabled={!name.trim()}>
+          {isEditMode ? 'Save Changes' : 'Create View'}
+        </Button>
+      </Group>
+    </Modal>
   );
 }

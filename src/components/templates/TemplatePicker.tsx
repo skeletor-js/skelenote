@@ -10,11 +10,25 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import {
+  Modal,
+  TextInput,
+  Select,
+  ScrollArea,
+  UnstyledButton,
+  Stack,
+  Group,
+  Text,
+  Badge,
+  Box,
+  Kbd,
+} from '@mantine/core';
 import { useTemplates } from '@/hooks';
 import { useTypeRegistry } from '@/contexts';
+import { Icon } from '@/components/ui/Icon';
+import { getIconFromEmoji } from '@/lib/icons';
 import type { Template } from '@/lib/templates';
-import './TemplatePicker.css';
+import type { IconName } from '@/lib/icons';
 
 export interface TemplatePickerProps {
   /** Whether the picker is open */
@@ -72,6 +86,17 @@ export function TemplatePicker({
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [templates, typeRegistry]);
 
+  // Convert type select options
+  const typeSelectData = useMemo(() => {
+    return [
+      { value: '', label: 'All Types' },
+      ...availableTypes.map((type) => ({
+        value: type.id,
+        label: type.name,
+      })),
+    ];
+  }, [availableTypes]);
+
   // Reset state when opening
   useEffect(() => {
     if (isOpen) {
@@ -91,7 +116,7 @@ export function TemplatePicker({
   // Scroll selected item into view
   useEffect(() => {
     if (!listRef.current) return;
-    const selectedItem = listRef.current.querySelector('.template-picker__item--selected');
+    const selectedItem = listRef.current.querySelector('[data-selected="true"]');
     selectedItem?.scrollIntoView({ block: 'nearest' });
   }, [selectedIndex]);
 
@@ -122,30 +147,6 @@ export function TemplatePicker({
     [filteredTemplates, selectedIndex, onSelect, onClose]
   );
 
-  // Global escape key handler
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleGlobalKeyDown);
-    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [isOpen, onClose]);
-
-  // Handle backdrop click
-  const handleBackdropClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget) {
-        onClose();
-      }
-    },
-    [onClose]
-  );
-
   // Handle template selection
   const handleSelectTemplate = useCallback(
     (template: Template) => {
@@ -154,129 +155,135 @@ export function TemplatePicker({
     [onSelect]
   );
 
-  // Get type display info
-  const getTypeInfo = useCallback(
-    (typeId: string) => {
-      const typeDef = typeRegistry.get(typeId);
-      return typeDef ? { name: typeDef.name, icon: typeDef.icon } : { name: typeId, icon: '?' };
-    },
-    [typeRegistry]
-  );
+  // Get type icon
+  const getTypeIcon = (typeId: string): IconName => {
+    const typeDef = typeRegistry.get(typeId);
+    if (!typeDef?.icon) return 'file';
+    if (typeDef.icon.length <= 2) {
+      return getIconFromEmoji(typeDef.icon);
+    }
+    return typeDef.icon as IconName;
+  };
 
-  if (!isOpen) return null;
+  // Get type name
+  const getTypeName = (typeId: string): string => {
+    const typeDef = typeRegistry.get(typeId);
+    return typeDef?.name ?? typeId;
+  };
 
-  const content = (
-    <div className="template-picker__backdrop" onClick={handleBackdropClick}>
-      <div
-        className="template-picker"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="template-picker-title"
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={handleKeyDown}
-      >
-        {/* Header */}
-        <div className="template-picker__header">
-          <h2 id="template-picker-title" className="template-picker__title">
-            {title}
-          </h2>
-          <button
-            type="button"
-            className="template-picker__close"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            &times;
-          </button>
-        </div>
-
+  return (
+    <Modal
+      opened={isOpen}
+      onClose={onClose}
+      title={title}
+      centered
+      size="md"
+    >
+      <Stack gap="sm" onKeyDown={handleKeyDown}>
         {/* Search and filter */}
-        <div className="template-picker__controls">
-          <input
+        <Group gap="sm">
+          <TextInput
             ref={inputRef}
-            type="text"
-            className="template-picker__search"
+            leftSection={<Icon name="search" size={16} />}
             placeholder="Search templates..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            style={{ flex: 1 }}
           />
           {!targetTypeId && availableTypes.length > 1 && (
-            <select
-              className="template-picker__filter"
+            <Select
+              data={typeSelectData}
               value={typeFilter ?? ''}
-              onChange={(e) => setTypeFilter(e.target.value || null)}
-            >
-              <option value="">All Types</option>
-              {availableTypes.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.icon} {type.name}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setTypeFilter(value || null)}
+              placeholder="All Types"
+              w={150}
+            />
           )}
-        </div>
+        </Group>
 
         {/* Template list */}
-        <div className="template-picker__list" ref={listRef} role="listbox">
+        <ScrollArea.Autosize mah={350} ref={listRef}>
           {filteredTemplates.length === 0 ? (
-            <div className="template-picker__empty">
+            <Text c="dimmed" ta="center" py="xl">
               {templates.length === 0
                 ? 'No templates yet. Create one to get started.'
                 : 'No templates match your search.'}
-            </div>
+            </Text>
           ) : (
-            filteredTemplates.map((template, index) => {
-              const typeInfo = getTypeInfo(template.targetTypeId);
-              return (
-                <button
-                  key={template.id}
-                  type="button"
-                  role="option"
-                  aria-selected={index === selectedIndex}
-                  className={`template-picker__item ${
-                    index === selectedIndex ? 'template-picker__item--selected' : ''
-                  }`}
-                  onClick={() => handleSelectTemplate(template)}
-                  onMouseEnter={() => setSelectedIndex(index)}
-                >
-                  <div className="template-picker__item-header">
-                    <span className="template-picker__item-name">{template.name}</span>
-                    {template.isDailyNoteTemplate && (
-                      <span className="template-picker__item-badge" title="Daily note template">
-                        Daily
-                      </span>
-                    )}
-                  </div>
-                  <div className="template-picker__item-meta">
-                    <span className="template-picker__item-type">
-                      Creates: {typeInfo.icon} {typeInfo.name}
-                    </span>
-                  </div>
-                  {template.description && (
-                    <div className="template-picker__item-description">{template.description}</div>
-                  )}
-                </button>
-              );
-            })
+            <Stack gap={4}>
+              {filteredTemplates.map((template, index) => {
+                const isSelected = index === selectedIndex;
+                const iconName = getTypeIcon(template.targetTypeId);
+                const typeName = getTypeName(template.targetTypeId);
+
+                return (
+                  <UnstyledButton
+                    key={template.id}
+                    onClick={() => handleSelectTemplate(template)}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                    data-selected={isSelected}
+                    p="sm"
+                    style={{
+                      borderRadius: 'var(--mantine-radius-sm)',
+                      backgroundColor: isSelected
+                        ? 'var(--mantine-color-slate-light)'
+                        : 'transparent',
+                    }}
+                  >
+                    <Stack gap={4}>
+                      <Group justify="space-between" wrap="nowrap">
+                        <Text size="sm" fw={500}>
+                          {template.name}
+                        </Text>
+                        {template.isDailyNoteTemplate && (
+                          <Badge size="xs" variant="light" color="ember" radius="sm">
+                            Daily
+                          </Badge>
+                        )}
+                      </Group>
+                      <Group gap="xs">
+                        <Icon name={iconName} size={14} />
+                        <Text size="xs" c="dimmed">
+                          Creates: {typeName}
+                        </Text>
+                      </Group>
+                      {template.description && (
+                        <Text size="xs" c="dimmed" lineClamp={1}>
+                          {template.description}
+                        </Text>
+                      )}
+                    </Stack>
+                  </UnstyledButton>
+                );
+              })}
+            </Stack>
           )}
-        </div>
+        </ScrollArea.Autosize>
 
         {/* Footer with keyboard hints */}
-        <div className="template-picker__footer">
-          <span className="template-picker__hint">
-            <kbd>&uarr;</kbd>
-            <kbd>&darr;</kbd> Navigate
-          </span>
-          <span className="template-picker__hint">
-            <kbd>Enter</kbd> Select
-          </span>
-          <span className="template-picker__hint">
-            <kbd>Esc</kbd> Cancel
-          </span>
-        </div>
-      </div>
-    </div>
+        <Box
+          p="xs"
+          style={{
+            borderTop: '1px solid var(--mantine-color-default-border)',
+          }}
+        >
+          <Group justify="center" gap="md">
+            <Group gap={4}>
+              <Kbd size="xs">↑</Kbd>
+              <Kbd size="xs">↓</Kbd>
+              <Text size="xs" c="dimmed">Navigate</Text>
+            </Group>
+            <Group gap={4}>
+              <Kbd size="xs">↵</Kbd>
+              <Text size="xs" c="dimmed">Select</Text>
+            </Group>
+            <Group gap={4}>
+              <Kbd size="xs">Esc</Kbd>
+              <Text size="xs" c="dimmed">Cancel</Text>
+            </Group>
+          </Group>
+        </Box>
+      </Stack>
+    </Modal>
   );
-
-  return createPortal(content, document.body);
 }

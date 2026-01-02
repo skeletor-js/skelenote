@@ -4,7 +4,8 @@
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+import { Modal, TextInput, Stack, Group, Text, Kbd, ScrollArea, Loader, Box } from '@mantine/core';
+import { Search } from 'lucide-react';
 import { useNavigation, useObjects, useTypeRegistry } from '@/contexts';
 import { useLinkToDaily, useSearch } from '@/hooks';
 import {
@@ -21,7 +22,6 @@ import {
 import { searchObjects, sortByRelevance } from '@/lib/palette/search';
 import { PaletteItem } from './PaletteItem';
 import { SearchResultItem } from '@/components/search';
-import './CommandPalette.css';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -88,7 +88,7 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture, onOpenShortcut
         return {
           id: `object-${result.item.id}`,
           label: result.item.title || 'Untitled',
-          icon: typeDef?.icon ?? '📄',
+          icon: typeDef?.icon ?? 'file',
           category: 'object' as const,
           objectId: result.item.id,
           // Include semantic info for display
@@ -282,112 +282,116 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture, onOpenShortcut
     [isSearchMode, filteredActions, searchResults, selectedIndex, executeAction, selectSearchResult, exitSearchMode, onClose]
   );
 
-  // Handle backdrop click
-  const handleBackdropClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget) {
-        onClose();
-      }
-    },
-    [onClose]
-  );
-
-  if (!isOpen) return null;
-
-  const content = (
-    <div className="command-palette__backdrop" onClick={handleBackdropClick}>
-      <div
-        className="command-palette"
-        role="dialog"
-        aria-modal="true"
-        aria-label={isSearchMode ? 'Search' : 'Command Palette'}
-      >
+  return (
+    <Modal
+      opened={isOpen}
+      onClose={onClose}
+      size="lg"
+      centered
+      withCloseButton={false}
+      padding={0}
+      radius="md"
+      styles={{
+        body: { padding: 0 },
+        content: { overflow: 'hidden' },
+      }}
+    >
+      <Stack gap={0}>
         {/* Search input */}
-        <div className="command-palette__search">
-          {isSearchMode ? (
-            <>
-              <span className="command-palette__search-icon command-palette__search-icon--active">🔎</span>
-              <input
-                ref={inputRef}
-                type="text"
-                className="command-palette__input"
-                placeholder="Search objects..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
-              {isSearching && (
-                <span className="command-palette__loading">...</span>
-              )}
-            </>
-          ) : (
-            <>
-              <span className="command-palette__search-icon">🔍</span>
-              <input
-                ref={inputRef}
-                type="text"
-                className="command-palette__input"
-                placeholder="Type a command or search..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
-            </>
-          )}
-        </div>
+        <Box p="sm" style={{ borderBottom: '1px solid var(--mantine-color-default-border)' }}>
+          <TextInput
+            ref={inputRef}
+            leftSection={
+              isSearchMode ? (
+                <Search size={16} style={{ color: 'var(--mantine-color-blue-5)' }} />
+              ) : (
+                <Search size={16} />
+              )
+            }
+            rightSection={isSearching ? <Loader size="xs" /> : undefined}
+            placeholder={isSearchMode ? 'Search objects...' : 'Type a command or search...'}
+            value={isSearchMode ? searchQuery : query}
+            onChange={(e) => isSearchMode ? setSearchQuery(e.target.value) : setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            variant="unstyled"
+            size="md"
+            styles={{
+              input: {
+                fontSize: 'var(--mantine-font-size-md)',
+              },
+            }}
+          />
+        </Box>
 
         {/* Results */}
-        <div className="command-palette__results" role="listbox">
+        <ScrollArea.Autosize mah={400} p="xs" role="listbox">
           {isSearchMode ? (
             // Search mode results
             searchQuery.trim() === '' ? (
-              <div className="command-palette__empty">Type to search...</div>
+              <Text c="dimmed" ta="center" py="xl">
+                Type to search...
+              </Text>
             ) : searchResults.length === 0 && !isSearching ? (
-              <div className="command-palette__empty">No results found</div>
+              <Text c="dimmed" ta="center" py="xl">
+                No results found
+              </Text>
             ) : (
-              searchResults.map((result, index) => (
-                <SearchResultItem
-                  key={result.item.id}
-                  result={result}
-                  isSelected={index === selectedIndex}
-                  onClick={() => selectSearchResult(index)}
-                  onMouseEnter={() => setSelectedIndex(index)}
-                />
-              ))
+              <Stack gap={0}>
+                {searchResults.map((result, index) => (
+                  <SearchResultItem
+                    key={result.item.id}
+                    result={result}
+                    isSelected={index === selectedIndex}
+                    onClick={() => selectSearchResult(index)}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                  />
+                ))}
+              </Stack>
             )
           ) : (
             // Normal mode results
             filteredActions.length === 0 ? (
-              <div className="command-palette__empty">No results found</div>
+              <Text c="dimmed" ta="center" py="xl">
+                No results found
+              </Text>
             ) : (
-              filteredActions.map((action, index) => (
-                <PaletteItem
-                  key={action.id}
-                  action={action}
-                  isSelected={index === selectedIndex}
-                  onClick={() => executeAction(action)}
-                  onMouseEnter={() => setSelectedIndex(index)}
-                />
-              ))
+              <Stack gap={0}>
+                {filteredActions.map((action, index) => (
+                  <PaletteItem
+                    key={action.id}
+                    action={action}
+                    isSelected={index === selectedIndex}
+                    onClick={() => executeAction(action)}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                  />
+                ))}
+              </Stack>
             )
           )}
-        </div>
+        </ScrollArea.Autosize>
 
         {/* Footer with keyboard hints */}
-        <div className="command-palette__footer">
-          <span className="command-palette__hint">
-            <kbd>↑</kbd><kbd>↓</kbd> Navigate
-          </span>
-          <span className="command-palette__hint">
-            <kbd>↵</kbd> Select
-          </span>
-          <span className="command-palette__hint">
-            <kbd>esc</kbd> {isSearchMode ? 'Back' : 'Close'}
-          </span>
-        </div>
-      </div>
-    </div>
+        <Box
+          p="xs"
+          style={{ borderTop: '1px solid var(--mantine-color-default-border)' }}
+        >
+          <Group gap="lg" justify="center">
+            <Group gap={4}>
+              <Kbd size="xs">↑</Kbd>
+              <Kbd size="xs">↓</Kbd>
+              <Text size="xs" c="dimmed">Navigate</Text>
+            </Group>
+            <Group gap={4}>
+              <Kbd size="xs">↵</Kbd>
+              <Text size="xs" c="dimmed">Select</Text>
+            </Group>
+            <Group gap={4}>
+              <Kbd size="xs">esc</Kbd>
+              <Text size="xs" c="dimmed">{isSearchMode ? 'Back' : 'Close'}</Text>
+            </Group>
+          </Group>
+        </Box>
+      </Stack>
+    </Modal>
   );
-
-  return createPortal(content, document.body);
 }

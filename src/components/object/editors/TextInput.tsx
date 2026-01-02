@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import './editors.css';
+import { TextInput as MantineTextInput } from '@mantine/core';
 
 interface TextInputProps {
   id?: string;
@@ -8,6 +8,9 @@ interface TextInputProps {
   placeholder?: string;
 }
 
+/**
+ * Text input that commits value on blur or Enter key
+ */
 export function TextInput({
   id,
   value,
@@ -39,15 +42,15 @@ export function TextInput({
   );
 
   return (
-    <input
+    <MantineTextInput
       id={id}
-      type="text"
-      className="editor-input editor-input--text"
       value={localValue}
       onChange={(e) => setLocalValue(e.target.value)}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       placeholder={placeholder}
+      size="sm"
+      variant="filled"
     />
   );
 }

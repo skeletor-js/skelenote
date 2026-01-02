@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Paper, Group, Text, CloseButton, Button, MantineColor } from '@mantine/core';
+import { Icon } from './Icon';
 import type { Toast as ToastData, ToastType } from '@/contexts/ToastContext';
-import './Toast.css';
+import type { IconName } from '@/lib/icons';
 
 interface ToastProps {
   toast: ToastData;
@@ -14,23 +16,45 @@ function getDefaultDuration(type: ToastType): number {
   return type === 'error' ? ERROR_DURATION : DEFAULT_DURATION;
 }
 
-function getIcon(type: ToastType): string {
+/**
+ * Get icon name for toast type
+ */
+function getIconName(type: ToastType): IconName {
   switch (type) {
     case 'success':
-      return '\u2713'; // checkmark
+      return 'check-circle';
     case 'error':
-      return '\u2717'; // x mark
+      return 'x';
     case 'warning':
-      return '\u26A0'; // warning triangle
+      return 'alert-triangle';
     case 'info':
     default:
-      return '\u2139'; // info circle
+      return 'info';
+  }
+}
+
+/**
+ * Get color for toast type
+ */
+function getColor(type: ToastType): MantineColor {
+  switch (type) {
+    case 'success':
+      return 'green';
+    case 'error':
+      return 'red';
+    case 'warning':
+      return 'orange';
+    case 'info':
+    default:
+      return 'blue';
   }
 }
 
 export function Toast({ toast, onDismiss }: ToastProps) {
   const [isExiting, setIsExiting] = useState(false);
   const duration = toast.duration ?? getDefaultDuration(toast.type);
+  const color = getColor(toast.type);
+  const iconName = getIconName(toast.type);
 
   useEffect(() => {
     if (duration <= 0) return;
@@ -56,32 +80,46 @@ export function Toast({ toast, onDismiss }: ToastProps) {
   };
 
   return (
-    <div
-      className={`toast toast--${toast.type} ${isExiting ? 'toast--exiting' : ''}`}
+    <Paper
+      shadow="md"
+      p="sm"
+      radius="sm"
+      withBorder
       role="alert"
       aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+      style={{
+        opacity: isExiting ? 0 : 1,
+        transform: isExiting ? 'translateX(100%)' : 'translateX(0)',
+        transition: 'opacity 200ms ease, transform 200ms ease',
+        borderLeftWidth: 3,
+        borderLeftColor: `var(--mantine-color-${color}-6)`,
+      }}
     >
-      <span className="toast__icon" aria-hidden="true">
-        {getIcon(toast.type)}
-      </span>
-      <span className="toast__message">{toast.message}</span>
-      {toast.action && (
-        <button
-          className="toast__action"
-          onClick={handleActionClick}
-          type="button"
-        >
-          {toast.action.label}
-        </button>
-      )}
-      <button
-        className="toast__dismiss"
-        onClick={handleDismiss}
-        aria-label="Dismiss notification"
-        type="button"
-      >
-        {'\u00D7'}
-      </button>
-    </div>
+      <Group gap="sm" wrap="nowrap">
+        <Icon
+          name={iconName}
+          size={18}
+          color={`var(--mantine-color-${color}-6)`}
+        />
+        <Text size="sm" style={{ flex: 1 }}>
+          {toast.message}
+        </Text>
+        {toast.action && (
+          <Button
+            variant="subtle"
+            size="compact-xs"
+            color={color}
+            onClick={handleActionClick}
+          >
+            {toast.action.label}
+          </Button>
+        )}
+        <CloseButton
+          size="sm"
+          onClick={handleDismiss}
+          aria-label="Dismiss notification"
+        />
+      </Group>
+    </Paper>
   );
 }

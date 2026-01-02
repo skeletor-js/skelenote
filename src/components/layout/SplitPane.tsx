@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import './SplitPane.css';
+import { useEffect, type ReactNode } from 'react';
+import { Box } from '@mantine/core';
+import { Split } from '@gfazioli/mantine-split-pane';
+import '@gfazioli/mantine-split-pane/styles.css';
 
 interface SplitPaneProps {
   /** Primary pane content (always visible) */
@@ -18,12 +20,9 @@ export function SplitPane({
   children,
   secondaryContent,
   splitWidth,
-  onWidthChange,
+  onWidthChange: _onWidthChange,
   onClose,
 }: SplitPaneProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-
   // Auto-close split on narrow viewports
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 768px)');
@@ -41,105 +40,42 @@ export function SplitPane({
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [secondaryContent, onClose]);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isDragging) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current) return;
-
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const containerWidth = containerRect.width;
-      const mouseX = e.clientX - containerRect.left;
-      const dividerWidth = 12; // Match CSS divider width
-      const minPaneWidth = 380; // Minimum pane width in pixels (matches CSS)
-
-      // Calculate secondary pane width (right side)
-      // mouseX is where the divider is, so secondary width is containerWidth - mouseX
-      let secondaryWidth = containerWidth - mouseX - dividerWidth / 2;
-      let primaryWidth = mouseX - dividerWidth / 2;
-
-      // Enforce minimum widths
-      if (primaryWidth < minPaneWidth) {
-        primaryWidth = minPaneWidth;
-        secondaryWidth = containerWidth - primaryWidth - dividerWidth;
-      } else if (secondaryWidth < minPaneWidth) {
-        secondaryWidth = minPaneWidth;
-        primaryWidth = containerWidth - secondaryWidth - dividerWidth;
-      }
-
-      // Convert to percentage for the secondary pane
-      const widthPercent = (secondaryWidth / containerWidth) * 100;
-      onWidthChange(widthPercent);
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, onWidthChange]);
-
   // Single pane mode when no secondary content
   if (!secondaryContent) {
-    return <div className="split-pane split-pane--single">{children}</div>;
+    return (
+      <Box style={{ height: '100%', overflow: 'auto', minWidth: 0 }}>
+        {children}
+      </Box>
+    );
   }
 
   return (
-    <div
-      ref={containerRef}
-      className={`split-pane split-pane--split ${isDragging ? 'split-pane--dragging' : ''}`}
-    >
-      {/* Primary pane (left side) */}
-      <div
-        className="split-pane__primary"
-        style={{ flex: `0 0 ${100 - splitWidth}%` }}
+    <Split style={{ height: '100%' }}>
+      <Split.Pane
+        initialWidth={`${100 - splitWidth}%`}
+        minWidth="300px"
       >
-        {children}
-      </div>
-
-      {/* Resizable divider */}
-      <div
-        className="split-pane__divider"
-        onMouseDown={handleMouseDown}
-        role="separator"
-        aria-valuenow={splitWidth}
-        aria-valuemin={25}
-        aria-valuemax={75}
-        aria-label="Resize split pane"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'ArrowLeft') {
-            e.preventDefault();
-            onWidthChange(splitWidth - 5);
-          } else if (e.key === 'ArrowRight') {
-            e.preventDefault();
-            onWidthChange(splitWidth + 5);
-          }
-        }}
+        <Box style={{ height: '100%', overflow: 'auto', minWidth: 0 }}>
+          {children}
+        </Box>
+      </Split.Pane>
+      <Split.Resizer />
+      <Split.Pane
+        initialWidth={`${splitWidth}%`}
+        minWidth="300px"
       >
-        <div className="split-pane__divider-handle" />
-      </div>
-
-      {/* Secondary pane (right side) */}
-      <div
-        className="split-pane__secondary"
-        style={{ flex: `0 0 ${splitWidth}%` }}
-      >
-        <div className="split-pane__secondary-content">
+        <Box
+          style={{
+            height: '100%',
+            overflow: 'auto',
+            minWidth: 0,
+            borderLeft: '1px solid var(--mantine-color-default-border)',
+          }}
+          p="md"
+        >
           {secondaryContent}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Split.Pane>
+    </Split>
   );
 }

@@ -1,13 +1,16 @@
 /**
- * SearchFilters - Filter controls for the Search Results page
- * Allows filtering by match type and object type
+ * SearchFilters - Minimal filter chips for the Search Results page
+ * Match type as inline chips, object types in a collapsible popover
  */
 
 import { useCallback } from 'react';
+import { Group, UnstyledButton, Text, Button, Popover, Checkbox, Stack } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { useTypeRegistry } from '@/contexts';
+import { Icon } from '@/components/ui/Icon';
+import { getIconFromEmoji } from '@/lib/icons';
 import type { MatchType } from '@/lib/search';
 import type { SearchFilters as FilterState } from '@/hooks';
-import './SearchFilters.css';
 
 interface SearchFiltersProps {
   /** Current filter state */
@@ -24,9 +27,38 @@ interface SearchFiltersProps {
 
 const MATCH_TYPES: { value: MatchType; label: string }[] = [
   { value: 'text', label: 'Text' },
-  { value: 'semantic', label: 'Semantic' },
+  { value: 'semantic', label: 'AI' },
   { value: 'hybrid', label: 'Hybrid' },
 ];
+
+/** Subtle filter chip - filled when active, text-only when inactive */
+function FilterChip({
+  label,
+  isActive,
+  onClick,
+}: {
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <UnstyledButton
+      onClick={onClick}
+      px={10}
+      py={4}
+      style={{
+        borderRadius: 'var(--mantine-radius-sm)',
+        backgroundColor: isActive ? 'var(--mantine-color-gray-1)' : 'transparent',
+        color: isActive ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-5)',
+        transition: 'all 150ms ease',
+        fontSize: 12,
+        fontWeight: 500,
+      }}
+    >
+      {label}
+    </UnstyledButton>
+  );
+}
 
 export function SearchFilters({
   filters,
@@ -36,6 +68,7 @@ export function SearchFilters({
   isSemanticAvailable,
 }: SearchFiltersProps) {
   const typeRegistry = useTypeRegistry();
+  const [typesOpened, { toggle: toggleTypes, close: closeTypes }] = useDisclosure(false);
 
   // Get all available object types
   const objectTypes = Array.from(typeRegistry.getAll()).map((type) => ({
@@ -68,73 +101,117 @@ export function SearchFilters({
     [filters, onFiltersChange]
   );
 
-  // Check if a match type is checked (empty array means all are included)
-  const isMatchTypeChecked = (matchType: MatchType) => {
+  // Check if a match type is active (empty array means all are included)
+  const isMatchTypeActive = (matchType: MatchType) => {
     if (filters.matchTypes.length === 0) return true;
     return filters.matchTypes.includes(matchType);
   };
 
-  // Check if an object type is checked (empty array means all are included)
-  const isObjectTypeChecked = (typeId: string) => {
+  // Check if an object type is active (empty array means all are included)
+  const isObjectTypeActive = (typeId: string) => {
     if (filters.objectTypes.length === 0) return true;
     return filters.objectTypes.includes(typeId);
   };
 
+  // Count of selected types (if not all)
+  const selectedTypesCount = filters.objectTypes.length;
+  const hasTypeFilters = selectedTypesCount > 0;
+
+  // Select/deselect all types
+  const selectAllTypes = useCallback(() => {
+    onFiltersChange({ ...filters, objectTypes: [] }); // Empty = all
+  }, [filters, onFiltersChange]);
+
+  const clearAllTypes = useCallback(() => {
+    onFiltersChange({ ...filters, objectTypes: objectTypes.map((t) => t.value) });
+  }, [filters, onFiltersChange, objectTypes]);
+
   return (
-    <div className="search-filters">
-      {/* Match type filters */}
-      <div className="search-filters__group">
-        <span className="search-filters__label">Match:</span>
-        <div className="search-filters__options">
-          {MATCH_TYPES.map((type) => {
-            // Hide semantic/hybrid options if not available
-            if (!isSemanticAvailable && type.value !== 'text') {
-              return null;
-            }
-            return (
-              <label key={type.value} className="search-filters__checkbox">
-                <input
-                  type="checkbox"
-                  checked={isMatchTypeChecked(type.value)}
-                  onChange={() => toggleMatchType(type.value)}
-                />
-                <span className="search-filters__checkbox-label">{type.label}</span>
-              </label>
-            );
-          })}
-        </div>
-      </div>
+    <Group gap="xs" py="xs" wrap="wrap">
+      {/* Match type filters - inline chips */}
+      {MATCH_TYPES.map((type) => {
+        if (!isSemanticAvailable && type.value !== 'text') {
+          return null;
+        }
+        return (
+          <FilterChip
+            key={type.value}
+            label={type.label}
+            isActive={isMatchTypeActive(type.value)}
+            onClick={() => toggleMatchType(type.value)}
+          />
+        );
+      })}
 
-      {/* Object type filter */}
-      <div className="search-filters__group">
-        <span className="search-filters__label">Type:</span>
-        <div className="search-filters__options">
-          {objectTypes.map((type) => (
-            <label key={type.value} className="search-filters__checkbox">
-              <input
-                type="checkbox"
-                checked={isObjectTypeChecked(type.value)}
+      {/* Types dropdown - collapsible popover */}
+      <Popover
+        opened={typesOpened}
+        onClose={closeTypes}
+        position="bottom-start"
+        offset={4}
+        shadow="md"
+      >
+        <Popover.Target>
+          <Button
+            variant="subtle"
+            size="xs"
+            color="gray"
+            rightSection={<Icon name="chevron-down" size={12} />}
+            onClick={toggleTypes}
+            styles={{
+              root: {
+                fontWeight: 500,
+                color: hasTypeFilters ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-5)',
+                backgroundColor: hasTypeFilters ? 'var(--mantine-color-gray-1)' : 'transparent',
+              },
+            }}
+          >
+            Types{hasTypeFilters ? ` (${selectedTypesCount})` : ''}
+          </Button>
+        </Popover.Target>
+        <Popover.Dropdown p="xs">
+          <Stack gap="xs">
+            {objectTypes.map((type) => (
+              <Checkbox
+                key={type.value}
+                label={
+                  <Group gap="xs" wrap="nowrap">
+                    <Icon name={getIconFromEmoji(type.icon ?? 'file')} size={14} />
+                    <Text size="sm">{type.label}</Text>
+                  </Group>
+                }
+                checked={isObjectTypeActive(type.value)}
                 onChange={() => toggleObjectType(type.value)}
+                size="xs"
               />
-              <span className="search-filters__checkbox-label">
-                <span className="search-filters__type-icon">{type.icon}</span>
-                {type.label}
-              </span>
-            </label>
-          ))}
-        </div>
-      </div>
+            ))}
+            <Group gap="xs" mt="xs">
+              <Button variant="subtle" size="xs" onClick={selectAllTypes}>
+                All
+              </Button>
+              <Button variant="subtle" size="xs" onClick={clearAllTypes}>
+                None
+              </Button>
+            </Group>
+          </Stack>
+        </Popover.Dropdown>
+      </Popover>
 
-      {/* Clear filters button */}
+      {/* Clear all filters */}
       {hasActiveFilters && (
-        <button
-          className="search-filters__clear"
+        <UnstyledButton
           onClick={onClearFilters}
-          type="button"
+          px={8}
+          py={4}
+          style={{
+            fontSize: 12,
+            color: 'var(--mantine-color-slate-6)',
+            fontWeight: 500,
+          }}
         >
-          Clear filters
-        </button>
+          Reset
+        </UnstyledButton>
       )}
-    </div>
+    </Group>
   );
 }

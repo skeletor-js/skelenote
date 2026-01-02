@@ -5,10 +5,10 @@
  */
 
 import { useState, useCallback } from 'react';
+import { Stack, Group, Title, Text, Button, Checkbox, Progress, Box, Alert, SegmentedControl } from '@mantine/core';
 import { useSemanticSearchSafe, useObjects } from '@/contexts';
 import { SemanticEnableModal } from './SemanticEnableModal';
 import { IndexableContent } from '@/lib/semantic';
-import './SemanticSettings.css';
 
 export function SemanticSettings() {
   const semanticContext = useSemanticSearchSafe();
@@ -113,179 +113,171 @@ export function SemanticSettings() {
     return new Date(stats.lastIndexedAt).toLocaleDateString();
   };
 
+  // Get threshold preset value
+  const getThresholdPreset = () => {
+    if (threshold <= 0.15) return 'broad';
+    if (threshold <= 0.25) return 'balanced';
+    if (threshold <= 0.45) return 'strict';
+    return 'very-strict';
+  };
+
+  const handleThresholdChange = (value: string) => {
+    switch (value) {
+      case 'broad':
+        setThreshold(0.15);
+        break;
+      case 'balanced':
+        setThreshold(0.2);
+        break;
+      case 'strict':
+        setThreshold(0.35);
+        break;
+      case 'very-strict':
+        setThreshold(0.5);
+        break;
+    }
+  };
+
   return (
-    <section className="semantic-settings">
-      <h2 className="semantic-settings__title">Semantic Search</h2>
+    <Box component="section">
+      <Title order={3} mb="md">Semantic Search</Title>
 
       {!isEnabled ? (
-        // Not enabled state
-        <div className="semantic-settings__section">
-          <div className="semantic-settings__toggle-row">
-            <label className="semantic-settings__toggle-label">
-              <input
-                type="checkbox"
-                className="semantic-settings__checkbox"
-                checked={false}
-                onChange={() => setShowEnableModal(true)}
-              />
-              <span className="semantic-settings__toggle-text">Enable semantic search</span>
-            </label>
-          </div>
+        <Stack gap="md">
+          <Checkbox
+            label="Enable semantic search"
+            checked={false}
+            onChange={() => setShowEnableModal(true)}
+          />
 
-          <p className="semantic-settings__help">
+          <Text size="sm" c="dimmed">
             Find conceptually similar content, not just keyword matches.
             All processing happens locally on your device.
-          </p>
+          </Text>
 
-          <div className="semantic-settings__info-box">
-            <ul className="semantic-settings__info-list">
-              <li>Requires one-time 23MB download</li>
-              <li>Uses ~500MB RAM when active</li>
-              <li>Works offline after setup</li>
-            </ul>
-          </div>
-        </div>
+          <Alert variant="light" color="slate" title="Requirements">
+            <Stack gap={4}>
+              <Text size="sm">• Requires one-time 23MB download</Text>
+              <Text size="sm">• Uses ~500MB RAM when active</Text>
+              <Text size="sm">• Works offline after setup</Text>
+            </Stack>
+          </Alert>
+        </Stack>
       ) : (
-        // Enabled state
-        <>
-          <div className="semantic-settings__section">
-            <div className="semantic-settings__toggle-row">
-              <label className="semantic-settings__toggle-label">
-                <input
-                  type="checkbox"
-                  className="semantic-settings__checkbox"
-                  checked={true}
-                  onChange={() => setShowRemoveConfirm(true)}
-                />
-                <span className="semantic-settings__toggle-text">Enable semantic search</span>
-              </label>
-              <span className={`semantic-settings__status semantic-settings__status--${status}`}>
-                {status === 'ready' ? 'Active' : status === 'indexing' ? 'Indexing...' : status}
-              </span>
-            </div>
-          </div>
+        <Stack gap="lg">
+          <Group justify="space-between">
+            <Checkbox
+              label="Enable semantic search"
+              checked={true}
+              onChange={() => setShowRemoveConfirm(true)}
+            />
+            <Text
+              size="sm"
+              c={status === 'ready' ? 'sage' : status === 'indexing' ? 'ochre' : 'gray'}
+            >
+              {status === 'ready' ? 'Active' : status === 'indexing' ? 'Indexing...' : status}
+            </Text>
+          </Group>
 
-          <div className="semantic-settings__divider" />
-
-          <div className="semantic-settings__section">
-            <label className="semantic-settings__label">Index Status</label>
-            <div className="semantic-settings__stats">
-              <div className="semantic-settings__stat">
-                <span className="semantic-settings__stat-value">{indexedCount}</span>
-                <span className="semantic-settings__stat-label">objects indexed</span>
-              </div>
-              <div className="semantic-settings__stat">
-                <span className="semantic-settings__stat-value">{formatLastIndexed()}</span>
-                <span className="semantic-settings__stat-label">last updated</span>
-              </div>
-            </div>
+          <Box>
+            <Text size="sm" fw={500} mb="xs">Index Status</Text>
+            <Group gap="lg">
+              <Box ta="center">
+                <Text size="xl" fw={700}>{indexedCount}</Text>
+                <Text size="xs" c="dimmed">objects indexed</Text>
+              </Box>
+              <Box ta="center">
+                <Text size="xl" fw={700}>{formatLastIndexed()}</Text>
+                <Text size="xs" c="dimmed">last updated</Text>
+              </Box>
+            </Group>
 
             {progress && (
-              <div className="semantic-settings__progress">
-                <div className="semantic-settings__progress-bar">
-                  <div
-                    className="semantic-settings__progress-fill"
-                    style={{ width: `${progress.percent}%` }}
-                  />
-                </div>
-                <span className="semantic-settings__progress-text">{progress.message}</span>
-              </div>
+              <Box mt="sm">
+                <Progress value={progress.percent} mb="xs" />
+                <Text size="sm" c="dimmed">{progress.message}</Text>
+              </Box>
             )}
 
-            <button
-              className="semantic-settings__button semantic-settings__button--secondary"
+            <Button
+              variant="light"
+              size="sm"
+              mt="sm"
               onClick={handleRebuildIndex}
               disabled={isRebuilding || status !== 'ready'}
+              loading={isRebuilding}
             >
-              {isRebuilding ? 'Rebuilding...' : 'Rebuild Index'}
-            </button>
-            <p className="semantic-settings__help">
+              Rebuild Index
+            </Button>
+            <Text size="xs" c="dimmed" mt="xs">
               Use if search quality degrades or after bulk imports.
-            </p>
-          </div>
+            </Text>
+          </Box>
 
-          <div className="semantic-settings__divider" />
-
-          <div className="semantic-settings__section">
-            <label className="semantic-settings__label">Similarity Threshold</label>
-            <p className="semantic-settings__help">
+          <Box>
+            <Text size="sm" fw={500} mb="xs">Similarity Threshold</Text>
+            <Text size="xs" c="dimmed" mb="sm">
               Controls how closely related results must be.
               Lower = more results, Higher = stricter matching.
-            </p>
-            <div className="semantic-settings__presets">
-              <button
-                type="button"
-                className={`semantic-settings__preset ${threshold <= 0.15 ? 'semantic-settings__preset--active' : ''}`}
-                onClick={() => setThreshold(0.15)}
-              >
-                Broad (15%)
-              </button>
-              <button
-                type="button"
-                className={`semantic-settings__preset ${threshold > 0.15 && threshold <= 0.25 ? 'semantic-settings__preset--active' : ''}`}
-                onClick={() => setThreshold(0.2)}
-              >
-                Balanced (20%)
-              </button>
-              <button
-                type="button"
-                className={`semantic-settings__preset ${threshold > 0.25 && threshold <= 0.45 ? 'semantic-settings__preset--active' : ''}`}
-                onClick={() => setThreshold(0.35)}
-              >
-                Strict (35%)
-              </button>
-              <button
-                type="button"
-                className={`semantic-settings__preset ${threshold > 0.45 ? 'semantic-settings__preset--active' : ''}`}
-                onClick={() => setThreshold(0.5)}
-              >
-                Very Strict (50%)
-              </button>
-            </div>
-          </div>
+            </Text>
+            <SegmentedControl
+              value={getThresholdPreset()}
+              onChange={handleThresholdChange}
+              data={[
+                { label: 'Broad (15%)', value: 'broad' },
+                { label: 'Balanced (20%)', value: 'balanced' },
+                { label: 'Strict (35%)', value: 'strict' },
+                { label: 'Very Strict (50%)', value: 'very-strict' },
+              ]}
+              fullWidth
+            />
+          </Box>
 
-          <div className="semantic-settings__divider" />
-
-          <div className="semantic-settings__section semantic-settings__section--danger">
-            <label className="semantic-settings__label">Remove Semantic Search</label>
-            <p className="semantic-settings__help">
+          <Box>
+            <Text size="sm" fw={500} mb="xs" c="brick">Remove Semantic Search</Text>
+            <Text size="xs" c="dimmed" mb="sm">
               Disables the feature and deletes the model and index to free ~50MB storage.
-            </p>
+            </Text>
 
             {showRemoveConfirm ? (
-              <div className="semantic-settings__confirm-row">
-                <span className="semantic-settings__confirm-text">Are you sure?</span>
-                <button
-                  className="semantic-settings__button semantic-settings__button--danger"
+              <Group gap="sm">
+                <Text size="sm">Are you sure?</Text>
+                <Button
+                  size="xs"
+                  color="brick"
                   onClick={handleRemove}
                   disabled={isRemoving}
+                  loading={isRemoving}
                 >
-                  {isRemoving ? 'Removing...' : 'Yes, Remove'}
-                </button>
-                <button
-                  className="semantic-settings__button semantic-settings__button--secondary"
+                  Yes, Remove
+                </Button>
+                <Button
+                  size="xs"
+                  variant="light"
                   onClick={() => setShowRemoveConfirm(false)}
                   disabled={isRemoving}
                 >
                   Cancel
-                </button>
-              </div>
+                </Button>
+              </Group>
             ) : (
-              <button
-                className="semantic-settings__button semantic-settings__button--danger-outline"
+              <Button
+                variant="outline"
+                color="brick"
+                size="sm"
                 onClick={() => setShowRemoveConfirm(true)}
               >
                 Remove Semantic Search
-              </button>
+              </Button>
             )}
-          </div>
-        </>
+          </Box>
+        </Stack>
       )}
 
       {error && (
-        <div className="semantic-settings__error">
+        <Alert color="brick" mt="md">
           {error}
-        </div>
+        </Alert>
       )}
 
       <SemanticEnableModal
@@ -295,7 +287,7 @@ export function SemanticSettings() {
         progress={progress}
         error={error}
       />
-    </section>
+    </Box>
   );
 }
 

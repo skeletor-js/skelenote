@@ -3,15 +3,30 @@
  */
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+import {
+  Modal,
+  TextInput,
+  Textarea,
+  Select,
+  Checkbox,
+  Button,
+  Menu,
+  Stack,
+  Group,
+  Text,
+  Box,
+  Code,
+  Divider,
+  ScrollArea,
+} from '@mantine/core';
 import { useTypeRegistry } from '@/contexts';
 import { useTemplates } from '@/hooks';
+import { Icon } from '@/components/ui/Icon';
 import type { Template, CreateTemplateInput } from '@/lib/templates';
 import { PLACEHOLDERS } from '@/lib/templates';
 import { BuiltInTypeIds } from '@/lib/types';
 import type { PropertyValue } from '@/lib/types';
 import { PropertyEditor } from '@/components/object/PropertyEditor';
-import './TemplateEditor.css';
 
 interface TemplateEditorProps {
   /** Existing template to edit (null for create mode) */
@@ -37,13 +52,20 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
   const [targetTypeId, setTargetTypeId] = useState<string>(BuiltInTypeIds.NOTE);
   const [isDailyNoteTemplate, setIsDailyNoteTemplate] = useState(false);
   const [content, setContent] = useState('');
-  const [showPlaceholders, setShowPlaceholders] = useState(false);
   const [defaultProperties, setDefaultProperties] = useState<Record<string, PropertyValue>>({});
 
   // Get available types (exclude template type itself)
   const availableTypes = useMemo(() => {
     return typeRegistry.getAll().filter((t) => t.id !== BuiltInTypeIds.TEMPLATE);
   }, [typeRegistry]);
+
+  // Convert to select data format
+  const typeSelectData = useMemo(() => {
+    return availableTypes.map((type) => ({
+      value: type.id,
+      label: type.name,
+    }));
+  }, [availableTypes]);
 
   // Get the selected type's editable properties (exclude hidden ones)
   const targetTypeProperties = useMemo(() => {
@@ -61,7 +83,6 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
         setTargetTypeId(template.targetTypeId);
         setIsDailyNoteTemplate(template.isDailyNoteTemplate);
         setDefaultProperties(template.defaultProperties ?? {});
-        // Content would need to be loaded from the store
         setContent('');
       } else {
         setName('');
@@ -75,9 +96,9 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
   }, [template, isOpen]);
 
   // Reset default properties when target type changes (but keep title if it exists)
-  const handleTargetTypeChange = useCallback((newTypeId: string) => {
+  const handleTargetTypeChange = useCallback((newTypeId: string | null) => {
+    if (!newTypeId) return;
     setTargetTypeId(newTypeId);
-    // Keep title property if set, reset everything else
     setDefaultProperties((prev) => {
       const title = prev.title;
       const result: Record<string, PropertyValue> = {};
@@ -95,42 +116,14 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
     }
   }, [isOpen]);
 
-  // Handle keyboard
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  // Prevent body scroll
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  // Insert placeholder at cursor position
+  // Insert placeholder at end of content
   const insertPlaceholder = useCallback((placeholder: string) => {
     setContent((prev) => prev + placeholder);
-    setShowPlaceholders(false);
   }, []);
 
   // Update a single default property
   const handlePropertyChange = useCallback((propertyId: string, value: PropertyValue) => {
     setDefaultProperties((prev) => {
-      // If value is null/undefined/empty, remove the property
       if (value === null || value === undefined || value === '') {
         const { [propertyId]: _, ...rest } = prev;
         return rest;
@@ -185,7 +178,7 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
     }
   }, [name, description, targetTypeId, isDailyNoteTemplate, content, getCleanDefaultProperties, isEditMode, template, create, update, onSave, onClose]);
 
-  // Handle form submission via Enter
+  // Handle form submission via Enter in name field
   const handleKeyPress = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' && !e.shiftKey && name.trim()) {
@@ -196,224 +189,168 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
     [name, handleSave]
   );
 
-  if (!isOpen) return null;
-
   const selectedType = typeRegistry.get(targetTypeId);
 
-  return createPortal(
-    <div className="template-editor__overlay" onClick={onClose}>
-      <div
-        className="template-editor"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="template-editor-title"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <header className="template-editor__header">
-          <h2 id="template-editor-title" className="template-editor__title">
-            {isEditMode ? 'Edit Template' : 'Create Template'}
-          </h2>
-          <button
-            className="template-editor__close"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            &times;
-          </button>
-        </header>
-
-        <div className="template-editor__content">
+  return (
+    <Modal
+      opened={isOpen}
+      onClose={onClose}
+      title={isEditMode ? 'Edit Template' : 'Create Template'}
+      centered
+      size="lg"
+    >
+      <ScrollArea.Autosize mah="70vh">
+        <Stack gap="md" pr="xs">
           {/* Template Name */}
-          <div className="template-editor__field">
-            <label className="template-editor__label" htmlFor="template-name">
-              Template Name
-            </label>
-            <input
-              ref={nameInputRef}
-              id="template-name"
-              type="text"
-              className="template-editor__input"
-              placeholder="e.g., Meeting Notes, Daily Journal"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-          </div>
+          <TextInput
+            ref={nameInputRef}
+            label="Template Name"
+            placeholder="e.g., Meeting Notes, Daily Journal"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={handleKeyPress}
+            required
+          />
 
           {/* Target Type */}
-          <div className="template-editor__field">
-            <label className="template-editor__label" htmlFor="template-type">
-              Creates
-            </label>
-            <select
-              id="template-type"
-              className="template-editor__select"
+          <Box>
+            <Select
+              label="Creates"
+              data={typeSelectData}
               value={targetTypeId}
-              onChange={(e) => handleTargetTypeChange(e.target.value)}
-            >
-              {availableTypes.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.icon} {type.name}
-                </option>
-              ))}
-            </select>
-            <p className="template-editor__hint-text">
+              onChange={handleTargetTypeChange}
+            />
+            <Text size="xs" c="dimmed" mt={4}>
               Objects created from this template will be {selectedType?.name ?? 'this type'}
-            </p>
-          </div>
+            </Text>
+          </Box>
 
           {/* Description */}
-          <div className="template-editor__field">
-            <label className="template-editor__label" htmlFor="template-description">
-              Description <span className="template-editor__optional">(optional)</span>
-            </label>
-            <input
-              id="template-description"
-              type="text"
-              className="template-editor__input"
-              placeholder="Brief description of what this template is for"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+          <TextInput
+            label="Description"
+            description="Optional"
+            placeholder="Brief description of what this template is for"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
 
           {/* Default Properties Section */}
           {targetTypeProperties.length > 0 && (
-            <div className="template-editor__properties-section">
-              <h3 className="template-editor__section-title">
-                Default {selectedType?.name} Properties
-              </h3>
-              <p className="template-editor__hint-text">
-                Set default values for properties. Text fields support placeholders like {'{{date}}'}.
-              </p>
-              <div className="template-editor__properties-list">
-                {targetTypeProperties.map((propDef) => (
-                  <div key={propDef.id} className="template-editor__property-item">
-                    <label
-                      className="template-editor__property-label"
-                      htmlFor={`prop-${propDef.id}`}
-                    >
-                      {propDef.name}
-                      {propDef.required && (
-                        <span className="template-editor__required">*</span>
-                      )}
-                    </label>
-                    <div className="template-editor__property-editor">
+            <>
+              <Divider />
+              <Box>
+                <Text size="sm" fw={500} mb="xs">
+                  Default {selectedType?.name} Properties
+                </Text>
+                <Text size="xs" c="dimmed" mb="sm">
+                  Set default values for properties. Text fields support placeholders like {'{{date}}'}.
+                </Text>
+                <Stack gap="sm">
+                  {targetTypeProperties.map((propDef) => (
+                    <Box key={propDef.id}>
+                      <Text size="sm" mb={4}>
+                        {propDef.name}
+                        {propDef.required && (
+                          <Text component="span" c="brick" ml={4}>*</Text>
+                        )}
+                      </Text>
                       <PropertyEditor
                         id={`prop-${propDef.id}`}
                         definition={propDef}
                         value={defaultProperties[propDef.id] ?? null}
                         onChange={(value) => handlePropertyChange(propDef.id, value)}
                       />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+            </>
           )}
 
-          {/* Daily Note Template */}
-          <div className="template-editor__field template-editor__field--checkbox">
-            <label className="template-editor__checkbox-label">
-              <input
-                type="checkbox"
-                className="template-editor__checkbox"
-                checked={isDailyNoteTemplate}
-                onChange={(e) => setIsDailyNoteTemplate(e.target.checked)}
-              />
-              <span className="template-editor__checkbox-text">
-                Use as Daily Note Template
-              </span>
-            </label>
-            <p className="template-editor__hint-text">
-              Template content will auto-apply when new daily notes are created
-            </p>
-          </div>
+          <Divider />
 
-          {/* Template Content */}
+          {/* Daily Note Template */}
+          <Box>
+            <Checkbox
+              label="Use as Daily Note Template"
+              checked={isDailyNoteTemplate}
+              onChange={(e) => setIsDailyNoteTemplate(e.currentTarget.checked)}
+            />
+            <Text size="xs" c="dimmed" mt={4} ml={28}>
+              Template content will auto-apply when new daily notes are created
+            </Text>
+          </Box>
+
+          {/* Template Content (only for create mode) */}
           {!isEditMode && (
-            <div className="template-editor__field">
-              <div className="template-editor__label-row">
-                <label className="template-editor__label" htmlFor="template-content">
-                  Template Content <span className="template-editor__optional">(optional)</span>
-                </label>
-                <div className="template-editor__placeholder-menu">
-                  <button
-                    type="button"
-                    className="template-editor__placeholder-btn"
-                    onClick={() => setShowPlaceholders(!showPlaceholders)}
-                  >
-                    Insert Placeholder
-                  </button>
-                  {showPlaceholders && (
-                    <div className="template-editor__placeholder-dropdown">
-                      {PLACEHOLDERS.map((p) => (
-                        <button
-                          key={p.type}
-                          type="button"
-                          className="template-editor__placeholder-option"
-                          onClick={() => insertPlaceholder(p.label)}
-                          title={`Example: ${p.example}`}
-                        >
-                          <span className="template-editor__placeholder-label">{p.label}</span>
-                          <span className="template-editor__placeholder-example">{p.example}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <textarea
-                id="template-content"
-                className="template-editor__textarea"
+            <Box>
+              <Group justify="space-between" mb="xs">
+                <Text size="sm" fw={500}>
+                  Template Content
+                  <Text component="span" c="dimmed" fw={400} ml={4}>(optional)</Text>
+                </Text>
+                <Menu shadow="md" width={250}>
+                  <Menu.Target>
+                    <Button variant="subtle" size="xs" leftSection={<Icon name="plus" size={14} />}>
+                      Insert Placeholder
+                    </Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    {PLACEHOLDERS.map((p) => (
+                      <Menu.Item
+                        key={p.type}
+                        onClick={() => insertPlaceholder(p.label)}
+                      >
+                        <Group justify="space-between">
+                          <Code>{p.label}</Code>
+                          <Text size="xs" c="dimmed">{p.example}</Text>
+                        </Group>
+                      </Menu.Item>
+                    ))}
+                  </Menu.Dropdown>
+                </Menu>
+              </Group>
+              <Textarea
                 placeholder="Enter template content with placeholders like {{date}}, {{title}}..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                rows={6}
+                minRows={4}
+                autosize
+                maxRows={8}
               />
-              <div className="template-editor__placeholder-help">
-                <p className="template-editor__hint-text template-editor__hint-text--title">
+              <Box mt="xs">
+                <Text size="xs" c="dimmed" mb="xs">
                   Available placeholders:
-                </p>
-                <div className="template-editor__placeholder-grid">
+                </Text>
+                <Group gap="xs">
                   {PLACEHOLDERS.map((p) => (
-                    <div key={p.type} className="template-editor__placeholder-chip">
-                      <code className="template-editor__placeholder-code">{p.label}</code>
-                      <span className="template-editor__placeholder-arrow"></span>
-                      <span className="template-editor__placeholder-result">{p.example}</span>
-                    </div>
+                    <Group key={p.type} gap={4}>
+                      <Code fz="xs">{p.label}</Code>
+                      <Icon name="chevron-right" size={12} />
+                      <Text size="xs" c="dimmed">{p.example}</Text>
+                    </Group>
                   ))}
-                </div>
-              </div>
-            </div>
+                </Group>
+              </Box>
+            </Box>
           )}
 
           {isEditMode && (
-            <p className="template-editor__note">
+            <Text size="sm" c="dimmed" fs="italic">
               To edit template content, open the template object and edit it directly.
-            </p>
+            </Text>
           )}
-        </div>
+        </Stack>
+      </ScrollArea.Autosize>
 
-        <footer className="template-editor__footer">
-          <button
-            type="button"
-            className="template-editor__btn template-editor__btn--secondary"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="template-editor__btn template-editor__btn--primary"
-            onClick={handleSave}
-            disabled={!name.trim()}
-          >
-            {isEditMode ? 'Save Changes' : 'Create Template'}
-          </button>
-        </footer>
-      </div>
-    </div>,
-    document.body
+      <Group justify="flex-end" gap="sm" mt="lg">
+        <Button variant="subtle" color="gray" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button color="ember" onClick={handleSave} disabled={!name.trim()}>
+          {isEditMode ? 'Save Changes' : 'Create Template'}
+        </Button>
+      </Group>
+    </Modal>
   );
 }

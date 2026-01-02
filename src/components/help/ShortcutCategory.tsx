@@ -2,9 +2,9 @@
  * ShortcutCategory - Category section with header and shortcut list
  */
 
+import { Stack, Text } from '@mantine/core';
 import { ShortcutRow } from './ShortcutRow';
 import { CATEGORY_INFO, type Shortcut, type ShortcutCategory as CategoryType } from '@/lib/shortcuts';
-import './KeyboardShortcutsModal.css';
 
 interface ShortcutCategoryProps {
   category: CategoryType;
@@ -19,18 +19,15 @@ export function ShortcutCategory({ category, shortcuts }: ShortcutCategoryProps)
   const categoryInfo = CATEGORY_INFO[category];
 
   return (
-    <div className="shortcut-category" role="group" aria-labelledby={`category-${category}`}>
-      <h3 id={`category-${category}`} className="shortcut-category__header">
+    <Stack gap="xs">
+      <Text fw={600} size="sm" c="dimmed" tt="uppercase">
         {categoryInfo.label}
-      </h3>
-      <div className="shortcut-category__list" role="list">
+      </Text>
+      <Stack gap={4}>
         {shortcuts.map((shortcut, index) => (
-          <ShortcutRow
-            key={`${category}-${index}`}
-            shortcut={shortcut}
-          />
+          <ShortcutRow key={`${category}-${index}`} shortcut={shortcut} />
         ))}
-      </div>
-    </div>
+      </Stack>
+    </Stack>
   );
 }

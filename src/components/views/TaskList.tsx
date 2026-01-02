@@ -2,11 +2,11 @@
  * TaskList - displays tasks in a list format
  */
 
+import { Stack } from '@mantine/core';
 import type { SkelenoteObject } from '@/lib/types';
 import { useNavigation } from '@/contexts';
 import { EmptyState } from '@/components/ui';
 import { TaskRow } from './TaskRow';
-import './TaskList.css';
 
 interface TaskListProps {
   /** Tasks to display */
@@ -34,14 +34,14 @@ export function TaskList({
   onSelectionChange,
   hasSelection = false,
 }: TaskListProps) {
-  const { navigateToObject } = useNavigation();
+  const { navigateToObject, openInSplit } = useNavigation();
 
   if (tasks.length === 0) {
     return <EmptyState message={emptyMessage} size="large" />;
   }
 
   return (
-    <div className="task-list">
+    <Stack gap={2}>
       {tasks.map((task) => (
         <TaskRow
           key={task.id}
@@ -49,11 +49,12 @@ export function TaskList({
           onToggleComplete={onToggleComplete}
           onDelete={onDeleteTask}
           onClick={() => navigateToObject(task.id)}
+          onOpenInSplit={() => openInSplit(task.id)}
           isSelected={isSelected?.(task.id)}
           onSelectionChange={onSelectionChange}
           isSelectingMode={hasSelection}
         />
       ))}
-    </div>
+    </Stack>
   );
 }

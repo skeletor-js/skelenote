@@ -1,0 +1,192 @@
+/**
+ * DiffContentPreview styles
+ * Block-level diff highlighting with semantic colors
+ */
+
+.diffPreview {
+  font-size: var(--mantine-font-size-sm);
+  line-height: var(--mantine-line-height-sm);
+  color: var(--mantine-color-gray-9);
+}
+
+/* Base diff block styling */
+.diffBlock {
+  position: relative;
+  padding: var(--mantine-spacing-xs);
+  margin: 2px 0;
+  border-radius: var(--mantine-radius-xs);
+  transition: background-color 150ms ease;
+}
+
+/* Added block - sage/green */
+.diffAdded {
+  background-color: var(--mantine-color-sage-0);
+  border-left: 3px solid var(--mantine-color-sage-5);
+}
+
+/* Removed block - brick/red */
+.diffRemoved {
+  background-color: var(--mantine-color-brick-0);
+  border-left: 3px solid var(--mantine-color-brick-5);
+}
+
+.diffRemoved .paragraph,
+.diffRemoved .heading,
+.diffRemoved .listItem,
+.diffRemoved .quote {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* Modified block - ochre/amber */
+.diffModified {
+  background-color: var(--mantine-color-ochre-0);
+  border-left: 3px solid var(--mantine-color-ochre-5);
+}
+
+/* Unchanged block - no special styling */
+.diffUnchanged {
+  background-color: transparent;
+  border-left: 3px solid transparent;
+}
+
+/* Typography */
+.paragraph {
+  margin: 0;
+}
+
+.heading {
+  font-weight: 600;
+  margin: 0;
+}
+
+.heading[data-level="1"] {
+  font-size: var(--mantine-font-size-lg);
+}
+
+.heading[data-level="2"] {
+  font-size: var(--mantine-font-size-md);
+}
+
+.heading[data-level="3"] {
+  font-size: var(--mantine-font-size-sm);
+}
+
+/* Lists */
+.listItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--mantine-spacing-xs);
+}
+
+.bullet,
+.number {
+  color: var(--mantine-color-gray-6);
+  flex-shrink: 0;
+  width: 16px;
+}
+
+.checkbox {
+  font-size: 0.9em;
+  color: var(--mantine-color-gray-6);
+  flex-shrink: 0;
+}
+
+.checkedText {
+  text-decoration: line-through;
+  color: var(--mantine-color-gray-5);
+}
+
+/* Quote */
+.quote {
+  margin: 0;
+  padding-left: var(--mantine-spacing-sm);
+  border-left: 3px solid var(--mantine-color-gray-3);
+  color: var(--mantine-color-gray-7);
+  font-style: italic;
+}
+
+/* Code */
+.inlineCode {
+  background-color: var(--mantine-color-gray-1);
+  padding: 0.1em 0.3em;
+  border-radius: var(--mantine-radius-xs);
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.9em;
+}
+
+.codeBlock {
+  margin: 0;
+  padding: var(--mantine-spacing-xs);
+  background-color: var(--mantine-color-gray-1);
+  border-radius: var(--mantine-radius-xs);
+  overflow-x: auto;
+}
+
+.codeBlock code {
+  font-family: var(--mantine-font-family-monospace);
+  font-size: var(--mantine-font-size-xs);
+  white-space: pre;
+}
+
+/* Mentions */
+.mention {
+  display: inline;
+  color: var(--mantine-color-ember-6);
+  font-weight: 500;
+}
+
+/* Links */
+.link {
+  color: var(--mantine-color-slate-6);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Diff summary at bottom */
+.diffSummary {
+  display: flex;
+  gap: var(--mantine-spacing-md);
+  padding-top: var(--mantine-spacing-sm);
+  margin-top: var(--mantine-spacing-sm);
+  border-top: 1px solid var(--mantine-color-gray-2);
+}
+
+.summaryAdded {
+  color: var(--mantine-color-sage-6);
+}
+
+.summaryRemoved {
+  color: var(--mantine-color-brick-6);
+}
+
+.summaryModified {
+  color: var(--mantine-color-ochre-6);
+}
+
+/* Dark mode */
+[data-mantine-color-scheme="dark"] .diffPreview {
+  color: var(--mantine-color-gray-1);
+}
+
+[data-mantine-color-scheme="dark"] .diffAdded {
+  background-color: rgba(94, 140, 97, 0.15);
+}
+
+[data-mantine-color-scheme="dark"] .diffRemoved {
+  background-color: rgba(155, 61, 61, 0.15);
+}
+
+[data-mantine-color-scheme="dark"] .diffModified {
+  background-color: rgba(184, 134, 11, 0.15);
+}
+
+[data-mantine-color-scheme="dark"] .inlineCode,
+[data-mantine-color-scheme="dark"] .codeBlock {
+  background-color: var(--mantine-color-gray-8);
+}
+
+[data-mantine-color-scheme="dark"] .quote {
+  border-left-color: var(--mantine-color-gray-6);
+  color: var(--mantine-color-gray-4);
+}

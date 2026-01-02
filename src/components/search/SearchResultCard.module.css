@@ -1,0 +1,36 @@
+.resultRow {
+  transition: background-color 150ms ease;
+}
+
+.resultRow:hover {
+  background-color: var(--mantine-color-gray-0);
+}
+
+.resultRow[data-selected='true'] {
+  background-color: var(--mantine-color-clay-0);
+}
+
+/* Dark mode adjustments */
+:global([data-mantine-color-scheme="dark"]) .resultRow:hover {
+  background-color: var(--surface-raised);
+}
+
+:global([data-mantine-color-scheme="dark"]) .resultRow[data-selected='true'] {
+  background-color: var(--mantine-color-clay-9);
+}
+
+/* Type label should be more dimmed */
+.typeName {
+  opacity: 0.6;
+}
+
+.actions {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.resultRow:hover .actions,
+.resultRow:focus-within .actions,
+.resultRow[data-selected='true'] .actions {
+  opacity: 1;
+}

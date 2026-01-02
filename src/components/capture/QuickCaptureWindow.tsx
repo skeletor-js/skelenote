@@ -5,10 +5,11 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import { Stack, Group, Title, Text, Button, ActionIcon, Box, Kbd } from '@mantine/core';
 import { useObjects, useNavigation } from '@/contexts';
+import { Icon } from '@/components/ui/Icon';
 import { TypeSelector, type CaptureType } from './TypeSelector';
 import { CaptureForm } from './CaptureForm';
-import './QuickCaptureWindow.css';
 
 /**
  * Validate if a string is a valid URL
@@ -104,22 +105,37 @@ export function QuickCaptureWindow() {
   }, [closeWindow]);
 
   return (
-    <div className="quick-capture-window">
-      {/* Header */}
-      <div className="quick-capture-window__header" data-tauri-drag-region>
-        <h2 className="quick-capture-window__title">Quick Capture</h2>
-        <button
-          type="button"
-          className="quick-capture-window__close"
+    <Box
+      h="100vh"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: 'var(--mantine-color-body)',
+      }}
+    >
+      {/* Header - draggable area for Tauri */}
+      <Group
+        justify="space-between"
+        p="sm"
+        data-tauri-drag-region
+        style={{
+          borderBottom: '1px solid var(--mantine-color-default-border)',
+          cursor: 'move',
+        }}
+      >
+        <Title order={4} data-tauri-drag-region>Quick Capture</Title>
+        <ActionIcon
+          variant="subtle"
+          color="gray"
           onClick={closeWindow}
           aria-label="Close"
         >
-          ✕
-        </button>
-      </div>
+          <Icon name="x" size={16} />
+        </ActionIcon>
+      </Group>
 
       {/* Body */}
-      <div className="quick-capture-window__body">
+      <Stack gap="md" p="md" style={{ flex: 1 }}>
         <TypeSelector selectedType={selectedType} onSelectType={setSelectedType} />
         <CaptureForm
           type={selectedType}
@@ -127,22 +143,26 @@ export function QuickCaptureWindow() {
           onChange={handleFieldChange}
           onSubmit={handleSubmit}
         />
-      </div>
+      </Stack>
 
       {/* Footer */}
-      <div className="quick-capture-window__footer">
-        <span className="quick-capture-window__hint">
-          Press <kbd>↵</kbd> to save · <kbd>esc</kbd> to close
-        </span>
-        <button
-          type="button"
-          className="quick-capture-window__button quick-capture-window__button--primary"
-          onClick={handleSubmit}
-          disabled={!isValid()}
-        >
+      <Group
+        justify="space-between"
+        p="sm"
+        style={{ borderTop: '1px solid var(--mantine-color-default-border)' }}
+      >
+        <Group gap="xs">
+          <Text size="xs" c="dimmed">Press</Text>
+          <Kbd size="xs">Enter</Kbd>
+          <Text size="xs" c="dimmed">to save</Text>
+          <Text size="xs" c="dimmed">·</Text>
+          <Kbd size="xs">Esc</Kbd>
+          <Text size="xs" c="dimmed">to close</Text>
+        </Group>
+        <Button onClick={handleSubmit} disabled={!isValid()}>
           Save
-        </button>
-      </div>
-    </div>
+        </Button>
+      </Group>
+    </Box>
   );
 }

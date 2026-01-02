@@ -2,12 +2,13 @@
  * Calendar - Month grid component for browsing daily notes
  */
 
+import { Box, Group, Button, Text, SimpleGrid, ActionIcon } from '@mantine/core';
 import { useCalendar } from '@/hooks';
 import { useNavigation } from '@/contexts';
 import { getOrCreateDailyNote } from '@/lib/daily';
 import { useObjects } from '@/contexts';
+import { Icon } from '@/components/ui/Icon';
 import { CalendarDay } from './CalendarDay';
-import './Calendar.css';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -41,47 +42,49 @@ export function Calendar() {
   const emptyDays = Array.from({ length: firstDayOffset }, (_, i) => i);
 
   return (
-    <div className="calendar">
+    <Box>
       {/* Header with month navigation */}
-      <div className="calendar__header">
-        <button
-          className="calendar__nav-btn"
+      <Group justify="space-between" mb="sm">
+        <ActionIcon
+          variant="subtle"
           onClick={goToPreviousMonth}
           aria-label="Previous month"
         >
-          ←
-        </button>
-        <h2 className="calendar__month-label">{monthLabel}</h2>
-        <button
-          className="calendar__nav-btn"
+          <Icon name="chevron-left" size={18} />
+        </ActionIcon>
+        <Text fw={600} size="md">
+          {monthLabel}
+        </Text>
+        <ActionIcon
+          variant="subtle"
           onClick={goToNextMonth}
           aria-label="Next month"
         >
-          →
-        </button>
-      </div>
+          <Icon name="chevron-right" size={18} />
+        </ActionIcon>
+      </Group>
 
       {/* Today button */}
-      <div className="calendar__today-row">
-        <button className="calendar__today-btn" onClick={goToToday}>
+      <Group justify="center" mb="sm">
+        <Button variant="subtle" size="xs" onClick={goToToday}>
           Today
-        </button>
-      </div>
+        </Button>
+      </Group>
 
       {/* Weekday labels */}
-      <div className="calendar__weekdays">
+      <SimpleGrid cols={7} spacing={2} mb="xs">
         {WEEKDAY_LABELS.map((label) => (
-          <div key={label} className="calendar__weekday">
+          <Text key={label} size="xs" c="dimmed" ta="center">
             {label}
-          </div>
+          </Text>
         ))}
-      </div>
+      </SimpleGrid>
 
       {/* Day grid */}
-      <div className="calendar__grid">
+      <SimpleGrid cols={7} spacing={2}>
         {/* Empty cells before first day */}
         {emptyDays.map((i) => (
-          <div key={`empty-${i}`} className="calendar__empty-day" />
+          <Box key={`empty-${i}`} h={36} />
         ))}
 
         {/* Day cells */}
@@ -94,7 +97,7 @@ export function Calendar() {
             onClick={() => handleDayClick(day)}
           />
         ))}
-      </div>
-    </div>
+      </SimpleGrid>
+    </Box>
   );
 }
