@@ -46,7 +46,7 @@ export function ViewHeader({
       px="md"
       py="sm"
       style={{
-        borderBottom: '1px solid var(--mantine-color-default-border)',
+        borderBottom: '1px solid var(--border-default)',
         flexShrink: 0,
       }}
     >

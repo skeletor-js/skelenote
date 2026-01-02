@@ -20,6 +20,9 @@
   --surface-raised: var(--mantine-color-gray-0);
   --border-subtle: var(--mantine-color-gray-2);
   --border-default: var(--mantine-color-gray-3);
+
+  /* Override Mantine's default border to match sidebar footer (--border-default) */
+  --mantine-color-default-border: var(--mantine-color-gray-3);
 }
 
 [data-mantine-color-scheme="dark"] {

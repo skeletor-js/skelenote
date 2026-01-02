@@ -9,7 +9,7 @@
 
 /* Header with border separation */
 .header {
-  border-bottom: 1px solid var(--mantine-color-gray-2);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 /* Back button hover state */
@@ -28,7 +28,7 @@
 
 /* Section dividers */
 .section {
-  border-bottom: 1px solid var(--mantine-color-gray-2);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .section:last-child {
