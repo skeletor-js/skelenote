@@ -134,20 +134,6 @@ export async function exportObjectToMarkdown(
 }
 
 /**
- * Copy object content as Markdown to clipboard
- * (For future use - clipboard feature)
- */
-export function copyObjectAsMarkdown(
-  object: SkelenoteObject,
-  typeDef: TypeDefinition,
-  content: string,
-  resolveObjectName: (objectId: string) => string | undefined,
-  options: ExportOptions = DEFAULT_EXPORT_OPTIONS
-): string {
-  return generateMarkdownContent(object, typeDef, content, resolveObjectName, options);
-}
-
-/**
  * Progress callback for bulk export
  */
 export interface BulkExportProgress {
@@ -202,10 +188,10 @@ export async function exportAllToZip(
     );
   }
 
-  // Filter out objects without content support or that are system objects
+  // Filter out objects without type definitions
   filteredObjects = filteredObjects.filter((obj) => {
     const typeDef = typeRegistry.get(obj.typeId);
-    return typeDef && !obj.properties.isDailyNote;
+    return typeDef;
   });
 
   if (filteredObjects.length === 0) {

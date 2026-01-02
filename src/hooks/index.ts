@@ -39,3 +39,4 @@ export {
 export { useTemplates, type UseTemplatesResult } from './useTemplates';
 export { useDuplicate, type UseDuplicateResult } from './useDuplicate';
 export { usePlatform, type Platform } from './usePlatform';
+export { useSemanticIndexSync } from './useSemanticIndexSync';
