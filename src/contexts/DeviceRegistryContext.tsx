@@ -30,6 +30,7 @@ import {
 import { getDeviceId } from '@/lib/sync';
 import { broadcastDeviceRegistry, broadcastDeviceRevoke } from '@/lib/sync/local';
 import { useSyncContextSafe } from './SyncContext';
+import { useToast } from './ToastContext';
 
 interface DeviceRegistryContextValue {
   /** All known devices */
@@ -40,6 +41,8 @@ interface DeviceRegistryContextValue {
   isLoading: boolean;
   /** Error message if any */
   error: string | null;
+  /** Whether this device has been revoked */
+  isRevoked: boolean;
 
   /** Register the current device */
   registerCurrentDevice: () => Promise<void>;
@@ -64,8 +67,10 @@ export function DeviceRegistryProvider({ children }: DeviceRegistryProviderProps
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [store, setStore] = useState<DeviceRegistryStore | null>(null);
+  const [isRevoked, setIsRevoked] = useState(false);
   const syncContext = useSyncContextSafe();
   const syncClient = syncContext?.syncClient ?? null;
+  const { addToast } = useToast();
 
   const currentDeviceId = getDeviceId();
 
@@ -217,11 +222,36 @@ export function DeviceRegistryProvider({ children }: DeviceRegistryProviderProps
       store.renameDevice(payload.deviceId, payload.newName);
     });
 
+    // Handle this device being revoked
+    syncClient.onDeviceRevoked((deviceId: string, reason?: string) => {
+      console.log('[DeviceRegistry] This device has been revoked!', deviceId, reason);
+
+      // Verify it's actually this device
+      if (deviceId !== currentDeviceId) {
+        console.warn('[DeviceRegistry] Revocation callback for different device:', deviceId);
+        return;
+      }
+
+      setIsRevoked(true);
+
+      // Show persistent error toast
+      addToast({
+        type: 'error',
+        message: reason
+          ? `This device has been revoked: ${reason}`
+          : 'This device has been revoked from sync',
+        duration: 0, // Persistent - user must acknowledge
+      });
+
+      // Disconnect from sync
+      syncContext?.disconnect();
+    });
+
     // Reset ref when dependencies change
     return () => {
       syncCallbacksWiredRef.current = false;
     };
-  }, [syncClient, store]);
+  }, [syncClient, store, currentDeviceId, addToast, syncContext]);
 
   // Wire up store's broadcast callback for automatic sync
   useEffect(() => {
@@ -384,6 +414,7 @@ export function DeviceRegistryProvider({ children }: DeviceRegistryProviderProps
     currentDeviceId,
     isLoading,
     error,
+    isRevoked,
     registerCurrentDevice,
     renameDevice,
     revokeDevice,
