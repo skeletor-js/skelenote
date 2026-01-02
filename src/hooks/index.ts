@@ -37,3 +37,4 @@ export {
   type SelectionActions,
 } from './useSelection';
 export { useTemplates, type UseTemplatesResult } from './useTemplates';
+export { useDuplicate, type UseDuplicateResult } from './useDuplicate';

@@ -21,7 +21,7 @@ import {
   useToast,
   useKeyboardShortcuts,
 } from '@/contexts';
-import { useConfirmDialog } from '@/hooks';
+import { useConfirmDialog, useDuplicate } from '@/hooks';
 import styles from './ObjectDetailView.module.css';
 
 interface ObjectDetailViewProps {
@@ -37,6 +37,7 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
   const { addToast } = useToast();
   const { dialogState, confirm, handleConfirm, handleCancel } = useConfirmDialog();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
+  const { duplicate, canDuplicate } = useDuplicate();
 
   // Check if we're in version comparison mode
   const isVersionComparison = splitPane.mode === 'version-comparison';
@@ -97,6 +98,11 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
     }
   }, [store, objectId, typeRegistry, addToast]);
 
+  // Handler to duplicate object
+  const handleDuplicate = useCallback(() => {
+    duplicate(objectId);
+  }, [duplicate, objectId]);
+
   // Register keyboard shortcuts
   useEffect(() => {
     // Only register in primary pane and not in version comparison mode
@@ -115,12 +121,23 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
         action: handleExport,
       });
 
+      // Only register duplicate shortcut if object can be duplicated
+      if (canDuplicate(objectId)) {
+        registerShortcut('duplicate-object', {
+          key: 'd',
+          metaKey: true,
+          description: 'Duplicate object',
+          action: handleDuplicate,
+        });
+      }
+
       return () => {
         unregisterShortcut('view-object-history');
         unregisterShortcut('export-to-markdown');
+        unregisterShortcut('duplicate-object');
       };
     }
-  }, [paneType, isVersionComparison, handleViewHistory, handleExport, registerShortcut, unregisterShortcut]);
+  }, [paneType, isVersionComparison, handleViewHistory, handleExport, handleDuplicate, canDuplicate, objectId, registerShortcut, unregisterShortcut]);
 
   // Handler to archive object
   const handleArchive = useCallback(() => {
@@ -313,6 +330,8 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
         onCloseSplit={paneType === 'secondary' ? closeSplit : undefined}
         onViewHistory={handleViewHistory}
         onExport={handleExport}
+        onDuplicate={handleDuplicate}
+        canDuplicate={canDuplicate(objectId)}
         canGoBack={canGoBack && !isVersionComparison}
         onNavigateBack={navigateBack}
         showBackToTimeMachine={isVersionComparison}

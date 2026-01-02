@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Modal, TextInput, Stack, Group, Text, Kbd, ScrollArea, Loader, Box } from '@mantine/core';
 import { Search } from 'lucide-react';
 import { useNavigation, useObjects, useTypeRegistry } from '@/contexts';
-import { useLinkToDaily, useSearch } from '@/hooks';
+import { useLinkToDaily, useSearch, useDuplicate } from '@/hooks';
 import {
   getStaticActions,
   filterActions,
@@ -15,6 +15,7 @@ import {
   QUICK_CAPTURE_ACTION_ID,
   SEARCH_ACTION_ID,
   OPEN_IN_SPLIT_ACTION_ID,
+  DUPLICATE_OBJECT_ACTION_ID,
   KEYBOARD_SHORTCUTS_ACTION_ID,
   CREATE_FROM_TEMPLATE_ACTION_ID,
   NEW_TEMPLATE_ACTION_ID,
@@ -37,6 +38,7 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture, onOpenShortcut
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { linkToDaily } = useLinkToDaily();
+  const { duplicate, canDuplicate } = useDuplicate();
 
   // Normal palette state
   const [query, setQuery] = useState('');
@@ -167,6 +169,15 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture, onOpenShortcut
         return;
       }
 
+      // Duplicate Object - duplicates current object
+      if (action.id === DUPLICATE_OBJECT_ACTION_ID) {
+        if (currentView === 'object' && selectedObjectId && canDuplicate(selectedObjectId)) {
+          duplicate(selectedObjectId);
+        }
+        onClose();
+        return;
+      }
+
       // Keyboard Shortcuts action - open shortcuts modal
       if (action.id === KEYBOARD_SHORTCUTS_ACTION_ID) {
         onClose();
@@ -217,7 +228,7 @@ export function CommandPalette({ isOpen, onClose, onQuickCapture, onOpenShortcut
       }
       onClose();
     },
-    [navigateToView, navigateToObject, store, linkToDaily, refreshData, onClose, onQuickCapture, onOpenShortcuts, onCreateFromTemplate, onNewTemplate, enterSearchMode, currentView, selectedObjectId, openInSplit]
+    [navigateToView, navigateToObject, store, linkToDaily, refreshData, onClose, onQuickCapture, onOpenShortcuts, onCreateFromTemplate, onNewTemplate, enterSearchMode, currentView, selectedObjectId, openInSplit, duplicate, canDuplicate]
   );
 
   // Navigate to search result

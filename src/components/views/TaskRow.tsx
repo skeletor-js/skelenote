@@ -10,7 +10,7 @@ import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
 import { useObjects, useToast } from '@/contexts';
 import { Tag, ContextMenu, Icon, type TagColor, type ContextMenuItem } from '@/components/ui';
 import { ObjectSearchModal } from '@/components/object/editors';
-import { useContextMenu, usePinnedObjects } from '@/hooks';
+import { useContextMenu, usePinnedObjects, useDuplicate } from '@/hooks';
 import styles from './TaskRow.module.css';
 
 interface TaskRowProps {
@@ -46,6 +46,7 @@ export function TaskRow({
   const { addToast } = useToast();
   const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
   const { isPinned, pin, unpin } = usePinnedObjects();
+  const { duplicate } = useDuplicate();
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
   const [projectPickerOpen, setProjectPickerOpen] = useState(false);
   const [areaPickerOpen, setAreaPickerOpen] = useState(false);
@@ -196,6 +197,20 @@ export function TaskRow({
     [handleArchive]
   );
 
+  // Handle duplicate
+  const handleDuplicate = useCallback(() => {
+    duplicate(task.id);
+  }, [duplicate, task.id]);
+
+  // Handle duplicate click (with event stop propagation)
+  const handleDuplicateClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      handleDuplicate();
+    },
+    [handleDuplicate]
+  );
+
   // Context menu items
   const contextMenuItems: ContextMenuItem[] = [
     ...(onSelectionChange
@@ -213,6 +228,12 @@ export function TaskRow({
       label: taskIsPinned ? 'Unpin from Sidebar' : 'Pin to Sidebar',
       icon: 'pin',
       onClick: handleTogglePin,
+    },
+    {
+      id: 'duplicate',
+      label: 'Duplicate',
+      icon: 'copy',
+      onClick: handleDuplicate,
     },
     ...(onArchive
       ? [
@@ -395,6 +416,16 @@ export function TaskRow({
               aria-label={taskIsPinned ? 'Unpin from sidebar' : 'Pin to sidebar'}
             >
               <Icon name="pin" size={14} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Duplicate" position="top" withArrow>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={handleDuplicateClick}
+              aria-label="Duplicate"
+            >
+              <Icon name="copy" size={14} />
             </ActionIcon>
           </Tooltip>
           {onArchive && (
