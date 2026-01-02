@@ -365,6 +365,14 @@ export const theme = createTheme({
         variant: 'subtle',
         color: 'gray',
       },
+      styles: {
+        root: {
+          // Warm hover for action icons
+          '&:hover': {
+            backgroundColor: 'var(--hover-warm)',
+          },
+        },
+      },
     },
     Paper: {
       defaultProps: {
@@ -420,6 +428,10 @@ export const theme = createTheme({
         item: {
           fontSize: rem(13),
           padding: `${rem(6)} ${rem(10)}`,
+          // Warm hover for menu items
+          '&:hover, &[data-hovered]': {
+            backgroundColor: 'var(--hover-warm)',
+          },
         },
       },
     },
@@ -427,6 +439,18 @@ export const theme = createTheme({
       styles: {
         root: {
           borderRadius: rem(4),
+          // Warm hover and selection states
+          '&:hover': {
+            backgroundColor: 'var(--hover-warm)',
+          },
+          // Active state uses selection glow
+          '&[data-active="true"]': {
+            backgroundColor: 'var(--selection-glow)',
+            color: 'var(--mantine-color-ember-6)',
+            '&:hover': {
+              backgroundColor: 'var(--selection-glow)',
+            },
+          },
         },
         label: {
           fontSize: rem(13),

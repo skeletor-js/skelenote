@@ -159,23 +159,36 @@ export function CalendarView({
           return (
             <Button
               key={day}
-              variant={isSelected ? 'filled' : 'subtle'}
+              /* Selection uses "glow" effect: ember-0 background + ember text
+                 This creates a warm highlighter effect, not a heavy stamp */
+              variant={isSelected ? 'light' : 'subtle'}
               color={isSelected ? 'ember' : 'gray'}
               h={36}
               p={0}
               onClick={() => hasChanges && onDateSelect(dateKey)}
               disabled={!hasChanges}
-              aria-label={`${monthLabel.split(' ')[0]} ${day}${
-                hasChanges ? `, ${dayChanges.totalChanges} changes` : ', no changes'
-              }${isSelected ? ', selected' : ''}${isToday ? ', today' : ''}`}
+              aria-label={`${monthLabel.split(' ')[0]} ${day}${hasChanges ? `, ${dayChanges.totalChanges} changes` : ', no changes'
+                }${isSelected ? ', selected' : ''}${isToday ? ', today' : ''}`}
               aria-current={isToday ? 'date' : undefined}
               aria-pressed={isSelected}
               style={{
                 position: 'relative',
-                border: isToday ? '2px solid var(--mantine-color-ember-4)' : undefined,
+                border: isToday
+                  ? '2px solid var(--mantine-color-ember-4)'
+                  : isSelected
+                    ? '1px solid var(--selection-border)'
+                    : undefined,
+                // For selected state, use selection-glow background
+                backgroundColor: isSelected ? 'var(--selection-glow)' : undefined,
               }}
             >
-              <Text size="sm">{day}</Text>
+              <Text
+                size="sm"
+                fw={isSelected ? 600 : 400}
+                c={isSelected ? 'ember.6' : undefined}
+              >
+                {day}
+              </Text>
               {hasChanges && (
                 <Box
                   style={{
@@ -187,10 +200,7 @@ export function CalendarView({
                     maxWidth: 24,
                     height: 3,
                     borderRadius: 1,
-                    backgroundColor: isSelected
-                      ? 'var(--mantine-color-white)'
-                      : 'var(--mantine-color-ember-5)',
-                    opacity: isSelected ? 0.8 : 1,
+                    backgroundColor: 'var(--mantine-color-ember-5)',
                   }}
                   aria-hidden="true"
                 />

@@ -6,8 +6,9 @@
   transition: background-color 150ms ease, border-color 150ms ease;
 }
 
+/* Warm hover - "Fireplace Glow" effect */
 .day:hover {
-  background-color: var(--mantine-color-gray-0);
+  background-color: var(--hover-warm);
 }
 
 /* Today has a different hover */
