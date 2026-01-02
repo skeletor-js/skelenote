@@ -343,6 +343,13 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
                         navigateToObject(tag.id);
                       }}
                       variant="subtle"
+                      styles={{
+                        root: {
+                          '&:hover': {
+                            backgroundColor: 'var(--selection-glow)',
+                          },
+                        },
+                      }}
                     />
                   );
                 })

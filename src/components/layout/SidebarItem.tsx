@@ -52,6 +52,14 @@ export function SidebarItem({
       active={isSelected}
       onClick={handleClick}
       variant="subtle"
+      styles={{
+        root: {
+          // Override Mantine's subtle variant hover with warm glow
+          '&:hover': {
+            backgroundColor: 'var(--selection-glow)',
+          },
+        },
+      }}
       style={indent ? { paddingLeft: 32 } : undefined}
     />
   );
