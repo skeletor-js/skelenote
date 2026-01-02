@@ -30,6 +30,21 @@
   flex-shrink: 0;
 }
 
+.centerGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-md);
+  flex: 1;
+  justify-content: center;
+}
+
+.navControls {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  flex-shrink: 0;
+}
+
 .creationControls {
   display: flex;
   align-items: center;
@@ -42,5 +57,4 @@
   align-items: center;
   gap: var(--mantine-spacing-xs);
   flex-shrink: 0;
-  margin-left: auto;
 }

@@ -31,7 +31,7 @@ export function OmnibarDropdown({
 
   // Render icon - either as Lucide icon name or emoji fallback
   const renderIcon = (icon: string) => {
-    if (/^[a-z-]+$/.test(icon)) {
+    if (/^[a-z0-9-]+$/.test(icon)) {
       return <Icon name={icon as IconName} size={14} />;
     }
     return <span style={{ fontSize: 12 }}>{icon}</span>;

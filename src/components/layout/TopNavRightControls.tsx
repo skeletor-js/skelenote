@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { ActionIcon, Group, Menu, Tooltip } from '@mantine/core';
-import { History, Plus, Moon, Sun, Settings } from 'lucide-react';
+import { History, Plus, Moon, Sun, Eye, Settings } from 'lucide-react';
 import { SyncIndicator } from '@/components/ui';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { useNavigation, useObjects, useTypeRegistry } from '@/contexts';
@@ -113,7 +113,7 @@ export function CreationControls({
           <Tooltip label="Add new object" position="bottom" withArrow disabled={addMenuOpened}>
             <ActionIcon
               variant="subtle"
-              color="gray"
+              color="ember"
               size="sm"
               aria-label="Add new object"
             >
@@ -139,13 +139,17 @@ export function CreationControls({
 
 interface SystemControlsProps {
   onToggleSettings?: () => void;
+  /** Whether zen mode (sidebar hidden) is active */
+  isZenMode?: boolean;
+  /** Callback to toggle zen mode */
+  onToggleZenMode?: () => void;
 }
 
 /**
  * System controls for the top nav bar (far right).
- * Contains: Sync Indicator, Theme Toggle, Settings.
+ * Contains: Sync Indicator, Theme Toggle, Zen Mode, Settings.
  */
-export function SystemControls({ onToggleSettings }: SystemControlsProps) {
+export function SystemControls({ onToggleSettings, isZenMode = false, onToggleZenMode }: SystemControlsProps) {
   const { navigateToView, navigateBack, currentView, canGoBack } = useNavigation();
   const { theme, toggleTheme } = useTheme();
 
@@ -179,6 +183,23 @@ export function SystemControls({ onToggleSettings }: SystemControlsProps) {
           aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
           {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+        </ActionIcon>
+      </Tooltip>
+
+      {/* Zen Mode Toggle */}
+      <Tooltip
+        label={isZenMode ? 'Exit Zen Mode' : 'Enter Zen Mode'}
+        position="bottom"
+        withArrow
+      >
+        <ActionIcon
+          variant="subtle"
+          color={isZenMode ? 'ember' : 'gray'}
+          size="sm"
+          onClick={onToggleZenMode}
+          aria-label={isZenMode ? 'Exit Zen Mode' : 'Enter Zen Mode'}
+        >
+          <Eye size={14} />
         </ActionIcon>
       </Tooltip>
 

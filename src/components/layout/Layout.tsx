@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { AppShell, Box } from '@mantine/core';
 import { Sidebar } from './Sidebar';
 import { TopNavBar } from './TopNavBar';
@@ -28,15 +28,18 @@ export function Layout({
   onRegisterOmnibarFocus,
 }: LayoutProps) {
   const { windowControlsHeight } = usePlatform();
+  const [isZenMode, setIsZenMode] = useState(false);
 
   // Header height should accommodate window controls
   const headerHeight = Math.max(48, windowControlsHeight + 16);
+
+  const toggleZenMode = () => setIsZenMode((prev) => !prev);
 
   return (
     <AppShell
       header={{ height: headerHeight }}
       navbar={{
-        width: SIDEBAR_WIDTH,
+        width: isZenMode ? 0 : SIDEBAR_WIDTH,
         breakpoint: 'sm',
       }}
       padding={0}
@@ -48,12 +51,19 @@ export function Layout({
           onCreateFromTemplate={onCreateFromTemplate}
           onNewTemplate={onNewTemplate}
           onRegisterOmnibarFocus={onRegisterOmnibarFocus}
+          isZenMode={isZenMode}
+          onToggleZenMode={toggleZenMode}
         />
       </AppShell.Header>
 
-      <AppShell.Navbar p={0} withBorder={false}>
-        <Sidebar inboxCount={inboxCount} onCreateFromTemplate={onCreateFromTemplate} />
-      </AppShell.Navbar>
+      {!isZenMode && (
+        <AppShell.Navbar p={0} withBorder={false}>
+          <Sidebar
+            inboxCount={inboxCount}
+            onCreateFromTemplate={onCreateFromTemplate}
+          />
+        </AppShell.Navbar>
+      )}
 
       <AppShell.Main
         style={{
