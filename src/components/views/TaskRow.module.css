@@ -15,7 +15,6 @@
 /* Selection uses pale Ember glow - like a highlighter */
 .row[data-selected='true'] {
   background-color: var(--selection-glow);
-  border-left: 2px solid var(--selection-border);
 }
 
 .row[data-selected='true']:hover {
