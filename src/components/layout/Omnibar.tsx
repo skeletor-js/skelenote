@@ -3,10 +3,10 @@
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo, forwardRef, useImperativeHandle } from 'react';
-import { TextInput, Popover, Loader, Kbd, Box } from '@mantine/core';
+import { TextInput, Popover, Loader, Box } from '@mantine/core';
 import { Search } from 'lucide-react';
 import { useNavigation, useObjects, useTypeRegistry } from '@/contexts';
-import { useSearch, useLinkToDaily, useDuplicate } from '@/hooks';
+import { useSearch, useLinkToDaily, useDuplicate, useTheme } from '@/hooks';
 import {
   getStaticActions,
   filterActions,
@@ -18,6 +18,7 @@ import {
   KEYBOARD_SHORTCUTS_ACTION_ID,
   CREATE_FROM_TEMPLATE_ACTION_ID,
   NEW_TEMPLATE_ACTION_ID,
+  TOGGLE_THEME_ACTION_ID,
 } from '@/lib/palette/actions';
 import { searchObjects, sortByRelevance } from '@/lib/palette/search';
 import { OmnibarDropdown } from './OmnibarDropdown';
@@ -54,6 +55,7 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
   const typeRegistry = useTypeRegistry();
   const { linkToDaily } = useLinkToDaily();
   const { duplicate, canDuplicate } = useDuplicate();
+  const { toggleTheme } = useTheme();
 
   // Search hook for object searching
   const {
@@ -82,48 +84,56 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
     return sortByRelevance(store.getAll());
   }, [store]);
 
-  // Sync query with search hook
+  // Determine if we're in command mode (query starts with /)
+  const isCommandMode = query.startsWith('/');
+  const searchQueryText = isCommandMode ? query.slice(1) : query;
+
+  // Sync query with search hook (only in search mode)
   useEffect(() => {
-    if (query.trim()) {
-      setSearchQuery(query);
+    if (!isCommandMode && searchQueryText.trim()) {
+      setSearchQuery(searchQueryText);
     }
-  }, [query, setSearchQuery]);
+  }, [searchQueryText, setSearchQuery, isCommandMode]);
 
-  // Filter and combine results
+  // Filter and combine results based on mode
   const combinedResults = useMemo(() => {
-    // Filter static actions
-    const filteredStatic = filterActions(staticActions, query);
+    const hasQuery = searchQueryText.trim().length > 0;
 
-    // If there's a query and we have search results (including semantic), use them
-    // Otherwise fall back to basic object search
-    const hasQuery = query.trim().length > 0;
-    let objectResults: PaletteAction[];
-
-    if (hasQuery && searchResults.length > 0) {
-      // Convert search results to palette actions
-      objectResults = searchResults.slice(0, 8).map((result) => {
-        const typeDef = typeRegistry.get(result.item.typeId);
-        return {
-          id: `object-${result.item.id}`,
-          label: result.item.title || 'Untitled',
-          icon: typeDef?.icon ?? 'file',
-          category: 'object' as const,
-          objectId: result.item.id,
-          matchType: result.matchType,
-          semanticScore: result.semanticScore,
-        };
-      });
-    } else if (hasQuery) {
-      // Fall back to basic search for immediate results
-      objectResults = searchObjects(allObjects, query, typeRegistry, 8);
-    } else {
-      objectResults = [];
+    // Command mode: show only commands filtered by query
+    if (isCommandMode) {
+      const filteredCommands = filterActions(staticActions, searchQueryText);
+      return filteredCommands.slice(0, 10);
     }
 
-    // Combine: static actions first (limited), then object results
-    const limitedStatic = hasQuery ? filteredStatic.slice(0, 5) : filteredStatic.slice(0, 8);
-    return [...limitedStatic, ...objectResults];
-  }, [staticActions, allObjects, typeRegistry, query, searchResults]);
+    // Search mode: show only object results
+    if (hasQuery) {
+      let objectResults: PaletteAction[];
+
+      if (searchResults.length > 0) {
+        // Convert search results to palette actions
+        objectResults = searchResults.slice(0, 10).map((result) => {
+          const typeDef = typeRegistry.get(result.item.typeId);
+          return {
+            id: `object-${result.item.id}`,
+            label: result.item.title || 'Untitled',
+            icon: typeDef?.icon ?? 'file',
+            category: 'object' as const,
+            objectId: result.item.id,
+            matchType: result.matchType,
+            semanticScore: result.semanticScore,
+          };
+        });
+      } else {
+        // Fall back to basic search for immediate results
+        objectResults = searchObjects(allObjects, searchQueryText, typeRegistry, 10);
+      }
+
+      return objectResults;
+    }
+
+    // No query: show nothing (user needs to type to see results)
+    return [];
+  }, [staticActions, allObjects, typeRegistry, searchQueryText, searchResults, isCommandMode]);
 
   // Reset selection when results change
   useEffect(() => {
@@ -135,7 +145,7 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
     (action: PaletteAction) => {
       // Search action - navigate to full search view
       if (action.id === SEARCH_ACTION_ID) {
-        navigateToSearch(query);
+        navigateToSearch(searchQueryText);
         setQuery('');
         setIsFocused(false);
         inputRef.current?.blur();
@@ -200,6 +210,15 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
         return;
       }
 
+      // Toggle Theme
+      if (action.id === TOGGLE_THEME_ACTION_ID) {
+        toggleTheme();
+        setQuery('');
+        setIsFocused(false);
+        inputRef.current?.blur();
+        return;
+      }
+
       if (action.view) {
         // Navigation action
         navigateToView(action.view);
@@ -247,7 +266,8 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
       openInSplit,
       duplicate,
       canDuplicate,
-      query,
+      searchQueryText,
+      toggleTheme,
     ]
   );
 
@@ -267,6 +287,12 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
           e.preventDefault();
           if (combinedResults[selectedIndex]) {
             executeAction(combinedResults[selectedIndex]);
+          } else if (!isCommandMode && searchQueryText.trim()) {
+            // In search mode with no results, navigate to full search
+            navigateToSearch(searchQueryText);
+            setQuery('');
+            setIsFocused(false);
+            inputRef.current?.blur();
           }
           break;
         case 'Escape':
@@ -276,7 +302,7 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
           break;
       }
     },
-    [combinedResults, selectedIndex, executeAction]
+    [combinedResults, selectedIndex, executeAction, isCommandMode, searchQueryText, navigateToSearch]
   );
 
   // Handle focus
@@ -310,16 +336,8 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
             ref={inputRef}
             className={classes.omnibarInput}
             leftSection={<Search size={14} />}
-            rightSection={
-              isSearching ? (
-                <Loader size={12} />
-              ) : (
-                <Kbd size="xs" style={{ fontSize: 10 }}>
-                  ⌘K
-                </Kbd>
-              )
-            }
-            placeholder="Search or type a command..."
+            rightSection={isSearching ? <Loader size={12} /> : null}
+            placeholder="Search or type / for commands..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={handleFocus}

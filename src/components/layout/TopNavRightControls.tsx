@@ -27,21 +27,20 @@ const excludedFromAddMenu: string[] = [
   BuiltInTypeIds.TEMPLATE,
 ];
 
-interface TopNavRightControlsProps {
+interface CreationControlsProps {
   onCreateFromTemplate?: () => void;
 }
 
 /**
- * Right-side controls for the top nav bar.
- * Contains: Time Machine, Add New, Sync Indicator, Theme Toggle, Settings.
+ * Creation controls for the top nav bar (right of omnibar).
+ * Contains: Time Machine, Add New.
  */
-export function TopNavRightControls({
+export function CreationControls({
   onCreateFromTemplate,
-}: TopNavRightControlsProps) {
-  const { navigateToView, navigateToObject, navigateToTimeMachine } = useNavigation();
+}: CreationControlsProps) {
+  const { navigateToObject, navigateToTimeMachine } = useNavigation();
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
-  const { theme, toggleTheme } = useTheme();
   const { linkToDaily } = useLinkToDaily();
   const [addMenuOpened, setAddMenuOpened] = useState(false);
 
@@ -134,7 +133,35 @@ export function TopNavRightControls({
           ))}
         </Menu.Dropdown>
       </Menu>
+    </Group>
+  );
+}
 
+interface SystemControlsProps {
+  onToggleSettings?: () => void;
+}
+
+/**
+ * System controls for the top nav bar (far right).
+ * Contains: Sync Indicator, Theme Toggle, Settings.
+ */
+export function SystemControls({ onToggleSettings }: SystemControlsProps) {
+  const { navigateToView, navigateBack, currentView, canGoBack } = useNavigation();
+  const { theme, toggleTheme } = useTheme();
+
+  // Handle settings click - toggle if already on settings
+  const handleSettingsClick = () => {
+    if (onToggleSettings) {
+      onToggleSettings();
+    } else if (currentView === 'settings' && canGoBack) {
+      navigateBack();
+    } else {
+      navigateToView('settings');
+    }
+  };
+
+  return (
+    <Group gap="xs">
       {/* Sync Indicator */}
       <SyncIndicator />
 
@@ -161,12 +188,27 @@ export function TopNavRightControls({
           variant="subtle"
           color="gray"
           size="sm"
-          onClick={() => navigateToView('settings')}
+          onClick={handleSettingsClick}
           aria-label="Settings"
         >
           <Settings size={14} />
         </ActionIcon>
       </Tooltip>
     </Group>
+  );
+}
+
+/**
+ * @deprecated Use CreationControls and SystemControls separately
+ * This is kept for backward compatibility during refactoring.
+ */
+export function TopNavRightControls({
+  onCreateFromTemplate,
+}: CreationControlsProps) {
+  return (
+    <>
+      <CreationControls onCreateFromTemplate={onCreateFromTemplate} />
+      <SystemControls />
+    </>
   );
 }

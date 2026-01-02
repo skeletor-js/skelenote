@@ -36,6 +36,7 @@ export const KEYBOARD_SHORTCUTS_ACTION_ID = 'action-keyboard-shortcuts';
 export const CREATE_FROM_TEMPLATE_ACTION_ID = 'action-create-from-template';
 export const MANAGE_TEMPLATES_ACTION_ID = 'action-manage-templates';
 export const NEW_TEMPLATE_ACTION_ID = 'action-new-template';
+export const TOGGLE_THEME_ACTION_ID = 'action-toggle-theme';
 
 /**
  * Navigation actions for jumping to views
@@ -57,6 +58,9 @@ export const navigationActions: PaletteAction[] = [
   { id: 'nav-eventually', label: 'Go to Eventually', icon: '📌', category: 'navigation', view: 'eventually' },
   { id: 'nav-completed', label: 'Go to Completed', icon: '✅', category: 'navigation', view: 'completed' },
   { id: 'nav-time-machine', label: 'Go to Time Machine', icon: '🕰️', category: 'navigation', view: 'time-machine' },
+  { id: 'nav-archive', label: 'Go to Archive', icon: '📦', category: 'navigation', view: 'archive' },
+  { id: 'nav-settings', label: 'Go to Settings', icon: '⚙️', category: 'navigation', view: 'settings' },
+  { id: TOGGLE_THEME_ACTION_ID, label: 'Toggle Theme', icon: '🌓', category: 'action' },
 ];
 
 /**

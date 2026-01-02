@@ -14,6 +14,8 @@ interface LayoutProps {
   onQuickCapture?: () => void;
   onOpenShortcuts?: () => void;
   onNewTemplate?: () => void;
+  /** Callback to register the omnibar focus function for global shortcut */
+  onRegisterOmnibarFocus?: (focusFn: () => void) => void;
 }
 
 export function Layout({
@@ -23,6 +25,7 @@ export function Layout({
   onQuickCapture,
   onOpenShortcuts,
   onNewTemplate,
+  onRegisterOmnibarFocus,
 }: LayoutProps) {
   const { windowControlsHeight } = usePlatform();
 
@@ -44,6 +47,7 @@ export function Layout({
           onOpenShortcuts={onOpenShortcuts}
           onCreateFromTemplate={onCreateFromTemplate}
           onNewTemplate={onNewTemplate}
+          onRegisterOmnibarFocus={onRegisterOmnibarFocus}
         />
       </AppShell.Header>
 

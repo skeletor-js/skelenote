@@ -232,6 +232,12 @@ function App() {
   const { ensureExists: ensureTodaysDailyNote } = useTodaysDailyNote();
   const { createObject: createFromTemplate } = useTemplates();
   const startupCompleteRef = useRef(false);
+  const omnibarFocusRef = useRef<(() => void) | null>(null);
+
+  // Callback to receive the omnibar focus function from Layout
+  const handleRegisterOmnibarFocus = useCallback((focusFn: () => void) => {
+    omnibarFocusRef.current = focusFn;
+  }, []);
 
   // Auto-create today's daily note and run first-run setup on app launch
   useEffect(() => {
@@ -397,6 +403,16 @@ function App() {
       description: 'New Template',
     });
 
+    // Cmd+K to focus omnibar
+    registerShortcut('focus-omnibar', {
+      key: 'k',
+      metaKey: true,
+      action: () => {
+        omnibarFocusRef.current?.();
+      },
+      description: 'Focus Omnibar',
+    });
+
     // Cmd+Z to undo (returns false when editor focused to let BlockNote handle it)
     registerShortcut('global-undo', {
       key: 'z',
@@ -448,6 +464,7 @@ function App() {
       unregisterShortcut('keyboard-shortcuts');
       unregisterShortcut('keyboard-shortcuts-alt');
       unregisterShortcut('new-template');
+      unregisterShortcut('focus-omnibar');
       unregisterShortcut('global-undo');
       unregisterShortcut('global-redo');
       unregisterShortcut('global-redo-y');
@@ -486,6 +503,7 @@ function App() {
         onQuickCapture={openQuickCapture}
         onOpenShortcuts={toggleShortcutsModal}
         onNewTemplate={openTemplateEditor}
+        onRegisterOmnibarFocus={handleRegisterOmnibarFocus}
       >
         <MainContent />
       </Layout>
