@@ -74,6 +74,10 @@ function getFieldValue(obj: SkelenoteObject, field: string): PropertyValue {
       return obj.typeId;
     case 'inboxed':
       return obj.inboxed;
+    case 'pinned':
+      return obj.pinned;
+    case 'archived':
+      return obj.archived;
     case 'createdAt':
       return obj.createdAt;
     case 'updatedAt':
@@ -250,6 +254,13 @@ export class QueryBuilder {
    */
   inboxed(value = true): this {
     return this.whereEquals('inboxed', value);
+  }
+
+  /**
+   * Shorthand for archived filter
+   */
+  archived(value = true): this {
+    return this.whereEquals('archived', value);
   }
 
   /**

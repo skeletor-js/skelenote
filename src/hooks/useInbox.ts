@@ -20,6 +20,8 @@ export interface UseInboxResult {
   count: number;
   /** Mark an item as processed (sets inboxed: false) */
   processItem: (itemId: string) => void;
+  /** Archive an inbox item (hides from default views) */
+  archiveItem: (itemId: string) => void;
   /** Delete an inbox item and clean up mentions */
   deleteItem: (itemId: string) => void;
 }
@@ -65,6 +67,16 @@ export function useInbox(): UseInboxResult {
     [store, refreshData]
   );
 
+  // Archive an inbox item
+  const archiveItem = useCallback(
+    (itemId: string) => {
+      if (!store) return;
+      store.archive(itemId);
+      refreshData();
+    },
+    [store, refreshData]
+  );
+
   // Delete an inbox item and clean up mentions
   const deleteItem = useCallback(
     (itemId: string) => {
@@ -99,6 +111,7 @@ export function useInbox(): UseInboxResult {
     isLoading,
     count: items.length,
     processItem,
+    archiveItem,
     deleteItem,
   };
 }

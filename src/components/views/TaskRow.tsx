@@ -8,9 +8,9 @@ import { UnstyledButton, Checkbox, Group, Text, Badge, Box, ActionIcon, Tooltip 
 import type { SkelenoteObject } from '@/lib/types';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
 import { useObjects, useToast } from '@/contexts';
-import { Tag, ContextMenu, ConfirmDialog, Icon, type TagColor, type ContextMenuItem } from '@/components/ui';
+import { Tag, ContextMenu, Icon, type TagColor, type ContextMenuItem } from '@/components/ui';
 import { ObjectSearchModal } from '@/components/object/editors';
-import { useContextMenu, useConfirmDialog, usePinnedObjects } from '@/hooks';
+import { useContextMenu, usePinnedObjects } from '@/hooks';
 import styles from './TaskRow.module.css';
 
 interface TaskRowProps {
@@ -22,8 +22,8 @@ interface TaskRowProps {
   onClick: () => void;
   /** Callback to open task in split pane */
   onOpenInSplit: () => void;
-  /** Callback when task is deleted */
-  onDelete: (taskId: string) => void;
+  /** Callback when task is archived */
+  onArchive?: (taskId: string) => void;
   /** Whether this item is selected for bulk operations */
   isSelected?: boolean;
   /** Callback when selection checkbox is toggled */
@@ -37,14 +37,13 @@ export function TaskRow({
   onToggleComplete,
   onClick,
   onOpenInSplit,
-  onDelete,
+  onArchive,
   isSelected = false,
   onSelectionChange,
   isSelectingMode = false,
 }: TaskRowProps) {
   const { store, refreshData } = useObjects();
   const { addToast } = useToast();
-  const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
   const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
   const { isPinned, pin, unpin } = usePinnedObjects();
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
@@ -91,24 +90,6 @@ export function TaskRow({
     },
     [onToggleComplete, task.id]
   );
-
-  // Handle delete with confirmation
-  const handleDelete = useCallback(async () => {
-    const confirmed = await confirm({
-      title: 'Delete Task?',
-      message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
-      confirmLabel: 'Delete',
-      variant: 'danger',
-    });
-
-    if (confirmed) {
-      onDelete(task.id);
-      addToast({
-        type: 'success',
-        message: `"${title}" deleted`,
-      });
-    }
-  }, [confirm, title, task.id, onDelete, addToast]);
 
   // Handle pin/unpin
   const taskIsPinned = isPinned(task.id);
@@ -196,13 +177,23 @@ export function TaskRow({
     [task.id, task.properties, store, refreshData, addToast]
   );
 
-  // Handle delete quick action (with event stop propagation)
-  const handleDeleteClick = useCallback(
+  // Handle archive
+  const handleArchive = useCallback(() => {
+    if (!onArchive) return;
+    onArchive(task.id);
+    addToast({
+      type: 'success',
+      message: `"${title}" archived`,
+    });
+  }, [onArchive, task.id, title, addToast]);
+
+  // Handle archive click (with event stop propagation)
+  const handleArchiveClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      handleDelete();
+      handleArchive();
     },
-    [handleDelete]
+    [handleArchive]
   );
 
   // Context menu items
@@ -223,13 +214,16 @@ export function TaskRow({
       icon: 'pin',
       onClick: handleTogglePin,
     },
-    {
-      id: 'delete',
-      label: 'Delete',
-      icon: 'trash-2',
-      variant: 'danger',
-      onClick: handleDelete,
-    },
+    ...(onArchive
+      ? [
+          {
+            id: 'archive',
+            label: 'Archive',
+            icon: 'archive',
+            onClick: handleArchive,
+          } as ContextMenuItem,
+        ]
+      : []),
   ];
 
   // Handle row click - cmd+click opens split, shift+click toggles selection, regular click navigates
@@ -403,17 +397,18 @@ export function TaskRow({
               <Icon name="pin" size={14} />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label="Delete" position="top" withArrow>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              color="brick"
-              onClick={handleDeleteClick}
-              aria-label="Delete"
-            >
-              <Icon name="trash-2" size={14} />
-            </ActionIcon>
-          </Tooltip>
+          {onArchive && (
+            <Tooltip label="Archive" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleArchiveClick}
+                aria-label="Archive"
+              >
+                <Icon name="archive" size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
         </Group>
         </Group>
       </UnstyledButton>
@@ -424,18 +419,6 @@ export function TaskRow({
         position={position}
         isOpen={isOpen}
         onClose={closeContextMenu}
-      />
-
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        isOpen={dialogState.isOpen}
-        title={dialogState.title}
-        message={dialogState.message}
-        confirmLabel={dialogState.confirmLabel}
-        cancelLabel={dialogState.cancelLabel}
-        variant={dialogState.variant}
-        onConfirm={handleConfirm}
-        onCancel={handleCancel}
       />
 
       {/* Tag Picker Modal */}

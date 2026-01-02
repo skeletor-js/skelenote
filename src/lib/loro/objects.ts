@@ -80,6 +80,7 @@ export class ObjectStore {
       hasContent: input.withContent ?? typeDef.hasContent,
       inboxed: input.inboxed ?? true,
       pinned: false,
+      archived: false,
       createdAt: now,
       updatedAt: now,
     };
@@ -122,9 +123,13 @@ export class ObjectStore {
   }
 
   /**
-   * Get all objects
+   * Options for querying objects
    */
-  getAll(): SkelenoteObject[] {
+  /**
+   * Get all objects
+   * @param options.includeArchived - Include archived objects (default: false)
+   */
+  getAll(options?: { includeArchived?: boolean }): SkelenoteObject[] {
     const objectsMap = getObjectsMap(this.doc);
     const objects: SkelenoteObject[] = [];
 
@@ -136,14 +141,20 @@ export class ObjectStore {
       }
     }
 
+    // Exclude archived unless explicitly requested
+    if (!options?.includeArchived) {
+      return objects.filter((obj) => !obj.archived);
+    }
+
     return objects;
   }
 
   /**
    * Get all objects of a specific type
+   * @param options.includeArchived - Include archived objects (default: false)
    */
-  getByType(typeId: string): SkelenoteObject[] {
-    return this.getAll().filter((obj) => obj.typeId === typeId);
+  getByType(typeId: string, options?: { includeArchived?: boolean }): SkelenoteObject[] {
+    return this.getAll(options).filter((obj) => obj.typeId === typeId);
   }
 
   /**
@@ -261,10 +272,10 @@ export class ObjectStore {
   }
 
   /**
-   * Get all inboxed objects
+   * Get all inboxed objects (excludes archived items)
    */
   getInboxed(): SkelenoteObject[] {
-    return this.getAll().filter((obj) => obj.inboxed);
+    return this.getAll().filter((obj) => obj.inboxed && !obj.archived);
   }
 
   /**
@@ -365,6 +376,80 @@ export class ObjectStore {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // Archive Operations
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Archive an object (hides from default views)
+   * Also removes from inbox to prevent logical inconsistency
+   */
+  archive(objectId: string): SkelenoteObject {
+    const obj = this.getOrThrow(objectId);
+
+    // Already archived - no-op
+    if (obj.archived) {
+      return obj;
+    }
+
+    // Update the object's archived state and remove from inbox
+    const updated: SkelenoteObject = {
+      ...obj,
+      archived: true,
+      inboxed: false,
+      updatedAt: Date.now(),
+    };
+
+    const objectsMap = getObjectsMap(this.doc);
+    objectsMap.set(objectId, serializeObject(updated));
+
+    return updated;
+  }
+
+  /**
+   * Unarchive an object (restores to default views)
+   */
+  unarchive(objectId: string): SkelenoteObject {
+    const obj = this.getOrThrow(objectId);
+
+    // Already unarchived - no-op
+    if (!obj.archived) {
+      return obj;
+    }
+
+    // Update the object's archived state
+    const updated: SkelenoteObject = {
+      ...obj,
+      archived: false,
+      updatedAt: Date.now(),
+    };
+
+    const objectsMap = getObjectsMap(this.doc);
+    objectsMap.set(objectId, serializeObject(updated));
+
+    return updated;
+  }
+
+  /**
+   * Get all archived objects
+   */
+  getArchived(): SkelenoteObject[] {
+    const objectsMap = getObjectsMap(this.doc);
+    const objects: SkelenoteObject[] = [];
+
+    const entries = objectsMap.toJSON() as Record<string, string>;
+    for (const data of Object.values(entries)) {
+      if (typeof data === 'string') {
+        const obj = deserializeObject(data);
+        if (obj.archived) {
+          objects.push(obj);
+        }
+      }
+    }
+
+    return objects;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // Batch Operations
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -380,7 +465,8 @@ export class ObjectStore {
   deleteMany(ids: string[]): { deleted: number; errors: string[] } {
     const errors: string[] = [];
     const targetIds = new Set(ids);
-    const allObjects = this.getAll();
+    // Include archived objects for cleanup (we want to clean mentions from all objects)
+    const allObjects = this.getAll({ includeArchived: true });
 
     // 1. Clean up @mentions in content (single pass for all targets)
     for (const obj of allObjects) {
@@ -646,6 +732,50 @@ export class ObjectStore {
     }
 
     return { unpinned, errors };
+  }
+
+  /**
+   * Archive multiple objects
+   */
+  archiveMany(ids: string[]): { archived: number; errors: string[] } {
+    let archived = 0;
+    const errors: string[] = [];
+
+    for (const id of ids) {
+      try {
+        const obj = this.getOrThrow(id);
+        if (!obj.archived) {
+          this.archive(id);
+          archived++;
+        }
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { archived, errors };
+  }
+
+  /**
+   * Unarchive multiple objects
+   */
+  unarchiveMany(ids: string[]): { unarchived: number; errors: string[] } {
+    let unarchived = 0;
+    const errors: string[] = [];
+
+    for (const id of ids) {
+      try {
+        const obj = this.getOrThrow(id);
+        if (obj.archived) {
+          this.unarchive(id);
+          unarchived++;
+        }
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { unarchived, errors };
   }
 
   /**

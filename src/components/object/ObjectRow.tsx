@@ -7,10 +7,10 @@ import { useCallback, useMemo } from 'react';
 import { UnstyledButton, Text, Group, ActionIcon, Tooltip } from '@mantine/core';
 import { type SkelenoteObject, BuiltInTypeIds } from '@/lib/types';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
-import { Tag, ConfirmDialog, type TagColor } from '@/components/ui';
+import { Tag, type TagColor } from '@/components/ui';
 import { Icon } from '@/components/ui/Icon';
 import { getIconFromEmoji } from '@/lib/icons';
-import { useConfirmDialog, usePinnedObjects } from '@/hooks';
+import { usePinnedObjects } from '@/hooks';
 import type { IconName } from '@/lib/icons';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
 import classes from './ObjectRow.module.css';
@@ -22,25 +22,23 @@ interface ObjectRowProps {
   onClick: () => void;
   /** Callback to open object in split pane */
   onOpenInSplit: () => void;
-  /** Optional callback when object is deleted */
-  onDelete?: (objectId: string) => void;
+  /** Optional callback when object is archived */
+  onArchive?: (objectId: string) => void;
 }
 
 export function ObjectRow({
   object,
   onClick,
   onOpenInSplit,
-  onDelete,
+  onArchive,
 }: ObjectRowProps) {
   const { store } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
-  const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
   const { isPinned, pin, unpin } = usePinnedObjects();
 
   // Get type info
   const typeDef = typeRegistry.get(object.typeId);
-  const typeName = typeDef?.name ?? object.typeId;
 
   // Get icon
   const getTypeIcon = (): IconName => {
@@ -86,28 +84,6 @@ export function ObjectRow({
     return null;
   }, [object.typeId, object.properties.dueDate, object.properties.startTime]);
 
-  // Handle delete with confirmation
-  const handleDelete = useCallback(async () => {
-    const confirmed = await confirm({
-      title: `Delete ${typeName}?`,
-      message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
-      confirmLabel: 'Delete',
-      variant: 'danger',
-    });
-
-    if (confirmed) {
-      if (onDelete) {
-        onDelete(object.id);
-      } else if (store) {
-        store.delete(object.id);
-      }
-      addToast({
-        type: 'success',
-        message: `"${title}" deleted`,
-      });
-    }
-  }, [confirm, typeName, title, object.id, onDelete, store, addToast]);
-
   // Handle pin/unpin
   const itemIsPinned = isPinned(object.id);
   const handleTogglePin = useCallback(() => {
@@ -129,13 +105,23 @@ export function ObjectRow({
     [onOpenInSplit]
   );
 
-  // Handle delete click (with event stop propagation)
-  const handleDeleteClick = useCallback(
+  // Handle archive
+  const handleArchive = useCallback(() => {
+    if (!onArchive) return;
+    onArchive(object.id);
+    addToast({
+      type: 'success',
+      message: `"${title}" archived`,
+    });
+  }, [onArchive, object.id, title, addToast]);
+
+  // Handle archive click (with event stop propagation)
+  const handleArchiveClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      handleDelete();
+      handleArchive();
     },
-    [handleDelete]
+    [handleArchive]
   );
 
   // Handle pin click (with event stop propagation)
@@ -148,7 +134,6 @@ export function ObjectRow({
   );
 
   return (
-    <>
       <UnstyledButton
         onClick={onClick}
         px="sm"
@@ -208,32 +193,20 @@ export function ObjectRow({
               <Icon name="pin" size={14} />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label="Delete" position="top" withArrow>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              color="brick"
-              onClick={handleDeleteClick}
-              aria-label="Delete"
-            >
-              <Icon name="trash-2" size={14} />
-            </ActionIcon>
-          </Tooltip>
+          {onArchive && (
+            <Tooltip label="Archive" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleArchiveClick}
+                aria-label="Archive"
+              >
+                <Icon name="archive" size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
         </Group>
         </Group>
       </UnstyledButton>
-
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        isOpen={dialogState.isOpen}
-        title={dialogState.title}
-        message={dialogState.message}
-        confirmLabel={dialogState.confirmLabel}
-        cancelLabel={dialogState.cancelLabel}
-        variant={dialogState.variant}
-        onConfirm={handleConfirm}
-        onCancel={handleCancel}
-      />
-    </>
   );
 }

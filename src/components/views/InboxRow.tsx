@@ -7,10 +7,10 @@ import { useCallback, useState, useMemo } from 'react';
 import { UnstyledButton, Checkbox, Text, Box, Group, ActionIcon, Tooltip } from '@mantine/core';
 import { BuiltInTypeIds, type SkelenoteObject } from '@/lib/types';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
-import { Tag, ContextMenu, ConfirmDialog, type TagColor, type ContextMenuItem } from '@/components/ui';
+import { Tag, ContextMenu, type TagColor, type ContextMenuItem } from '@/components/ui';
 import { Icon } from '@/components/ui/Icon';
 import { getIconFromEmoji } from '@/lib/icons';
-import { useContextMenu, useConfirmDialog, usePinnedObjects } from '@/hooks';
+import { useContextMenu, usePinnedObjects } from '@/hooks';
 import type { IconName } from '@/lib/icons';
 import { ObjectSearchModal } from '@/components/object/editors';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
@@ -25,8 +25,8 @@ interface InboxRowProps {
   onOpenInSplit: () => void;
   /** Callback when process button is clicked (optional for non-inbox views) */
   onProcess?: (itemId: string) => void;
-  /** Callback when item is deleted (optional for non-inbox views) */
-  onDelete?: (itemId: string) => void;
+  /** Callback when item is archived */
+  onArchive?: (itemId: string) => void;
   /** Whether this item is selected */
   isSelected?: boolean;
   /** Callback when selection checkbox is toggled */
@@ -40,7 +40,7 @@ export function InboxRow({
   onClick,
   onOpenInSplit,
   onProcess,
-  onDelete,
+  onArchive,
   isSelected = false,
   onSelectionChange,
   isSelectingMode = false,
@@ -48,7 +48,6 @@ export function InboxRow({
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
-  const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
   const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
   const { isPinned, pin, unpin } = usePinnedObjects();
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
@@ -57,7 +56,6 @@ export function InboxRow({
 
   // Get type info
   const typeDef = typeRegistry.get(item.typeId);
-  const typeName = typeDef?.name ?? item.typeId;
 
   // Get icon
   const getTypeIcon = (): IconName => {
@@ -113,26 +111,6 @@ export function InboxRow({
     [onProcess, item.id]
   );
 
-  // Handle delete with confirmation
-  const handleDelete = useCallback(async () => {
-    if (!onDelete) return;
-
-    const confirmed = await confirm({
-      title: `Delete ${typeName}?`,
-      message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
-      confirmLabel: 'Delete',
-      variant: 'danger',
-    });
-
-    if (confirmed) {
-      onDelete(item.id);
-      addToast({
-        type: 'success',
-        message: `"${title}" deleted`,
-      });
-    }
-  }, [confirm, typeName, title, item.id, onDelete, addToast]);
-
   // Handle pin/unpin
   const itemIsPinned = isPinned(item.id);
   const handleTogglePin = useCallback(() => {
@@ -175,13 +153,23 @@ export function InboxRow({
     [onOpenInSplit]
   );
 
-  // Handle delete quick action (with event stop propagation)
-  const handleDeleteClick = useCallback(
+  // Handle archive
+  const handleArchive = useCallback(() => {
+    if (!onArchive) return;
+    onArchive(item.id);
+    addToast({
+      type: 'success',
+      message: `"${title}" archived`,
+    });
+  }, [onArchive, item.id, title, addToast]);
+
+  // Handle archive click (with event stop propagation)
+  const handleArchiveClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      handleDelete();
+      handleArchive();
     },
-    [handleDelete]
+    [handleArchive]
   );
 
   // Handle add tag click (with event stop propagation)
@@ -259,13 +247,16 @@ export function InboxRow({
       icon: 'pin',
       onClick: handleTogglePin,
     },
-    {
-      id: 'delete',
-      label: 'Delete',
-      icon: 'trash-2',
-      variant: 'danger',
-      onClick: handleDelete,
-    },
+    ...(onArchive
+      ? [
+          {
+            id: 'archive',
+            label: 'Archive',
+            icon: 'archive',
+            onClick: handleArchive,
+          } as ContextMenuItem,
+        ]
+      : []),
   ];
 
   return (
@@ -391,17 +382,18 @@ export function InboxRow({
               <Icon name="pin" size={14} />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label="Delete" position="top" withArrow>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              color="brick"
-              onClick={handleDeleteClick}
-              aria-label="Delete"
-            >
-              <Icon name="trash-2" size={14} />
-            </ActionIcon>
-          </Tooltip>
+          {onArchive && (
+            <Tooltip label="Archive" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleArchiveClick}
+                aria-label="Archive"
+              >
+                <Icon name="archive" size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
         </Group>
         </Group>
       </UnstyledButton>
@@ -412,18 +404,6 @@ export function InboxRow({
         position={position}
         isOpen={isOpen}
         onClose={closeContextMenu}
-      />
-
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        isOpen={dialogState.isOpen}
-        title={dialogState.title}
-        message={dialogState.message}
-        confirmLabel={dialogState.confirmLabel}
-        cancelLabel={dialogState.cancelLabel}
-        variant={dialogState.variant}
-        onConfirm={handleConfirm}
-        onCancel={handleCancel}
       />
 
       {/* Tag Picker Modal */}

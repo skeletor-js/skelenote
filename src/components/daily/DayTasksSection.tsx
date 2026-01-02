@@ -17,7 +17,7 @@ interface DayTasksSectionProps {
 
 export function DayTasksSection({ date }: DayTasksSectionProps) {
   const { navigateToObject, openInSplit } = useNavigation();
-  const { tasks, toggleComplete, deleteTask } = useTasks({ date });
+  const { tasks, toggleComplete, archiveTask } = useTasks({ date });
   const [isExpanded, setIsExpanded] = useState(true); // Expanded by default
 
   const taskCount = tasks.length;
@@ -81,7 +81,7 @@ export function DayTasksSection({ date }: DayTasksSectionProps) {
                 onToggleComplete={toggleComplete}
                 onClick={() => handleTaskClick(task.id)}
                 onOpenInSplit={() => handleOpenInSplit(task.id)}
-                onDelete={deleteTask}
+                onArchive={archiveTask}
               />
             ))
           )}

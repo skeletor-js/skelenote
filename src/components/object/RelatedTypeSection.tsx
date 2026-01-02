@@ -76,11 +76,11 @@ export function RelatedTypeSection({
     [store, refreshData]
   );
 
-  // Handle object delete
-  const handleDelete = useCallback(
+  // Handle object archive
+  const handleArchive = useCallback(
     (objectId: string) => {
       if (!store) return;
-      store.delete(objectId);
+      store.archive(objectId);
       refreshData();
     },
     [store, refreshData]
@@ -130,7 +130,7 @@ export function RelatedTypeSection({
                 onToggleComplete={handleToggleComplete}
                 onClick={() => handleObjectClick(obj.id)}
                 onOpenInSplit={() => handleOpenInSplit(obj.id)}
-                onDelete={handleDelete}
+                onArchive={handleArchive}
               />
             ) : (
               <ObjectRow
@@ -138,7 +138,7 @@ export function RelatedTypeSection({
                 object={obj}
                 onClick={() => handleObjectClick(obj.id)}
                 onOpenInSplit={() => handleOpenInSplit(obj.id)}
-                onDelete={handleDelete}
+                onArchive={handleArchive}
               />
             )
           )}
