@@ -71,8 +71,9 @@ export function Layout({
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          // Use paper surface for content area (elevated above canvas sidebar)
-          backgroundColor: 'var(--surface-paper)',
+          // Use Canvas for main content - warm off-white like paper
+          // Pure white (--surface-paper) is reserved for elevated surfaces
+          backgroundColor: 'var(--surface-canvas)',
         }}
       >
         <Box style={{ flex: 1, overflow: 'auto' }}>

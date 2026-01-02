@@ -129,7 +129,8 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: 'var(--surface-canvas)',
+        // Sidebar uses slightly darker warm tone - "bi-fold notebook" cover
+        backgroundColor: 'var(--surface-sidebar)',
       }}
     >
       {/* Content wrapper with right border */}

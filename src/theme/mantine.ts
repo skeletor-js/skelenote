@@ -266,13 +266,13 @@ export const theme = createTheme({
   defaultRadius: 'sm',
 
   // ===== SHADOWS =====
-  // Subtle shadows for minimal aesthetic
+  // Carbon-tinted shadows for warmth (using #18181B = rgb(24, 24, 27))
   shadows: {
-    xs: '0 1px 2px rgba(0, 0, 0, 0.04)',
-    sm: '0 1px 3px rgba(0, 0, 0, 0.06)',
-    md: '0 4px 6px rgba(0, 0, 0, 0.07)',
-    lg: '0 10px 15px rgba(0, 0, 0, 0.08)',
-    xl: '0 20px 25px rgba(0, 0, 0, 0.1)',
+    xs: '0 1px 2px rgba(24, 24, 27, 0.05)',
+    sm: '0 1px 3px rgba(24, 24, 27, 0.08)',
+    md: '0 4px 6px rgba(24, 24, 27, 0.08)',
+    lg: '0 10px 15px rgba(24, 24, 27, 0.10)',
+    xl: '0 20px 25px rgba(24, 24, 27, 0.12)',
   },
 
   // ===== COLORS =====
@@ -304,17 +304,46 @@ export const theme = createTheme({
   focusRing: 'auto',
 
   // ===== SURFACE COLORS =====
-  // Custom semantic colors for surface hierarchy
+  // Semantic colors for the "Cozy Rationalism" surface hierarchy
   // Access via: theme.other.canvas, etc. or CSS var(--mantine-other-canvas)
   other: {
+    // === LIGHT MODE SURFACES ===
+    // Canvas: Main content area - warm off-white like paper
+    canvas: '#FAFAFA',
+    // Sidebar: Slightly darker warm tone - like notebook cover
+    sidebar: '#F4F4F5',
+    // Paper: Pure white for elevated surfaces (modals, cards, popovers)
+    paper: '#FFFFFF',
+    // Vellum: Border color - like paper edges
+    vellum: '#E4E4E7',
+
+    // === DARK MODE SURFACES ===
     // Near-black base layer (app background, sidebar)
-    canvas: '#0A0A0A',
+    canvasDark: '#0A0A0A',
     // Elevated surface (cards, content areas) - same as gray.9
-    paper: '#18181B',
+    paperDark: '#18181B',
     // Border color for dark mode - same as gray.8
-    vellum: '#27272A',
+    vellumDark: '#27272A',
     // Slightly brighter border for better visibility
-    vellumBright: '#3F3F46',
+    vellumBrightDark: '#3F3F46',
+
+    // === INK COLORS ===
+    // Carbon: Primary text (never use pure black)
+    carbon: '#18181B',
+    // Graphite: Secondary text, labels
+    graphite: '#52525B',
+    // Stone: Muted text, placeholders, inactive icons
+    stone: '#A1A1AA',
+
+    // === WARM INTERACTION STATES ===
+    // Hover: Ember at 4% - imperceptible but felt warmth
+    hoverWarm: 'rgba(184, 92, 80, 0.04)',
+    // Hover Strong: Ember at 8% - for darker surfaces
+    hoverWarmStrong: 'rgba(184, 92, 80, 0.08)',
+    // Selection Glow: Ember-0 - pale highlighter effect
+    selectionGlow: '#FDF5F4',
+    // Selection Border: Ember-2 - subtle accent line
+    selectionBorder: '#F2CEC9',
   },
 
   // ===== COMPONENT DEFAULTS =====
