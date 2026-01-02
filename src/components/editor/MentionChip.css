@@ -25,9 +25,9 @@
 
 /* Dark mode overrides */
 [data-mantine-color-scheme="dark"] .mention-chip {
-  /* Dark mode: neutral gray background */
+  /* Dark mode: neutral gray background, standard text color */
   background: var(--mantine-color-gray-8);
-  color: var(--mantine-color-gray-3);
+  color: var(--mantine-color-text);
 }
 
 [data-mantine-color-scheme="dark"] .mention-chip:hover {
