@@ -439,9 +439,9 @@ export const theme = createTheme({
       styles: {
         root: {
           borderRadius: rem(4),
-          // Warm hover and selection states
+          // Warm hover - use stronger variant for visibility on sidebar
           '&:hover': {
-            backgroundColor: 'var(--hover-warm)',
+            backgroundColor: 'var(--hover-warm-strong)',
           },
           // Active state uses selection glow
           '&[data-active="true"]': {

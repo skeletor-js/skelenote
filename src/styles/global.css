@@ -53,17 +53,35 @@
 }
 
 [data-mantine-color-scheme="dark"] {
-  /* Dark mode: explicit surface hierarchy */
+  /* ==========================================================================
+     COZY DESIGN SYSTEM - Dark Mode Surface Hierarchy
+     ========================================================================== */
+
+  /* Surface hierarchy */
   --surface-canvas: #0A0A0A;
   /* Near-black base layer */
+  --surface-sidebar: #0A0A0A;
+  /* Sidebar matches canvas in dark mode */
   --surface-paper: #18181B;
   /* Elevated content (gray.9) */
   --surface-raised: #27272A;
   /* Further elevated (gray.8) */
+
+  /* Borders */
   --border-subtle: #27272A;
   /* Subtle borders (gray.8) */
   --border-default: #3F3F46;
   /* More visible borders (gray.7) */
+
+  /* Warm interaction states for dark mode */
+  --hover-warm: rgba(184, 92, 80, 0.12);
+  /* Ember at 12% for visibility */
+  --hover-warm-strong: rgba(184, 92, 80, 0.18);
+  /* Ember at 18% */
+  --selection-glow: rgba(184, 92, 80, 0.15);
+  /* Subtle ember glow */
+  --selection-border: #6E322B;
+  /* Ember-8 for dark mode */
 
   /* Override Mantine's default border to be more visible */
   --mantine-color-default-border: #3F3F46;
