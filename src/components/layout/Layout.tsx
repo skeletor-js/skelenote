@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect } from 'react';
 import { AppShell, Box, Overlay } from '@mantine/core';
 import { Sidebar } from './Sidebar';
+import { TitleBarSpacer } from './TitleBarSpacer';
 import { useSidebar } from '@/contexts';
 
 // Layout dimensions per style guide
@@ -56,6 +57,9 @@ export function Layout({ children, inboxCount = 0, onCreateFromTemplate }: Layou
           backgroundColor: 'var(--surface-paper)',
         }}
       >
+        {/* Title bar spacer for macOS traffic lights */}
+        <TitleBarSpacer variant="main" />
+
         <Box style={{ flex: 1, overflow: 'auto' }}>
           {children}
         </Box>
