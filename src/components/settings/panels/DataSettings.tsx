@@ -9,6 +9,7 @@ import { useState, useCallback } from 'react';
 import { Stack, Group, Text, Button, Checkbox, Progress, Box } from '@mantine/core';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
 import { exportAllToZip, type BulkExportProgress } from '@/lib/export';
+import { BuiltInTypeIds } from '@/lib/types';
 
 export function DataSettings() {
   const { store } = useObjects();
@@ -26,10 +27,16 @@ export function DataSettings() {
 
     const all = store.getAll({ includeArchived });
 
-    // Group by type
+    // Group by type, but separate daily notes
     const typeCountMap = new Map<string, number>();
+    let dailyNoteCount = 0;
+
     for (const obj of all) {
-      typeCountMap.set(obj.typeId, (typeCountMap.get(obj.typeId) || 0) + 1);
+      if (obj.typeId === BuiltInTypeIds.NOTE && obj.properties.isDailyNote) {
+        dailyNoteCount++;
+      } else {
+        typeCountMap.set(obj.typeId, (typeCountMap.get(obj.typeId) || 0) + 1);
+      }
     }
 
     // Convert to array with type names, sorted by count descending
@@ -41,8 +48,18 @@ export function DataSettings() {
           name: typeDef?.name || typeId,
           count,
         };
-      })
-      .sort((a, b) => b.count - a.count);
+      });
+
+    // Add daily notes if there are any
+    if (dailyNoteCount > 0) {
+      byType.push({
+        typeId: 'daily-note',
+        name: 'Daily Note',
+        count: dailyNoteCount,
+      });
+    }
+
+    byType.sort((a, b) => b.count - a.count);
 
     return {
       total: all.length,
@@ -144,18 +161,35 @@ export function DataSettings() {
           Perfect for backups or migrating to other tools like Obsidian.
         </Text>
 
-        <Group gap="lg" mb="md" wrap="wrap">
-          <Box ta="center">
-            <Text size="xl" fw={700}>{counts.total}</Text>
-            <Text size="xs" c="dimmed">total objects</Text>
-          </Box>
-          {counts.byType.map((typeCount) => (
-            <Box key={typeCount.typeId} ta="center">
-              <Text size="xl" fw={700}>{typeCount.count}</Text>
-              <Text size="xs" c="dimmed">{typeCount.name.toLowerCase()}s</Text>
+        <Box
+          mb="md"
+          style={{
+            border: '1px solid var(--mantine-color-vellum)',
+            borderRadius: 'var(--mantine-radius-sm)',
+            padding: 'var(--mantine-spacing-sm) var(--mantine-spacing-md)',
+            backgroundColor: 'var(--mantine-color-canvas)',
+            width: '100%',
+          }}
+        >
+          <Group gap="md" wrap="wrap">
+            <Box style={{ whiteSpace: 'nowrap' }}>
+              <Text span fw={700} size="sm">{counts.total}</Text>
+              <Text span size="xs" c="dimmed" ml={4}>total objects</Text>
             </Box>
-          ))}
-        </Group>
+
+            {counts.byType.map((typeCount) => (
+              <Group key={typeCount.typeId} gap="md" wrap="nowrap">
+                <Text c="dimmed" size="xs">·</Text>
+                <Box style={{ whiteSpace: 'nowrap' }}>
+                  <Text span fw={600} size="sm">{typeCount.count}</Text>
+                  <Text span size="xs" c="dimmed" ml={4}>
+                    {typeCount.count === 1 ? typeCount.name.toLowerCase() : `${typeCount.name.toLowerCase()}s`}
+                  </Text>
+                </Box>
+              </Group>
+            ))}
+          </Group>
+        </Box>
 
         <Box mb="md">
           <Text size="sm" fw={500} mb="xs">Options</Text>

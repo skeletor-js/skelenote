@@ -54,7 +54,14 @@ export function ObjectsSection({ availableTypes, onCreateObject }: ObjectsSectio
   const typeItems = useMemo(() => {
     return BROWSABLE_TYPES.map((typeId) => {
       const typeDef = typeRegistry.get(typeId);
-      const count = store?.getByType(typeId).length ?? 0;
+      let objects = store?.getByType(typeId) ?? [];
+
+      // Filter out daily notes from the 'note' count
+      if (typeId === BuiltInTypeIds.NOTE) {
+        objects = objects.filter(obj => !obj.properties.isDailyNote);
+      }
+
+      const count = objects.length;
       return {
         id: typeId,
         name: typeDef?.name ?? typeId,

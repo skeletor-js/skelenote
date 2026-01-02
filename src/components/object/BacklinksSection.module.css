@@ -3,39 +3,18 @@
  * Backlinks section with smart defaults and inline layout
  */
 
-.section {
-  margin-top: var(--mantine-spacing-sm);
-}
 
 .sectionHeader {
   display: flex;
   align-items: center;
   gap: var(--mantine-spacing-xs);
-  padding: var(--mantine-spacing-xs) 0;
+  padding: 0;
   cursor: pointer;
   user-select: none;
   border-radius: var(--mantine-radius-sm);
-  transition: color 150ms ease;
 }
 
-.sectionHeader:hover {
-  color: var(--mantine-color-gray-7);
-}
 
-.chevron {
-  color: var(--mantine-color-dimmed);
-  transition: transform 150ms ease;
-  flex-shrink: 0;
-}
-
-.chevron[data-expanded="true"] {
-  transform: rotate(90deg);
-}
-
-.sectionTitle {
-  color: var(--mantine-color-dimmed);
-  font-size: var(--mantine-font-size-sm);
-}
 
 .backlinksList {
   padding-left: var(--mantine-spacing-md);
@@ -91,9 +70,6 @@
 }
 
 /* Dark mode */
-:global([data-mantine-color-scheme="dark"]) .sectionHeader:hover {
-  color: var(--mantine-color-gray-3);
-}
 
 :global([data-mantine-color-scheme="dark"]) .backlinkRow:hover {
   background-color: var(--mantine-color-dark-6);

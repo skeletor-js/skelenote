@@ -70,7 +70,7 @@ export function SettingsView() {
       {/* Content Panel */}
       <Box flex={1} h="100%" style={{ overflow: 'hidden' }}>
         <ScrollArea h="100%" p="lg">
-          <Box maw={600}>
+          <Box>
             {renderActivePanel()}
           </Box>
         </ScrollArea>
