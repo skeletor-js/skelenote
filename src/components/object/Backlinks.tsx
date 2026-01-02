@@ -72,9 +72,10 @@ export function Backlinks({ objectId }: BacklinksProps) {
   const expanded = isExpanded ?? false;
 
   return (
-    <Box component="section" className={styles.section}>
+    <Box component="section">
       <Group
         gap="xs"
+        py="xs"
         className={styles.sectionHeader}
         onClick={() => setIsExpanded(!expanded)}
         role="button"
@@ -90,10 +91,12 @@ export function Backlinks({ objectId }: BacklinksProps) {
         <Icon
           name="chevron-right"
           size={14}
-          className={styles.chevron}
-          data-expanded={expanded}
+          style={{
+            transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
+            transition: 'transform 150ms ease',
+          }}
         />
-        <Text className={styles.sectionTitle}>
+        <Text size="sm" c="dimmed">
           Backlinks{backlinkCount > 0 && ` (${backlinkCount})`}
         </Text>
       </Group>

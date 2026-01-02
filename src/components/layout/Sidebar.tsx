@@ -10,6 +10,7 @@ import { type TagColor } from '@/components/ui';
 import { useSidebar, useNavigation, useObjects, useTypeRegistry, type ViewType } from '@/contexts';
 import { useLinkToDaily } from '@/hooks';
 import { BuiltInTypeIds, type PropertyValue, type SavedView } from '@/lib/types';
+import styles from './SidebarItem.module.css';
 
 // Default properties for each type when creating
 const defaultPropertiesForType: Record<string, Record<string, PropertyValue>> = {
@@ -129,7 +130,8 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: 'var(--surface-canvas)',
+        // Sidebar uses slightly darker warm tone - "bi-fold notebook" cover
+        backgroundColor: 'var(--surface-sidebar)',
       }}
     >
       {/* Content wrapper with right border */}
@@ -342,6 +344,7 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
                         navigateToObject(tag.id);
                       }}
                       variant="subtle"
+                      className={styles.navLink}
                     />
                   );
                 })

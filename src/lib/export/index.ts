@@ -251,7 +251,8 @@ export async function exportAllToZip(
     // Determine folder path
     let filePath = filename;
     if (mergedOptions.organizeByType) {
-      const folderName = typeDef.name.toLowerCase() + 's';
+      const isDaily = obj.typeId === 'note' && obj.properties.isDailyNote;
+      const folderName = isDaily ? 'daily-notes' : (typeDef.name.toLowerCase() + 's');
       filePath = `${folderName}/${filename}`;
     }
 

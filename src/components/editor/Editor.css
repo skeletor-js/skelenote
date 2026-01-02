@@ -12,10 +12,11 @@
   --bn-colors-menu-text: var(--mantine-color-text);
   --bn-colors-tooltip-background: var(--mantine-color-gray-0);
   --bn-colors-tooltip-text: var(--mantine-color-text);
-  --bn-colors-hovered-background: var(--mantine-color-gray-0);
+  /* Warm hover and selection states */
+  --bn-colors-hovered-background: var(--hover-warm);
   --bn-colors-hovered-text: var(--mantine-color-text);
-  --bn-colors-selected-background: var(--mantine-color-slate-0);
-  --bn-colors-selected-text: var(--mantine-color-text);
+  --bn-colors-selected-background: var(--selection-glow);
+  --bn-colors-selected-text: var(--mantine-color-ember-6);
   --bn-colors-disabled-background: var(--mantine-color-gray-1);
   --bn-colors-disabled-text: var(--mantine-color-dimmed);
   --bn-colors-shadow: rgba(0, 0, 0, 0.2);
@@ -128,9 +129,10 @@
   cursor: pointer;
 }
 
+/* Warm hover for suggestion menu items */
 .bn-mantine .bn-suggestion-menu-item[aria-selected="true"],
 .bn-mantine .bn-suggestion-menu-item:hover {
-  background: var(--mantine-color-gray-1) !important;
+  background: var(--hover-warm-strong) !important;
 }
 
 /* Icon container on the left */
@@ -211,15 +213,17 @@
   color: var(--mantine-color-text) !important;
 }
 
+/* Warm hover for toolbar buttons */
 .bn-mantine .bn-toolbar .mantine-Button-root:hover,
 .bn-mantine .bn-toolbar .mantine-ActionIcon-root:hover {
-  background: var(--mantine-color-gray-1) !important;
+  background: var(--hover-warm) !important;
 }
 
+/* Warm selection for toolbar buttons */
 .bn-mantine .bn-toolbar .mantine-Button-root[data-selected],
 .bn-mantine .bn-toolbar .mantine-ActionIcon-root[data-selected] {
-  background: var(--mantine-color-slate-0) !important;
-  color: var(--mantine-color-slate-7) !important;
+  background: var(--selection-glow) !important;
+  color: var(--mantine-color-ember-6) !important;
 }
 
 /* Disabled buttons (nest/unnest for non-list blocks) */

@@ -42,22 +42,37 @@
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
 
-  /* ===== LIGHT MODE COLORS ===== */
-  --bg-base: #ffffff;
-  --bg-raised: #fafafa;
-  --bg-sunken: #f5f5f5;
-  --border-subtle: #e5e5e5;
-  --border-strong: #d4d4d4;
-  --text-primary: #0a0a0a;
-  --text-secondary: #525252;
-  --text-muted: #a3a3a3;
-  --surface-hover: #f5f5f5;
-  --surface-active: #e5e5e5;
+  /* ===== LIGHT MODE COLORS (Cozy Palette) ===== */
+  /* Surface colors - warm paper-like feel */
+  --bg-base: #FAFAFA;
+  /* Canvas - main background */
+  --bg-raised: #F4F4F5;
+  /* Sidebar - slightly darker warm tone */
+  --bg-sunken: #F4F4F5;
+  /* Sunken areas */
 
-  /* Light mode shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  /* Border colors - Vellum (#E4E4E7) for paper-edge aesthetic */
+  --border-subtle: #E4E4E7;
+  --border-strong: #D4D4D8;
+
+  /* Text colors - warm ink hierarchy (never use pure black) */
+  --text-primary: #18181B;
+  /* Carbon */
+  --text-secondary: #52525B;
+  /* Graphite */
+  --text-muted: #A1A1AA;
+  /* Stone */
+
+  /* Surface interaction states */
+  --surface-hover: rgba(184, 92, 80, 0.04);
+  /* Ember 4% */
+  --surface-active: rgba(184, 92, 80, 0.08);
+  /* Ember 8% */
+
+  /* Light mode shadows - Carbon-tinted */
+  --shadow-sm: 0 1px 2px rgba(24, 24, 27, 0.05);
+  --shadow-md: 0 4px 6px rgba(24, 24, 27, 0.08);
+  --shadow-lg: 0 10px 15px rgba(24, 24, 27, 0.10);
 
   /* ===== TAG COLORS (Light Mode) ===== */
   --tag-gray: #737373;
@@ -87,22 +102,32 @@
    ============================================================================= */
 [data-theme='dark'] {
   /* Background colors - aligned with style guide zinc values */
-  --bg-base: #0A0A0A;      /* Canvas */
-  --bg-raised: #18181B;    /* Paper (zinc-900) */
-  --bg-sunken: #09090B;    /* Below canvas */
+  --bg-base: #0A0A0A;
+  /* Canvas */
+  --bg-raised: #18181B;
+  /* Paper (zinc-900) */
+  --bg-sunken: #09090B;
+  /* Below canvas */
 
   /* Border colors - more visible in dark mode */
-  --border-subtle: #27272A;  /* Vellum (zinc-800) */
-  --border-strong: #3F3F46;  /* zinc-700 for better visibility */
+  --border-subtle: #27272A;
+  /* Vellum (zinc-800) */
+  --border-strong: #3F3F46;
+  /* zinc-700 for better visibility */
 
   /* Text colors - zinc-based for consistency */
-  --text-primary: #FAFAFA;   /* zinc-50 */
-  --text-secondary: #A1A1AA; /* zinc-400 / Stone */
-  --text-muted: #52525B;     /* zinc-600 / Graphite */
+  --text-primary: #FAFAFA;
+  /* zinc-50 */
+  --text-secondary: #A1A1AA;
+  /* zinc-400 / Stone */
+  --text-muted: #52525B;
+  /* zinc-600 / Graphite */
 
-  /* Surface states */
-  --surface-hover: #27272A;  /* zinc-800 */
-  --surface-active: #3F3F46; /* zinc-700 */
+  /* Surface states - warm ember tones for cozy feel */
+  --surface-hover: rgba(184, 92, 80, 0.15);
+  /* Ember at 15% */
+  --surface-active: #3D2422;
+  /* Dark ember glow */
 
   /* Dark mode shadows - increased opacity */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);

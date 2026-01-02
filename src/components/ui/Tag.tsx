@@ -1,4 +1,4 @@
-import { Badge, Box, MantineColor, useMantineTheme } from '@mantine/core';
+import { Badge, Box, MantineColor, useMantineTheme, useMantineColorScheme } from '@mantine/core';
 
 /**
  * Tag colors using our warm palette from the style guide
@@ -70,6 +70,8 @@ export function Tag({ name, color = 'gray', size = 'md', onClick }: TagProps) {
   const isClickable = !!onClick;
   const mantineColor = COLOR_MAP[color] ?? 'gray';
   const badgeSize = size === 'sm' ? 'xs' : 'sm';
+  const { colorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === 'dark';
 
   return (
     <Badge
@@ -84,19 +86,15 @@ export function Tag({ name, color = 'gray', size = 'md', onClick }: TagProps) {
           paddingLeft: 6,
           paddingRight: 8,
           '&:hover': isClickable ? {
-            backgroundColor: 'var(--mantine-color-gray-1)',
-          } : undefined,
-          // Dark mode overrides
-          '[data-mantine-color-scheme="dark"] &:hover': isClickable ? {
-            backgroundColor: 'var(--mantine-color-dark-5)',
+            backgroundColor: 'var(--hover-warm)',
           } : undefined,
         },
         label: {
-          color: 'var(--mantine-color-gray-7)',
-          // Dark mode text color
-          '[data-mantine-color-scheme="dark"] &': {
-            color: 'var(--mantine-color-gray-4)',
-          },
+          // Light mode: dark gray text
+          // Dark mode: light gray text for visibility
+          color: isDark
+            ? 'var(--mantine-color-gray-3)'
+            : 'var(--mantine-color-gray-7)',
         },
       }}
       onClick={onClick}
