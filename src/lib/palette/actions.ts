@@ -36,36 +36,40 @@ export const KEYBOARD_SHORTCUTS_ACTION_ID = 'action-keyboard-shortcuts';
 export const CREATE_FROM_TEMPLATE_ACTION_ID = 'action-create-from-template';
 export const MANAGE_TEMPLATES_ACTION_ID = 'action-manage-templates';
 export const NEW_TEMPLATE_ACTION_ID = 'action-new-template';
+export const TOGGLE_THEME_ACTION_ID = 'action-toggle-theme';
 
 /**
  * Navigation actions for jumping to views
  */
 export const navigationActions: PaletteAction[] = [
-  { id: SEARCH_ACTION_ID, label: 'Search', icon: '🔎', category: 'action' },
-  { id: QUICK_CAPTURE_ACTION_ID, label: 'Quick Capture', icon: '⚡', category: 'action' },
-  { id: CREATE_FROM_TEMPLATE_ACTION_ID, label: 'Create from Template', icon: '📋', category: 'action' },
-  { id: NEW_TEMPLATE_ACTION_ID, label: 'New Template', icon: '✨', category: 'action' },
-  { id: OPEN_IN_SPLIT_ACTION_ID, label: 'Open in Split View', icon: '⊞', category: 'action' },
-  { id: DUPLICATE_OBJECT_ACTION_ID, label: 'Duplicate Object', icon: '📄', category: 'action' },
-  { id: KEYBOARD_SHORTCUTS_ACTION_ID, label: 'Keyboard Shortcuts', icon: '⌨️', category: 'action' },
-  { id: 'nav-inbox', label: 'Go to Inbox', icon: '📥', category: 'navigation', view: 'inbox' },
-  { id: 'nav-today', label: 'Go to Today', icon: '📅', category: 'navigation', view: 'today' },
-  { id: 'nav-daily-notes', label: 'Go to Daily Notes', icon: '📆', category: 'navigation', view: 'daily-notes' },
-  { id: 'nav-this-week', label: 'Go to This Week', icon: '📋', category: 'navigation', view: 'this-week' },
-  { id: 'nav-overdue', label: 'Go to Overdue', icon: '⚠️', category: 'navigation', view: 'overdue' },
-  { id: 'nav-blocked', label: 'Go to Blocked', icon: '🚫', category: 'navigation', view: 'blocked' },
-  { id: 'nav-eventually', label: 'Go to Eventually', icon: '📌', category: 'navigation', view: 'eventually' },
-  { id: 'nav-completed', label: 'Go to Completed', icon: '✅', category: 'navigation', view: 'completed' },
-  { id: 'nav-time-machine', label: 'Go to Time Machine', icon: '🕰️', category: 'navigation', view: 'time-machine' },
+  { id: SEARCH_ACTION_ID, label: 'Search', icon: 'search', category: 'action' },
+  { id: QUICK_CAPTURE_ACTION_ID, label: 'Quick Capture', icon: 'zap', category: 'action' },
+  { id: CREATE_FROM_TEMPLATE_ACTION_ID, label: 'Create from Template', icon: 'clipboard', category: 'action' },
+  { id: NEW_TEMPLATE_ACTION_ID, label: 'New Template', icon: 'sparkles', category: 'action' },
+  { id: OPEN_IN_SPLIT_ACTION_ID, label: 'Open in Split View', icon: 'columns-2', category: 'action' },
+  { id: DUPLICATE_OBJECT_ACTION_ID, label: 'Duplicate Object', icon: 'copy', category: 'action' },
+  { id: KEYBOARD_SHORTCUTS_ACTION_ID, label: 'Keyboard Shortcuts', icon: 'keyboard', category: 'action' },
+  { id: 'nav-inbox', label: 'Go to Inbox', icon: 'inbox', category: 'navigation', view: 'inbox' },
+  { id: 'nav-today', label: 'Go to Today', icon: 'calendar', category: 'navigation', view: 'today' },
+  { id: 'nav-daily-notes', label: 'Go to Daily Notes', icon: 'calendar-days', category: 'navigation', view: 'daily-notes' },
+  { id: 'nav-this-week', label: 'Go to This Week', icon: 'list', category: 'navigation', view: 'this-week' },
+  { id: 'nav-overdue', label: 'Go to Overdue', icon: 'alert-triangle', category: 'navigation', view: 'overdue' },
+  { id: 'nav-blocked', label: 'Go to Blocked', icon: 'ban', category: 'navigation', view: 'blocked' },
+  { id: 'nav-eventually', label: 'Go to Eventually', icon: 'pin', category: 'navigation', view: 'eventually' },
+  { id: 'nav-completed', label: 'Go to Completed', icon: 'check-circle', category: 'navigation', view: 'completed' },
+  { id: 'nav-time-machine', label: 'Go to Time Machine', icon: 'history', category: 'navigation', view: 'time-machine' },
+  { id: 'nav-archive', label: 'Go to Archive', icon: 'archive', category: 'navigation', view: 'archive' },
+  { id: 'nav-settings', label: 'Go to Settings', icon: 'settings', category: 'navigation', view: 'settings' },
+  { id: TOGGLE_THEME_ACTION_ID, label: 'Toggle Theme', icon: 'moon', category: 'action' },
 ];
 
 /**
  * Create actions for creating new objects
  */
 export const createActions: PaletteAction[] = [
-  { id: 'create-task', label: 'Create new Task', icon: '✓', category: 'create', typeId: BuiltInTypeIds.TASK },
-  { id: 'create-note', label: 'Create new Note', icon: '📝', category: 'create', typeId: BuiltInTypeIds.NOTE },
-  { id: 'create-link', label: 'Create new Link', icon: '🔗', category: 'create', typeId: BuiltInTypeIds.LINK },
+  { id: 'create-task', label: 'Create new Task', icon: 'circle-check', category: 'create', typeId: BuiltInTypeIds.TASK },
+  { id: 'create-note', label: 'Create new Note', icon: 'file-text', category: 'create', typeId: BuiltInTypeIds.NOTE },
+  { id: 'create-link', label: 'Create new Link', icon: 'link', category: 'create', typeId: BuiltInTypeIds.LINK },
 ];
 
 /**
