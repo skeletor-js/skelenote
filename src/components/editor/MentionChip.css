@@ -25,13 +25,13 @@
 
 /* Dark mode overrides */
 [data-mantine-color-scheme="dark"] .mention-chip {
-  /* Dark mode: subtle ember glow - not white */
-  background: var(--selection-glow);
+  /* Dark mode: neutral gray background */
+  background: var(--mantine-color-gray-8);
   color: var(--mantine-color-gray-3);
 }
 
 [data-mantine-color-scheme="dark"] .mention-chip:hover {
-  background: var(--hover-warm-strong);
+  background: var(--mantine-color-gray-7);
 }
 
 /* Different colors for different object types */
