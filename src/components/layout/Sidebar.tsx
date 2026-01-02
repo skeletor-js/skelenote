@@ -10,6 +10,7 @@ import { type TagColor } from '@/components/ui';
 import { useSidebar, useNavigation, useObjects, useTypeRegistry, type ViewType } from '@/contexts';
 import { useLinkToDaily } from '@/hooks';
 import { BuiltInTypeIds, type PropertyValue, type SavedView } from '@/lib/types';
+import styles from './SidebarItem.module.css';
 
 // Default properties for each type when creating
 const defaultPropertiesForType: Record<string, Record<string, PropertyValue>> = {
@@ -343,13 +344,7 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
                         navigateToObject(tag.id);
                       }}
                       variant="subtle"
-                      styles={{
-                        root: {
-                          '&:hover': {
-                            backgroundColor: 'var(--selection-glow)',
-                          },
-                        },
-                      }}
+                      className={styles.navLink}
                     />
                   );
                 })

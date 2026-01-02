@@ -1,6 +1,7 @@
 import { NavLink, Badge } from '@mantine/core';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { useSidebar } from '@/contexts';
+import styles from './SidebarItem.module.css';
 
 interface SidebarItemProps {
   id: string;
@@ -52,14 +53,7 @@ export function SidebarItem({
       active={isSelected}
       onClick={handleClick}
       variant="subtle"
-      styles={{
-        root: {
-          // Override Mantine's subtle variant hover with warm glow
-          '&:hover': {
-            backgroundColor: 'var(--selection-glow)',
-          },
-        },
-      }}
+      className={styles.navLink}
       style={indent ? { paddingLeft: 32 } : undefined}
     />
   );
