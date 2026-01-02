@@ -20,6 +20,8 @@ export interface SkelenoteObject {
   inboxed: boolean;
   /** Whether this object is pinned to the sidebar */
   pinned: boolean;
+  /** Whether this object is archived (hidden from default views) */
+  archived: boolean;
   /** Unix timestamp (milliseconds) when created */
   createdAt: number;
   /** Unix timestamp (milliseconds) when last updated */
@@ -72,6 +74,7 @@ export function createObject(input: CreateObjectInput): SkelenoteObject {
     hasContent: input.withContent ?? false,
     inboxed: input.inboxed ?? true,
     pinned: false,
+    archived: false,
     createdAt: now,
     updatedAt: now,
   };
@@ -93,6 +96,7 @@ export function isSkelenoteObject(value: unknown): value is SkelenoteObject {
     typeof obj.hasContent === 'boolean' &&
     typeof obj.inboxed === 'boolean' &&
     (typeof obj.pinned === 'boolean' || obj.pinned === undefined) &&
+    (typeof obj.archived === 'boolean' || obj.archived === undefined) &&
     typeof obj.createdAt === 'number' &&
     typeof obj.updatedAt === 'number'
   );

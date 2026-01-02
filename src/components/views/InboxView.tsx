@@ -52,7 +52,7 @@ function groupItemsByDate(items: SkelenoteObject[]): Record<DateGroup, Skelenote
 }
 
 export function InboxView() {
-  const { items, isLoading, count, processItem, deleteItem } = useInbox();
+  const { items, isLoading, count, processItem, archiveItem } = useInbox();
   const { navigateToObject, openInSplit } = useNavigation();
   const { refreshData } = useObjects();
 
@@ -145,7 +145,7 @@ export function InboxView() {
                       onClick={() => navigateToObject(item.id)}
                       onOpenInSplit={() => openInSplit(item.id)}
                       onProcess={processItem}
-                      onDelete={deleteItem}
+                      onArchive={archiveItem}
                       isSelected={selection.isSelected(item.id)}
                       onSelectionChange={handleSelectionChange}
                       isSelectingMode={selection.hasSelection}

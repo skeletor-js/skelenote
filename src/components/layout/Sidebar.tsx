@@ -170,6 +170,16 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
             <Icon name="search" size={20} />
           </ActionIcon>
           <ActionIcon
+            variant={selectedItem === 'archive' ? 'light' : 'subtle'}
+            color={selectedItem === 'archive' ? 'ember' : 'gray'}
+            size="lg"
+            onClick={() => handleNavigate('archive')}
+            aria-label="Archive"
+            title="Archive"
+          >
+            <Icon name="archive" size={20} />
+          </ActionIcon>
+          <ActionIcon
             variant={selectedItem === 'time-machine' ? 'light' : 'subtle'}
             color={selectedItem === 'time-machine' ? 'ember' : 'gray'}
             size="lg"
@@ -234,6 +244,12 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
             icon="search"
             label="Search"
             onClick={() => handleNavigate('search')}
+          />
+          <SidebarItem
+            id="archive"
+            icon="archive"
+            label="Archive"
+            onClick={() => handleNavigate('archive')}
           />
           <SidebarItem
             id="time-machine"

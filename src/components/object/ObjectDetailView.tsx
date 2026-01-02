@@ -122,6 +122,31 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
     }
   }, [paneType, isVersionComparison, handleViewHistory, handleExport, registerShortcut, unregisterShortcut]);
 
+  // Handler to archive object
+  const handleArchive = useCallback(() => {
+    if (!store) return;
+
+    const object = store.get(objectId);
+    if (!object) return;
+
+    const titleProp = object.properties.title ?? object.properties.name ?? 'Untitled';
+    const title = String(titleProp);
+
+    store.archive(objectId);
+    refreshData();
+    addToast({
+      type: 'success',
+      message: `"${title}" archived`,
+    });
+
+    // Navigate based on pane type
+    if (paneType === 'secondary') {
+      closeSplit();
+    } else if (canGoBack) {
+      navigateBack();
+    }
+  }, [store, objectId, refreshData, addToast, paneType, closeSplit, canGoBack, navigateBack]);
+
   const handleDelete = useCallback(async () => {
     if (!store) return;
 
@@ -280,6 +305,9 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
         onTitleChange={handleTitleChange}
         onDelete={handleDelete}
         canDelete={!isDailyNote}
+        onArchive={handleArchive}
+        canArchive={!isDailyNote}
+        isArchived={object.archived}
         titleEditable={!isDailyNote}
         paneType={paneType}
         onCloseSplit={paneType === 'secondary' ? closeSplit : undefined}

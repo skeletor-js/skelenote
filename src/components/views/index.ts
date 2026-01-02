@@ -7,6 +7,8 @@ export { TaskList } from './TaskList';
 export { TaskView } from './TaskView';
 export { InboxRow } from './InboxRow';
 export { InboxView } from './InboxView';
+export { ArchiveRow } from './ArchiveRow';
+export { ArchiveView } from './ArchiveView';
 export { CalendarDay } from './CalendarDay';
 export { Calendar } from './Calendar';
 export { DailyNotesView } from './DailyNotesView';

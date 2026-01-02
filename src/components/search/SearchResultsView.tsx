@@ -16,7 +16,7 @@ import { SearchResultCard } from './SearchResultCard';
 export function SearchResultsView() {
   const { searchQuery, navigateToObject, openInSplit } = useNavigation();
   const semanticContext = useSemanticSearchSafe();
-  const { refreshData } = useObjects();
+  const { store, refreshData } = useObjects();
 
   // Search state with initial query from navigation
   const {
@@ -101,6 +101,15 @@ export function SearchResultsView() {
       openInSplit(objectId);
     },
     [openInSplit]
+  );
+
+  // Handle archive
+  const handleArchive = useCallback(
+    (objectId: string) => {
+      store?.archive(objectId);
+      refreshData();
+    },
+    [store, refreshData]
   );
 
   // Keyboard navigation
@@ -222,6 +231,7 @@ export function SearchResultsView() {
                     onClick={() => handleResultClick(result.item.id)}
                     onOpenInSplit={() => handleOpenInSplit(result.item.id)}
                     onMouseEnter={() => setSelectedIndex(index)}
+                    onArchive={handleArchive}
                     onSelectionChange={handleSelectionChange}
                     isSelectingMode={selection.hasSelection}
                   />

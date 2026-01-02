@@ -36,6 +36,8 @@ export type IconName =
   | 'sparkles'        // AI/Similar
   | 'pin'             // Pin
   | 'pin-off'         // Unpin
+  | 'archive'         // Archive
+  | 'archive-restore' // Unarchive/Restore
   | 'trash-2'         // Delete
   | 'keyboard'        // Keyboard shortcuts
   | 'columns-2'       // Split view
@@ -179,7 +181,7 @@ const VALID_ICON_NAMES: Set<string> = new Set([
   // Theme
   'moon', 'sun',
   // Actions
-  'zap', 'sparkles', 'pin', 'pin-off', 'trash-2', 'keyboard', 'columns-2', 'plus', 'x', 'check', 'edit-2', 'arrow-right', 'sliders-horizontal', 'flag', 'shapes',
+  'zap', 'sparkles', 'pin', 'pin-off', 'archive', 'archive-restore', 'trash-2', 'keyboard', 'columns-2', 'plus', 'x', 'check', 'edit-2', 'arrow-right', 'sliders-horizontal', 'flag', 'shapes',
   // Arrows & Chevrons
   'arrow-left', 'chevron-left', 'chevron-right', 'chevrons-left', 'chevrons-right', 'chevron-up', 'chevron-down',
   // Status indicators

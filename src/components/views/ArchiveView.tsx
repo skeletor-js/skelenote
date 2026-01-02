@@ -1,22 +1,23 @@
 /**
- * TypeBrowseView - Browse all objects of a specific type
- * Displays objects grouped by date with selection and bulk actions
+ * ArchiveView - main container for archive view
+ * Displays all objects with archived: true
+ * Features: date grouping, hover-reveal actions, bulk selection
  */
 
 import { useMemo, useCallback, useEffect, Fragment } from 'react';
 import { Stack, Text, Box, Loader, Center } from '@mantine/core';
-import { useSelection } from '@/hooks';
-import { useNavigation, useObjects, useTypeRegistry } from '@/contexts';
+import { useArchive, useSelection } from '@/hooks';
+import { useNavigation, useObjects } from '@/contexts';
 import { EmptyState, ViewHeader } from '@/components/ui';
 import { BulkActions } from '@/components/actions';
-import { InboxRow } from './InboxRow';
+import { ArchiveRow } from './ArchiveRow';
 import type { SkelenoteObject } from '@/lib/types';
 import classes from './InboxRow.module.css';
 
 /** Date group categories */
 type DateGroup = 'Today' | 'Yesterday' | 'This Week' | 'Older';
 
-/** Group items by creation date */
+/** Group items by update date (when they were archived) */
 function groupItemsByDate(items: SkelenoteObject[]): Record<DateGroup, SkelenoteObject[]> {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -33,8 +34,8 @@ function groupItemsByDate(items: SkelenoteObject[]): Record<DateGroup, Skelenote
   };
 
   for (const item of items) {
-    const createdAt = new Date(item.createdAt);
-    const itemDate = new Date(createdAt.getFullYear(), createdAt.getMonth(), createdAt.getDate());
+    const updatedAt = new Date(item.updatedAt);
+    const itemDate = new Date(updatedAt.getFullYear(), updatedAt.getMonth(), updatedAt.getDate());
 
     if (itemDate >= today) {
       groups['Today'].push(item);
@@ -50,25 +51,10 @@ function groupItemsByDate(items: SkelenoteObject[]): Record<DateGroup, Skelenote
   return groups;
 }
 
-interface TypeBrowseViewProps {
-  typeId: string;
-}
-
-export function TypeBrowseView({ typeId }: TypeBrowseViewProps) {
+export function ArchiveView() {
+  const { items, isLoading, count, unarchiveItem, deleteItem } = useArchive();
   const { navigateToObject, openInSplit } = useNavigation();
-  const { store, isLoading, refreshData } = useObjects();
-  const typeRegistry = useTypeRegistry();
-
-  // Get type definition for display
-  const typeDef = typeRegistry.get(typeId);
-  const typeName = typeDef?.name ?? 'Objects';
-  const typeIcon = typeDef?.icon ?? 'file';
-
-  // Get all objects of this type, sorted by creation date (newest first)
-  const items = useMemo(() => {
-    if (!store) return [];
-    return store.getByType(typeId).sort((a, b) => b.createdAt - a.createdAt);
-  }, [store, typeId]);
+  const { refreshData } = useObjects();
 
   // Get item IDs for selection hook
   const itemIds = useMemo(() => items.map((item) => item.id), [items]);
@@ -95,22 +81,14 @@ export function TypeBrowseView({ typeId }: TypeBrowseViewProps) {
     [selection]
   );
 
-  // Handle archive
-  const handleArchive = useCallback(
-    (id: string) => {
-      store?.archive(id);
-      refreshData();
-    },
-    [store, refreshData]
-  );
-
   // Keyboard shortcuts for selection
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Cmd/Ctrl+A to select all
       if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
+        // Only handle if focus is in the archive view area
         const activeElement = document.activeElement;
-        if (activeElement?.closest('[data-type-browse-view]')) {
+        if (activeElement?.closest('[data-archive-view]')) {
           e.preventDefault();
           selection.selectAll();
         }
@@ -137,18 +115,11 @@ export function TypeBrowseView({ typeId }: TypeBrowseViewProps) {
   }
 
   return (
-    <Stack gap={0} h="100%" style={{ overflow: 'hidden' }} data-type-browse-view>
-      <ViewHeader
-        title={typeName}
-        icon={typeIcon}
-        count={items.length > 0 ? items.length : undefined}
-      />
+    <Stack gap={0} h="100%" style={{ overflow: 'hidden' }} data-archive-view>
+      <ViewHeader title="Archive" count={count > 0 ? count : undefined} />
       <Box p="md" style={{ flex: 1, overflow: 'auto' }}>
         {items.length === 0 ? (
-          <EmptyState
-            message={`No ${typeName.toLowerCase()}s yet`}
-            size="large"
-          />
+          <EmptyState message="No archived items" size="large" />
         ) : (
           <Stack gap={0}>
             {nonEmptyGroups.map((group) => (
@@ -168,12 +139,13 @@ export function TypeBrowseView({ typeId }: TypeBrowseViewProps) {
                 {/* Group items */}
                 <Stack gap={2} mb="md">
                   {groupedItems[group].map((item) => (
-                    <InboxRow
+                    <ArchiveRow
                       key={item.id}
                       item={item}
                       onClick={() => navigateToObject(item.id)}
                       onOpenInSplit={() => openInSplit(item.id)}
-                      onArchive={handleArchive}
+                      onUnarchive={unarchiveItem}
+                      onDelete={deleteItem}
                       isSelected={selection.isSelected(item.id)}
                       onSelectionChange={handleSelectionChange}
                       isSelectingMode={selection.hasSelection}
@@ -191,7 +163,7 @@ export function TypeBrowseView({ typeId }: TypeBrowseViewProps) {
         selectedIds={selection.selectedArray}
         onClearSelection={selection.clear}
         onActionComplete={refreshData}
-        viewType="inbox"
+        viewType="archive"
       />
     </Stack>
   );

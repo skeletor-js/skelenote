@@ -40,6 +40,12 @@ interface ObjectHeaderProps {
   onPin?: () => void;
   /** Whether the object is pinned */
   isPinned?: boolean;
+  /** Callback for archiving the object */
+  onArchive?: () => void;
+  /** Whether archive action should be shown */
+  canArchive?: boolean;
+  /** Whether the object is archived (determines Archive vs Delete Permanently) */
+  isArchived?: boolean;
 }
 
 export function ObjectHeader({
@@ -59,6 +65,9 @@ export function ObjectHeader({
   onBackToTimeMachine,
   onPin,
   isPinned = false,
+  onArchive,
+  canArchive = true,
+  isArchived = false,
 }: ObjectHeaderProps) {
   const { openInSplit, splitPane } = useNavigation();
   // Determine which property holds the title (varies by type)
@@ -229,14 +238,29 @@ export function ObjectHeader({
             </Tooltip>
           )}
 
-          {/* Delete action */}
-          {canDelete && onDelete && (
-            <Tooltip label="Delete" withArrow>
+          {/* Archive action - only for non-archived items */}
+          {canArchive && onArchive && !isArchived && (
+            <Tooltip label="Archive" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={onArchive}
+                aria-label="Archive"
+                className={styles.quickAction}
+              >
+                <Icon name="archive" size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+
+          {/* Delete action - only for archived items */}
+          {canDelete && onDelete && isArchived && (
+            <Tooltip label="Delete permanently" withArrow>
               <ActionIcon
                 variant="subtle"
                 size="sm"
                 onClick={onDelete}
-                aria-label="Delete"
+                aria-label="Delete permanently"
                 className={styles.quickActionDanger}
               >
                 <Icon name="trash-2" size={14} />
@@ -331,18 +355,28 @@ export function ObjectHeader({
               </Menu.Item>
             )}
 
-            {/* Delete - with divider if there are other items */}
-            {canDelete && onDelete && (
-              <>
-                <Menu.Divider />
-                <Menu.Item
-                  color="brick"
-                  leftSection={<Icon name="trash-2" size={14} />}
-                  onClick={onDelete}
-                >
-                  Delete
-                </Menu.Item>
-              </>
+            {/* Archive/Delete - with divider if there are other items */}
+            {((canArchive && onArchive && !isArchived) || (canDelete && onDelete && isArchived)) && <Menu.Divider />}
+
+            {/* Archive - only for non-archived items */}
+            {canArchive && onArchive && !isArchived && (
+              <Menu.Item
+                leftSection={<Icon name="archive" size={14} />}
+                onClick={onArchive}
+              >
+                Archive
+              </Menu.Item>
+            )}
+
+            {/* Delete permanently - only for archived items */}
+            {canDelete && onDelete && isArchived && (
+              <Menu.Item
+                color="brick"
+                leftSection={<Icon name="trash-2" size={14} />}
+                onClick={onDelete}
+              >
+                Delete permanently
+              </Menu.Item>
             )}
           </Menu.Dropdown>
         </Menu>
