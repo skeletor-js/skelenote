@@ -56,13 +56,17 @@
 [data-mantine-color-scheme="dark"] {
   /* ==========================================================================
      COZY DESIGN SYSTEM - Dark Mode Surface Hierarchy
+     
+     Same cozy philosophy as light mode, adapted for dark backgrounds:
+     - Warm ember accents instead of cool blues
+     - Visible but not harsh selection/hover states
      ========================================================================== */
 
   /* Surface hierarchy */
   --surface-canvas: #0A0A0A;
   /* Near-black base layer */
   --surface-sidebar: #0A0A0A;
-  /* Sidebar matches canvas in dark mode */
+  /* Sidebar matches canvas */
   --surface-paper: #18181B;
   /* Elevated content (gray.9) */
   --surface-raised: #27272A;
@@ -74,13 +78,13 @@
   --border-default: #3F3F46;
   /* More visible borders (gray.7) */
 
-  /* Warm interaction states for dark mode */
-  --hover-warm: rgba(184, 92, 80, 0.12);
-  /* Ember at 12% for visibility */
-  --hover-warm-strong: rgba(184, 92, 80, 0.18);
-  /* Ember at 18% */
-  --selection-glow: rgba(184, 92, 80, 0.15);
-  /* Subtle ember glow */
+  /* Warm interaction states - visible ember glow on dark */
+  --hover-warm: rgba(184, 92, 80, 0.15);
+  /* Ember at 15% */
+  --hover-warm-strong: rgba(184, 92, 80, 0.22);
+  /* Ember at 22% */
+  --selection-glow: #3D2422;
+  /* Dark ember - visible warm glow */
   --selection-border: #6E322B;
   /* Ember-8 for dark mode */
 
