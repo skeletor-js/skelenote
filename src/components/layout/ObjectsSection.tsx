@@ -4,6 +4,7 @@ import { ChevronRight, Plus } from 'lucide-react';
 import { useSidebar, useNavigation, useObjects, useTypeRegistry } from '@/contexts';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { BuiltInTypeIds } from '@/lib/types';
+import styles from './SidebarItem.module.css';
 
 /**
  * Types to show in the Objects section
@@ -118,6 +119,7 @@ export function ObjectsSection({ availableTypes, onCreateObject }: ObjectsSectio
         }
         disableRightSectionRotation
         variant="subtle"
+        className={styles.navLink}
         styles={{
           label: {
             fontWeight: 600,
@@ -147,6 +149,7 @@ export function ObjectsSection({ availableTypes, onCreateObject }: ObjectsSectio
                 active={isSelected}
                 onClick={() => handleTypeClick(item.id)}
                 variant="subtle"
+                className={styles.navLink}
               />
             );
           })}
