@@ -43,7 +43,7 @@ export type MeetingDuration = (typeof MeetingDurationOptions)[number];
 
 /**
  * Task type definition
- * Properties: title, status, dueDate, priority, project, note, tags, recurrence, dailyNote
+ * Properties: title, status, dueDate, priority, project, area, tags, recurrence, dailyNote
  */
 export const TaskType: TypeDefinition = {
   id: BuiltInTypeIds.TASK,
@@ -106,16 +106,7 @@ export const TaskType: TypeDefinition = {
         targetTypeIds: [BuiltInTypeIds.AREA],
       },
     },
-    {
-      id: 'note',
-      name: 'Note',
-      type: 'relation',
-      required: false,
-      multiple: false,
-      config: {
-        targetTypeIds: [BuiltInTypeIds.NOTE],
-      },
-    },
+
     {
       id: 'tags',
       name: 'Tags',
