@@ -439,17 +439,14 @@ export const theme = createTheme({
       styles: {
         root: {
           borderRadius: rem(4),
-          // Hover uses same glow as selection for consistent warmth
+          // Single consistent hover effect everywhere
           '&:hover': {
             backgroundColor: 'var(--selection-glow)',
           },
-          // Active state uses selection glow with ember text
+          // Active state styling (no special hover - uses same as above)
           '&[data-active="true"]': {
             backgroundColor: 'var(--selection-glow)',
             color: 'var(--mantine-color-ember-6)',
-            '&:hover': {
-              backgroundColor: 'var(--selection-glow)',
-            },
           },
         },
         label: {
