@@ -6,6 +6,7 @@ import { SidebarItem } from './SidebarItem';
 import { PinnedSection } from './PinnedSection';
 import { SavedViewsSection } from './SavedViewsSection';
 import { ObjectsSection } from './ObjectsSection';
+import { TitleBarSpacer } from './TitleBarSpacer';
 import { type TagColor, SyncIndicator } from '@/components/ui';
 import { Icon } from '@/components/ui/Icon';
 import { useSidebar, useNavigation, useObjects, useTypeRegistry, type ViewType } from '@/contexts';
@@ -137,6 +138,9 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
           backgroundColor: 'var(--surface-canvas)',
         }}
       >
+        {/* Title bar spacer for macOS traffic lights */}
+        <TitleBarSpacer variant="sidebar" />
+
         {/* Quick navigation icons */}
         <Stack gap={4} p="xs" align="center">
           <ActionIcon
@@ -223,6 +227,9 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
         backgroundColor: 'var(--surface-canvas)',
       }}
     >
+      {/* Title bar spacer for macOS traffic lights */}
+      <TitleBarSpacer variant="sidebar" />
+
       {/* Primary navigation - always visible at top */}
       <Box p="xs" pb={0}>
         <Stack gap={0}>

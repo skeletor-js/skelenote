@@ -39,5 +39,4 @@ yarn-error.log*
 coverage/
 
 # Claude Code config
-.claude/
 CLAUDE.md
