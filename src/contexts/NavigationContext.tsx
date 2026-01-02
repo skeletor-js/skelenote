@@ -22,6 +22,7 @@ export type ViewType =
   | 'object'
   | 'settings'
   | 'time-machine'
+  | 'archive'
   | 'search'
   | 'saved-view'
   | 'type-browse';
@@ -78,6 +79,10 @@ interface NavigationContextValue {
   timeMachineObjectFilter: string | null;
   /** Active saved view ID (when view is 'saved-view') */
   activeSavedViewId: string | null;
+  /** Whether the BlockNote editor is currently focused */
+  isEditorFocused: boolean;
+  /** Set whether the BlockNote editor is focused */
+  setEditorFocused: (focused: boolean) => void;
   /** Navigate to an object detail view */
   navigateToObject: (objectId: string) => void;
   /** Navigate to a specific view */
@@ -150,6 +155,9 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     historicalTimestamp: null,
     timeMachineContext: null,
   });
+
+  // Editor focus state for undo/redo routing
+  const [isEditorFocused, setEditorFocused] = useState(false);
 
   const navigateToObject = useCallback((objectId: string) => {
     setHistory((prev) => [...prev, currentState]);
@@ -369,6 +377,8 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         searchQuery: currentState.searchQuery,
         timeMachineObjectFilter: currentState.timeMachineFilter,
         activeSavedViewId: currentState.savedViewId,
+        isEditorFocused,
+        setEditorFocused,
         navigateToObject,
         navigateToView,
         navigateToSearch,

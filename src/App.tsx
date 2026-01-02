@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Layout, SplitPane } from '@/components/layout';
 import { ObjectDetailView } from '@/components/object';
-import { TaskView, InboxView, DailyNotesView, SavedViewContent, TypeBrowseView } from '@/components/views';
+import { TaskView, InboxView, DailyNotesView, SavedViewContent, TypeBrowseView, ArchiveView } from '@/components/views';
 import { CommandPalette } from '@/components/palette';
 import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
@@ -10,7 +10,7 @@ import { TimeMachine, HistoricalObjectView } from '@/components/history';
 import { SearchResultsView } from '@/components/search';
 import { KeyboardShortcutsModal } from '@/components/help';
 import { TemplatePicker, TemplateEditor } from '@/components/templates';
-import { useNavigation, useObjects, useSkeletonKey, useKeyboardShortcuts, type ViewType } from '@/contexts';
+import { useNavigation, useObjects, useSkeletonKey, useKeyboardShortcuts, useUndo, type ViewType } from '@/contexts';
 import { useCommandPalette, useTodaysDailyNote, useTemplates } from '@/hooks';
 import type { Template } from '@/lib/templates';
 import { runFirstRunSetup } from '@/lib/first-run';
@@ -33,6 +33,7 @@ function PlaceholderView({ view }: { view: ViewType }) {
     object: 'Object Detail',
     settings: 'Settings',
     'time-machine': 'Time Machine',
+    archive: 'Archive',
     search: 'Search',
     'saved-view': 'Saved View',
     'type-browse': 'Browse Objects',
@@ -147,6 +148,11 @@ function PrimaryContent() {
     return <TimeMachine />;
   }
 
+  // Archive view
+  if (currentView === 'archive') {
+    return <ArchiveView />;
+  }
+
   // Search view
   if (currentView === 'search') {
     return <SearchResultsView />;
@@ -211,7 +217,8 @@ function App() {
   const { store, refreshData, saveNow } = useObjects();
   const { isInitialized: isCryptoInitialized, hasSkeletonKey } = useSkeletonKey();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
-  const { splitPane, closeSplit, swapPanes, navigateToView, navigateToSearch } = useNavigation();
+  const { splitPane, closeSplit, swapPanes, navigateToView, navigateToSearch, isEditorFocused } = useNavigation();
+  const { undo, redo } = useUndo();
   // Exclude tags, projects, and areas from inbox count (they appear in sidebar)
   const inboxCount =
     store?.getInboxed().filter((item) =>
@@ -375,6 +382,46 @@ function App() {
       description: 'New Template',
     });
 
+    // Cmd+Z to undo (returns false when editor focused to let BlockNote handle it)
+    registerShortcut('global-undo', {
+      key: 'z',
+      metaKey: true,
+      action: () => {
+        if (isEditorFocused) {
+          return false; // Let BlockNote handle undo
+        }
+        undo();
+      },
+      description: 'Undo',
+    });
+
+    // Cmd+Shift+Z to redo
+    registerShortcut('global-redo', {
+      key: 'z',
+      metaKey: true,
+      shiftKey: true,
+      action: () => {
+        if (isEditorFocused) {
+          return false; // Let BlockNote handle redo
+        }
+        redo();
+      },
+      description: 'Redo',
+    });
+
+    // Cmd+Y to redo (alternative)
+    registerShortcut('global-redo-y', {
+      key: 'y',
+      metaKey: true,
+      action: () => {
+        if (isEditorFocused) {
+          return false; // Let BlockNote handle redo
+        }
+        redo();
+      },
+      description: 'Redo',
+    });
+
     return () => {
       unregisterShortcut('command-palette');
       unregisterShortcut('close-split');
@@ -385,8 +432,11 @@ function App() {
       unregisterShortcut('keyboard-shortcuts');
       unregisterShortcut('keyboard-shortcuts-alt');
       unregisterShortcut('new-template');
+      unregisterShortcut('global-undo');
+      unregisterShortcut('global-redo');
+      unregisterShortcut('global-redo-y');
     };
-  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, toggleShortcutsModal, openTemplateEditor]);
+  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, toggleShortcutsModal, openTemplateEditor, isEditorFocused, undo, redo]);
 
   // Show loading only during initial crypto initialization
   // (not during subsequent operations like key generation)
