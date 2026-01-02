@@ -379,6 +379,70 @@ async fn network_get_device_info(
     }))
 }
 
+/// Get this device's unique ID
+///
+/// Returns the device ID used for P2P identification.
+/// Call network_sync_device_id after crypto_init to ensure persistent ID is loaded.
+#[tauri::command]
+async fn network_get_device_id(
+    network_state: State<'_, NetworkState>,
+) -> Result<String, String> {
+    Ok(network_state.device_id.read().await.clone())
+}
+
+/// Synchronize device ID with persistent storage
+///
+/// This should be called after crypto_init to ensure the device ID persists
+/// across app restarts. If a persisted ID exists, it updates NetworkState.
+/// If no persisted ID exists, it saves the current NetworkState ID.
+#[tauri::command]
+async fn network_sync_device_id(
+    crypto_state: State<'_, CryptoState>,
+    network_state: State<'_, NetworkState>,
+) -> Result<String, String> {
+    // Check if we have a persisted device ID (hold lock briefly, release before await)
+    let persisted_id_result: Result<Option<String>, String> = {
+        let stronghold_guard = crypto_state.stronghold.lock()
+            .map_err(|e| format!("Failed to acquire stronghold lock: {}", e))?;
+        let manager = stronghold_guard
+            .as_ref()
+            .ok_or("Crypto not initialized - call crypto_init first")?;
+
+        if manager.has_device_id() {
+            let id = manager.get_device_id().map_err(|e| e.to_string())?;
+            Ok(Some(id))
+        } else {
+            Ok(None)
+        }
+    };
+
+    match persisted_id_result? {
+        Some(persisted_id) => {
+            // Load persisted device ID into NetworkState
+            *network_state.device_id.write().await = persisted_id.clone();
+            println!("[DeviceID] Loaded persisted device ID: {}", persisted_id);
+            Ok(persisted_id)
+        }
+        None => {
+            // Get current device ID from NetworkState
+            let current_id = network_state.device_id.read().await.clone();
+
+            // Persist it (re-acquire lock, no await after)
+            {
+                let stronghold_guard = crypto_state.stronghold.lock()
+                    .map_err(|e| format!("Failed to acquire stronghold lock: {}", e))?;
+                let manager = stronghold_guard
+                    .as_ref()
+                    .ok_or("Crypto not initialized")?;
+                manager.store_device_id(&current_id).map_err(|e| e.to_string())?;
+            }
+
+            println!("[DeviceID] Persisted new device ID: {}", current_id);
+            Ok(current_id)
+        }
+    }
+}
+
 // ============================================================================
 // mDNS Discovery Commands
 // ============================================================================
@@ -469,11 +533,6 @@ async fn network_start_discovery(
                     // Emit to frontend
                     let _ = app_handle.emit("local-peer-lost", serde_json::json!({
                         "deviceId": device_id,
-                    }));
-                }
-                network::mdns::MdnsEvent::Error { message } => {
-                    let _ = app_handle.emit("local-discovery-error", serde_json::json!({
-                        "message": message,
                     }));
                 }
             }
@@ -715,28 +774,48 @@ async fn network_broadcast_device_registry(
 /// Broadcast device revocation to all connected local peers
 ///
 /// The payload should be a JSON-stringified DeviceRevokePayload.
+/// Validates the payload structure before broadcasting.
 /// Returns the number of peers the message was sent to.
 #[tauri::command]
 async fn network_broadcast_device_revoke(
     payload: String,
     network_state: State<'_, NetworkState>,
 ) -> Result<usize, String> {
-    use crate::network::protocol::MessageType;
-    let count = network_state.broadcast_raw(MessageType::DeviceRevoke, payload.as_bytes()).await;
+    use crate::network::protocol::{DeviceRevokePayload, MessageType};
+
+    // Parse and validate the payload structure
+    let revoke: DeviceRevokePayload = serde_json::from_str(&payload)
+        .map_err(|e| format!("Invalid revoke payload: {}", e))?;
+
+    // Re-serialize the validated struct
+    let data = serde_json::to_vec(&revoke)
+        .map_err(|e| format!("Failed to serialize revoke payload: {}", e))?;
+
+    let count = network_state.broadcast_raw(MessageType::DeviceRevoke, &data).await;
     Ok(count)
 }
 
 /// Broadcast device rename to all connected local peers
 ///
 /// The payload should be a JSON-stringified DeviceRenamePayload.
+/// Validates the payload structure before broadcasting.
 /// Returns the number of peers the message was sent to.
 #[tauri::command]
 async fn network_broadcast_device_rename(
     payload: String,
     network_state: State<'_, NetworkState>,
 ) -> Result<usize, String> {
-    use crate::network::protocol::MessageType;
-    let count = network_state.broadcast_raw(MessageType::DeviceRename, payload.as_bytes()).await;
+    use crate::network::protocol::{DeviceRenamePayload, MessageType};
+
+    // Parse and validate the payload structure
+    let rename: DeviceRenamePayload = serde_json::from_str(&payload)
+        .map_err(|e| format!("Invalid rename payload: {}", e))?;
+
+    // Re-serialize the validated struct
+    let data = serde_json::to_vec(&rename)
+        .map_err(|e| format!("Failed to serialize rename payload: {}", e))?;
+
+    let count = network_state.broadcast_raw(MessageType::DeviceRename, &data).await;
     Ok(count)
 }
 
@@ -918,6 +997,8 @@ pub fn run() {
             network_get_server_info,
             network_get_connected_peers,
             network_get_device_info,
+            network_get_device_id,
+            network_sync_device_id,
             // mDNS Discovery commands
             network_start_discovery,
             network_stop_discovery,

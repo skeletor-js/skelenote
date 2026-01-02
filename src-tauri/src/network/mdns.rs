@@ -23,9 +23,6 @@ pub enum MdnsEvent {
     PeerDiscovered(DiscoveredPeer),
     /// A peer was lost
     PeerLost { device_id: String },
-    /// An error occurred
-    #[allow(dead_code)]
-    Error { message: String },
 }
 
 /// Handle for the mDNS service

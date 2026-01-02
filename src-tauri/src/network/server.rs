@@ -2,10 +2,12 @@
 //!
 //! Listens for incoming peer connections on a dynamic port.
 //! Revoked devices are rejected at the TCP handshake level.
+//! Includes heartbeat mechanism for detecting stale connections.
 
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::OwnedWriteHalf;
 use tokio::net::{TcpListener, TcpStream};
@@ -17,6 +19,12 @@ use super::protocol::{
     HEADER_SIZE,
 };
 use super::state::{ConnectedPeer, ServerHandle};
+
+/// Heartbeat interval in seconds
+const HEARTBEAT_INTERVAL_SECS: u64 = 30;
+
+/// Connection is considered stale if no pong received within this many seconds
+const HEARTBEAT_TIMEOUT_SECS: u64 = 90;
 
 /// Events emitted by the server
 #[derive(Debug, Clone)]
@@ -45,9 +53,6 @@ pub enum ServerEvent {
 
 /// Local sync TCP server
 pub struct LocalSyncServer {
-    /// Port the server is listening on
-    #[allow(dead_code)]
-    port: u16,
     /// This device's ID
     device_id: String,
     /// This device's name
@@ -76,7 +81,6 @@ impl LocalSyncServer {
         let (event_tx, event_rx) = mpsc::channel(100);
 
         let server = LocalSyncServer {
-            port,
             device_id,
             device_name,
             fingerprint,
@@ -261,6 +265,9 @@ async fn handle_connection(
     let (mut read_half, write_half) = stream.into_split();
     let write_half = Arc::new(Mutex::new(write_half));
 
+    // Heartbeat tracking
+    let last_pong = Arc::new(RwLock::new(Instant::now()));
+
     // Store write half for sending
     {
         let mut streams = peer_streams.write().await;
@@ -273,6 +280,21 @@ async fn handle_connection(
         device_name: peer_device_name,
         address: addr.to_string(),
     }).await;
+
+    // Spawn heartbeat task
+    let write_half_for_heartbeat = write_half.clone();
+    let last_pong_for_heartbeat = last_pong.clone();
+    let device_id_for_heartbeat = peer_device_id.clone();
+    let shutdown_flag = Arc::new(RwLock::new(false));
+    let shutdown_flag_for_heartbeat = shutdown_flag.clone();
+    tokio::spawn(async move {
+        heartbeat_loop(
+            write_half_for_heartbeat,
+            last_pong_for_heartbeat,
+            shutdown_flag_for_heartbeat,
+            device_id_for_heartbeat,
+        ).await;
+    });
 
     // Main message loop using read half (no lock contention with writes)
     read_buffer.clear();
@@ -304,7 +326,8 @@ async fn handle_connection(
                             let _ = s.write_all(&pong).await;
                         }
                         MessageType::Pong => {
-                            // Ignore pong
+                            // Update heartbeat tracking
+                            *last_pong.write().await = Instant::now();
                         }
                         _ => {
                             // Forward other messages to frontend
@@ -340,6 +363,9 @@ async fn handle_connection(
         }
     }
 
+    // Signal heartbeat loop to stop
+    *shutdown_flag.write().await = true;
+
     // Remove from connected peers and streams
     {
         let mut peers = connected_peers.write().await;
@@ -356,4 +382,43 @@ async fn handle_connection(
     }).await;
 
     Ok(())
+}
+
+/// Heartbeat loop to detect stale connections (server-side)
+///
+/// Sends periodic pings and checks for pong responses.
+async fn heartbeat_loop(
+    write_stream: Arc<Mutex<OwnedWriteHalf>>,
+    last_pong: Arc<RwLock<Instant>>,
+    shutdown_flag: Arc<RwLock<bool>>,
+    device_id: String,
+) {
+    let mut interval = tokio::time::interval(Duration::from_secs(HEARTBEAT_INTERVAL_SECS));
+
+    loop {
+        interval.tick().await;
+
+        // Check for shutdown
+        if *shutdown_flag.read().await {
+            break;
+        }
+
+        // Check if connection is stale (no pong received recently)
+        let elapsed = last_pong.read().await.elapsed();
+        if elapsed > Duration::from_secs(HEARTBEAT_TIMEOUT_SECS) {
+            println!(
+                "[Server Heartbeat] Connection to {} stale - no pong for {:?}",
+                device_id, elapsed
+            );
+            break;
+        }
+
+        // Send ping
+        let ping_msg = encode_message(MessageType::Ping, &[]);
+        let mut stream = write_stream.lock().await;
+        if let Err(e) = stream.write_all(&ping_msg).await {
+            println!("[Server Heartbeat] Failed to send ping to {}: {}", device_id, e);
+            break;
+        }
+    }
 }
