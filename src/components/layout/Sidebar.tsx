@@ -134,82 +134,93 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          borderRight: '1px solid var(--border-default)',
           backgroundColor: 'var(--surface-canvas)',
         }}
       >
-        {/* Title bar spacer for macOS traffic lights */}
+        {/* Title bar spacer for macOS traffic lights - has bottom border */}
         <TitleBarSpacer variant="sidebar" />
 
-        {/* Quick navigation icons */}
-        <Stack gap={4} p="xs" align="center">
-          <ActionIcon
-            variant={selectedItem === 'inbox' ? 'light' : 'subtle'}
-            color={selectedItem === 'inbox' ? 'ember' : 'gray'}
-            size="lg"
-            onClick={() => handleNavigate('inbox')}
-            aria-label="Inbox"
-            title="Inbox"
-          >
-            <Icon name="inbox" size={20} />
-          </ActionIcon>
-          <ActionIcon
-            variant={selectedItem === 'daily-notes' ? 'light' : 'subtle'}
-            color={selectedItem === 'daily-notes' ? 'ember' : 'gray'}
-            size="lg"
-            onClick={() => handleNavigate('daily-notes')}
-            aria-label="Daily Notes"
-            title="Daily Notes"
-          >
-            <Icon name="calendar-days" size={20} />
-          </ActionIcon>
-          <ActionIcon
-            variant={selectedItem === 'search' ? 'light' : 'subtle'}
-            color={selectedItem === 'search' ? 'ember' : 'gray'}
-            size="lg"
-            onClick={() => handleNavigate('search')}
-            aria-label="Search"
-            title="Search"
-          >
-            <Icon name="search" size={20} />
-          </ActionIcon>
-          <ActionIcon
-            variant={selectedItem === 'archive' ? 'light' : 'subtle'}
-            color={selectedItem === 'archive' ? 'ember' : 'gray'}
-            size="lg"
-            onClick={() => handleNavigate('archive')}
-            aria-label="Archive"
-            title="Archive"
-          >
-            <Icon name="archive" size={20} />
-          </ActionIcon>
-          <ActionIcon
-            variant={selectedItem === 'time-machine' ? 'light' : 'subtle'}
-            color={selectedItem === 'time-machine' ? 'ember' : 'gray'}
-            size="lg"
-            onClick={() => handleNavigate('time-machine')}
-            aria-label="Time Machine"
-            title="Time Machine"
-          >
-            <Icon name="history" size={20} />
-          </ActionIcon>
-        </Stack>
+        {/* Content wrapper with right border (starts below safe zone) */}
+        <Box
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            borderRight: '1px solid var(--border-default)',
+            overflow: 'hidden',
+            minHeight: 0,
+          }}
+        >
+          {/* Quick navigation icons */}
+          <Stack gap={4} p="xs" align="center">
+            <ActionIcon
+              variant={selectedItem === 'inbox' ? 'light' : 'subtle'}
+              color={selectedItem === 'inbox' ? 'ember' : 'gray'}
+              size="lg"
+              onClick={() => handleNavigate('inbox')}
+              aria-label="Inbox"
+              title="Inbox"
+            >
+              <Icon name="inbox" size={20} />
+            </ActionIcon>
+            <ActionIcon
+              variant={selectedItem === 'daily-notes' ? 'light' : 'subtle'}
+              color={selectedItem === 'daily-notes' ? 'ember' : 'gray'}
+              size="lg"
+              onClick={() => handleNavigate('daily-notes')}
+              aria-label="Daily Notes"
+              title="Daily Notes"
+            >
+              <Icon name="calendar-days" size={20} />
+            </ActionIcon>
+            <ActionIcon
+              variant={selectedItem === 'search' ? 'light' : 'subtle'}
+              color={selectedItem === 'search' ? 'ember' : 'gray'}
+              size="lg"
+              onClick={() => handleNavigate('search')}
+              aria-label="Search"
+              title="Search"
+            >
+              <Icon name="search" size={20} />
+            </ActionIcon>
+            <ActionIcon
+              variant={selectedItem === 'archive' ? 'light' : 'subtle'}
+              color={selectedItem === 'archive' ? 'ember' : 'gray'}
+              size="lg"
+              onClick={() => handleNavigate('archive')}
+              aria-label="Archive"
+              title="Archive"
+            >
+              <Icon name="archive" size={20} />
+            </ActionIcon>
+            <ActionIcon
+              variant={selectedItem === 'time-machine' ? 'light' : 'subtle'}
+              color={selectedItem === 'time-machine' ? 'ember' : 'gray'}
+              size="lg"
+              onClick={() => handleNavigate('time-machine')}
+              aria-label="Time Machine"
+              title="Time Machine"
+            >
+              <Icon name="history" size={20} />
+            </ActionIcon>
+          </Stack>
 
-        {/* Spacer */}
-        <Box style={{ flex: 1 }} />
+          {/* Spacer */}
+          <Box style={{ flex: 1 }} />
 
-        {/* Expand button */}
-        <Box p="xs" style={{ display: 'flex', justifyContent: 'center' }}>
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="lg"
-            onClick={toggleCollapsed}
-            aria-label="Open sidebar"
-            title="Expand sidebar"
-          >
-            <MenuIcon size={20} />
-          </ActionIcon>
+          {/* Expand button */}
+          <Box p="xs" style={{ display: 'flex', justifyContent: 'center' }}>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="lg"
+              onClick={toggleCollapsed}
+              aria-label="Open sidebar"
+              title="Expand sidebar"
+            >
+              <MenuIcon size={20} />
+            </ActionIcon>
+          </Box>
         </Box>
       </Box>
     );
@@ -223,15 +234,25 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        borderRight: '1px solid var(--border-default)',
         backgroundColor: 'var(--surface-canvas)',
       }}
     >
-      {/* Title bar spacer for macOS traffic lights */}
+      {/* Title bar spacer for macOS traffic lights - has bottom border */}
       <TitleBarSpacer variant="sidebar" />
 
-      {/* Primary navigation - always visible at top */}
-      <Box p="xs" pb={0}>
+      {/* Content wrapper with right border (starts below safe zone) */}
+      <Box
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          borderRight: '1px solid var(--border-default)',
+          overflow: 'hidden',
+          minHeight: 0,
+        }}
+      >
+        {/* Primary navigation - always visible at top */}
+        <Box p="xs" pb={0}>
         <Stack gap={0}>
           <SidebarItem
             id="inbox"
@@ -268,228 +289,229 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
         <Divider my="xs" />
       </Box>
 
-      {/* Scrollable sections */}
-      <ScrollArea flex={1} px="xs" pb="xs" scrollbarSize={0} type="scroll">
-        <Stack gap={0}>
-          {/* Pinned section */}
-          <PinnedSection />
+        {/* Scrollable sections */}
+        <ScrollArea flex={1} px="xs" pb="xs" scrollbarSize={0} type="scroll">
+          <Stack gap={0}>
+            {/* Pinned section */}
+            <PinnedSection />
 
-          {/* Objects section */}
-          <ObjectsSection
-            availableTypes={availableTypes}
-            onCreateObject={handleCreateObject}
-          />
+            {/* Objects section */}
+            <ObjectsSection
+              availableTypes={availableTypes}
+              onCreateObject={handleCreateObject}
+            />
 
-          {/* Tasks section */}
-          <SidebarSection
-            id="tasks"
-            title="Tasks"
-            action={
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                size="xs"
-                onClick={() => handleCreateObject(BuiltInTypeIds.TASK)}
-                aria-label="Create new task"
-                title="Create new task"
-              >
-                <Plus size={14} />
-              </ActionIcon>
-            }
-          >
-            <SidebarItem
-              id="today"
-              label="Today"
-              onClick={() => handleNavigate('today')}
-            />
-            <SidebarItem
-              id="this-week"
-              label="This Week"
-              onClick={() => handleNavigate('this-week')}
-            />
-            <SidebarItem
-              id="overdue"
-              label="Overdue"
-              onClick={() => handleNavigate('overdue')}
-            />
-            <SidebarItem
-              id="blocked"
-              label="Blocked"
-              onClick={() => handleNavigate('blocked')}
-            />
-            <SidebarItem
-              id="eventually"
-              label="Eventually"
-              onClick={() => handleNavigate('eventually')}
-            />
-            <SidebarItem
-              id="completed"
-              label="Completed"
-              onClick={() => handleNavigate('completed')}
-            />
-          </SidebarSection>
+            {/* Tasks section */}
+            <SidebarSection
+              id="tasks"
+              title="Tasks"
+              action={
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  size="xs"
+                  onClick={() => handleCreateObject(BuiltInTypeIds.TASK)}
+                  aria-label="Create new task"
+                  title="Create new task"
+                >
+                  <Plus size={14} />
+                </ActionIcon>
+              }
+            >
+              <SidebarItem
+                id="today"
+                label="Today"
+                onClick={() => handleNavigate('today')}
+              />
+              <SidebarItem
+                id="this-week"
+                label="This Week"
+                onClick={() => handleNavigate('this-week')}
+              />
+              <SidebarItem
+                id="overdue"
+                label="Overdue"
+                onClick={() => handleNavigate('overdue')}
+              />
+              <SidebarItem
+                id="blocked"
+                label="Blocked"
+                onClick={() => handleNavigate('blocked')}
+              />
+              <SidebarItem
+                id="eventually"
+                label="Eventually"
+                onClick={() => handleNavigate('eventually')}
+              />
+              <SidebarItem
+                id="completed"
+                label="Completed"
+                onClick={() => handleNavigate('completed')}
+              />
+            </SidebarSection>
 
-          {/* Areas section (PARA) */}
-          <SidebarSection
-            id="areas"
-            title="Areas"
-            action={
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                size="xs"
-                onClick={() => handleCreateObject(BuiltInTypeIds.AREA)}
-                aria-label="Create new area"
-                title="Create new area"
-              >
-                <Plus size={14} />
-              </ActionIcon>
-            }
-          >
-            {areas.length === 0 ? (
-              <Text size="xs" c="dimmed" py="xs" pl="md">
-                No areas yet
-              </Text>
-            ) : (
-              areas.map((area) => (
-                <SidebarItem
-                  key={area.id}
-                  id={`area-${area.id}`}
-                  label={area.name}
-                  onClick={() => navigateToObject(area.id)}
-                />
-              ))
-            )}
-          </SidebarSection>
-
-          {/* Projects section */}
-          <SidebarSection
-            id="projects"
-            title="Projects"
-            action={
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                size="xs"
-                onClick={() => handleCreateObject(BuiltInTypeIds.PROJECT)}
-                aria-label="Create new project"
-                title="Create new project"
-              >
-                <Plus size={14} />
-              </ActionIcon>
-            }
-          >
-            {projects.length === 0 ? (
-              <Text size="xs" c="dimmed" py="xs" pl="md">
-                No projects yet
-              </Text>
-            ) : (
-              projects.map((project) => (
-                <SidebarItem
-                  key={project.id}
-                  id={`project-${project.id}`}
-                  label={project.name}
-                  onClick={() => navigateToObject(project.id)}
-                />
-              ))
-            )}
-          </SidebarSection>
-
-          {/* Tags section */}
-          <SidebarSection
-            id="tags"
-            title="Tags"
-            action={
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                size="xs"
-                onClick={() => handleCreateObject(BuiltInTypeIds.TAG)}
-                aria-label="Create new tag"
-                title="Create new tag"
-              >
-                <Plus size={14} />
-              </ActionIcon>
-            }
-          >
-            {tags.length === 0 ? (
-              <Text size="xs" c="dimmed" py="xs" pl="md">
-                No tags yet
-              </Text>
-            ) : (
-              tags.map((tag) => {
-                const tagItemId = `tag-${tag.id}`;
-                const isSelected = selectedItem === tagItemId;
-                return (
-                  <NavLink
-                    key={tag.id}
-                    label={`#${tag.name}`}
-                    leftSection={
-                      <Box
-                        component="span"
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: '50%',
-                          backgroundColor: tag.color ? `var(--mantine-color-${tag.color}-5)` : 'var(--mantine-color-gray-5)',
-                        }}
-                      />
-                    }
-                    active={isSelected}
-                    onClick={() => {
-                      setSelectedItem(tagItemId);
-                      navigateToObject(tag.id);
-                    }}
-                    variant="subtle"
+            {/* Areas section (PARA) */}
+            <SidebarSection
+              id="areas"
+              title="Areas"
+              action={
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  size="xs"
+                  onClick={() => handleCreateObject(BuiltInTypeIds.AREA)}
+                  aria-label="Create new area"
+                  title="Create new area"
+                >
+                  <Plus size={14} />
+                </ActionIcon>
+              }
+            >
+              {areas.length === 0 ? (
+                <Text size="xs" c="dimmed" py="xs" pl="md">
+                  No areas yet
+                </Text>
+              ) : (
+                areas.map((area) => (
+                  <SidebarItem
+                    key={area.id}
+                    id={`area-${area.id}`}
+                    label={area.name}
+                    onClick={() => navigateToObject(area.id)}
                   />
-                );
-              })
-            )}
-          </SidebarSection>
+                ))
+              )}
+            </SidebarSection>
 
-          {/* Saved views section */}
-          <SavedViewsSection
-            onViewSelect={handleSavedViewSelect}
-            activeViewId={activeSavedViewId}
-          />
-        </Stack>
-      </ScrollArea>
+            {/* Projects section */}
+            <SidebarSection
+              id="projects"
+              title="Projects"
+              action={
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  size="xs"
+                  onClick={() => handleCreateObject(BuiltInTypeIds.PROJECT)}
+                  aria-label="Create new project"
+                  title="Create new project"
+                >
+                  <Plus size={14} />
+                </ActionIcon>
+              }
+            >
+              {projects.length === 0 ? (
+                <Text size="xs" c="dimmed" py="xs" pl="md">
+                  No projects yet
+                </Text>
+              ) : (
+                projects.map((project) => (
+                  <SidebarItem
+                    key={project.id}
+                    id={`project-${project.id}`}
+                    label={project.name}
+                    onClick={() => navigateToObject(project.id)}
+                  />
+                ))
+              )}
+            </SidebarSection>
 
-      {/* Footer with controls */}
-      <Box p="xs" style={{ borderTop: '1px solid var(--border-default)' }}>
-        <Group justify="space-between">
-          <SyncIndicator />
+            {/* Tags section */}
+            <SidebarSection
+              id="tags"
+              title="Tags"
+              action={
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  size="xs"
+                  onClick={() => handleCreateObject(BuiltInTypeIds.TAG)}
+                  aria-label="Create new tag"
+                  title="Create new tag"
+                >
+                  <Plus size={14} />
+                </ActionIcon>
+              }
+            >
+              {tags.length === 0 ? (
+                <Text size="xs" c="dimmed" py="xs" pl="md">
+                  No tags yet
+                </Text>
+              ) : (
+                tags.map((tag) => {
+                  const tagItemId = `tag-${tag.id}`;
+                  const isSelected = selectedItem === tagItemId;
+                  return (
+                    <NavLink
+                      key={tag.id}
+                      label={`#${tag.name}`}
+                      leftSection={
+                        <Box
+                          component="span"
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            backgroundColor: tag.color ? `var(--mantine-color-${tag.color}-5)` : 'var(--mantine-color-gray-5)',
+                          }}
+                        />
+                      }
+                      active={isSelected}
+                      onClick={() => {
+                        setSelectedItem(tagItemId);
+                        navigateToObject(tag.id);
+                      }}
+                      variant="subtle"
+                    />
+                  );
+                })
+              )}
+            </SidebarSection>
 
-          <Group gap="xs">
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="sm"
-              onClick={() => handleNavigate('settings')}
-              aria-label="Settings"
-            >
-              <Settings size={16} />
-            </ActionIcon>
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="sm"
-              onClick={toggleTheme}
-              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            >
-              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-            </ActionIcon>
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="sm"
-              onClick={toggleCollapsed}
-              aria-label="Collapse sidebar"
-            >
-              <ChevronLeft size={16} />
-            </ActionIcon>
+            {/* Saved views section */}
+            <SavedViewsSection
+              onViewSelect={handleSavedViewSelect}
+              activeViewId={activeSavedViewId}
+            />
+          </Stack>
+        </ScrollArea>
+
+        {/* Footer with controls */}
+        <Box p="xs" style={{ borderTop: '1px solid var(--border-default)' }}>
+          <Group justify="space-between">
+            <SyncIndicator />
+
+            <Group gap="xs">
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="sm"
+                onClick={() => handleNavigate('settings')}
+                aria-label="Settings"
+              >
+                <Settings size={16} />
+              </ActionIcon>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="sm"
+                onClick={toggleTheme}
+                aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              >
+                {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+              </ActionIcon>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="sm"
+                onClick={toggleCollapsed}
+                aria-label="Collapse sidebar"
+              >
+                <ChevronLeft size={16} />
+              </ActionIcon>
+            </Group>
           </Group>
-        </Group>
+        </Box>
       </Box>
     </Box>
   );

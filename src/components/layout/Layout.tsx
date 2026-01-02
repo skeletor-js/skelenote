@@ -43,7 +43,7 @@ export function Layout({ children, inboxCount = 0, onCreateFromTemplate }: Layou
       }}
       padding={0}
     >
-      <AppShell.Navbar p={0}>
+      <AppShell.Navbar p={0} withBorder={false}>
         <Sidebar inboxCount={inboxCount} onCreateFromTemplate={onCreateFromTemplate} />
       </AppShell.Navbar>
 

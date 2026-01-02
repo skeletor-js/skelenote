@@ -315,7 +315,7 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
 
   return (
     <Box className={styles.container}>
-      {/* Header with inline title editing, back button, and hover-reveal actions */}
+      {/* Header with inline title editing and hover-reveal actions */}
       <ObjectHeader
         object={object}
         typeDef={typeDef}
@@ -332,8 +332,6 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
         onExport={handleExport}
         onDuplicate={handleDuplicate}
         canDuplicate={canDuplicate(objectId)}
-        canGoBack={canGoBack && !isVersionComparison}
-        onNavigateBack={navigateBack}
         showBackToTimeMachine={isVersionComparison}
         onBackToTimeMachine={handleBackToTimeMachine}
       />

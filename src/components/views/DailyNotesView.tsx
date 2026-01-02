@@ -161,7 +161,6 @@ export function DailyNotesView() {
               canDelete={true}
               titleEditable={false}
               paneType="primary"
-              canGoBack={false}
             />
 
             {/* Properties as inline chips */}

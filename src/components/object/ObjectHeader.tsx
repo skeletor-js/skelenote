@@ -28,10 +28,6 @@ interface ObjectHeaderProps {
   onViewHistory?: () => void;
   /** Callback to export object to Markdown */
   onExport?: () => void;
-  /** Whether back navigation is available */
-  canGoBack?: boolean;
-  /** Callback for back navigation */
-  onNavigateBack?: () => void;
   /** Whether to show "Back to Time Machine" option */
   showBackToTimeMachine?: boolean;
   /** Callback for navigating back to Time Machine */
@@ -63,8 +59,6 @@ export function ObjectHeader({
   onCloseSplit,
   onViewHistory,
   onExport,
-  canGoBack = false,
-  onNavigateBack,
   showBackToTimeMachine = false,
   onBackToTimeMachine,
   onPin,
@@ -156,19 +150,6 @@ export function ObjectHeader({
       wrap="nowrap"
       className={styles.header}
     >
-      {/* Back button */}
-      {canGoBack && onNavigateBack && (
-        <ActionIcon
-          variant="subtle"
-          color="gray"
-          size="sm"
-          onClick={onNavigateBack}
-          aria-label="Go back"
-        >
-          <Icon name="chevron-left" size={18} />
-        </ActionIcon>
-      )}
-
       {/* Type indicator */}
       <Icon
         name={getIconFromEmoji(typeDef.icon)}
