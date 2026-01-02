@@ -6,6 +6,8 @@
 import { useMemo } from 'react';
 import { useObjects, useTypeRegistry } from '@/contexts';
 import type { SkelenoteObject } from '@/lib/types';
+import type { IconName } from '@/lib/icons';
+import { Icon } from '@/components/ui/Icon';
 import './MentionSuggestion.css';
 
 export interface MentionItem {
@@ -13,6 +15,7 @@ export interface MentionItem {
   objectId: string;
   objectName: string;
   objectTypeId: string;
+  icon: IconName;
 }
 
 /**
@@ -39,13 +42,14 @@ export function useMentionSuggestions(query: string): MentionItem[] {
       .map((obj: SkelenoteObject) => {
         const name = (obj.properties.title ?? obj.properties.name ?? 'Untitled') as string;
         const typeDef = typeRegistry.get(obj.typeId);
-        const icon = typeDef?.icon ?? '📄';
+        const icon = (typeDef?.icon ?? 'file') as IconName;
 
         return {
-          title: `${icon} ${name}`,
+          title: name,
           objectId: obj.id,
           objectName: name,
           objectTypeId: obj.typeId,
+          icon,
         };
       });
 
@@ -79,13 +83,14 @@ export function getMentionMenuItems(
     .map((obj: SkelenoteObject) => {
       const name = (obj.properties.title ?? obj.properties.name ?? 'Untitled') as string;
       const typeDef = typeRegistry.get(obj.typeId);
-      const icon = typeDef?.icon ?? '📄';
+      const icon = (typeDef?.icon ?? 'file') as IconName;
 
       return {
-        title: `${icon} ${name}`,
+        title: name,
         objectId: obj.id,
         objectName: name,
         objectTypeId: obj.typeId,
+        icon,
       };
     });
 }
@@ -134,8 +139,8 @@ export function MentionSuggestionMenu({
           className={`mention-suggestion-item ${index === selectedIndex ? 'mention-suggestion-item--selected' : ''}`}
           onClick={() => onItemClick?.(item)}
         >
+          <Icon name={item.icon} size={14} className="mention-suggestion-item__icon" />
           <span className="mention-suggestion-item__title">{item.title}</span>
-          <span className="mention-suggestion-item__type">{item.objectTypeId}</span>
         </div>
       ))}
     </div>
