@@ -46,6 +46,7 @@ pub enum ServerEvent {
 /// Local sync TCP server
 pub struct LocalSyncServer {
     /// Port the server is listening on
+    #[allow(dead_code)]
     port: u16,
     /// This device's ID
     device_id: String,

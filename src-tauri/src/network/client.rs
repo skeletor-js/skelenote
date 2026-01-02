@@ -36,10 +36,12 @@ pub struct PeerConnection {
     /// Remote device name
     pub device_name: String,
     /// Remote address
+    #[allow(dead_code)]
     pub address: SocketAddr,
     /// TCP write stream (wrapped for thread-safety, read half is used by read_loop)
     write_stream: Arc<Mutex<OwnedWriteHalf>>,
     /// When the connection was established
+    #[allow(dead_code)]
     pub connected_at: u64,
 }
 
@@ -212,6 +214,7 @@ impl PeerConnection {
     }
 
     /// Send a message to the peer
+    #[allow(dead_code)]
     pub async fn send(&self, msg_type: MessageType, payload: &[u8]) -> Result<(), std::io::Error> {
         let message = encode_message(msg_type, payload);
         let mut stream = self.write_stream.lock().await;
@@ -219,11 +222,13 @@ impl PeerConnection {
     }
 
     /// Send a ping to check if the connection is alive
+    #[allow(dead_code)]
     pub async fn ping(&self) -> Result<(), std::io::Error> {
         self.send(MessageType::Ping, &[]).await
     }
 
     /// Close the connection
+    #[allow(dead_code)]
     pub async fn close(&self) -> Result<(), std::io::Error> {
         let mut stream = self.write_stream.lock().await;
         stream.shutdown().await

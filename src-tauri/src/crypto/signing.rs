@@ -48,11 +48,6 @@ pub fn derive_signing_key(master_key: &[u8; MASTER_KEY_LEN]) -> SigningKey {
     SigningKey::from_bytes(&key_bytes)
 }
 
-/// Get the public (verifying) key from a signing key
-pub fn get_public_key(signing_key: &SigningKey) -> VerifyingKey {
-    signing_key.verifying_key()
-}
-
 /// Get public key bytes for storage/transmission
 pub fn get_public_key_bytes(signing_key: &SigningKey) -> [u8; PUBLIC_KEY_LEN] {
     signing_key.verifying_key().to_bytes()

@@ -126,6 +126,7 @@ impl NetworkState {
     }
 
     /// Load the blocklist from disk (call after initialization)
+    #[allow(dead_code)]
     pub async fn load_blocklist(&self) -> Result<(), super::blocklist::BlocklistError> {
         self.blocklist.load().await
     }
@@ -165,6 +166,7 @@ impl NetworkState {
     ///
     /// The TcpStream should be split using `into_split()` first, and only the
     /// write half should be passed here. The read half is used by the read loop.
+    #[allow(dead_code)]
     pub async fn add_peer_write_stream(&self, device_id: String, write_half: OwnedWriteHalf) {
         let mut streams = self.peer_streams.write().await;
         streams.insert(device_id, Arc::new(Mutex::new(write_half)));
@@ -180,6 +182,7 @@ impl NetworkState {
     }
 
     /// Remove a peer stream
+    #[allow(dead_code)]
     pub async fn remove_peer_stream(&self, device_id: &str) {
         let mut streams = self.peer_streams.write().await;
         streams.remove(device_id);

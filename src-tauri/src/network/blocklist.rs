@@ -129,6 +129,7 @@ impl DeviceBlocklist {
     }
 
     /// Block multiple device IDs
+    #[allow(dead_code)]
     pub async fn block_many(&self, device_ids: Vec<String>) -> Result<(), BlocklistError> {
         {
             let mut blocked = self.blocked.write().await;
@@ -147,6 +148,7 @@ impl DeviceBlocklist {
     }
 
     /// Get count of blocked devices
+    #[allow(dead_code)]
     pub async fn count(&self) -> usize {
         let blocked = self.blocked.read().await;
         blocked.len()

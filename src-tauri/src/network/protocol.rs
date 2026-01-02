@@ -176,6 +176,7 @@ pub struct AckPayload {
 // ============================================================================
 
 /// Device revocation payload
+#[allow(dead_code)]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DeviceRevokePayload {
     /// Device ID that was revoked
@@ -191,6 +192,7 @@ pub struct DeviceRevokePayload {
 }
 
 /// Device revocation acknowledgment payload
+#[allow(dead_code)]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DeviceRevokeAckPayload {
     /// Device ID that was revoked
@@ -200,6 +202,7 @@ pub struct DeviceRevokeAckPayload {
 }
 
 /// Device rename payload
+#[allow(dead_code)]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DeviceRenamePayload {
     /// Device ID being renamed
@@ -211,6 +214,7 @@ pub struct DeviceRenamePayload {
 }
 
 /// Extended hello payload with device registry info
+#[allow(dead_code)]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ExtendedHelloPayload {
     /// Unique device identifier
@@ -235,6 +239,7 @@ pub struct ExtendedHelloPayload {
 }
 
 /// Check if a message type is a device management message
+#[allow(dead_code)]
 pub fn is_device_management_message(msg_type: MessageType) -> bool {
     matches!(
         msg_type,
