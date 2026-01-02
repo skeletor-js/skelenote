@@ -46,6 +46,7 @@ export function Select({
       clearable={allowEmpty}
       size="sm"
       variant="filled"
+      comboboxProps={{ withinPortal: false }}
     />
   );
 }

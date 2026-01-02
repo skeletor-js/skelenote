@@ -11,6 +11,7 @@ import { SavedViewEditor } from '@/components/views';
 import { ConfirmDialog } from '@/components/ui';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import type { SavedView } from '@/lib/types';
+import styles from './SavedViewsSection.module.css';
 
 interface SavedViewsSectionProps {
   /** Callback when a view is selected */
@@ -91,101 +92,100 @@ export function SavedViewsSection({
   };
 
   return (
-    <Box mb="xs">
-      <Group gap={0} wrap="nowrap">
-        <NavLink
-          label="Saved Views"
-          leftSection={
-            <ChevronRight
-              size={14}
-              style={{
-                transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
-                transition: 'transform 150ms ease',
-              }}
-            />
-          }
-          rightSection={
-            views.length > 0 ? (
-              <Badge size="xs" variant="filled" color="gray" circle>
+    <Box mb="xs" className={styles.sectionHeader}>
+      <NavLink
+        label="Saved Views"
+        leftSection={
+          <ChevronRight
+            size={14}
+            style={{
+              transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
+              transition: 'transform 150ms ease',
+            }}
+          />
+        }
+        rightSection={
+          <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
+            {views.length > 0 && (
+              <Badge size="xs" variant="light" color="gray" radius="sm">
                 {views.length}
               </Badge>
-            ) : undefined
-          }
-          onClick={handleToggle}
-          opened={!isCollapsed}
-          disableRightSectionRotation
-          variant="subtle"
-          styles={{
-            root: { flex: 1 },
-            label: {
-              fontWeight: 600,
-              fontSize: 'var(--mantine-font-size-xs)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              color: 'var(--mantine-color-dimmed)',
-            },
-          }}
-        >
-          <Stack gap={0} role="listbox" aria-label="Saved views">
-            {views.length === 0 ? (
-              <Text size="xs" c="dimmed" py="xs" pl="md">
-                No saved views yet
-              </Text>
-            ) : (
-              views.map((view) => (
-                <Menu
-                  key={view.id}
-                  opened={contextMenuView?.id === view.id}
-                  onClose={() => setContextMenuView(null)}
-                  position="right-start"
-                >
-                  <Menu.Target>
-                    <Box
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        setContextMenuView(view);
-                      }}
-                    >
-                      <NavLink
-                        label={view.name}
-                        leftSection={renderIcon(view.icon)}
-                        active={activeViewId === view.id}
-                        onClick={() => handleViewClick(view)}
-                        variant="subtle"
-                      />
-                    </Box>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item
-                      leftSection={<Pencil size={14} />}
-                      onClick={() => handleEdit(view)}
-                    >
-                      Edit View
-                    </Menu.Item>
-                    <Menu.Item
-                      leftSection={<Trash2 size={14} />}
-                      color="red"
-                      onClick={() => handleDelete(view)}
-                    >
-                      Delete View
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-              ))
             )}
-          </Stack>
-        </NavLink>
-        <ActionIcon
-          variant="subtle"
-          color="gray"
-          size="sm"
-          onClick={handleCreateView}
-          aria-label="Create new saved view"
-          title="Create new saved view"
-        >
-          <Plus size={14} />
-        </ActionIcon>
-      </Group>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="xs"
+              onClick={handleCreateView}
+              aria-label="Create new saved view"
+              title="Create new saved view"
+            >
+              <Plus size={14} />
+            </ActionIcon>
+          </Group>
+        }
+        onClick={handleToggle}
+        opened={!isCollapsed}
+        disableRightSectionRotation
+        variant="subtle"
+        styles={{
+          label: {
+            fontWeight: 600,
+            fontSize: 'var(--mantine-font-size-xs)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            color: 'var(--mantine-color-dimmed)',
+          },
+        }}
+      >
+        <Stack gap={0} role="listbox" aria-label="Saved views">
+          {views.length === 0 ? (
+            <Text size="xs" c="dimmed" py="xs" px="md">
+              No saved views yet
+            </Text>
+          ) : (
+            views.map((view) => (
+              <Menu
+                key={view.id}
+                opened={contextMenuView?.id === view.id}
+                onClose={() => setContextMenuView(null)}
+                position="right-start"
+              >
+                <Menu.Target>
+                  <Box
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setContextMenuView(view);
+                    }}
+                  >
+                    <NavLink
+                      label={view.name}
+                      leftSection={renderIcon(view.icon)}
+                      active={activeViewId === view.id}
+                      onClick={() => handleViewClick(view)}
+                      variant="subtle"
+                    />
+                  </Box>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item
+                    leftSection={<Pencil size={14} />}
+                    onClick={() => handleEdit(view)}
+                  >
+                    Edit View
+                  </Menu.Item>
+                  <Menu.Item
+                    leftSection={<Trash2 size={14} />}
+                    color="brick"
+                    onClick={() => handleDelete(view)}
+                  >
+                    Delete View
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            ))
+          )}
+        </Stack>
+      </NavLink>
 
       <SavedViewEditor
         view={editingView}

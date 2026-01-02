@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, type MouseEvent } from 'react';
 import { NavLink, Box } from '@mantine/core';
 import { ChevronRight } from 'lucide-react';
 import { useSidebar } from '@/contexts';
@@ -8,6 +8,7 @@ interface SidebarSectionProps {
   title: string;
   children: ReactNode;
   collapsible?: boolean;
+  action?: ReactNode;
 }
 
 export function SidebarSection({
@@ -15,6 +16,7 @@ export function SidebarSection({
   title,
   children,
   collapsible = true,
+  action,
 }: SidebarSectionProps) {
   const { isSectionCollapsed, toggleSection } = useSidebar();
   const isCollapsed = collapsible && isSectionCollapsed(id);
@@ -23,6 +25,10 @@ export function SidebarSection({
     if (collapsible) {
       toggleSection(id);
     }
+  };
+
+  const handleActionClick = (e: MouseEvent) => {
+    e.stopPropagation();
   };
 
   return (
@@ -42,6 +48,11 @@ export function SidebarSection({
         }
         onClick={handleToggle}
         opened={!isCollapsed}
+        rightSection={
+          action ? (
+            <span onClick={handleActionClick}>{action}</span>
+          ) : null
+        }
         disableRightSectionRotation
         variant="subtle"
         styles={{

@@ -4,13 +4,13 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+import { Portal, Group, ActionIcon, Text, Divider, Box, Tooltip, Menu } from '@mantine/core';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
 import { useConfirmDialog } from '@/hooks';
 import { ConfirmDialog } from '@/components/ui';
 import { ObjectSearchModal } from '@/components/object/editors';
+import { Icon } from '@/components/ui/Icon';
 import { TaskPriorityOptions } from '@/lib/types';
-import './BulkActions.css';
 
 export interface BulkActionsProps {
   /** Array of selected item IDs */
@@ -36,7 +36,6 @@ export function BulkActions({
 
   // Modal states
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
-  const [tagPickerMode, setTagPickerMode] = useState<'add' | 'remove'>('add');
   const [projectPickerOpen, setProjectPickerOpen] = useState(false);
 
   const count = selectedIds.length;
@@ -121,8 +120,8 @@ export function BulkActions({
 
   // Handle type change action
   const handleChangeType = useCallback(
-    (newTypeId: string) => {
-      if (!store) return;
+    (newTypeId: string | null) => {
+      if (!store || !newTypeId) return;
 
       const typeDef = typeRegistry.get(newTypeId);
       const typeName = typeDef?.name ?? newTypeId;
@@ -174,43 +173,16 @@ export function BulkActions({
     [store, selectedIds, count, refreshData, onActionComplete, addToast]
   );
 
-  // Handle remove tag
-  const handleRemoveTag = useCallback(
-    (tagId: string) => {
-      if (!store) return;
-
-      const tag = store.get(tagId);
-      const tagName = (tag?.properties.name as string) ?? 'tag';
-
-      const result = store.removeTagFromMany(selectedIds, tagId);
-      refreshData();
-      onActionComplete?.();
-
-      if (result.errors.length > 0) {
-        addToast({
-          type: 'warning',
-          message: `Removed "${tagName}" from ${result.updated} of ${count} items`,
-        });
-      } else {
-        addToast({
-          type: 'success',
-          message: `Removed "${tagName}" from ${result.updated} item${result.updated === 1 ? '' : 's'}`,
-        });
-      }
-    },
-    [store, selectedIds, count, refreshData, onActionComplete, addToast]
-  );
-
   // Handle set priority
   const handleSetPriority = useCallback(
     (priority: string | null) => {
       if (!store) return;
 
-      const result = store.setPriorityMany(selectedIds, priority);
+      const result = store.setPriorityMany(selectedIds, priority === 'none' ? null : priority);
       refreshData();
       onActionComplete?.();
 
-      const label = priority ?? 'none';
+      const label = priority === 'none' ? 'none' : priority ?? 'none';
       if (result.errors.length > 0) {
         addToast({
           type: 'warning',
@@ -243,27 +215,6 @@ export function BulkActions({
       addToast({
         type: 'success',
         message: `Completed ${result.updated} task${result.updated === 1 ? '' : 's'}`,
-      });
-    }
-  }, [store, selectedIds, selectedInfo.taskCount, refreshData, onActionComplete, addToast]);
-
-  // Handle mark incomplete
-  const handleMarkIncomplete = useCallback(() => {
-    if (!store) return;
-
-    const result = store.setStatusMany(selectedIds, 'todo');
-    refreshData();
-    onActionComplete?.();
-
-    if (result.errors.length > 0) {
-      addToast({
-        type: 'warning',
-        message: `Reopened ${result.updated} of ${selectedInfo.taskCount} tasks`,
-      });
-    } else {
-      addToast({
-        type: 'success',
-        message: `Reopened ${result.updated} task${result.updated === 1 ? '' : 's'}`,
       });
     }
   }, [store, selectedIds, selectedInfo.taskCount, refreshData, onActionComplete, addToast]);
@@ -331,214 +282,207 @@ export function BulkActions({
     (typeDef) => !['tag', 'project', 'type'].includes(typeDef.id)
   );
 
-  return createPortal(
-    <>
-      <div className="bulk-actions" role="toolbar" aria-label="Bulk actions">
-        {/* Selection count */}
-        <span className="bulk-actions__count" aria-live="polite">
-          {count} selected
-        </span>
+  const typeOptions = types.map((typeDef) => ({
+    value: typeDef.id,
+    label: typeDef.name,
+  }));
 
-        {/* Divider */}
-        <span className="bulk-actions__divider" aria-hidden="true" />
+  const priorityOptions = [
+    ...TaskPriorityOptions.map((priority) => ({
+      value: priority,
+      label: priority.charAt(0).toUpperCase() + priority.slice(1),
+    })),
+    { value: 'none', label: 'Clear Priority' },
+  ];
 
-        {/* Actions */}
-        <div className="bulk-actions__buttons">
-          {/* Process button - inbox only */}
-          {viewType === 'inbox' && (
-            <button
-              type="button"
-              className="bulk-actions__button"
-              onClick={handleProcess}
-              title="Mark as processed (removes from inbox)"
-            >
-              Done
-            </button>
-          )}
+  return (
+    <Portal>
+      <Box
+        role="toolbar"
+        aria-label="Bulk actions"
+        style={{
+          position: 'fixed',
+          bottom: 24,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+          backgroundColor: 'var(--mantine-color-body)',
+          border: '1px solid var(--mantine-color-default-border)',
+          borderRadius: 'var(--mantine-radius-sm)',
+          boxShadow: 'var(--mantine-shadow-lg)',
+          padding: 'var(--mantine-spacing-xs) var(--mantine-spacing-sm)',
+        }}
+      >
+        <Group gap="sm" wrap="nowrap">
+          {/* Selection count */}
+          <Text size="sm" c="dimmed" aria-live="polite" style={{ whiteSpace: 'nowrap' }}>
+            {count} selected
+          </Text>
 
-          {/* Task-specific actions */}
-          {selectedInfo.hasTasks && viewType === 'tasks' && (
-            <>
-              <button
-                type="button"
-                className="bulk-actions__button"
-                onClick={handleMarkComplete}
-                title="Mark selected tasks as complete"
-              >
-                Complete
-              </button>
-              <button
-                type="button"
-                className="bulk-actions__button"
-                onClick={handleMarkIncomplete}
-                title="Mark selected tasks as incomplete"
-              >
-                Reopen
-              </button>
-              <div className="bulk-actions__dropdown">
-                <select
-                  className="bulk-actions__select"
-                  value=""
-                  onChange={(e) => {
-                    if (e.target.value === 'none') {
-                      handleSetPriority(null);
-                    } else if (e.target.value) {
-                      handleSetPriority(e.target.value);
-                    }
-                  }}
-                  aria-label="Set priority"
+          <Divider orientation="vertical" />
+
+          {/* Action icons group */}
+          <Group gap={4} wrap="nowrap">
+            {/* Process button - inbox only */}
+            {viewType === 'inbox' && (
+              <Tooltip label="Mark as done" position="top" withArrow>
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  color="sage"
+                  onClick={handleProcess}
+                  aria-label="Mark as done"
                 >
-                  <option value="" disabled>
-                    Priority
-                  </option>
-                  {TaskPriorityOptions.map((priority) => (
-                    <option key={priority} value={priority}>
-                      {priority.charAt(0).toUpperCase() + priority.slice(1)}
-                    </option>
-                  ))}
-                  <option value="none">Clear Priority</option>
-                </select>
-              </div>
-            </>
-          )}
+                  <Icon name="check" size={14} />
+                </ActionIcon>
+              </Tooltip>
+            )}
 
-          {/* Tag actions */}
-          <button
-            type="button"
-            className="bulk-actions__button"
-            onClick={() => {
-              setTagPickerMode('add');
-              setTagPickerOpen(true);
-            }}
-            title="Add tag to selected items"
-          >
-            +Tag
-          </button>
-          <button
-            type="button"
-            className="bulk-actions__button"
-            onClick={() => {
-              setTagPickerMode('remove');
-              setTagPickerOpen(true);
-            }}
-            title="Remove tag from selected items"
-          >
-            -Tag
-          </button>
+            {/* Task-specific actions */}
+            {selectedInfo.hasTasks && viewType === 'tasks' && (
+              <>
+                <Tooltip label="Complete tasks" position="top" withArrow>
+                  <ActionIcon
+                    variant="subtle"
+                    size="sm"
+                    color="sage"
+                    onClick={handleMarkComplete}
+                    aria-label="Complete tasks"
+                  >
+                    <Icon name="check" size={14} />
+                  </ActionIcon>
+                </Tooltip>
 
-          {/* Project assignment */}
-          <button
-            type="button"
-            className="bulk-actions__button"
-            onClick={() => setProjectPickerOpen(true)}
-            title="Assign to project"
-          >
-            Project
-          </button>
+                <Menu position="top" withArrow>
+                  <Menu.Target>
+                    <Tooltip label="Set priority" position="top" withArrow>
+                      <ActionIcon variant="subtle" size="sm" aria-label="Set priority">
+                        <Icon name="flag" size={14} />
+                      </ActionIcon>
+                    </Tooltip>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    {priorityOptions.map((option) => (
+                      <Menu.Item key={option.value} onClick={() => handleSetPriority(option.value)}>
+                        {option.label}
+                      </Menu.Item>
+                    ))}
+                  </Menu.Dropdown>
+                </Menu>
+              </>
+            )}
 
-          {/* Pin/Unpin */}
-          {selectedInfo.nonePinned ? (
-            <button
-              type="button"
-              className="bulk-actions__button"
-              onClick={handlePin}
-              title="Pin selected items"
-            >
-              Pin
-            </button>
-          ) : selectedInfo.allPinned ? (
-            <button
-              type="button"
-              className="bulk-actions__button"
-              onClick={handleUnpin}
-              title="Unpin selected items"
-            >
-              Unpin
-            </button>
-          ) : (
-            <>
-              <button
-                type="button"
-                className="bulk-actions__button"
-                onClick={handlePin}
-                title="Pin selected items"
+            {/* Tags */}
+            <Tooltip label="Manage tags" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={() => setTagPickerOpen(true)}
+                aria-label="Manage tags"
               >
-                Pin
-              </button>
-              <button
-                type="button"
-                className="bulk-actions__button"
-                onClick={handleUnpin}
-                title="Unpin selected items"
+                <Icon name="tag" size={14} />
+              </ActionIcon>
+            </Tooltip>
+
+            {/* Project assignment */}
+            <Tooltip label="Assign to project" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={() => setProjectPickerOpen(true)}
+                aria-label="Assign to project"
               >
-                Unpin
-              </button>
-            </>
-          )}
+                <Icon name="folder" size={14} />
+              </ActionIcon>
+            </Tooltip>
 
-          {/* Type change dropdown */}
-          <div className="bulk-actions__dropdown">
-            <select
-              className="bulk-actions__select"
-              value=""
-              onChange={(e) => {
-                if (e.target.value) {
-                  handleChangeType(e.target.value);
-                }
-              }}
-              aria-label="Change type"
+            {/* Pin/Unpin */}
+            {!selectedInfo.allPinned && (
+              <Tooltip label="Pin items" position="top" withArrow>
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  onClick={handlePin}
+                  aria-label="Pin items"
+                >
+                  <Icon name="pin" size={14} />
+                </ActionIcon>
+              </Tooltip>
+            )}
+            {!selectedInfo.nonePinned && (
+              <Tooltip label="Unpin items" position="top" withArrow>
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  onClick={handleUnpin}
+                  aria-label="Unpin items"
+                >
+                  <Icon name="pin-off" size={14} />
+                </ActionIcon>
+              </Tooltip>
+            )}
+
+            {/* Type change */}
+            <Menu position="top" withArrow>
+              <Menu.Target>
+                <Tooltip label="Change type" position="top" withArrow>
+                  <ActionIcon variant="subtle" size="sm" aria-label="Change type">
+                    <Icon name="shapes" size={14} />
+                  </ActionIcon>
+                </Tooltip>
+              </Menu.Target>
+              <Menu.Dropdown>
+                {typeOptions.map((option) => (
+                  <Menu.Item key={option.value} onClick={() => handleChangeType(option.value)}>
+                    {option.label}
+                  </Menu.Item>
+                ))}
+              </Menu.Dropdown>
+            </Menu>
+          </Group>
+
+          <Divider orientation="vertical" />
+
+          {/* Delete button - separated for visual weight */}
+          <Tooltip label="Delete items" position="top" withArrow>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              color="brick"
+              onClick={handleDelete}
+              aria-label="Delete items"
             >
-              <option value="" disabled>
-                Type
-              </option>
-              {types.map((typeDef) => (
-                <option key={typeDef.id} value={typeDef.id}>
-                  {typeDef.icon} {typeDef.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              <Icon name="trash-2" size={14} />
+            </ActionIcon>
+          </Tooltip>
 
-          {/* Delete button */}
-          <button
-            type="button"
-            className="bulk-actions__button bulk-actions__button--danger"
-            onClick={handleDelete}
-            title="Delete selected items"
-          >
-            Delete
-          </button>
-        </div>
+          <Divider orientation="vertical" />
 
-        {/* Divider */}
-        <span className="bulk-actions__divider" aria-hidden="true" />
-
-        {/* Clear selection button */}
-        <button
-          type="button"
-          className="bulk-actions__close"
-          onClick={onClearSelection}
-          aria-label="Clear selection"
-          title="Clear selection (Escape)"
-        >
-          <span aria-hidden="true">×</span>
-        </button>
-      </div>
+          {/* Clear selection button */}
+          <Tooltip label="Clear selection" position="top" withArrow>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              color="gray"
+              onClick={onClearSelection}
+              aria-label="Clear selection"
+            >
+              <Icon name="x" size={14} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      </Box>
 
       {/* Tag Picker Modal */}
       <ObjectSearchModal
         isOpen={tagPickerOpen}
         onClose={() => setTagPickerOpen(false)}
         onSelect={(tagId) => {
-          if (tagPickerMode === 'add') {
-            handleAddTag(tagId);
-          } else {
-            handleRemoveTag(tagId);
-          }
+          handleAddTag(tagId);
           setTagPickerOpen(false);
         }}
         targetTypeIds={['tag']}
-        title={tagPickerMode === 'add' ? 'Add Tag' : 'Remove Tag'}
+        title="Add Tag"
       />
 
       {/* Project Picker Modal */}
@@ -564,7 +508,6 @@ export function BulkActions({
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
-    </>,
-    document.body
+    </Portal>
   );
 }

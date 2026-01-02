@@ -1,22 +1,32 @@
-import type { PropertyDefinition, PropertyValue } from '@/lib/types';
+import type { PropertyDefinition, PropertyValue, SkelenoteObject } from '@/lib/types';
 import {
   TextInput,
   NumberInput,
   Checkbox,
   DatePicker,
   Select,
+  DurationSelect,
   UrlInput,
   EmailInput,
   PhoneInput,
   RelationPicker,
   RecurrenceEditor,
+  CascadingRelationPicker,
 } from './editors';
+
+/** Types that support area/project cascading */
+const CASCADING_TYPES = ['task', 'note', 'meeting', 'link', 'person'];
 
 interface PropertyEditorProps {
   id: string;
   definition: PropertyDefinition;
   value: PropertyValue;
   onChange: (value: PropertyValue) => void;
+  /** Optional context for cascading relation logic */
+  cascadeContext?: {
+    object: SkelenoteObject;
+    onPropertyChange: (propertyId: string, value: PropertyValue) => void;
+  };
 }
 
 /**
@@ -27,17 +37,18 @@ export function PropertyEditor({
   definition,
   value,
   onChange,
+  cascadeContext,
 }: PropertyEditorProps) {
   const { type, config } = definition;
 
   // Placeholder style for unimplemented editors
   const placeholderStyle: React.CSSProperties = {
-    padding: 'var(--spacing-xs) var(--spacing-sm)',
-    background: 'var(--bg-sunken)',
-    border: '1px solid var(--border-subtle)',
-    borderRadius: 'var(--radius-sm)',
-    fontSize: 'var(--font-size-sm)',
-    color: 'var(--text-secondary)',
+    padding: 'var(--mantine-spacing-xs) var(--mantine-spacing-sm)',
+    background: 'var(--mantine-color-gray-1)',
+    border: '1px solid var(--mantine-color-default-border)',
+    borderRadius: 'var(--mantine-radius-sm)',
+    fontSize: 'var(--mantine-font-size-sm)',
+    color: 'var(--mantine-color-gray-6)',
     fontStyle: 'italic',
   };
 
@@ -87,6 +98,16 @@ export function PropertyEditor({
       );
 
     case 'select':
+      // Use DurationSelect for meeting duration field
+      if (definition.id === 'durationMinutes') {
+        return (
+          <DurationSelect
+            id={id}
+            value={typeof value === 'string' ? value : null}
+            onChange={onChange}
+          />
+        );
+      }
       return (
         <Select
           id={id}
@@ -96,7 +117,30 @@ export function PropertyEditor({
         />
       );
 
-    case 'relation':
+    case 'relation': {
+      // Check if this is an area/project relation that needs cascading
+      const isCascadingProperty =
+        cascadeContext &&
+        (definition.id === 'area' || definition.id === 'project') &&
+        CASCADING_TYPES.includes(cascadeContext.object.typeId);
+
+      if (isCascadingProperty) {
+        return (
+          <CascadingRelationPicker
+            propertyId={definition.id as 'area' | 'project'}
+            value={
+              Array.isArray(value)
+                ? (value as string[])
+                : typeof value === 'string'
+                  ? value
+                  : null
+            }
+            object={cascadeContext.object}
+            onPropertyChange={cascadeContext.onPropertyChange}
+          />
+        );
+      }
+
       return (
         <RelationPicker
           id={id}
@@ -112,6 +156,7 @@ export function PropertyEditor({
           onChange={onChange}
         />
       );
+    }
 
     case 'url':
       return (

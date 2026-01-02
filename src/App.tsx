@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Layout, SplitPane } from '@/components/layout';
 import { ObjectDetailView } from '@/components/object';
-import { TaskView, InboxView, DailyNotesView, SavedViewContent } from '@/components/views';
+import { TaskView, InboxView, DailyNotesView, SavedViewContent, TypeBrowseView } from '@/components/views';
 import { CommandPalette } from '@/components/palette';
 import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
@@ -15,6 +15,7 @@ import { useCommandPalette, useTodaysDailyNote, useTemplates } from '@/hooks';
 import type { Template } from '@/lib/templates';
 import { runFirstRunSetup } from '@/lib/first-run';
 import type { TaskFilter } from '@/lib/tasks/filters';
+import { BuiltInTypeIds } from '@/lib/types';
 
 /**
  * Placeholder component for views not yet implemented
@@ -34,6 +35,7 @@ function PlaceholderView({ view }: { view: ViewType }) {
     'time-machine': 'Time Machine',
     search: 'Search',
     'saved-view': 'Saved View',
+    'type-browse': 'Browse Objects',
   };
 
   return (
@@ -41,14 +43,14 @@ function PlaceholderView({ view }: { view: ViewType }) {
       style={{
         padding: 'var(--spacing-lg)',
         textAlign: 'center',
-        color: 'var(--text-secondary)',
+        color: 'var(--mantine-color-gray-6)',
       }}
     >
       <h1
         className="font-ui"
         style={{
           marginBottom: 'var(--spacing-md)',
-          color: 'var(--text-primary)',
+          color: 'var(--mantine-color-text)',
         }}
       >
         {viewLabels[view]}
@@ -58,6 +60,17 @@ function PlaceholderView({ view }: { view: ViewType }) {
   );
 }
 
+
+/**
+ * Router for type browse view that gets typeId from navigation context
+ */
+function TypeBrowseViewRouter() {
+  const { browseTypeId } = useNavigation();
+  if (!browseTypeId) {
+    return null;
+  }
+  return <TypeBrowseView typeId={browseTypeId} />;
+}
 
 /**
  * Renders the primary view based on current navigation state
@@ -72,7 +85,7 @@ function PrimaryContent() {
         style={{
           padding: 'var(--spacing-lg)',
           textAlign: 'center',
-          color: 'var(--text-secondary)',
+          color: 'var(--mantine-color-gray-6)',
         }}
       >
         Loading...
@@ -86,11 +99,11 @@ function PrimaryContent() {
         style={{
           padding: 'var(--spacing-lg)',
           textAlign: 'center',
-          color: 'var(--text-secondary)',
+          color: 'var(--mantine-color-gray-6)',
         }}
       >
         <p>Error initializing data store:</p>
-        <p style={{ color: 'var(--tag-red)' }}>{error.message}</p>
+        <p style={{ color: 'var(--mantine-color-brick-5)' }}>{error.message}</p>
       </div>
     );
   }
@@ -144,6 +157,11 @@ function PrimaryContent() {
     return <SavedViewContent />;
   }
 
+  // Type browse view
+  if (currentView === 'type-browse') {
+    return <TypeBrowseViewRouter />;
+  }
+
   return <PlaceholderView view={currentView} />;
 }
 
@@ -194,7 +212,13 @@ function App() {
   const { isInitialized: isCryptoInitialized, hasSkeletonKey } = useSkeletonKey();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
   const { splitPane, closeSplit, swapPanes, navigateToView, navigateToSearch } = useNavigation();
-  const inboxCount = store?.getInboxed().length ?? 0;
+  // Exclude tags, projects, and areas from inbox count (they appear in sidebar)
+  const inboxCount =
+    store?.getInboxed().filter((item) =>
+      item.typeId !== BuiltInTypeIds.TAG &&
+      item.typeId !== BuiltInTypeIds.PROJECT &&
+      item.typeId !== BuiltInTypeIds.AREA
+    ).length ?? 0;
   const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
@@ -374,7 +398,7 @@ function App() {
           alignItems: 'center',
           justifyContent: 'center',
           height: '100vh',
-          color: 'var(--text-secondary)',
+          color: 'var(--mantine-color-gray-6)',
           fontFamily: 'var(--font-ui)',
         }}
       >

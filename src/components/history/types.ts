@@ -66,12 +66,40 @@ export interface SnapshotPreviewProps {
   frontier: Frontiers;
   /** Objects at the selected point */
   objects: SkelenoteObject[];
-  /** Callback when an object is selected for preview */
-  onObjectSelect: (objectId: string) => void;
+  /** Callback when an object is selected for preview (legacy, kept for compatibility) */
+  onObjectSelect?: (objectId: string) => void;
   /** Callback to restore the entire state */
   onRestore: () => void;
+  /** Callback to restore a specific object */
+  onRestoreObject?: (objectId: string) => void;
   /** Callback to compare a specific object with current */
   onCompareWithCurrent: (objectId: string) => void;
+  /** Set of current object IDs to detect deleted objects */
+  currentObjectIds?: Set<string>;
+}
+
+/**
+ * Props for ContentPreview component
+ */
+export interface ContentPreviewProps {
+  /** BlockNote JSON content string */
+  content: string | null;
+  /** Maximum height before scrolling (default: 200) */
+  maxHeight?: number;
+  /** Show placeholder when content is empty */
+  showEmptyPlaceholder?: boolean;
+}
+
+/**
+ * Props for DiffContentPreview component
+ */
+export interface DiffContentPreviewProps {
+  /** Historical BlockNote content */
+  historicalContent: string | null;
+  /** Current BlockNote content */
+  currentContent: string | null;
+  /** Which side this represents */
+  side: 'historical' | 'current';
 }
 
 /**

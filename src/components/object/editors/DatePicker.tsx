@@ -58,6 +58,7 @@ export function DatePicker({
         variant="filled"
         valueFormat="MMM D, YYYY h:mm A"
         placeholder="Select date & time..."
+        popoverProps={{ withinPortal: false }}
       />
     );
   }
@@ -72,6 +73,7 @@ export function DatePicker({
       variant="filled"
       valueFormat="MMM D, YYYY"
       placeholder="Select date..."
+      popoverProps={{ withinPortal: false }}
     />
   );
 }

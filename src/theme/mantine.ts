@@ -9,17 +9,19 @@ import { createTheme, MantineColorsTuple, rem } from '@mantine/core';
  * Custom color palettes mapped from existing design tokens
  * Each tuple has 10 shades from lightest to darkest
  */
+// Foundation gray (zinc-based per style guide)
+// These colors have a subtle cool undertone that works better in dark mode
 const gray: MantineColorsTuple = [
-  '#fafafa', // 0 - lightest
-  '#f5f5f5', // 1
-  '#e5e5e5', // 2
-  '#d4d4d4', // 3
-  '#a3a3a3', // 4
-  '#737373', // 5 - base
-  '#525252', // 6
-  '#404040', // 7
-  '#262626', // 8
-  '#171717', // 9 - darkest
+  '#FAFAFA', // 0 - Canvas (lightest)
+  '#F4F4F5', // 1
+  '#E4E4E7', // 2 - Vellum (borders light mode)
+  '#D4D4D8', // 3
+  '#A1A1AA', // 4 - Stone (muted text, placeholders)
+  '#71717A', // 5 - base
+  '#52525B', // 6 - Graphite (secondary text)
+  '#3F3F46', // 7
+  '#27272A', // 8 - Vellum dark (borders dark mode)
+  '#18181B', // 9 - Carbon (darkest, dark mode surfaces)
 ];
 
 const red: MantineColorsTuple = [
@@ -127,6 +129,95 @@ const cyan: MantineColorsTuple = [
 ];
 
 /**
+ * Custom Skelenote Design System Colors
+ * Warm palette inspired by Linear's minimal aesthetic
+ */
+
+// Primary accent (Terracotta)
+const ember: MantineColorsTuple = [
+  '#FDF5F4', // 0
+  '#F9E8E6', // 1
+  '#F2CEC9', // 2
+  '#E8ADA5', // 3
+  '#D88A80', // 4
+  '#B85C50', // 5 - Base
+  '#A34D42', // 6
+  '#8A3F36', // 7
+  '#6E322B', // 8
+  '#522520', // 9
+];
+
+// Secondary accent (Dusty mauve)
+const clay: MantineColorsTuple = [
+  '#FAF9FA', // 0
+  '#F3F1F2', // 1
+  '#E6E2E4', // 2
+  '#D4CDD1', // 3
+  '#BDB3B8', // 4
+  '#9A8C98', // 5 - Base
+  '#857780', // 6
+  '#6E626A', // 7
+  '#574E54', // 8
+  '#403A3D', // 9
+];
+
+// Success (Muted green)
+const sage: MantineColorsTuple = [
+  '#F4F9F4', // 0
+  '#E6F2E7', // 1
+  '#C8E1CA', // 2
+  '#A3CCA6', // 3
+  '#7FB583', // 4
+  '#5E8C61', // 5 - Base
+  '#4F7652', // 6
+  '#416043', // 7
+  '#334A35', // 8
+  '#243427', // 9
+];
+
+// Warning (Golden)
+const ochre: MantineColorsTuple = [
+  '#FFFBEB', // 0
+  '#FEF3C7', // 1
+  '#FDE68A', // 2
+  '#FCD34D', // 3
+  '#D4A60A', // 4
+  '#B8860B', // 5 - Base
+  '#9A7209', // 6
+  '#7C5C07', // 7
+  '#5E4606', // 8
+  '#403004', // 9
+];
+
+// Error/Danger (Warm red)
+const brick: MantineColorsTuple = [
+  '#FDF5F5', // 0
+  '#F9E6E6', // 1
+  '#F0C7C7', // 2
+  '#E3A1A1', // 3
+  '#CE6F6F', // 4
+  '#9B3D3D', // 5 - Base
+  '#853434', // 6
+  '#6E2B2B', // 7
+  '#572222', // 8
+  '#401919', // 9
+];
+
+// Links/Navigation (Cool slate)
+const slate: MantineColorsTuple = [
+  '#F8FAFC', // 0
+  '#F1F5F9', // 1
+  '#E2E8F0', // 2
+  '#CBD5E1', // 3
+  '#94A3B8', // 4
+  '#64748B', // 5 - Blueprint base
+  '#475569', // 6 - Slate/Link
+  '#334155', // 7
+  '#1E293B', // 8
+  '#0F172A', // 9
+];
+
+/**
  * Skelenote Mantine Theme
  * Designed for a minimal, professional aesthetic
  */
@@ -195,15 +286,36 @@ export const theme = createTheme({
     violet,
     pink,
     cyan,
+    // Skelenote Design System colors
+    ember,
+    clay,
+    sage,
+    ochre,
+    brick,
+    slate,
   },
-  primaryColor: 'blue',
-  primaryShade: { light: 6, dark: 5 },
+  primaryColor: 'ember',
+  primaryShade: { light: 5, dark: 4 },
 
   // ===== CURSOR =====
   cursorType: 'pointer',
 
   // ===== FOCUS RING =====
   focusRing: 'auto',
+
+  // ===== SURFACE COLORS =====
+  // Custom semantic colors for surface hierarchy
+  // Access via: theme.other.canvas, etc. or CSS var(--mantine-other-canvas)
+  other: {
+    // Near-black base layer (app background, sidebar)
+    canvas: '#0A0A0A',
+    // Elevated surface (cards, content areas) - same as gray.9
+    paper: '#18181B',
+    // Border color for dark mode - same as gray.8
+    vellum: '#27272A',
+    // Slightly brighter border for better visibility
+    vellumBright: '#3F3F46',
+  },
 
   // ===== COMPONENT DEFAULTS =====
   // Overrides for minimal aesthetic
@@ -295,13 +407,34 @@ export const theme = createTheme({
     Badge: {
       defaultProps: {
         variant: 'light',
-        size: 'sm',
+        size: 'xs',
+      },
+      styles: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 500,
+        },
       },
     },
     Checkbox: {
       defaultProps: {
         size: 'sm',
-        radius: 'xl',
+        radius: 'sm',
+      },
+      styles: {
+        input: {
+          borderWidth: '1.5px',
+          '&:not(:checked)': {
+            borderColor: 'var(--mantine-color-gray-3)',
+          },
+        },
+      },
+    },
+    UnstyledButton: {
+      styles: {
+        root: {
+          transition: 'background-color 150ms ease',
+        },
       },
     },
     Tooltip: {

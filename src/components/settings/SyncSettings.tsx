@@ -1,23 +1,36 @@
 import { useState, useEffect, useCallback } from 'react';
+import {
+  Stack,
+  Group,
+  Title,
+  Text,
+  Box,
+  TextInput,
+  Button,
+  Badge,
+  Divider,
+  Code,
+  CopyButton,
+  ActionIcon,
+  ThemeIcon,
+} from '@mantine/core';
+import { Icon } from '@/components/ui';
 import { useSyncContextSafe, useSkeletonKeySafe } from '@/contexts';
 import {
   getUserId,
   getDeviceId,
-  copyToClipboard,
   getSyncServerUrl,
   setSyncServerUrl,
   isValidWebSocketUrl,
 } from '@/lib/sync';
 import { LocalSyncSettings } from './LocalSyncSettings';
 import { DeviceManager } from './DeviceManager';
-import './SyncSettings.css';
 
 export function SyncSettings() {
   const syncContext = useSyncContextSafe();
   const skeletonKeyContext = useSkeletonKeySafe();
   const [serverUrl, setServerUrl] = useState(getSyncServerUrl() || '');
   const [urlError, setUrlError] = useState<string | null>(null);
-  const [copySuccess, setCopySuccess] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
@@ -48,14 +61,6 @@ export function SyncSettings() {
     syncContext.disconnect();
   };
 
-  const handleCopyUserId = async () => {
-    const success = await copyToClipboard(userId);
-    if (success) {
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    }
-  };
-
   const handleResetVault = useCallback(async () => {
     if (!skeletonKeyContext) return;
 
@@ -76,6 +81,19 @@ export function SyncSettings() {
     }
   }, [skeletonKeyContext, syncContext]);
 
+  const getStatusColor = () => {
+    switch (status) {
+      case 'connected':
+        return 'sage';
+      case 'connecting':
+      case 'syncing':
+        return 'ochre';
+      case 'disconnected':
+      default:
+        return 'gray';
+    }
+  };
+
   const getStatusLabel = () => {
     switch (status) {
       case 'connected':
@@ -91,164 +109,160 @@ export function SyncSettings() {
   };
 
   return (
-    <section className="sync-settings">
-      <h2 className="sync-settings__title">Sync Settings</h2>
+    <Stack gap="lg" component="section">
+      <Title order={2}>Sync Settings</Title>
 
-      <div className="sync-settings__section">
-        <label className="sync-settings__label">Encryption</label>
-        <div className="sync-settings__encryption">
+      {/* Encryption Status */}
+      <Box>
+        <Text size="sm" fw={500} mb="xs">Encryption</Text>
+        <Group gap="sm">
           {hasSkeletonKey ? (
             <>
-              <span className="sync-settings__encryption-icon">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </span>
-              <span className="sync-settings__encryption-label">
-                End-to-end encrypted with Skeleton Key
-              </span>
+              <ThemeIcon variant="light" color="sage" size="sm">
+                <Icon name="lock" size={14} />
+              </ThemeIcon>
+              <Text size="sm">End-to-end encrypted with Skeleton Key</Text>
             </>
           ) : (
-            <span className="sync-settings__encryption-label sync-settings__encryption-label--warning">
-              No Skeleton Key configured
-            </span>
+            <Text size="sm" c="ochre">No Skeleton Key configured</Text>
           )}
-        </div>
-        <p className="sync-settings__help">
+        </Group>
+        <Text size="xs" c="dimmed" mt="xs">
           All sync methods use end-to-end encryption. Your data is encrypted
           before leaving this device.
-        </p>
-      </div>
+        </Text>
+      </Box>
 
-      <div className="sync-settings__divider" />
+      <Divider />
 
+      {/* Device Manager */}
       <DeviceManager />
 
-      <div className="sync-settings__divider" />
+      <Divider />
 
+      {/* Local Sync Settings */}
       <LocalSyncSettings />
 
-      <div className="sync-settings__divider" />
+      <Divider />
 
-      <div className="sync-settings__section">
-        <label className="sync-settings__label">Cloud Relay</label>
-        <p className="sync-settings__help">
+      {/* Cloud Relay */}
+      <Box>
+        <Title order={4} mb="xs">Cloud Relay</Title>
+        <Text size="sm" c="dimmed" mb="md">
           Sync through a relay server when devices aren't on the same network.
-        </p>
+        </Text>
 
-        <div className="sync-settings__subsection">
-          <label className="sync-settings__sublabel">Server URL</label>
-          <div className="sync-settings__input-row">
-            <input
-              type="text"
-              className="sync-settings__input"
+        <Stack gap="sm">
+          <Box>
+            <Text size="xs" fw={500} mb={4}>Server URL</Text>
+            <TextInput
               placeholder="wss://your-worker.workers.dev"
               value={serverUrl}
               onChange={(e) => setServerUrl(e.target.value)}
               disabled={isConnected}
+              error={urlError}
             />
-          </div>
-          {urlError && <p className="sync-settings__error">{urlError}</p>}
-        </div>
+          </Box>
 
-        <div className="sync-settings__subsection">
-          <div className="sync-settings__status">
-            <span
-              className={`sync-settings__status-dot sync-settings__status-dot--${status}`}
-            />
-            <span>{getStatusLabel()}</span>
-          </div>
-        </div>
+          <Group gap="xs">
+            <Badge color={getStatusColor()} variant="dot">
+              {getStatusLabel()}
+            </Badge>
+          </Group>
 
-        <div className="sync-settings__button-row">
           {isConnected ? (
-            <button
-              className="sync-settings__button sync-settings__button--secondary"
+            <Button
+              variant="default"
               onClick={handleDisconnect}
             >
               Disconnect
-            </button>
+            </Button>
           ) : (
-            <button
-              className="sync-settings__button sync-settings__button--primary"
+            <Button
               onClick={handleConnect}
               disabled={!serverUrl || !!urlError || !syncContext}
             >
               Connect
-            </button>
+            </Button>
           )}
-        </div>
-      </div>
+        </Stack>
+      </Box>
 
-      <div className="sync-settings__divider" />
+      <Divider />
 
-      <div className="sync-settings__section">
-        <label className="sync-settings__label">User ID</label>
-        <p className="sync-settings__help">
+      {/* User ID */}
+      <Box>
+        <Text size="sm" fw={500} mb="xs">User ID</Text>
+        <Text size="xs" c="dimmed" mb="sm">
           Share this ID across devices to sync data between them.
-        </p>
-        <div className="sync-settings__id-row">
-          <code className="sync-settings__id">{userId}</code>
-          <button
-            className="sync-settings__copy-btn"
-            onClick={handleCopyUserId}
-          >
-            {copySuccess ? 'Copied!' : 'Copy'}
-          </button>
-        </div>
-      </div>
+        </Text>
+        <Group gap="xs">
+          <Code style={{ flex: 1 }}>{userId}</Code>
+          <CopyButton value={userId}>
+            {({ copied, copy }) => (
+              <ActionIcon
+                variant="light"
+                color={copied ? 'sage' : 'gray'}
+                onClick={copy}
+                title={copied ? 'Copied!' : 'Copy User ID'}
+              >
+                <Icon name={copied ? 'check' : 'copy'} size={14} />
+              </ActionIcon>
+            )}
+          </CopyButton>
+        </Group>
+      </Box>
 
-      <div className="sync-settings__section">
-        <label className="sync-settings__label">Device ID</label>
-        <p className="sync-settings__help">
+      {/* Device ID */}
+      <Box>
+        <Text size="sm" fw={500} mb="xs">Device ID</Text>
+        <Text size="xs" c="dimmed" mb="sm">
           Unique identifier for this device (read-only).
-        </p>
-        <code className="sync-settings__id">{deviceId}</code>
-      </div>
+        </Text>
+        <Code>{deviceId}</Code>
+      </Box>
 
-      <div className="sync-settings__divider" />
+      <Divider />
 
-      <div className="sync-settings__section sync-settings__section--danger">
-        <label className="sync-settings__label">Danger Zone</label>
-        <p className="sync-settings__help">
+      {/* Danger Zone */}
+      <Box>
+        <Text size="sm" fw={500} c="brick" mb="xs">Danger Zone</Text>
+        <Text size="xs" c="dimmed" mb="sm">
           Reset your vault to use a different Skeleton Key. This will disconnect
           sync and clear your encryption key from this device.
-        </p>
+        </Text>
+
         {showResetConfirm ? (
-          <div className="sync-settings__confirm-row">
-            <span className="sync-settings__confirm-text">Are you sure?</span>
-            <button
-              className="sync-settings__button sync-settings__button--danger"
+          <Group gap="sm">
+            <Text size="sm">Are you sure?</Text>
+            <Button
+              size="xs"
+              color="brick"
               onClick={handleResetVault}
               disabled={isResetting}
+              loading={isResetting}
             >
-              {isResetting ? 'Resetting...' : 'Yes, Reset'}
-            </button>
-            <button
-              className="sync-settings__button sync-settings__button--secondary"
+              Yes, Reset
+            </Button>
+            <Button
+              size="xs"
+              variant="default"
               onClick={() => setShowResetConfirm(false)}
               disabled={isResetting}
             >
               Cancel
-            </button>
-          </div>
+            </Button>
+          </Group>
         ) : (
-          <button
-            className="sync-settings__button sync-settings__button--danger-outline"
+          <Button
+            variant="outline"
+            color="brick"
             onClick={() => setShowResetConfirm(true)}
           >
             Reset Vault
-          </button>
+          </Button>
         )}
-      </div>
-    </section>
+      </Box>
+    </Stack>
   );
 }

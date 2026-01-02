@@ -4,7 +4,7 @@
 
 import { useCallback } from 'react';
 import { NavLink, Menu, Box } from '@mantine/core';
-import { GripVertical, Pin } from 'lucide-react';
+import { Pin } from 'lucide-react';
 import { useSidebar, useTypeRegistry, useNavigation } from '@/contexts';
 import { useContextMenu, usePinnedObjects } from '@/hooks';
 import { Icon, type IconName } from '@/components/ui/Icon';
@@ -97,18 +97,12 @@ export function PinnedItem({
           onContextMenu={openContextMenu}
           style={{
             opacity: isDragging ? 0.5 : 1,
-            borderTop: isDragOver ? '2px solid var(--mantine-color-blue-5)' : undefined,
-            cursor: 'grab',
+            borderTop: isDragOver ? '2px solid var(--mantine-color-ember-5)' : undefined,
           }}
         >
           <NavLink
             label={title}
-            leftSection={
-              <Box style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <GripVertical size={12} style={{ color: 'var(--mantine-color-dimmed)' }} />
-                {renderIcon()}
-              </Box>
-            }
+            leftSection={renderIcon()}
             active={isSelected}
             onClick={handleClick}
             variant="subtle"

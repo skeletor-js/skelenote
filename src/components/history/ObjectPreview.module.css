@@ -1,0 +1,70 @@
+/**
+ * ObjectPreview.module.css - High-density styles for historical object detail view
+ * Follows the minimal, flat design pattern from InboxRow
+ */
+
+.previewContainer {
+  height: 100%;
+}
+
+/* Header with border separation */
+.header {
+  border-bottom: 1px solid var(--mantine-color-gray-2);
+}
+
+/* Back button hover state */
+.backButton {
+  transition: background-color 150ms ease;
+}
+
+.backButton:hover {
+  background-color: var(--mantine-color-gray-0);
+}
+
+/* Action buttons - subtle hover feedback */
+.actionButton {
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+/* Section dividers */
+.section {
+  border-bottom: 1px solid var(--mantine-color-gray-2);
+}
+
+.section:last-child {
+  border-bottom: none;
+}
+
+/* Property rows with subtle hover */
+.propertyRow {
+  padding: var(--mantine-spacing-xs) 0;
+  border-radius: var(--mantine-radius-sm);
+  transition: background-color 150ms ease;
+}
+
+.propertyRow:hover {
+  background-color: var(--mantine-color-gray-0);
+  margin: 0 calc(var(--mantine-spacing-xs) * -1);
+  padding-left: var(--mantine-spacing-xs);
+  padding-right: var(--mantine-spacing-xs);
+}
+
+/* Content box background transition */
+.contentBox {
+  transition: background-color 150ms ease;
+}
+
+.contentBox:hover {
+  background-color: var(--mantine-color-gray-1);
+}
+
+/* Object ID */
+.objectId {
+  transition: color 150ms ease;
+  cursor: default;
+  user-select: all;
+}
+
+.objectId:hover {
+  color: var(--mantine-color-gray-7);
+}

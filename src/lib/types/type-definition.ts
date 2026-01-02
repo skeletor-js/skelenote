@@ -29,6 +29,7 @@ export const BuiltInTypeIds = {
   TASK: 'task',
   NOTE: 'note',
   PROJECT: 'project',
+  AREA: 'area',
   LINK: 'link',
   MEETING: 'meeting',
   TAG: 'tag',

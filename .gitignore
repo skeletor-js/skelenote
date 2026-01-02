@@ -13,6 +13,9 @@ src-tauri/target/
 .env.local
 .env.*.local
 
+# MCP config (contains API keys)
+.mcp.json
+
 # IDE
 .vscode/
 .idea/
@@ -34,3 +37,7 @@ yarn-error.log*
 
 # Testing
 coverage/
+
+# Claude Code config
+.claude/
+CLAUDE.md

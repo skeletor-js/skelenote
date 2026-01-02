@@ -3,9 +3,11 @@
  */
 
 import { useMemo } from 'react';
+import { UnstyledButton, Group, Text, Badge, Box } from '@mantine/core';
 import { useTypeRegistry } from '@/contexts';
+import { Icon } from '@/components/ui/Icon';
+import { getIconFromEmoji } from '@/lib/icons';
 import { getBestSnippet, type SearchResult, type TextSegment } from '@/lib/search';
-import './SearchResultItem.css';
 
 interface SearchResultItemProps {
   /** The search result to display */
@@ -26,11 +28,20 @@ function HighlightedText({ segments }: { segments: TextSegment[] }) {
     <>
       {segments.map((segment, index) =>
         segment.highlighted ? (
-          <mark key={index} className="search-result__highlight">
+          <Text
+            key={index}
+            component="mark"
+            span
+            bg="yellow.2"
+            c="dark"
+            style={{ borderRadius: 2 }}
+          >
             {segment.text}
-          </mark>
+          </Text>
         ) : (
-          <span key={index}>{segment.text}</span>
+          <Text key={index} span>
+            {segment.text}
+          </Text>
         )
       )}
     </>
@@ -63,37 +74,54 @@ export function SearchResultItem({
     : null;
 
   return (
-    <div
-      className={`search-result ${isSelected ? 'search-result--selected' : ''}`}
+    <UnstyledButton
       onClick={onClick}
       onMouseEnter={onMouseEnter}
+      p="sm"
       role="option"
       aria-selected={isSelected}
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 'var(--mantine-spacing-sm)',
+        borderRadius: 'var(--mantine-radius-sm)',
+        width: '100%',
+        backgroundColor: isSelected ? 'var(--mantine-color-slate-light)' : undefined,
+      }}
     >
-      <div className="search-result__icon">{icon}</div>
-      <div className="search-result__content">
-        <div className="search-result__title-row">
-          <span className="search-result__title">{result.item.title || 'Untitled'}</span>
+      <Icon name={getIconFromEmoji(icon)} size={20} />
+
+      <Box style={{ flex: 1, minWidth: 0 }}>
+        <Group gap="xs" wrap="nowrap">
+          <Text size="sm" fw={500} truncate>
+            {result.item.title || 'Untitled'}
+          </Text>
           {isSemanticMatch && (
-            <span
-              className="search-result__semantic-badge"
+            <Badge
+              size="xs"
+              variant="light"
+              color="clay"
               title={semanticPercent ? `${semanticPercent}% similar` : 'Semantic match'}
             >
               ~{semanticPercent ? `${semanticPercent}%` : ''}
-            </span>
+            </Badge>
           )}
-        </div>
+        </Group>
+
         {snippet ? (
-          <div className="search-result__snippet">
+          <Text size="xs" c="dimmed" lineClamp={2}>
             <HighlightedText segments={snippet.segments} />
-          </div>
+          </Text>
         ) : isSemanticMatch ? (
-          <div className="search-result__snippet search-result__snippet--semantic">
+          <Text size="xs" c="dimmed" fs="italic">
             Conceptually similar
-          </div>
+          </Text>
         ) : null}
-      </div>
-      <div className="search-result__type">{typeName}</div>
-    </div>
+      </Box>
+
+      <Text size="xs" c="dimmed">
+        {typeName}
+      </Text>
+    </UnstyledButton>
   );
 }

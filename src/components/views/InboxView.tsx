@@ -1,19 +1,59 @@
 /**
  * InboxView - main container for inbox view
  * Displays all objects with inboxed: true
+ * Features: date grouping, hover-reveal actions, bulk selection
  */
 
-import { useMemo, useCallback, useEffect } from 'react';
+import { useMemo, useCallback, useEffect, Fragment } from 'react';
+import { Stack, Text, Box, Loader, Center } from '@mantine/core';
 import { useInbox, useSelection } from '@/hooks';
 import { useNavigation, useObjects } from '@/contexts';
-import { EmptyState } from '@/components/ui';
+import { EmptyState, ViewHeader } from '@/components/ui';
 import { BulkActions } from '@/components/actions';
 import { InboxRow } from './InboxRow';
-import './InboxView.css';
+import type { SkelenoteObject } from '@/lib/types';
+import classes from './InboxRow.module.css';
+
+/** Date group categories */
+type DateGroup = 'Today' | 'Yesterday' | 'This Week' | 'Older';
+
+/** Group items by creation date */
+function groupItemsByDate(items: SkelenoteObject[]): Record<DateGroup, SkelenoteObject[]> {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const weekAgo = new Date(today);
+  weekAgo.setDate(weekAgo.getDate() - 7);
+
+  const groups: Record<DateGroup, SkelenoteObject[]> = {
+    'Today': [],
+    'Yesterday': [],
+    'This Week': [],
+    'Older': [],
+  };
+
+  for (const item of items) {
+    const createdAt = new Date(item.createdAt);
+    const itemDate = new Date(createdAt.getFullYear(), createdAt.getMonth(), createdAt.getDate());
+
+    if (itemDate >= today) {
+      groups['Today'].push(item);
+    } else if (itemDate >= yesterday) {
+      groups['Yesterday'].push(item);
+    } else if (itemDate >= weekAgo) {
+      groups['This Week'].push(item);
+    } else {
+      groups['Older'].push(item);
+    }
+  }
+
+  return groups;
+}
 
 export function InboxView() {
   const { items, isLoading, count, processItem, deleteItem } = useInbox();
-  const { navigateToObject } = useNavigation();
+  const { navigateToObject, openInSplit } = useNavigation();
   const { refreshData } = useObjects();
 
   // Get item IDs for selection hook
@@ -21,6 +61,13 @@ export function InboxView() {
 
   // Initialize selection
   const selection = useSelection({ allItems: itemIds });
+
+  // Group items by date
+  const groupedItems = useMemo(() => groupItemsByDate(items), [items]);
+
+  // Get non-empty groups in order
+  const dateGroups: DateGroup[] = ['Today', 'Yesterday', 'This Week', 'Older'];
+  const nonEmptyGroups = dateGroups.filter((group) => groupedItems[group].length > 0);
 
   // Handle selection change (toggle or range)
   const handleSelectionChange = useCallback(
@@ -41,7 +88,7 @@ export function InboxView() {
       if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
         // Only handle if focus is in the inbox view area
         const activeElement = document.activeElement;
-        if (activeElement?.closest('.inbox-view')) {
+        if (activeElement?.closest('[data-inbox-view]')) {
           e.preventDefault();
           selection.selectAll();
         }
@@ -60,43 +107,56 @@ export function InboxView() {
 
   if (isLoading) {
     return (
-      <div className="inbox-view inbox-view--loading">
-        <span>Loading...</span>
-      </div>
+      <Center p="xl">
+        <Loader size="sm" />
+        <Text ml="sm" c="dimmed">Loading...</Text>
+      </Center>
     );
   }
 
   return (
-    <div className="inbox-view">
-      {/* Header */}
-      <header className="inbox-view__header">
-        <h1 className="inbox-view__title">
-          Inbox
-          {count > 0 && <span className="inbox-view__count"> ({count})</span>}
-        </h1>
-      </header>
-
-      {/* Content */}
-      <div className="inbox-view__content">
+    <Stack gap={0} h="100%" style={{ overflow: 'hidden' }} data-inbox-view>
+      <ViewHeader title="Inbox" count={count > 0 ? count : undefined} />
+      <Box p="md" style={{ flex: 1, overflow: 'auto' }}>
         {items.length === 0 ? (
           <EmptyState message="All clear! Nothing to process." size="large" />
         ) : (
-          <div className="inbox-view__list">
-            {items.map((item) => (
-              <InboxRow
-                key={item.id}
-                item={item}
-                onClick={() => navigateToObject(item.id)}
-                onProcess={processItem}
-                onDelete={deleteItem}
-                isSelected={selection.isSelected(item.id)}
-                onSelectionChange={handleSelectionChange}
-                isSelectingMode={selection.hasSelection}
-              />
+          <Stack gap={0}>
+            {nonEmptyGroups.map((group) => (
+              <Fragment key={group}>
+                {/* Group header */}
+                <Text
+                  size="xs"
+                  c="dimmed"
+                  fw={500}
+                  tt="uppercase"
+                  px="sm"
+                  py="xs"
+                  className={classes.groupHeader}
+                >
+                  {group}
+                </Text>
+                {/* Group items */}
+                <Stack gap={2} mb="md">
+                  {groupedItems[group].map((item) => (
+                    <InboxRow
+                      key={item.id}
+                      item={item}
+                      onClick={() => navigateToObject(item.id)}
+                      onOpenInSplit={() => openInSplit(item.id)}
+                      onProcess={processItem}
+                      onDelete={deleteItem}
+                      isSelected={selection.isSelected(item.id)}
+                      onSelectionChange={handleSelectionChange}
+                      isSelectingMode={selection.hasSelection}
+                    />
+                  ))}
+                </Stack>
+              </Fragment>
             ))}
-          </div>
+          </Stack>
         )}
-      </div>
+      </Box>
 
       {/* Bulk Actions Bar */}
       <BulkActions
@@ -105,6 +165,6 @@ export function InboxView() {
         onActionComplete={refreshData}
         viewType="inbox"
       />
-    </div>
+    </Stack>
   );
 }

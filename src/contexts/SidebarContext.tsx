@@ -3,8 +3,36 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   type ReactNode,
 } from 'react';
+
+const STORAGE_KEY_COLLAPSED_SECTIONS = 'skelenote-sidebar-collapsed-sections';
+const STORAGE_KEY_SIDEBAR_COLLAPSED = 'skelenote-sidebar-collapsed';
+
+function loadCollapsedSections(): Set<string> {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY_COLLAPSED_SECTIONS);
+    if (stored) {
+      return new Set(JSON.parse(stored));
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return new Set();
+}
+
+function loadSidebarCollapsed(): boolean {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY_SIDEBAR_COLLAPSED);
+    if (stored !== null) {
+      return JSON.parse(stored);
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return false;
+}
 
 interface SidebarContextValue {
   isCollapsed: boolean;
@@ -24,11 +52,24 @@ interface SidebarProviderProps {
 }
 
 export function SidebarProvider({ children }: SidebarProviderProps) {
-  const [isCollapsed, setCollapsed] = useState(false);
+  const [isCollapsed, setCollapsed] = useState(loadSidebarCollapsed);
   const [selectedItem, setSelectedItem] = useState<string | null>('inbox');
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
-    new Set()
+    loadCollapsedSections
   );
+
+  // Persist sidebar collapsed state
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_SIDEBAR_COLLAPSED, JSON.stringify(isCollapsed));
+  }, [isCollapsed]);
+
+  // Persist section collapsed states
+  useEffect(() => {
+    localStorage.setItem(
+      STORAGE_KEY_COLLAPSED_SECTIONS,
+      JSON.stringify([...collapsedSections])
+    );
+  }, [collapsedSections]);
 
   const toggleCollapsed = useCallback(() => {
     setCollapsed((prev) => !prev);

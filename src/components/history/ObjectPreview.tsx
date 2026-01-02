@@ -1,12 +1,16 @@
 /**
  * ObjectPreview - Shows a single object's details at a historical point
+ * Redesigned to hide empty properties and simplify visual presentation
  */
 
 import { useMemo } from 'react';
+import { Stack, Group, Text, Button, Box, ActionIcon, Badge, ScrollArea, SimpleGrid } from '@mantine/core';
 import { useTypeRegistry, useObjects } from '@/contexts';
+import { Icon } from '@/components/ui/Icon';
+import { getIconFromEmoji } from '@/lib/icons';
 import { extractPlainTextFromContent } from '@/lib/search';
 import type { ObjectPreviewProps } from './types';
-import './ObjectPreview.css';
+import classes from './ObjectPreview.module.css';
 
 /**
  * Get a display title for an object
@@ -24,10 +28,11 @@ function getObjectTitle(obj: { properties: Record<string, unknown> }): string {
 
 /**
  * Format a property value for display
+ * Returns null for empty/null values (these will be filtered out)
  */
-function formatPropertyValue(value: unknown): string {
-  if (value === null || value === undefined) {
-    return '';
+function formatPropertyValue(value: unknown): string | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
   }
   if (typeof value === 'boolean') {
     return value ? 'Yes' : 'No';
@@ -35,17 +40,24 @@ function formatPropertyValue(value: unknown): string {
   if (typeof value === 'number') {
     // Check if it looks like a timestamp (ms since epoch)
     if (value > 1000000000000 && value < 2000000000000) {
-      return new Date(value).toLocaleString();
+      return new Date(value).toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      });
     }
     return value.toLocaleString();
   }
   if (Array.isArray(value)) {
+    if (value.length === 0) return null;
     return value.join(', ');
   }
   if (typeof value === 'object') {
     return JSON.stringify(value);
   }
-  return String(value);
+  const strValue = String(value).trim();
+  return strValue || null;
 }
 
 export function ObjectPreview({
@@ -59,9 +71,13 @@ export function ObjectPreview({
   const { docStore } = useObjects();
 
   const typeDef = typeRegistry.get(object.typeId);
-  const icon = typeDef?.icon ?? '📄';
-  const typeName = typeDef?.name ?? object.typeId;
   const title = getObjectTitle(object);
+
+  // Get icon - could be an emoji or already an icon name
+  const rawIcon = typeDef?.icon ?? '📄';
+  // If it's a short string (1-2 chars), it's likely an emoji, so convert it
+  // Otherwise it's already an icon name
+  const icon = rawIcon.length <= 2 ? getIconFromEmoji(rawIcon) : rawIcon;
 
   // Get content - it's stored as a property in the historical object (BlockNote JSON)
   const content = useMemo(() => {
@@ -75,25 +91,38 @@ export function ObjectPreview({
     return null;
   }, [object.hasContent, object.properties.content]);
 
-  // Get property definitions for display
-  const propertyDisplays = useMemo(() => {
+  // Get property definitions for display, filtering out empty values
+  const visibleProperties = useMemo(() => {
+    const properties: Array<{ id: string; label: string; value: string }> = [];
+
     if (!typeDef) {
       // If no type def, show all properties except content (shown separately)
-      return Object.entries(object.properties)
-        .filter(([key]) => key !== 'content')
-        .map(([key, value]) => ({
-          id: key,
-          label: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
-          value: formatPropertyValue(value),
-        }));
+      Object.entries(object.properties).forEach(([key, value]) => {
+        if (key === 'content') return;
+        const formatted = formatPropertyValue(value);
+        if (formatted) {
+          properties.push({
+            id: key,
+            label: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
+            value: formatted,
+          });
+        }
+      });
+    } else {
+      // Use schema to get proper labels
+      typeDef.schema.forEach((propDef) => {
+        const formatted = formatPropertyValue(object.properties[propDef.id]);
+        if (formatted) {
+          properties.push({
+            id: propDef.id,
+            label: propDef.name,
+            value: formatted,
+          });
+        }
+      });
     }
 
-    // Use schema to get proper labels
-    return typeDef.schema.map((propDef) => ({
-      id: propDef.id,
-      label: propDef.name,
-      value: formatPropertyValue(object.properties[propDef.id]),
-    }));
+    return properties;
   }, [typeDef, object.properties]);
 
   const formattedTimestamp = useMemo(() => {
@@ -101,7 +130,6 @@ export function ObjectPreview({
       weekday: 'short',
       month: 'short',
       day: 'numeric',
-      year: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
     });
@@ -113,106 +141,138 @@ export function ObjectPreview({
   }, [docStore]);
 
   return (
-    <div className="object-preview">
-      <header className="object-preview__header">
-        <button
-          className="object-preview__back"
-          onClick={onClose}
-          title="Back to object list"
-        >
-          ←
-        </button>
+    <Stack gap={0} h="100%" className={classes.previewContainer}>
+      {/* Header */}
+      <Group justify="space-between" wrap="nowrap" px="sm" py="xs" className={classes.header}>
+        <Group gap="xs">
+          <ActionIcon
+            variant="subtle"
+            onClick={onClose}
+            title="Back to object list"
+            size="sm"
+            className={classes.backButton}
+          >
+            <Icon name="chevron-left" size={16} />
+          </ActionIcon>
 
-        <div className="object-preview__info">
-          <div className="object-preview__icon">{icon}</div>
-          <h2 className="object-preview__title">{title}</h2>
-          <div className="object-preview__meta">
-            <span className="object-preview__type-badge">{typeName}</span>
-            <span className="object-preview__timestamp-badge">
-              Historical: {formattedTimestamp}
-            </span>
-          </div>
-        </div>
+          <Icon name={icon as any} size={18} style={{ color: 'var(--mantine-color-gray-6)' }} />
 
-        <div className="object-preview__actions">
+          <Group gap="xs" wrap="nowrap">
+            <Text size="sm" fw={600}>{title}</Text>
+            <Badge size="xs" variant="light" color="ember" radius="sm">
+              {formattedTimestamp}
+            </Badge>
+          </Group>
+        </Group>
+
+        <Group gap={4}>
           {existsInCurrent && (
-            <button
-              className="object-preview__action-btn"
+            <Button
+              variant="subtle"
+              size="xs"
               onClick={onCompareWithCurrent}
+              leftSection={<Icon name="git-compare" size={14} />}
               title="Open side-by-side comparison with current version"
+              className={classes.actionButton}
             >
               Compare
-            </button>
+            </Button>
           )}
-          <button
-            className="object-preview__action-btn object-preview__action-btn--primary"
+          <Button
+            size="xs"
             onClick={onRestore}
+            leftSection={<Icon name="rotate-ccw" size={14} />}
             title="Restore this object to this historical state"
+            className={classes.actionButton}
           >
-            Restore This
-          </button>
-        </div>
-      </header>
+            Restore
+          </Button>
+        </Group>
+      </Group>
 
-      <div className="object-preview__content">
-        {/* Properties section */}
-        <div className="object-preview__section">
-          <h3 className="object-preview__section-title">Properties</h3>
-          <div className="object-preview__properties">
-            {propertyDisplays.map(({ id, label, value }) => (
-              <div key={id} className="object-preview__prop-row">
-                <span className="object-preview__prop-label">{label}</span>
-                <span
-                  className={`object-preview__prop-value ${!value ? 'object-preview__prop-value--empty' : ''}`}
-                >
-                  {value || '(empty)'}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+      <ScrollArea style={{ flex: 1 }} px="sm">
+        <Stack gap={0}>
+          {/* Properties section - only show if there are visible properties */}
+          {visibleProperties.length > 0 && (
+            <Box py="sm" className={classes.section}>
+              <Text size="xs" c="dimmed" tt="uppercase" fw={500} mb="xs">
+                Properties
+              </Text>
+              <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs">
+                {visibleProperties.map(({ id, label, value }) => (
+                  <Group key={id} gap="xs" wrap="nowrap" className={classes.propertyRow}>
+                    <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>{label}</Text>
+                    <Text size="sm">{value}</Text>
+                  </Group>
+                ))}
+              </SimpleGrid>
+            </Box>
+          )}
 
-        {/* Content section (if applicable) */}
-        {object.hasContent && (
-          <div className="object-preview__section">
-            <h3 className="object-preview__section-title">Content</h3>
-            <div
-              className={`object-preview__text-content ${!content ? 'object-preview__text-content--empty' : ''}`}
-            >
-              {content || '(No content at this point in time)'}
-            </div>
-          </div>
-        )}
+          {/* Content section (if applicable) */}
+          {object.hasContent && content && (
+            <Box py="sm" className={classes.section}>
+              <Text size="xs" c="dimmed" tt="uppercase" fw={500} mb="xs">
+                Content
+              </Text>
+              <Box
+                p="xs"
+                className={classes.contentBox}
+                style={{
+                  backgroundColor: 'var(--mantine-color-gray-0)',
+                  borderRadius: 'var(--mantine-radius-sm)',
+                  whiteSpace: 'pre-wrap',
+                }}
+              >
+                <Text size="sm">{content}</Text>
+              </Box>
+            </Box>
+          )}
 
-        {/* Metadata section */}
-        <div className="object-preview__section">
-          <h3 className="object-preview__section-title">Metadata</h3>
-          <div className="object-preview__properties">
-            <div className="object-preview__prop-row">
-              <span className="object-preview__prop-label">Created</span>
-              <span className="object-preview__prop-value">
-                {new Date(object.createdAt).toLocaleString()}
-              </span>
-            </div>
-            <div className="object-preview__prop-row">
-              <span className="object-preview__prop-label">Last Modified</span>
-              <span className="object-preview__prop-value">
-                {new Date(object.updatedAt).toLocaleString()}
-              </span>
-            </div>
-            <div className="object-preview__prop-row">
-              <span className="object-preview__prop-label">In Inbox</span>
-              <span className="object-preview__prop-value">
-                {object.inboxed ? 'Yes' : 'No'}
-              </span>
-            </div>
-            <div className="object-preview__prop-row">
-              <span className="object-preview__prop-label">Object ID</span>
-              <span className="object-preview__prop-value">{object.id}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+          {/* Minimal metadata - only show what's useful */}
+          <Box py="sm" className={classes.section}>
+            <Text size="xs" c="dimmed" tt="uppercase" fw={500} mb="xs">
+              Details
+            </Text>
+            <Stack gap={4}>
+              <Group gap="xs" wrap="nowrap" className={classes.propertyRow}>
+                <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>Created</Text>
+                <Text size="sm">
+                  {new Date(object.createdAt).toLocaleString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </Text>
+              </Group>
+              <Group gap="xs" wrap="nowrap" className={classes.propertyRow}>
+                <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>Modified</Text>
+                <Text size="sm">
+                  {new Date(object.updatedAt).toLocaleString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </Text>
+              </Group>
+              {object.inboxed && (
+                <Group gap="xs" wrap="nowrap" className={classes.propertyRow}>
+                  <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>Status</Text>
+                  <Text size="sm">In Inbox</Text>
+                </Group>
+              )}
+              <Group gap="xs" wrap="nowrap" className={classes.propertyRow}>
+                <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>ID</Text>
+                <Text size="xs" c="dimmed" ff="monospace" className={classes.objectId}>
+                  {object.id}
+                </Text>
+              </Group>
+            </Stack>
+          </Box>
+        </Stack>
+      </ScrollArea>
+    </Stack>
   );
 }

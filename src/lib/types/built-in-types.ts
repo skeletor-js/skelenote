@@ -24,10 +24,22 @@ export const ProjectStatusOptions = ['active', 'on-hold', 'completed', 'archived
 export type ProjectStatus = (typeof ProjectStatusOptions)[number];
 
 /**
- * Tag color options (maps to CSS variables like --tag-red, --tag-blue, etc.)
+ * Tag color options using our warm palette from the style guide
+ * - ember: Terracotta/primary accent
+ * - clay: Muted purple/mauve
+ * - sage: Green/success
+ * - ochre: Golden yellow/warning
+ * - brick: Dark red/danger
+ * - slate: Blue-gray/info
  */
-export const TagColorOptions = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'pink'] as const;
+export const TagColorOptions = ['ember', 'clay', 'sage', 'ochre', 'brick', 'slate'] as const;
 export type TagColor = (typeof TagColorOptions)[number];
+
+/**
+ * Meeting duration options (in minutes)
+ */
+export const MeetingDurationOptions = ['15', '30', '45', '60', '90', '120', '180', '240'] as const;
+export type MeetingDuration = (typeof MeetingDurationOptions)[number];
 
 /**
  * Task type definition
@@ -82,6 +94,16 @@ export const TaskType: TypeDefinition = {
       multiple: false,
       config: {
         targetTypeIds: [BuiltInTypeIds.PROJECT],
+      },
+    },
+    {
+      id: 'area',
+      name: 'Area',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.AREA],
       },
     },
     {
@@ -157,6 +179,7 @@ export const NoteType: TypeDefinition = {
       type: 'date',
       required: false,
       multiple: false,
+      hidden: true, // Only used internally for daily notes; title already shows the date
     },
     {
       id: 'isDailyNote',
@@ -164,6 +187,7 @@ export const NoteType: TypeDefinition = {
       type: 'checkbox',
       required: false,
       multiple: false,
+      hidden: true,
     },
     {
       id: 'project',
@@ -173,6 +197,16 @@ export const NoteType: TypeDefinition = {
       multiple: false,
       config: {
         targetTypeIds: [BuiltInTypeIds.PROJECT],
+      },
+    },
+    {
+      id: 'area',
+      name: 'Area',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.AREA],
       },
     },
     {
@@ -201,7 +235,7 @@ export const NoteType: TypeDefinition = {
 
 /**
  * Project type definition
- * Properties: name, status, tags, dailyNote
+ * Properties: name, status, startDate, endDate, tags, dailyNote
  */
 export const ProjectType: TypeDefinition = {
   id: BuiltInTypeIds.PROJECT,
@@ -225,6 +259,30 @@ export const ProjectType: TypeDefinition = {
       multiple: false,
       config: {
         options: [...ProjectStatusOptions],
+      },
+    },
+    {
+      id: 'startDate',
+      name: 'Start Date',
+      type: 'date',
+      required: false,
+      multiple: false,
+    },
+    {
+      id: 'endDate',
+      name: 'End Date',
+      type: 'date',
+      required: false,
+      multiple: false,
+    },
+    {
+      id: 'area',
+      name: 'Area',
+      type: 'relation',
+      required: true,
+      multiple: false,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.AREA],
       },
     },
     {
@@ -252,8 +310,50 @@ export const ProjectType: TypeDefinition = {
 };
 
 /**
+ * Area type definition (PARA methodology)
+ * Properties: name, projects, dailyNote
+ */
+export const AreaType: TypeDefinition = {
+  id: BuiltInTypeIds.AREA,
+  name: 'Area',
+  icon: 'layers',
+  hasContent: true,
+  isBuiltIn: true,
+  schema: [
+    {
+      id: 'name',
+      name: 'Name',
+      type: 'text',
+      required: true,
+      multiple: false,
+    },
+    {
+      id: 'projects',
+      name: 'Projects',
+      type: 'relation',
+      required: false,
+      multiple: true,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.PROJECT],
+      },
+    },
+    {
+      id: 'dailyNote',
+      name: 'Daily Note',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      hidden: true,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.NOTE],
+      },
+    },
+  ],
+};
+
+/**
  * Link type definition
- * Properties: url, title, description, tags, dailyNote
+ * Properties: url, title, description, project, tags, dailyNote
  */
 export const LinkType: TypeDefinition = {
   id: BuiltInTypeIds.LINK,
@@ -284,6 +384,26 @@ export const LinkType: TypeDefinition = {
       multiple: false,
     },
     {
+      id: 'project',
+      name: 'Project',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.PROJECT],
+      },
+    },
+    {
+      id: 'area',
+      name: 'Area',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.AREA],
+      },
+    },
+    {
       id: 'tags',
       name: 'Tags',
       type: 'relation',
@@ -309,7 +429,7 @@ export const LinkType: TypeDefinition = {
 
 /**
  * Meeting type definition
- * Properties: title, startTime, endTime, location, attendees, calendarEventId, project, tags, dailyNote
+ * Properties: title, startTime, durationMinutes, attendees, project, area, tags, dailyNote
  */
 export const MeetingType: TypeDefinition = {
   id: BuiltInTypeIds.MEETING,
@@ -331,34 +451,29 @@ export const MeetingType: TypeDefinition = {
       type: 'date',
       required: true,
       multiple: false,
+      config: {
+        showTime: true,
+      },
     },
     {
-      id: 'endTime',
-      name: 'End Time',
-      type: 'date',
+      id: 'durationMinutes',
+      name: 'Duration',
+      type: 'select',
       required: false,
       multiple: false,
-    },
-    {
-      id: 'location',
-      name: 'Location',
-      type: 'text',
-      required: false,
-      multiple: false,
+      config: {
+        options: [...MeetingDurationOptions],
+      },
     },
     {
       id: 'attendees',
       name: 'Attendees',
-      type: 'text',
+      type: 'relation',
       required: false,
-      multiple: false,
-    },
-    {
-      id: 'calendarEventId',
-      name: 'Calendar Event ID',
-      type: 'text',
-      required: false,
-      multiple: false,
+      multiple: true,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.PERSON],
+      },
     },
     {
       id: 'project',
@@ -368,6 +483,16 @@ export const MeetingType: TypeDefinition = {
       multiple: false,
       config: {
         targetTypeIds: [BuiltInTypeIds.PROJECT],
+      },
+    },
+    {
+      id: 'area',
+      name: 'Area',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.AREA],
       },
     },
     {
@@ -490,6 +615,26 @@ export const PersonType: TypeDefinition = {
       multiple: false,
     },
     {
+      id: 'project',
+      name: 'Project',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.PROJECT],
+      },
+    },
+    {
+      id: 'area',
+      name: 'Area',
+      type: 'relation',
+      required: false,
+      multiple: false,
+      config: {
+        targetTypeIds: [BuiltInTypeIds.AREA],
+      },
+    },
+    {
       id: 'tags',
       name: 'Tags',
       type: 'relation',
@@ -571,6 +716,7 @@ export const builtInTypes: TypeDefinition[] = [
   TaskType,
   NoteType,
   ProjectType,
+  AreaType,
   LinkType,
   MeetingType,
   TagType,

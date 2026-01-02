@@ -43,7 +43,7 @@ export function SplitPane({
   // Single pane mode when no secondary content
   if (!secondaryContent) {
     return (
-      <Box style={{ height: '100%', overflow: 'auto' }}>
+      <Box style={{ height: '100%', overflow: 'auto', minWidth: 0 }}>
         {children}
       </Box>
     );
@@ -55,7 +55,7 @@ export function SplitPane({
         initialWidth={`${100 - splitWidth}%`}
         minWidth="300px"
       >
-        <Box style={{ height: '100%', overflow: 'auto' }}>
+        <Box style={{ height: '100%', overflow: 'auto', minWidth: 0 }}>
           {children}
         </Box>
       </Split.Pane>
@@ -68,6 +68,7 @@ export function SplitPane({
           style={{
             height: '100%',
             overflow: 'auto',
+            minWidth: 0,
             borderLeft: '1px solid var(--mantine-color-default-border)',
           }}
           p="md"

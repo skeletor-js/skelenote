@@ -18,7 +18,7 @@ export function Badge({ count, max = 99 }: BadgeProps) {
       size="xs"
       variant="light"
       color="gray"
-      radius="xl"
+      radius="sm"
       aria-label={`${count} items`}
     >
       {displayCount}

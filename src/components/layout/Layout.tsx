@@ -1,8 +1,11 @@
 import { type ReactNode, useEffect } from 'react';
-import { AppShell, ActionIcon, Box, Overlay } from '@mantine/core';
-import { Menu } from 'lucide-react';
+import { AppShell, Box, Overlay } from '@mantine/core';
 import { Sidebar } from './Sidebar';
 import { useSidebar } from '@/contexts';
+
+// Layout dimensions per style guide
+const SIDEBAR_WIDTH = 240;
+const SIDEBAR_COLLAPSED_WIDTH = 48;
 
 interface LayoutProps {
   children: ReactNode;
@@ -11,7 +14,7 @@ interface LayoutProps {
 }
 
 export function Layout({ children, inboxCount = 0, onCreateFromTemplate }: LayoutProps) {
-  const { isCollapsed, setCollapsed, toggleCollapsed } = useSidebar();
+  const { isCollapsed, setCollapsed } = useSidebar();
 
   // Handle responsive collapse
   useEffect(() => {
@@ -34,9 +37,8 @@ export function Layout({ children, inboxCount = 0, onCreateFromTemplate }: Layou
   return (
     <AppShell
       navbar={{
-        width: 260,
+        width: isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH,
         breakpoint: 'sm',
-        collapsed: { mobile: isCollapsed, desktop: isCollapsed },
       }}
       padding={0}
     >
@@ -50,29 +52,10 @@ export function Layout({ children, inboxCount = 0, onCreateFromTemplate }: Layou
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
+          // Use paper surface for content area (elevated above canvas sidebar)
+          backgroundColor: 'var(--surface-paper)',
         }}
       >
-        {/* Show menu button when sidebar is collapsed */}
-        {isCollapsed && (
-          <Box
-            style={{
-              position: 'absolute',
-              top: 8,
-              left: 8,
-              zIndex: 100,
-            }}
-          >
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              onClick={toggleCollapsed}
-              aria-label="Open sidebar"
-            >
-              <Menu size={20} />
-            </ActionIcon>
-          </Box>
-        )}
-
         <Box style={{ flex: 1, overflow: 'auto' }}>
           {children}
         </Box>

@@ -1,30 +1,35 @@
 import { Badge, Box, MantineColor, useMantineTheme } from '@mantine/core';
 
+/**
+ * Tag colors using our warm palette from the style guide
+ * - ember: Terracotta/primary accent
+ * - clay: Muted purple/mauve
+ * - sage: Green/success
+ * - ochre: Golden yellow/warning
+ * - brick: Dark red/danger
+ * - slate: Blue-gray/info
+ */
 export type TagColor =
   | 'gray'
-  | 'red'
-  | 'orange'
-  | 'yellow'
-  | 'green'
-  | 'blue'
-  | 'purple'
-  | 'pink'
-  | 'cyan';
+  | 'ember'
+  | 'clay'
+  | 'sage'
+  | 'ochre'
+  | 'brick'
+  | 'slate';
 
 /**
- * Map our tag colors to Mantine colors
- * Note: 'purple' maps to 'violet' in Mantine
+ * Map tag colors to Mantine theme colors
+ * These are our custom colors defined in the Mantine theme
  */
 const COLOR_MAP: Record<TagColor, MantineColor> = {
   gray: 'gray',
-  red: 'red',
-  orange: 'orange',
-  yellow: 'yellow',
-  green: 'green',
-  blue: 'blue',
-  purple: 'violet',
-  pink: 'pink',
-  cyan: 'cyan',
+  ember: 'ember',
+  clay: 'clay',
+  sage: 'sage',
+  ochre: 'ochre',
+  brick: 'brick',
+  slate: 'slate',
 };
 
 interface TagProps {
@@ -81,9 +86,17 @@ export function Tag({ name, color = 'gray', size = 'md', onClick }: TagProps) {
           '&:hover': isClickable ? {
             backgroundColor: 'var(--mantine-color-gray-1)',
           } : undefined,
+          // Dark mode overrides
+          '[data-mantine-color-scheme="dark"] &:hover': isClickable ? {
+            backgroundColor: 'var(--mantine-color-dark-5)',
+          } : undefined,
         },
         label: {
           color: 'var(--mantine-color-gray-7)',
+          // Dark mode text color
+          '[data-mantine-color-scheme="dark"] &': {
+            color: 'var(--mantine-color-gray-4)',
+          },
         },
       }}
       onClick={onClick}

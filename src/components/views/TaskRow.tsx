@@ -1,15 +1,17 @@
 /**
  * TaskRow component for list view display
- * Shows: checkbox, title, due date, priority, project, tags
+ * Shows: checkbox, title, due date, project, tags
  */
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { UnstyledButton, Checkbox, Group, Text, Badge, Box, ActionIcon, Tooltip } from '@mantine/core';
 import type { SkelenoteObject } from '@/lib/types';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
 import { useObjects, useToast } from '@/contexts';
-import { Tag, ContextMenu, ConfirmDialog, type TagColor, type ContextMenuItem } from '@/components/ui';
+import { Tag, ContextMenu, ConfirmDialog, Icon, type TagColor, type ContextMenuItem } from '@/components/ui';
+import { ObjectSearchModal } from '@/components/object/editors';
 import { useContextMenu, useConfirmDialog, usePinnedObjects } from '@/hooks';
-import './TaskRow.css';
+import styles from './TaskRow.module.css';
 
 interface TaskRowProps {
   /** The task object to display */
@@ -18,6 +20,8 @@ interface TaskRowProps {
   onToggleComplete: (taskId: string) => void;
   /** Callback when row is clicked (navigates to detail) */
   onClick: () => void;
+  /** Callback to open task in split pane */
+  onOpenInSplit: () => void;
   /** Callback when task is deleted */
   onDelete: (taskId: string) => void;
   /** Whether this item is selected for bulk operations */
@@ -32,19 +36,22 @@ export function TaskRow({
   task,
   onToggleComplete,
   onClick,
+  onOpenInSplit,
   onDelete,
   isSelected = false,
   onSelectionChange,
   isSelectingMode = false,
 }: TaskRowProps) {
-  const { store } = useObjects();
+  const { store, refreshData } = useObjects();
   const { addToast } = useToast();
   const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
   const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
   const { isPinned, pin, unpin } = usePinnedObjects();
+  const [tagPickerOpen, setTagPickerOpen] = useState(false);
+  const [projectPickerOpen, setProjectPickerOpen] = useState(false);
+  const [areaPickerOpen, setAreaPickerOpen] = useState(false);
 
   const isComplete = task.properties.status === 'done';
-  const priority = task.properties.priority as string | null;
   const dueDate = task.properties.dueDate as number | null;
   const title = task.properties.title as string;
 
@@ -67,23 +74,11 @@ export function TaskRow({
   // Check if overdue
   const isTaskOverdue = dueDate !== null && !isComplete && isOverdue(dueDate);
 
-  // Handle selection checkbox click
-  const handleSelectionClick = useCallback(
+  // Handle selection checkbox change
+  const handleSelectionChange = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       onSelectionChange?.(task.id, e.shiftKey);
-    },
-    [onSelectionChange, task.id]
-  );
-
-  // Handle keyboard on selection checkbox
-  const handleSelectionKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        e.stopPropagation();
-        onSelectionChange?.(task.id, e.shiftKey);
-      }
     },
     [onSelectionChange, task.id]
   );
@@ -93,18 +88,6 @@ export function TaskRow({
     (e: React.MouseEvent) => {
       e.stopPropagation();
       onToggleComplete(task.id);
-    },
-    [onToggleComplete, task.id]
-  );
-
-  // Handle keyboard on checkbox
-  const handleCheckboxKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        e.stopPropagation();
-        onToggleComplete(task.id);
-      }
     },
     [onToggleComplete, task.id]
   );
@@ -139,124 +122,348 @@ export function TaskRow({
     }
   }, [taskIsPinned, pin, unpin, task.id, addToast]);
 
+  // Handle select from context menu
+  const handleSelect = useCallback(() => {
+    onSelectionChange?.(task.id, false);
+  }, [onSelectionChange, task.id]);
+
+  // Handle open in split (with event stop propagation)
+  const handleOpenInSplit = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onOpenInSplit();
+    },
+    [onOpenInSplit]
+  );
+
+  // Handle add tag click (with event stop propagation)
+  const handleAddTagClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTagPickerOpen(true);
+  }, []);
+
+  // Handle add tag
+  const handleAddTag = useCallback(
+    (tagId: string) => {
+      const currentTags = (task.properties.tags as string[]) ?? [];
+      if (!currentTags.includes(tagId)) {
+        store?.update(task.id, {
+          properties: { ...task.properties, tags: [...currentTags, tagId] },
+        });
+        refreshData();
+        addToast({ type: 'success', message: 'Tag added' });
+      }
+      setTagPickerOpen(false);
+    },
+    [task.id, task.properties, store, refreshData, addToast]
+  );
+
+  // Handle project click (with event stop propagation)
+  const handleProjectClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setProjectPickerOpen(true);
+  }, []);
+
+  // Handle assign project
+  const handleAssignProject = useCallback(
+    (projectId: string) => {
+      store?.update(task.id, {
+        properties: { ...task.properties, project: projectId },
+      });
+      refreshData();
+      addToast({ type: 'success', message: 'Project assigned' });
+      setProjectPickerOpen(false);
+    },
+    [task.id, task.properties, store, refreshData, addToast]
+  );
+
+  // Handle area click (with event stop propagation)
+  const handleAreaClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setAreaPickerOpen(true);
+  }, []);
+
+  // Handle assign area
+  const handleAssignArea = useCallback(
+    (areaId: string) => {
+      store?.update(task.id, {
+        properties: { ...task.properties, area: areaId },
+      });
+      refreshData();
+      addToast({ type: 'success', message: 'Area assigned' });
+      setAreaPickerOpen(false);
+    },
+    [task.id, task.properties, store, refreshData, addToast]
+  );
+
+  // Handle delete quick action (with event stop propagation)
+  const handleDeleteClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      handleDelete();
+    },
+    [handleDelete]
+  );
+
   // Context menu items
   const contextMenuItems: ContextMenuItem[] = [
+    ...(onSelectionChange
+      ? [
+          {
+            id: 'select',
+            label: isSelected ? 'Deselect' : 'Select',
+            icon: 'check-square',
+            onClick: handleSelect,
+          } as ContextMenuItem,
+        ]
+      : []),
     {
       id: 'pin',
       label: taskIsPinned ? 'Unpin from Sidebar' : 'Pin to Sidebar',
-      icon: '📌',
+      icon: 'pin',
       onClick: handleTogglePin,
     },
     {
       id: 'delete',
       label: 'Delete',
-      icon: '🗑️',
+      icon: 'trash-2',
       variant: 'danger',
       onClick: handleDelete,
     },
   ];
 
-  // Build class names
-  const classNames = ['task-row'];
-  if (isComplete) classNames.push('task-row--complete');
-  if (isSelected) classNames.push('task-row--selected');
-  if (isSelectingMode) classNames.push('task-row--selecting-mode');
+  // Handle row click - cmd+click opens split, shift+click toggles selection, regular click navigates
+  const handleRowClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.metaKey || e.ctrlKey) {
+        // Cmd+click (Mac) or Ctrl+click (Windows) opens in split pane
+        e.preventDefault();
+        onOpenInSplit();
+      } else if (e.shiftKey && onSelectionChange) {
+        e.preventDefault();
+        onSelectionChange(task.id, true);
+      } else {
+        onClick();
+      }
+    },
+    [onClick, onOpenInSplit, onSelectionChange, task.id]
+  );
 
   return (
     <>
-    <div
-      className={classNames.join(' ')}
-      onClick={onClick}
-      onContextMenu={openContextMenu}
-      role="button"
-      tabIndex={0}
-      aria-selected={isSelected}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' && e.target === e.currentTarget) {
-          onClick();
-        }
-      }}
-    >
-      {/* Selection checkbox (separate from completion) */}
-      {onSelectionChange && (
-        <button
-          type="button"
-          className={`task-row__select-checkbox ${isSelected ? 'task-row__select-checkbox--checked' : ''}`}
-          onClick={handleSelectionClick}
-          onKeyDown={handleSelectionKeyDown}
-          aria-label={`Select ${title}`}
-          aria-pressed={isSelected}
-        >
-          {isSelected && <span className="task-row__select-check-icon">✓</span>}
-        </button>
-      )}
-
-      {/* Completion checkbox */}
-      <button
-        className={`task-row__checkbox ${isComplete ? 'task-row__checkbox--checked' : ''}`}
-        onClick={handleCheckboxClick}
-        onKeyDown={handleCheckboxKeyDown}
-        aria-label={isComplete ? 'Mark as incomplete' : 'Mark as complete'}
-        aria-pressed={isComplete}
+      <UnstyledButton
+        onClick={handleRowClick}
+        onContextMenu={openContextMenu}
+        px="sm"
+        py="xs"
+        className={styles.row}
+        data-selected={isSelected || undefined}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--mantine-spacing-sm)',
+          borderRadius: 'var(--mantine-radius-sm)',
+          opacity: isComplete ? 0.6 : 1,
+          borderBottom: '1px solid var(--mantine-color-gray-2)',
+        }}
       >
-        {isComplete && <span className="task-row__check-icon">✓</span>}
-      </button>
+        {/* Selection checkbox - only show when in selection mode */}
+        {onSelectionChange && isSelectingMode && (
+          <Box
+            onClick={handleSelectionChange}
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
+            <Checkbox
+              checked={isSelected}
+              onChange={() => {}}
+              size="xs"
+              color="slate"
+              aria-label={`Select ${title}`}
+              styles={{ input: { cursor: 'pointer' } }}
+            />
+          </Box>
+        )}
 
-      {/* Title */}
-      <span className="task-row__title">{title}</span>
+        {/* Completion checkbox */}
+        <Box onClick={handleCheckboxClick} style={{ display: 'flex', alignItems: 'center' }}>
+          <Checkbox
+            checked={isComplete}
+            onChange={() => {}}
+            size="sm"
+            aria-label={isComplete ? 'Mark as incomplete' : 'Mark as complete'}
+            styles={{ input: { cursor: 'pointer' } }}
+          />
+        </Box>
 
-      {/* Priority indicator */}
-      {priority && (
-        <span
-          className={`task-row__priority task-row__priority--${priority}`}
-          title={`Priority: ${priority}`}
-        />
-      )}
+        {/* Task type icon - matches InboxRow/SearchResultCard pattern */}
+        <Icon name="circle-check" size={16} style={{ color: 'var(--mantine-color-gray-6)', flexShrink: 0 }} />
 
-      {/* Due date */}
-      {dueDate && (
-        <span
-          className={`task-row__due-date ${isTaskOverdue ? 'task-row__due-date--overdue' : ''}`}
-        >
-          {formatRelativeDate(dueDate)}
-        </span>
-      )}
+        {/* Title and inline metadata */}
+        <Group gap="xs" style={{ flex: 1, minWidth: 0 }} wrap="nowrap">
+          <Text
+            size="sm"
+            style={{
+              textDecoration: isComplete ? 'line-through' : 'none',
+              flexShrink: 1,
+              minWidth: 0,
+            }}
+            truncate
+          >
+            {title}
+          </Text>
 
-      {/* Project chip */}
-      {projectName && <span className="task-row__project">{projectName}</span>}
-
-      {/* Tags */}
-      {tags && tags.length > 0 && (
-        <div className="task-row__tags">
-          {tags.slice(0, 2).map((tag) => (
-            <Tag key={tag.id} name={tag.name} color={tag.color} size="sm" />
-          ))}
-          {tags.length > 2 && (
-            <span className="task-row__tags-more">+{tags.length - 2}</span>
+          {/* Due date - inline after title */}
+          {dueDate && (
+            <>
+              <Text size="xs" c="dimmed">·</Text>
+              <Text
+                size="xs"
+                c={isTaskOverdue ? 'brick' : 'dimmed'}
+                fw={isTaskOverdue ? 500 : 400}
+                style={{ flexShrink: 0 }}
+              >
+                {formatRelativeDate(dueDate)}
+              </Text>
+            </>
           )}
-        </div>
-      )}
-    </div>
 
-    {/* Context Menu */}
-    <ContextMenu
-      items={contextMenuItems}
-      position={position}
-      isOpen={isOpen}
-      onClose={closeContextMenu}
-    />
+          {/* Project chip - inline */}
+          {projectName && (
+            <Badge size="xs" variant="light" color="gray" radius="sm" style={{ flexShrink: 0 }}>
+              {projectName}
+            </Badge>
+          )}
+        </Group>
 
-    {/* Confirm Dialog */}
-    <ConfirmDialog
-      isOpen={dialogState.isOpen}
-      title={dialogState.title}
-      message={dialogState.message}
-      confirmLabel={dialogState.confirmLabel}
-      cancelLabel={dialogState.cancelLabel}
-      variant={dialogState.variant}
-      onConfirm={handleConfirm}
-      onCancel={handleCancel}
-    />
+        {/* Right section: tags + hover-reveal actions */}
+        <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
+          {/* Tags - right side */}
+          {tags && tags.length > 0 && (
+            <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
+              {tags.slice(0, 2).map((tag) => (
+                <Tag key={tag.id} name={tag.name} color={tag.color} size="sm" />
+              ))}
+              {tags.length > 2 && (
+                <Text size="xs" c="dimmed">
+                  +{tags.length - 2}
+                </Text>
+              )}
+            </Group>
+          )}
+
+          {/* Hover-reveal action icons - appear to the right of tags */}
+          <Group gap={4} className={styles.actions} wrap="nowrap">
+          <Tooltip label="Open in split pane" position="top" withArrow>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={handleOpenInSplit}
+              aria-label="Open in split pane"
+            >
+              <Icon name="columns-2" size={14} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Add tag" position="top" withArrow>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={handleAddTagClick}
+              aria-label="Add tag"
+            >
+              <Icon name="tag" size={14} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Assign project" position="top" withArrow>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={handleProjectClick}
+              aria-label="Assign project"
+            >
+              <Icon name="folder" size={14} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Assign area" position="top" withArrow>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={handleAreaClick}
+              aria-label="Assign area"
+            >
+              <Icon name="layers" size={14} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label={taskIsPinned ? 'Unpin' : 'Pin to sidebar'} position="top" withArrow>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={(e) => { e.stopPropagation(); handleTogglePin(); }}
+              aria-label={taskIsPinned ? 'Unpin from sidebar' : 'Pin to sidebar'}
+            >
+              <Icon name="pin" size={14} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Delete" position="top" withArrow>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              color="brick"
+              onClick={handleDeleteClick}
+              aria-label="Delete"
+            >
+              <Icon name="trash-2" size={14} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+        </Group>
+      </UnstyledButton>
+
+      {/* Context Menu */}
+      <ContextMenu
+        items={contextMenuItems}
+        position={position}
+        isOpen={isOpen}
+        onClose={closeContextMenu}
+      />
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={dialogState.isOpen}
+        title={dialogState.title}
+        message={dialogState.message}
+        confirmLabel={dialogState.confirmLabel}
+        cancelLabel={dialogState.cancelLabel}
+        variant={dialogState.variant}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+
+      {/* Tag Picker Modal */}
+      <ObjectSearchModal
+        isOpen={tagPickerOpen}
+        onClose={() => setTagPickerOpen(false)}
+        onSelect={handleAddTag}
+        targetTypeIds={['tag']}
+        title="Add Tag"
+      />
+
+      {/* Project Picker Modal */}
+      <ObjectSearchModal
+        isOpen={projectPickerOpen}
+        onClose={() => setProjectPickerOpen(false)}
+        onSelect={handleAssignProject}
+        targetTypeIds={['project']}
+        title="Assign to Project"
+      />
+
+      {/* Area Picker Modal */}
+      <ObjectSearchModal
+        isOpen={areaPickerOpen}
+        onClose={() => setAreaPickerOpen(false)}
+        onSelect={handleAssignArea}
+        targetTypeIds={['area']}
+        title="Assign to Area"
+      />
     </>
   );
 }

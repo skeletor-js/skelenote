@@ -73,7 +73,7 @@ export function PinnedSection() {
           />
         }
         rightSection={
-          <Badge size="xs" variant="filled" color="gray" circle>
+          <Badge size="xs" variant="light" color="gray" radius="sm">
             {pinnedObjects.length}
           </Badge>
         }

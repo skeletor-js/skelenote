@@ -1,0 +1,33 @@
+/**
+ * SnapshotPreview.module.css - Styles for snapshot rows with hover-reveal actions
+ */
+
+.snapshotRow {
+  transition: background-color 150ms ease;
+}
+
+.snapshotRow:hover {
+  background-color: var(--mantine-color-gray-0);
+}
+
+/* Focused state (keyboard navigation) */
+.snapshotRow[data-focused="true"] {
+  outline: 2px solid var(--mantine-color-ember-4);
+  outline-offset: -2px;
+}
+
+/* Hover-reveal actions - hidden by default */
+.actions {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.snapshotRow:hover .actions,
+.snapshotRow:focus-within .actions {
+  opacity: 1;
+}
+
+/* Dark mode */
+[data-mantine-color-scheme="dark"] .snapshotRow:hover {
+  background-color: var(--mantine-color-gray-8);
+}

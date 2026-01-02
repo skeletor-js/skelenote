@@ -3,8 +3,9 @@
  */
 
 import { useMemo } from 'react';
+import { Box, Group, Button, Text, SimpleGrid, ActionIcon } from '@mantine/core';
+import { Icon } from '@/components/ui/Icon';
 import type { CalendarViewProps } from './types';
-import './CalendarView.css';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -78,55 +79,72 @@ export function CalendarView({
     return changesByDate.get(dateKey);
   };
 
-  // Determine indicator level based on change count
-  const getIndicatorLevel = (totalChanges: number): string => {
-    if (totalChanges > 10) return 'high';
-    if (totalChanges > 3) return 'medium';
-    return 'low';
+  // Calculate the maximum changes in any single day for relative scaling
+  const maxChangesInMonth = useMemo(() => {
+    let max = 0;
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateKey = formatDateKey(year, month, day);
+      const dayChanges = changesByDate.get(dateKey);
+      if (dayChanges && dayChanges.totalChanges > max) {
+        max = dayChanges.totalChanges;
+      }
+    }
+    return max;
+  }, [changesByDate, daysInMonth, year, month]);
+
+  // Calculate bar width as percentage based on relative density
+  const getBarWidth = (totalChanges: number): number => {
+    if (maxChangesInMonth === 0) return 0;
+    const ratio = totalChanges / maxChangesInMonth;
+    // Map to discrete levels: 25%, 50%, 75%, 100%
+    if (ratio <= 0.25) return 25;
+    if (ratio <= 0.5) return 50;
+    if (ratio <= 0.75) return 75;
+    return 100;
   };
 
   return (
-    <div className="tm-calendar">
+    <Box>
       {/* Header with month navigation */}
-      <div className="tm-calendar__header">
-        <button
-          className="tm-calendar__nav-btn"
+      <Group justify="space-between" mb="sm">
+        <ActionIcon
+          variant="subtle"
           onClick={goToPreviousMonth}
           aria-label="Previous month"
         >
-          ←
-        </button>
-        <h2 className="tm-calendar__month-label">{monthLabel}</h2>
-        <button
-          className="tm-calendar__nav-btn"
+          <Icon name="chevron-left" size={18} />
+        </ActionIcon>
+        <Text size="md" fw={600}>{monthLabel}</Text>
+        <ActionIcon
+          variant="subtle"
           onClick={goToNextMonth}
           aria-label="Next month"
         >
-          →
-        </button>
-      </div>
+          <Icon name="chevron-right" size={18} />
+        </ActionIcon>
+      </Group>
 
       {/* Today button */}
-      <div className="tm-calendar__today-row">
-        <button className="tm-calendar__today-btn" onClick={goToToday}>
+      <Group justify="center" mb="sm">
+        <Button variant="subtle" size="xs" onClick={goToToday}>
           Today
-        </button>
-      </div>
+        </Button>
+      </Group>
 
       {/* Weekday labels */}
-      <div className="tm-calendar__weekdays">
+      <SimpleGrid cols={7} spacing={2} mb="xs">
         {WEEKDAY_LABELS.map((label) => (
-          <div key={label} className="tm-calendar__weekday">
+          <Text key={label} size="xs" c="dimmed" ta="center">
             {label}
-          </div>
+          </Text>
         ))}
-      </div>
+      </SimpleGrid>
 
       {/* Day grid */}
-      <div className="tm-calendar__grid">
+      <SimpleGrid cols={7} spacing={2}>
         {/* Empty cells before first day */}
         {emptyDays.map((i) => (
-          <div key={`empty-${i}`} className="tm-calendar__empty-day" />
+          <Box key={`empty-${i}`} h={36} />
         ))}
 
         {/* Day cells */}
@@ -136,46 +154,51 @@ export function CalendarView({
           const hasChanges = dayChanges && dayChanges.totalChanges > 0;
           const isSelected = selectedDate === dateKey;
           const isToday = dateKey === todayKey;
-          const indicatorLevel = hasChanges
-            ? getIndicatorLevel(dayChanges.totalChanges)
-            : null;
-
-          const className = [
-            'tm-calendar__day',
-            hasChanges ? 'tm-calendar__day--has-changes' : '',
-            isSelected ? 'tm-calendar__day--selected' : '',
-            isToday ? 'tm-calendar__day--today' : '',
-          ]
-            .filter(Boolean)
-            .join(' ');
-
-          const ariaLabel = `${monthLabel.split(' ')[0]} ${day}${
-            hasChanges ? `, ${dayChanges.totalChanges} changes` : ', no changes'
-          }${isSelected ? ', selected' : ''}${isToday ? ', today' : ''}`;
+          const barWidth = hasChanges ? getBarWidth(dayChanges.totalChanges) : 0;
 
           return (
-            <button
+            <Button
               key={day}
-              className={className}
+              variant={isSelected ? 'filled' : 'subtle'}
+              color={isSelected ? 'ember' : 'gray'}
+              h={36}
+              p={0}
               onClick={() => hasChanges && onDateSelect(dateKey)}
               disabled={!hasChanges}
-              aria-label={ariaLabel}
+              aria-label={`${monthLabel.split(' ')[0]} ${day}${
+                hasChanges ? `, ${dayChanges.totalChanges} changes` : ', no changes'
+              }${isSelected ? ', selected' : ''}${isToday ? ', today' : ''}`}
               aria-current={isToday ? 'date' : undefined}
               aria-pressed={isSelected}
+              style={{
+                position: 'relative',
+                border: isToday ? '2px solid var(--mantine-color-ember-4)' : undefined,
+              }}
             >
-              <span className="tm-calendar__day-number">{day}</span>
+              <Text size="sm">{day}</Text>
               {hasChanges && (
-                <span
-                  className={`tm-calendar__change-indicator tm-calendar__change-indicator--${indicatorLevel}`}
+                <Box
+                  style={{
+                    position: 'absolute',
+                    bottom: 4,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: `${barWidth}%`,
+                    maxWidth: 24,
+                    height: 3,
+                    borderRadius: 1,
+                    backgroundColor: isSelected
+                      ? 'var(--mantine-color-white)'
+                      : 'var(--mantine-color-ember-5)',
+                    opacity: isSelected ? 0.8 : 1,
+                  }}
                   aria-hidden="true"
-                >
-                  •
-                </span>
+                />
               )}
-            </button>
+            </Button>
           );
         })}
-      </div>
-    </div>
+      </SimpleGrid>
+    </Box>
   );
 }

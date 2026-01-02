@@ -2,8 +2,10 @@
  * RelationChip - Displays a single object relation as a clickable chip
  */
 
+import { Badge, CloseButton } from '@mantine/core';
 import { useObjects, useTypeRegistry, useNavigation } from '@/contexts';
-import './RelationPicker.css';
+import { Icon } from '@/components/ui/Icon';
+import { getIconFromEmoji } from '@/lib/icons';
 
 interface RelationChipProps {
   objectId: string;
@@ -49,29 +51,32 @@ export function RelationChip({ objectId, onRemove, showRemove = true }: Relation
   };
 
   return (
-    <span
-      className="relation-chip"
+    <Badge
+      variant="light"
+      color="gray"
+      size="lg"
+      radius="sm"
       data-type-id={object.typeId}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
       role="button"
       tabIndex={0}
-      onKeyDown={handleKeyDown}
+      style={{ cursor: 'pointer' }}
+      leftSection={<Icon name={getIconFromEmoji(icon)} size={14} />}
+      rightSection={
+        showRemove && onRemove ? (
+          <CloseButton
+            size="xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
+            aria-label="Remove relation"
+          />
+        ) : undefined
+      }
     >
-      <span className="relation-chip__icon">{icon}</span>
-      <span className="relation-chip__name">{name}</span>
-      {showRemove && onRemove && (
-        <button
-          type="button"
-          className="relation-chip__remove"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}
-          aria-label="Remove relation"
-        >
-          x
-        </button>
-      )}
-    </span>
+      {name}
+    </Badge>
   );
 }

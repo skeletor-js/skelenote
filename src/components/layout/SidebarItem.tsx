@@ -44,7 +44,7 @@ export function SidebarItem({
       leftSection={renderIcon()}
       rightSection={
         count !== undefined && count > 0 ? (
-          <Badge size="xs" variant="filled" color="gray" circle>
+          <Badge size="xs" variant="light" color="gray" radius="sm">
             {count}
           </Badge>
         ) : undefined

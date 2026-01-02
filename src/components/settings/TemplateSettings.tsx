@@ -5,11 +5,15 @@
  */
 
 import { useState, useCallback } from 'react';
+import { Stack, Group, Title, Text, Box, Select, Badge, Button, Divider } from '@mantine/core';
+import { Plus } from 'lucide-react';
+import { Icon } from '@/components/ui';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useTemplates } from '@/hooks';
 import { useTypeRegistry, useNavigation, useToast } from '@/contexts';
 import { TemplateEditor } from '@/components/templates';
+import { getIconFromEmoji, type IconName } from '@/lib/icons';
 import type { Template } from '@/lib/templates';
-import './TemplateSettings.css';
 
 export function TemplateSettings() {
   const { templates, remove, setDailyNoteTemplate, dailyNoteTemplate } = useTemplates();
@@ -19,6 +23,12 @@ export function TemplateSettings() {
 
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Template | null>(null);
+
+  const handleCreate = useCallback(() => {
+    setEditingTemplate(null);
+    setIsEditorOpen(true);
+  }, []);
 
   const handleEdit = useCallback((template: Template) => {
     setEditingTemplate(template);
@@ -30,25 +40,23 @@ export function TemplateSettings() {
     setEditingTemplate(null);
   }, []);
 
-  const handleDelete = useCallback(
-    (template: Template) => {
-      if (confirm(`Delete template "${template.name}"? This cannot be undone.`)) {
-        const success = remove(template.id);
-        if (success) {
-          addToast({
-            type: 'success',
-            message: `Deleted template "${template.name}"`,
-          });
-        } else {
-          addToast({
-            type: 'error',
-            message: 'Failed to delete template',
-          });
-        }
-      }
-    },
-    [remove, addToast]
-  );
+  const handleDeleteConfirm = useCallback(() => {
+    if (!deleteTarget) return;
+
+    const success = remove(deleteTarget.id);
+    if (success) {
+      addToast({
+        type: 'success',
+        message: `Deleted template "${deleteTarget.name}"`,
+      });
+    } else {
+      addToast({
+        type: 'error',
+        message: 'Failed to delete template',
+      });
+    }
+    setDeleteTarget(null);
+  }, [deleteTarget, remove, addToast]);
 
   const handleSetDailyTemplate = useCallback(
     (templateId: string | null) => {
@@ -76,101 +84,133 @@ export function TemplateSettings() {
     [navigateToObject]
   );
 
-  const getTypeName = (typeId: string) => {
+  const getTypeDisplay = (typeId: string): { icon: IconName; name: string } => {
     const typeDef = typeRegistry.get(typeId);
-    return typeDef ? `${typeDef.icon} ${typeDef.name}` : typeId;
+    if (typeDef) {
+      // Convert emoji icon to Lucide icon name
+      const iconName = getIconFromEmoji(typeDef.icon);
+      return { icon: iconName, name: typeDef.name };
+    }
+    return { icon: 'file', name: typeId };
   };
 
   return (
-    <section className="template-settings">
-      <h2 className="template-settings__title">Templates</h2>
+    <Box component="section">
+      <Title order={2} mb="md">Templates</Title>
 
-      <div className="template-settings__section">
-        <p className="template-settings__description">
+      <Group justify="space-between" align="flex-start" mb="lg">
+        <Text size="sm" c="dimmed" style={{ flex: 1 }}>
           Templates are reusable blueprints for creating objects with pre-filled content.
           Use placeholders like {'{{date}}'} for dynamic content.
-        </p>
+        </Text>
+        <Button
+          variant="light"
+          size="xs"
+          leftSection={<Plus size={14} />}
+          onClick={handleCreate}
+        >
+          Create Template
+        </Button>
+      </Group>
 
-        {templates.length === 0 ? (
-          <div className="template-settings__empty">
-            <p>No templates yet.</p>
-            <p className="template-settings__empty-hint">
-              Create templates using <kbd>Cmd+Shift+T</kbd> or from the Command Palette.
-            </p>
-          </div>
-        ) : (
-          <div className="template-settings__list">
-            {templates.map((template) => (
-              <div key={template.id} className="template-settings__item">
-                <div className="template-settings__item-main">
-                  <div className="template-settings__item-header">
-                    <span className="template-settings__item-name">{template.name}</span>
+      {templates.length === 0 ? (
+        <Box ta="center" py="xl">
+          <Text size="sm" c="dimmed">No templates yet.</Text>
+        </Box>
+      ) : (
+        <Stack gap="xs" mb="lg">
+          {templates.map((template) => {
+            const typeDisplay = getTypeDisplay(template.targetTypeId);
+            return (
+              <Group
+                key={template.id}
+                justify="space-between"
+                p="sm"
+                wrap="nowrap"
+                style={(theme) => ({
+                  borderRadius: theme.radius.sm,
+                  backgroundColor: 'var(--mantine-color-gray-0)',
+                })}
+              >
+                <Box style={{ flex: 1, minWidth: 0 }}>
+                  <Group gap="xs" mb={4}>
+                    <Text size="sm" fw={500} truncate>
+                      {template.name}
+                    </Text>
                     {template.isDailyNoteTemplate && (
-                      <span className="template-settings__item-badge">Daily Note</span>
+                      <Badge size="xs" variant="light" color="slate" radius="sm">
+                        Daily Note
+                      </Badge>
                     )}
-                  </div>
-                  <div className="template-settings__item-meta">
-                    <span className="template-settings__item-type">
-                      Creates: {getTypeName(template.targetTypeId)}
-                    </span>
+                  </Group>
+                  <Group gap="xs">
+                    <Group gap={4}>
+                      <Icon name={typeDisplay.icon} size={12} />
+                      <Text size="xs" c="dimmed">
+                        Creates: {typeDisplay.name}
+                      </Text>
+                    </Group>
                     {template.description && (
-                      <span className="template-settings__item-desc">
-                        {template.description}
-                      </span>
+                      <>
+                        <Text size="xs" c="dimmed">·</Text>
+                        <Text size="xs" c="dimmed" truncate>
+                          {template.description}
+                        </Text>
+                      </>
                     )}
-                  </div>
-                </div>
-                <div className="template-settings__item-actions">
-                  <button
-                    className="template-settings__action-btn"
+                  </Group>
+                </Box>
+
+                <Group gap="xs">
+                  <Button
+                    size="xs"
+                    variant="subtle"
                     onClick={() => handleViewContent(template)}
-                    title="View/Edit Content"
                   >
                     View
-                  </button>
-                  <button
-                    className="template-settings__action-btn"
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant="subtle"
                     onClick={() => handleEdit(template)}
-                    title="Edit Template Settings"
                   >
                     Edit
-                  </button>
-                  <button
-                    className="template-settings__action-btn template-settings__action-btn--danger"
-                    onClick={() => handleDelete(template)}
-                    title="Delete Template"
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant="subtle"
+                    color="brick"
+                    onClick={() => setDeleteTarget(template)}
                   >
                     Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+                  </Button>
+                </Group>
+              </Group>
+            );
+          })}
+        </Stack>
+      )}
 
       {templates.length > 0 && (
         <>
-          <div className="template-settings__divider" />
+          <Divider my="lg" />
 
-          <div className="template-settings__section">
-            <label className="template-settings__label">Daily Note Template</label>
-            <p className="template-settings__help" style={{ marginTop: 0, marginBottom: 'var(--spacing-sm)' }}>
+          <Box>
+            <Text size="sm" fw={500} mb="xs">Daily Note Template</Text>
+            <Text size="xs" c="dimmed" mb="sm">
               Automatically apply this template when creating new daily notes.
-            </p>
-            <select
-              className="template-settings__select"
+            </Text>
+            <Select
+              data={[
+                { value: '', label: 'None (empty daily notes)' },
+                ...templates.map((t) => ({ value: t.id, label: t.name })),
+              ]}
               value={dailyNoteTemplate?.id ?? ''}
-              onChange={(e) => handleSetDailyTemplate(e.target.value || null)}
-            >
-              <option value="">None (empty daily notes)</option>
-              {templates.map((template) => (
-                <option key={template.id} value={template.id}>
-                  {template.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              onChange={(value) => handleSetDailyTemplate(value || null)}
+              placeholder="Select a template"
+              clearable
+            />
+          </Box>
         </>
       )}
 
@@ -179,6 +219,16 @@ export function TemplateSettings() {
         isOpen={isEditorOpen}
         onClose={handleCloseEditor}
       />
-    </section>
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        title="Delete Template"
+        message={`Delete template "${deleteTarget?.name}"? This cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
+    </Box>
   );
 }

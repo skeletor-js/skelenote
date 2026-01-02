@@ -1,67 +1,37 @@
 /* Global Styles */
-@import './tokens.css';
 @import './reset.css';
 
-/* Base typography */
-html {
-  font-family: var(--font-body);
-  font-size: var(--font-size-base);
-  line-height: var(--line-height);
-  color: var(--text-primary);
-  background-color: var(--bg-base);
+/* =============================================================================
+   DARK MODE SURFACE HIERARCHY
+
+   These CSS variables provide proper surface layering for dark mode.
+   - Canvas: The deepest background layer (sidebar, app shell)
+   - Paper: Elevated surfaces (content area, cards, modals)
+   - Vellum: Border colors with proper visibility
+
+   In light mode, Mantine's defaults work well. In dark mode, we need explicit
+   control to create visual depth.
+   ============================================================================= */
+
+:root {
+  /* Light mode: use Mantine defaults */
+  --surface-canvas: var(--mantine-color-gray-0);
+  --surface-paper: var(--mantine-color-white);
+  --surface-raised: var(--mantine-color-gray-0);
+  --border-subtle: var(--mantine-color-gray-2);
+  --border-default: var(--mantine-color-gray-3);
 }
 
-/* UI typography helper class */
-.font-ui {
-  font-family: var(--font-ui);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+[data-mantine-color-scheme="dark"] {
+  /* Dark mode: explicit surface hierarchy */
+  --surface-canvas: #0A0A0A;  /* Near-black base layer */
+  --surface-paper: #18181B;   /* Elevated content (gray.9) */
+  --surface-raised: #27272A;  /* Further elevated (gray.8) */
+  --border-subtle: #27272A;   /* Subtle borders (gray.8) */
+  --border-default: #3F3F46;  /* More visible borders (gray.7) */
 
-/* Default button styling */
-button {
-  background: var(--bg-raised);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  color: var(--text-primary);
-  transition: background var(--transition-base);
-}
-
-button:hover {
-  background: var(--surface-hover);
-}
-
-button:active {
-  background: var(--surface-active);
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Focus-visible styles for keyboard navigation */
-:focus-visible {
-  outline: var(--focus-ring-width) solid var(--focus-ring-color);
-  outline-offset: var(--focus-ring-offset);
-}
-
-/* Remove default focus for mouse users */
-:focus:not(:focus-visible) {
-  outline: none;
-}
-
-/* Ensure focus is visible on interactive elements */
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible,
-[role="button"]:focus-visible,
-[tabindex]:focus-visible {
-  outline: var(--focus-ring-width) solid var(--focus-ring-color);
-  outline-offset: var(--focus-ring-offset);
+  /* Override Mantine's default border to be more visible */
+  --mantine-color-default-border: #3F3F46;
 }
 
 /* Scrollbar styling */
@@ -75,10 +45,19 @@ select:focus-visible,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-subtle);
-  border-radius: var(--radius-sm);
+  background: var(--mantine-color-gray-3);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-strong);
+  background: var(--mantine-color-gray-4);
+}
+
+/* Dark mode scrollbar adjustments */
+[data-mantine-color-scheme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--mantine-color-gray-7);
+}
+
+[data-mantine-color-scheme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--mantine-color-gray-6);
 }

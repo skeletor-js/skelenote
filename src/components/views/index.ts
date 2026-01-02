@@ -12,3 +12,4 @@ export { Calendar } from './Calendar';
 export { DailyNotesView } from './DailyNotesView';
 export { SavedViewContent } from './SavedViewContent';
 export { SavedViewEditor } from './SavedViewEditor';
+export { TypeBrowseView } from './TypeBrowseView';

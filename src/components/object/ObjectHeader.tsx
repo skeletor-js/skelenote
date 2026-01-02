@@ -1,7 +1,16 @@
+/**
+ * ObjectHeader - Header component for object detail view
+ * Shows editable title with hover-reveal quick actions and overflow menu
+ */
+
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { Group, Text, TextInput, ActionIcon, Menu, Tooltip } from '@mantine/core';
+import { MoreHorizontal } from 'lucide-react';
 import { useNavigation } from '@/contexts';
-import './ObjectHeader.css';
+import { Icon } from '@/components/ui/Icon';
+import { getIconFromEmoji } from '@/lib/icons';
 import type { SkelenoteObject, TypeDefinition } from '@/lib/types';
+import styles from './ObjectHeader.module.css';
 
 interface ObjectHeaderProps {
   object: SkelenoteObject;
@@ -9,6 +18,8 @@ interface ObjectHeaderProps {
   onTitleChange: (newTitle: string) => void;
   onDelete?: () => void;
   canDelete?: boolean;
+  /** Whether the title can be edited (default: true) */
+  titleEditable?: boolean;
   /** Which pane this header is in */
   paneType?: 'primary' | 'secondary';
   /** Callback to close split view (secondary pane only) */
@@ -17,6 +28,18 @@ interface ObjectHeaderProps {
   onViewHistory?: () => void;
   /** Callback to export object to Markdown */
   onExport?: () => void;
+  /** Whether back navigation is available */
+  canGoBack?: boolean;
+  /** Callback for back navigation */
+  onNavigateBack?: () => void;
+  /** Whether to show "Back to Time Machine" option */
+  showBackToTimeMachine?: boolean;
+  /** Callback for navigating back to Time Machine */
+  onBackToTimeMachine?: () => void;
+  /** Callback for pinning the object */
+  onPin?: () => void;
+  /** Whether the object is pinned */
+  isPinned?: boolean;
 }
 
 export function ObjectHeader({
@@ -25,10 +48,17 @@ export function ObjectHeader({
   onTitleChange,
   onDelete,
   canDelete = true,
+  titleEditable = true,
   paneType = 'primary',
   onCloseSplit,
   onViewHistory,
   onExport,
+  canGoBack = false,
+  onNavigateBack,
+  showBackToTimeMachine = false,
+  onBackToTimeMachine,
+  onPin,
+  isPinned = false,
 }: ObjectHeaderProps) {
   const { openInSplit, splitPane } = useNavigation();
   // Determine which property holds the title (varies by type)
@@ -99,99 +129,224 @@ export function ObjectHeader({
     [startEditing]
   );
 
-  return (
-    <header className="object-header">
-      <span className="object-header__icon" aria-hidden="true">
-        {typeDef.icon}
-      </span>
+  // Determine if we should show the overflow menu
+  const showOverflowMenu = paneType === 'primary';
+  const showSplitOption = !splitPane.isOpen;
+  const showHistoryOption = onViewHistory && splitPane.mode !== 'version-comparison';
 
-      {isEditing ? (
-        <input
+  return (
+    <Group
+      component="header"
+      gap="sm"
+      wrap="nowrap"
+      className={styles.header}
+    >
+      {/* Back button */}
+      {canGoBack && onNavigateBack && (
+        <ActionIcon
+          variant="subtle"
+          color="gray"
+          size="sm"
+          onClick={onNavigateBack}
+          aria-label="Go back"
+        >
+          <Icon name="chevron-left" size={18} />
+        </ActionIcon>
+      )}
+
+      {/* Type indicator */}
+      <Icon
+        name={getIconFromEmoji(typeDef.icon)}
+        size={18}
+        className={styles.typeIcon}
+      />
+
+      {/* Title (editable or static) */}
+      {isEditing && titleEditable ? (
+        <TextInput
           ref={inputRef}
-          type="text"
-          className="object-header__input"
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           onBlur={saveEdit}
           onKeyDown={handleKeyDown}
           aria-label="Edit title"
+          variant="unstyled"
+          className={styles.titleInput}
+          styles={{
+            input: {
+              fontSize: 'var(--mantine-font-size-lg)',
+              fontWeight: 600,
+              padding: 0,
+            },
+          }}
         />
       ) : (
-        <h1
-          className="object-header__title"
-          onClick={handleTitleClick}
-          onKeyDown={handleTitleKeyDown}
-          tabIndex={0}
-          role="button"
-          aria-label={`Edit title: ${currentTitle}`}
+        <Text
+          size="lg"
+          fw={600}
+          onClick={titleEditable ? handleTitleClick : undefined}
+          onKeyDown={titleEditable ? handleTitleKeyDown : undefined}
+          tabIndex={titleEditable ? 0 : undefined}
+          role={titleEditable ? 'button' : undefined}
+          aria-label={titleEditable ? `Edit title: ${currentTitle}` : currentTitle}
+          className={styles.title}
+          truncate
         >
           {currentTitle}
-          <span className="object-header__edit-hint">Click to edit</span>
-        </h1>
+        </Text>
       )}
 
-      {/* Open in Split View - only show in primary pane when split is not open */}
-      {paneType === 'primary' && !splitPane.isOpen && (
-        <button
-          type="button"
-          className="object-header__split-btn"
-          onClick={() => openInSplit(object.id)}
-          aria-label="Open in split view"
-          title="Open in split view"
-        >
-          Split
-        </button>
+      {/* Hover-reveal quick actions for primary pane */}
+      {paneType === 'primary' && (
+        <Group gap={2} className={styles.quickActions}>
+          {/* Pin action */}
+          {onPin && (
+            <Tooltip label={isPinned ? 'Unpin' : 'Pin'} withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={onPin}
+                aria-label={isPinned ? 'Unpin' : 'Pin'}
+                className={styles.quickAction}
+              >
+                <Icon name={isPinned ? 'pin-off' : 'pin'} size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+
+          {/* Export action */}
+          {onExport && (
+            <Tooltip label="Export" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={onExport}
+                aria-label="Export to Markdown"
+                className={styles.quickAction}
+              >
+                <Icon name="download" size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+
+          {/* Delete action */}
+          {canDelete && onDelete && (
+            <Tooltip label="Delete" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={onDelete}
+                aria-label="Delete"
+                className={styles.quickActionDanger}
+              >
+                <Icon name="trash-2" size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+        </Group>
       )}
 
-      {/* History button - only show in primary pane when not in version comparison mode */}
-      {paneType === 'primary' && onViewHistory && splitPane.mode !== 'version-comparison' && (
-        <button
-          type="button"
-          className="object-header__history-btn"
-          onClick={onViewHistory}
-          aria-label={`View history for ${currentTitle}`}
-          title="View history"
-        >
-          History
-        </button>
-      )}
-
-      {/* Export button - only show in primary pane */}
-      {paneType === 'primary' && onExport && (
-        <button
-          type="button"
-          className="object-header__export-btn"
-          onClick={onExport}
-          aria-label={`Export ${currentTitle} to Markdown`}
-          title="Export to Markdown (Cmd+Shift+E)"
-        >
-          Export
-        </button>
-      )}
-
-      {canDelete && onDelete && (
-        <button
-          type="button"
-          className="object-header__delete"
-          onClick={onDelete}
-          aria-label="Delete object"
-          title="Delete"
-        >
-          Delete
-        </button>
-      )}
-
+      {/* Close button for secondary pane */}
       {paneType === 'secondary' && onCloseSplit && (
-        <button
-          type="button"
-          className="object-header__close-split"
+        <ActionIcon
+          variant="subtle"
+          color="gray"
+          size="sm"
           onClick={onCloseSplit}
           aria-label="Close split view"
-          title="Close"
         >
-          ×
-        </button>
+          <Icon name="x" size={16} />
+        </ActionIcon>
       )}
-    </header>
+
+      {/* Overflow menu for primary pane */}
+      {showOverflowMenu && (
+        <Menu position="bottom-end" withinPortal>
+          <Menu.Target>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="sm"
+              aria-label="More actions"
+            >
+              <MoreHorizontal size={16} />
+            </ActionIcon>
+          </Menu.Target>
+          <Menu.Dropdown>
+            {/* Back to Time Machine option */}
+            {showBackToTimeMachine && onBackToTimeMachine && (
+              <>
+                <Menu.Item
+                  leftSection={<Icon name="clock" size={14} />}
+                  onClick={onBackToTimeMachine}
+                >
+                  Back to Time Machine
+                </Menu.Item>
+                <Menu.Divider />
+              </>
+            )}
+
+            {/* Open in split view */}
+            {showSplitOption && (
+              <Menu.Item
+                leftSection={<Icon name="columns-2" size={14} />}
+                onClick={() => openInSplit(object.id)}
+              >
+                Open in split view
+              </Menu.Item>
+            )}
+
+            {/* View history */}
+            {showHistoryOption && (
+              <Menu.Item
+                leftSection={<Icon name="history" size={14} />}
+                onClick={onViewHistory}
+              >
+                View history
+              </Menu.Item>
+            )}
+
+            {/* Pin/Unpin (also in quick actions but keep in menu for discoverability) */}
+            {onPin && (
+              <Menu.Item
+                leftSection={<Icon name={isPinned ? 'pin-off' : 'pin'} size={14} />}
+                onClick={onPin}
+              >
+                {isPinned ? 'Unpin' : 'Pin to sidebar'}
+              </Menu.Item>
+            )}
+
+            {/* Export to Markdown */}
+            {onExport && (
+              <Menu.Item
+                leftSection={<Icon name="download" size={14} />}
+                onClick={onExport}
+                rightSection={
+                  <Text size="xs" c="dimmed">
+                    Cmd+Shift+E
+                  </Text>
+                }
+              >
+                Export to Markdown
+              </Menu.Item>
+            )}
+
+            {/* Delete - with divider if there are other items */}
+            {canDelete && onDelete && (
+              <>
+                <Menu.Divider />
+                <Menu.Item
+                  color="brick"
+                  leftSection={<Icon name="trash-2" size={14} />}
+                  onClick={onDelete}
+                >
+                  Delete
+                </Menu.Item>
+              </>
+            )}
+          </Menu.Dropdown>
+        </Menu>
+      )}
+    </Group>
   );
 }

@@ -38,7 +38,7 @@
   --transition-slow: 0.3s ease;
 
   /* ===== FOCUS ===== */
-  --focus-ring-color: var(--tag-blue);
+  --focus-ring-color: var(--mantine-color-ember-5);
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
 
@@ -70,26 +70,47 @@
   --tag-pink: #db2777;
 }
 
-/* ===== DARK MODE OVERRIDES ===== */
-[data-theme='dark'] {
-  --bg-base: #0a0a0a;
-  --bg-raised: #171717;
-  --bg-sunken: #0d0d0d;
-  --border-subtle: #262626;
-  --border-strong: #404040;
-  --text-primary: #fafafa;
-  --text-secondary: #a3a3a3;
-  --text-muted: #525252;
-  --surface-hover: #1f1f1f;
-  --surface-active: #292929;
+/* =============================================================================
+   LEGACY DARK MODE OVERRIDES (DEPRECATED)
 
-  /* Dark mode shadows */
+   These variables are kept for backwards compatibility with components that
+   haven't been migrated to Mantine's color system yet.
+
+   NEW CODE SHOULD USE:
+   - var(--surface-canvas) - Base layer background
+   - var(--surface-paper) - Elevated surfaces
+   - var(--border-default) - Visible borders
+   - var(--mantine-color-text) - Primary text
+   - var(--mantine-color-dimmed) - Secondary text
+
+   See src/styles/global.css for the new surface hierarchy system.
+   ============================================================================= */
+[data-theme='dark'] {
+  /* Background colors - aligned with style guide zinc values */
+  --bg-base: #0A0A0A;      /* Canvas */
+  --bg-raised: #18181B;    /* Paper (zinc-900) */
+  --bg-sunken: #09090B;    /* Below canvas */
+
+  /* Border colors - more visible in dark mode */
+  --border-subtle: #27272A;  /* Vellum (zinc-800) */
+  --border-strong: #3F3F46;  /* zinc-700 for better visibility */
+
+  /* Text colors - zinc-based for consistency */
+  --text-primary: #FAFAFA;   /* zinc-50 */
+  --text-secondary: #A1A1AA; /* zinc-400 / Stone */
+  --text-muted: #52525B;     /* zinc-600 / Graphite */
+
+  /* Surface states */
+  --surface-hover: #27272A;  /* zinc-800 */
+  --surface-active: #3F3F46; /* zinc-700 */
+
+  /* Dark mode shadows - increased opacity */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
 
-  /* Tag colors (Dark Mode - brighter variants) */
-  --tag-gray: #a3a3a3;
+  /* Tag colors (Dark Mode - brighter variants for visibility) */
+  --tag-gray: #A1A1AA;
   --tag-red: #ef4444;
   --tag-orange: #f97316;
   --tag-yellow: #eab308;

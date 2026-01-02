@@ -58,7 +58,7 @@ export function PaletteItem({
           <Badge
             size="xs"
             variant="light"
-            color="violet"
+            color="clay"
             title={semanticPercent ? `${semanticPercent}% similar` : 'Semantic match'}
           >
             ~{semanticPercent ? `${semanticPercent}%` : ''}

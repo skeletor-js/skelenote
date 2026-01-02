@@ -5,21 +5,23 @@
  */
 
 import { useCallback, useEffect } from 'react';
-import './QuickCapture.css';
+import { Group, UnstyledButton, Text } from '@mantine/core';
+import { Icon } from '@/components/ui/Icon';
+import type { IconName } from '@/lib/icons';
 
 export type CaptureType = 'task' | 'note' | 'link' | 'template';
 
 interface TypeOption {
   id: CaptureType;
   name: string;
-  icon: string;
+  icon: IconName;
 }
 
 const typeOptions: TypeOption[] = [
-  { id: 'task', name: 'Task', icon: '✓' },
-  { id: 'note', name: 'Note', icon: '📝' },
-  { id: 'link', name: 'Link', icon: '🔗' },
-  { id: 'template', name: 'Template', icon: '📋' },
+  { id: 'task', name: 'Task', icon: 'circle-check' },
+  { id: 'note', name: 'Note', icon: 'file-text' },
+  { id: 'link', name: 'Link', icon: 'link' },
+  { id: 'template', name: 'Template', icon: 'clipboard' },
 ];
 
 interface TypeSelectorProps {
@@ -57,20 +59,37 @@ export function TypeSelector({ selectedType, onSelectType, hideTemplate }: TypeS
   }, [handleKeyDown]);
 
   return (
-    <div className="type-selector" role="radiogroup" aria-label="Select type">
-      {visibleOptions.map((option) => (
-        <button
-          key={option.id}
-          type="button"
-          role="radio"
-          aria-checked={selectedType === option.id}
-          className={`type-selector__option ${selectedType === option.id ? 'type-selector__option--selected' : ''}`}
-          onClick={() => onSelectType(option.id)}
-        >
-          <span className="type-selector__icon">{option.icon}</span>
-          <span className="type-selector__name">{option.name}</span>
-        </button>
-      ))}
-    </div>
+    <Group gap="sm" role="radiogroup" aria-label="Select type">
+      {visibleOptions.map((option) => {
+        const isSelected = selectedType === option.id;
+        return (
+          <UnstyledButton
+            key={option.id}
+            role="radio"
+            aria-checked={isSelected}
+            onClick={() => onSelectType(option.id)}
+            py="xs"
+            px="md"
+            style={{
+              borderRadius: 'var(--mantine-radius-md)',
+              backgroundColor: isSelected
+                ? 'var(--mantine-color-slate-light)'
+                : 'var(--mantine-color-default-hover)',
+              border: isSelected
+                ? '2px solid var(--mantine-color-slate-6)'
+                : '2px solid transparent',
+              transition: 'all 150ms ease',
+            }}
+          >
+            <Group gap="xs">
+              <Icon name={option.icon} size={16} />
+              <Text size="sm" fw={isSelected ? 600 : 400}>
+                {option.name}
+              </Text>
+            </Group>
+          </UnstyledButton>
+        );
+      })}
+    </Group>
   );
 }

@@ -2,14 +2,29 @@
  * HistoricalObjectView - Read-only view of an object at a historical point in time
  *
  * Used in the split pane for side-by-side version comparison.
+ * Shows historical content with diff highlighting against current version.
  */
 
 import { useMemo, useCallback, useState } from 'react';
+import {
+  Stack,
+  Group,
+  Text,
+  Box,
+  Button,
+  ActionIcon,
+  ScrollArea,
+  Divider,
+  Tooltip,
+} from '@mantine/core';
+import { Icon } from '@/components/ui';
 import { useObjects, useTypeRegistry, useNavigation, useToast } from '@/contexts';
-import { extractPlainTextFromContent } from '@/lib/search';
+import type { ChangePoint } from '@/lib/loro/versions';
+import { getIconFromEmoji } from '@/lib/icons';
+import { ContentPreview } from './ContentPreview';
 import { RestoreDialog } from './RestoreDialog';
-import type { SkelenoteObject } from '@/lib/types';
-import './HistoricalObjectView.css';
+import type { SkelenoteObject, PropertyDefinition } from '@/lib/types';
+import type { ObjectStore } from '@/lib/loro';
 
 /**
  * Get a display title for an object
@@ -26,11 +41,41 @@ function getObjectTitle(obj: SkelenoteObject): string {
 }
 
 /**
- * Format a property value for display
+ * Check if a string looks like a UUID
  */
-function formatPropertyValue(value: unknown): string {
-  if (value === null || value === undefined) {
-    return '';
+function isUUID(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
+/**
+ * Get display name for an object by ID
+ */
+function getObjectDisplayName(store: ObjectStore | null, objectId: string): string | null {
+  if (!store) return null;
+  const obj = store.get(objectId);
+  if (!obj) return null;
+
+  const titleProps = ['title', 'name', 'url'];
+  for (const prop of titleProps) {
+    const value = obj.properties[prop];
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+  }
+  return null;
+}
+
+/**
+ * Format a property value for display
+ * Returns null for empty/null values (these will be filtered out)
+ */
+function formatPropertyValue(
+  value: unknown,
+  propDef?: PropertyDefinition,
+  store?: ObjectStore | null
+): string | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
   }
   if (typeof value === 'boolean') {
     return value ? 'Yes' : 'No';
@@ -38,27 +83,94 @@ function formatPropertyValue(value: unknown): string {
   if (typeof value === 'number') {
     // Check if it looks like a timestamp (ms since epoch)
     if (value > 1000000000000 && value < 2000000000000) {
-      return new Date(value).toLocaleString();
+      return new Date(value).toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      });
     }
     return value.toLocaleString();
   }
   if (Array.isArray(value)) {
+    if (value.length === 0) return null;
+    // If it's a relation array, resolve each ID
+    if (propDef?.type === 'relation' && store) {
+      const names = value
+        .map(id => typeof id === 'string' ? getObjectDisplayName(store, id) ?? id : String(id))
+        .filter(Boolean);
+      return names.join(', ');
+    }
     return value.join(', ');
   }
   if (typeof value === 'object') {
     return JSON.stringify(value);
   }
-  return String(value);
+
+  const strValue = String(value).trim();
+  if (!strValue) return null;
+
+  // If it's a relation property or looks like a UUID, try to resolve it
+  if ((propDef?.type === 'relation' || isUUID(strValue)) && store) {
+    const displayName = getObjectDisplayName(store, strValue);
+    if (displayName) return displayName;
+  }
+
+  return strValue;
 }
 
 export function HistoricalObjectView() {
-  const { docStore, refreshData } = useObjects();
-  const { splitPane, closeSplit } = useNavigation();
+  const { store, docStore, refreshData } = useObjects();
+  const { splitPane, closeSplit, updateVersionComparison, returnToTimeMachine } = useNavigation();
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
 
   // Restore dialog state
   const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+
+  // Get all change points for this object for version navigation
+  const objectChangePoints = useMemo((): ChangePoint[] => {
+    if (!splitPane.objectId) return [];
+    const history = docStore.getVersionHistoryForObject(splitPane.objectId);
+    return history.changePoints;
+  }, [docStore, splitPane.objectId]);
+
+  // Find current position in change points
+  const currentVersionIndex = useMemo(() => {
+    if (!splitPane.historicalTimestamp || objectChangePoints.length === 0) return -1;
+    return objectChangePoints.findIndex(
+      (cp) => cp.timestamp === splitPane.historicalTimestamp
+    );
+  }, [objectChangePoints, splitPane.historicalTimestamp]);
+
+  // Version navigation handlers
+  const canGoPrev = currentVersionIndex > 0;
+  const canGoNext = currentVersionIndex < objectChangePoints.length - 1 && currentVersionIndex !== -1;
+
+  const handlePrevVersion = useCallback(() => {
+    if (!canGoPrev) return;
+    const prevPoint = objectChangePoints[currentVersionIndex - 1];
+    updateVersionComparison(prevPoint.frontier, prevPoint.timestamp);
+  }, [canGoPrev, objectChangePoints, currentVersionIndex, updateVersionComparison]);
+
+  const handleNextVersion = useCallback(() => {
+    if (!canGoNext) return;
+    const nextPoint = objectChangePoints[currentVersionIndex + 1];
+    updateVersionComparison(nextPoint.frontier, nextPoint.timestamp);
+  }, [canGoNext, objectChangePoints, currentVersionIndex, updateVersionComparison]);
+
+  const handleBackToTimeMachine = useCallback(() => {
+    returnToTimeMachine();
+  }, [returnToTimeMachine]);
+
+  // Close handler - return to Time Machine if we came from there, otherwise just close
+  const handleClose = useCallback(() => {
+    if (splitPane.timeMachineContext) {
+      returnToTimeMachine();
+    } else {
+      closeSplit();
+    }
+  }, [splitPane.timeMachineContext, returnToTimeMachine, closeSplit]);
 
   // Get the historical object from the frontier
   const historicalObject = useMemo((): SkelenoteObject | null => {
@@ -75,7 +187,6 @@ export function HistoricalObjectView() {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
-      year: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
     });
@@ -102,14 +213,19 @@ export function HistoricalObjectView() {
         type: 'success',
         message: 'Object restored successfully!',
       });
-      closeSplit();
+      // Return to Time Machine if we came from there
+      if (splitPane.timeMachineContext) {
+        returnToTimeMachine();
+      } else {
+        closeSplit();
+      }
     } else {
       addToast({
         type: 'error',
         message: 'Failed to restore. Check the console for details.',
       });
     }
-  }, [splitPane.historicalFrontier, splitPane.objectId, docStore, refreshData, addToast, closeSplit]);
+  }, [splitPane.historicalFrontier, splitPane.objectId, splitPane.timeMachineContext, docStore, refreshData, addToast, returnToTimeMachine, closeSplit]);
 
   const handleRestoreCancel = useCallback(() => {
     setRestoreDialogOpen(false);
@@ -117,105 +233,205 @@ export function HistoricalObjectView() {
 
   if (!historicalObject) {
     return (
-      <div className="historical-object-view historical-object-view--empty">
-        <p>Unable to load historical version</p>
-        <button onClick={closeSplit}>Close</button>
-      </div>
+      <Box p="lg" ta="center">
+        <Text c="dimmed" mb="sm">Unable to load historical version</Text>
+        <Button variant="subtle" onClick={handleClose}>Close</Button>
+      </Box>
     );
   }
 
   const typeDef = typeRegistry.get(historicalObject.typeId);
-  const icon = typeDef?.icon ?? '📄';
+  const iconEmoji = typeDef?.icon ?? '📄';
+  const iconName = getIconFromEmoji(iconEmoji);
   const typeName = typeDef?.name ?? historicalObject.typeId;
   const title = getObjectTitle(historicalObject);
 
-  // Get content text if available and parse it from BlockNote JSON
-  const rawContent = historicalObject.properties.content as string | undefined;
-  const contentText = rawContent ? extractPlainTextFromContent(rawContent) : null;
+  // Get property definitions from type schema for proper labels, filtering out empty values
+  const visibleProperties = useMemo(() => {
+    const properties: Array<{ id: string; label: string; value: string }> = [];
 
-  // Get property definitions from type schema for proper labels
-  const propertyDisplays = useMemo(() => {
     if (!typeDef) {
       // If no type def, show all properties except content
-      return Object.entries(historicalObject.properties)
-        .filter(([key]) => key !== 'content')
-        .map(([key, value]) => ({
-          id: key,
-          label: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
-          value: formatPropertyValue(value),
-        }));
+      Object.entries(historicalObject.properties).forEach(([key, value]) => {
+        if (key === 'content') return;
+        const formatted = formatPropertyValue(value, undefined, store);
+        if (formatted) {
+          properties.push({
+            id: key,
+            label: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
+            value: formatted,
+          });
+        }
+      });
+    } else {
+      // Use schema to get proper labels, skip hidden properties
+      typeDef.schema.forEach((propDef) => {
+        if (propDef.hidden) return;
+        const formatted = formatPropertyValue(historicalObject.properties[propDef.id], propDef, store);
+        if (formatted) {
+          properties.push({
+            id: propDef.id,
+            label: propDef.name,
+            value: formatted,
+          });
+        }
+      });
     }
 
-    // Use schema to get proper labels
-    return typeDef.schema.map((propDef) => ({
-      id: propDef.id,
-      label: propDef.name,
-      value: formatPropertyValue(historicalObject.properties[propDef.id]),
-    }));
-  }, [typeDef, historicalObject.properties]);
+    return properties;
+  }, [typeDef, historicalObject.properties, store]);
 
   return (
-    <div className="historical-object-view">
-      <header className="historical-object-view__header">
-        <div className="historical-object-view__badge">
-          Historical Version
-        </div>
-        <div className="historical-object-view__timestamp">
-          {formattedTimestamp}
-        </div>
-        <button
-          className="historical-object-view__restore-btn"
+    <Box
+      h="100%"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* Header - with back, version nav, and close */}
+      <Group
+        justify="space-between"
+        px="md"
+        py="sm"
+        style={{
+          borderBottom: '1px solid var(--mantine-color-default-border)',
+        }}
+      >
+        <Group gap="xs">
+          {splitPane.timeMachineContext && (
+            <Tooltip label="Back to Time Machine" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleBackToTimeMachine}
+                aria-label="Back to Time Machine"
+              >
+                <Icon name="arrow-left" size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+          <Text size="sm" fw={600}>Historical Version</Text>
+          {objectChangePoints.length > 1 && (
+            <Text size="xs" c="dimmed">
+              ({currentVersionIndex + 1} of {objectChangePoints.length})
+            </Text>
+          )}
+        </Group>
+        <Group gap={4}>
+          {objectChangePoints.length > 1 && (
+            <>
+              <Tooltip label="Previous version" withArrow>
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  onClick={handlePrevVersion}
+                  disabled={!canGoPrev}
+                  aria-label="Previous version"
+                >
+                  <Icon name="chevron-left" size={14} />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label="Next version" withArrow>
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  onClick={handleNextVersion}
+                  disabled={!canGoNext}
+                  aria-label="Next version"
+                >
+                  <Icon name="chevron-right" size={14} />
+                </ActionIcon>
+              </Tooltip>
+            </>
+          )}
+          <ActionIcon
+            variant="subtle"
+            size="sm"
+            onClick={handleClose}
+            aria-label="Close comparison"
+          >
+            <Icon name="x" size={14} />
+          </ActionIcon>
+        </Group>
+      </Group>
+
+      {/* Content */}
+      <ScrollArea style={{ flex: 1 }}>
+        <Stack gap="md" p="md">
+          {/* Title section with inline metadata */}
+          <Group gap="sm" align="flex-start">
+            <Icon
+              name={iconName}
+              size={20}
+              style={{ color: 'var(--mantine-color-gray-6)', marginTop: 2 }}
+            />
+            <Box>
+              <Text size="lg" fw={600} lh={1.3}>{title}</Text>
+              <Text size="xs" c="dimmed">{typeName} • {formattedTimestamp}</Text>
+            </Box>
+          </Group>
+
+          {/* Properties Section - inline key:value pairs */}
+          {visibleProperties.length > 0 && (
+            <>
+              <Divider />
+              <Stack gap="xs">
+                {visibleProperties.map(({ id, label, value }) => (
+                  <Group key={id} gap="xs" wrap="nowrap">
+                    <Text size="xs" c="dimmed" style={{ minWidth: 100, flexShrink: 0 }}>
+                      {label}:
+                    </Text>
+                    <Text size="sm" style={{ wordBreak: 'break-word' }}>{value}</Text>
+                  </Group>
+                ))}
+              </Stack>
+            </>
+          )}
+
+          {/* Content Section - with diff highlighting */}
+          {historicalObject.hasContent && (
+            <>
+              <Divider />
+              <Box
+                p="sm"
+                style={{
+                  borderRadius: 'var(--mantine-radius-sm)',
+                  border: '1px solid var(--mantine-color-default-border)',
+                }}
+              >
+                <ContentPreview
+                  content={historicalObject.properties.content as string | null}
+                  maxHeight={400}
+                />
+              </Box>
+            </>
+          )}
+        </Stack>
+      </ScrollArea>
+
+      {/* Footer with actions */}
+      <Group
+        justify="flex-end"
+        gap="sm"
+        px="md"
+        py="sm"
+        style={{
+          borderTop: '1px solid var(--mantine-color-default-border)',
+        }}
+      >
+        <Button variant="subtle" onClick={handleClose}>
+          Close
+        </Button>
+        <Button
+          variant="filled"
+          color="ember"
+          leftSection={<Icon name="rotate-ccw" size={14} />}
           onClick={handleRestoreClick}
-          title="Restore this object to this historical state"
         >
-          Restore This
-        </button>
-        <button
-          className="historical-object-view__close-btn"
-          onClick={closeSplit}
-          title="Close comparison"
-        >
-          &times;
-        </button>
-      </header>
-
-      <div className="historical-object-view__content">
-        <div className="historical-object-view__title-row">
-          <span className="historical-object-view__icon">{icon}</span>
-          <h2 className="historical-object-view__title">{title}</h2>
-        </div>
-
-        <div className="historical-object-view__meta">
-          <span className="historical-object-view__type-badge">{typeName}</span>
-        </div>
-
-        {/* Properties Section */}
-        {propertyDisplays.length > 0 && (
-          <div className="historical-object-view__section">
-            <h3 className="historical-object-view__section-title">Properties</h3>
-            <div className="historical-object-view__properties">
-              {propertyDisplays.map(({ id, label, value }) => (
-                <div key={id} className="historical-object-view__prop-row">
-                  <span className="historical-object-view__prop-label">{label}</span>
-                  <span className={`historical-object-view__prop-value ${!value ? 'historical-object-view__prop-value--empty' : ''}`}>
-                    {value || '(empty)'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Content Section */}
-        {historicalObject.hasContent && (
-          <div className="historical-object-view__section">
-            <h3 className="historical-object-view__section-title">Content</h3>
-            <div className={`historical-object-view__text-content ${!contentText ? 'historical-object-view__text-content--empty' : ''}`}>
-              {contentText || '(No content at this point in time)'}
-            </div>
-          </div>
-        )}
-      </div>
+          Restore
+        </Button>
+      </Group>
 
       {/* Restore Dialog */}
       <RestoreDialog
@@ -226,6 +442,6 @@ export function HistoricalObjectView() {
         onConfirm={handleRestoreConfirm}
         onCancel={handleRestoreCancel}
       />
-    </div>
+    </Box>
   );
 }
