@@ -1,15 +1,23 @@
 //! TCP Client for Local Network Sync
 //!
 //! Connects to discovered peers for sync message exchange.
+//! Includes heartbeat mechanism for detecting stale connections.
 
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::net::tcp::OwnedWriteHalf;
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::{mpsc, Mutex, RwLock};
 
 use super::protocol::{decode_message, encode_message, HelloPayload, AckPayload, MessageType, ProtocolError, HEADER_SIZE};
+
+/// Heartbeat interval in seconds
+const HEARTBEAT_INTERVAL_SECS: u64 = 30;
+
+/// Connection is considered stale if no pong received within this many seconds
+const HEARTBEAT_TIMEOUT_SECS: u64 = 90;
 
 /// Events from a peer connection
 #[derive(Debug, Clone)]
@@ -35,12 +43,8 @@ pub struct PeerConnection {
     pub device_id: String,
     /// Remote device name
     pub device_name: String,
-    /// Remote address
-    pub address: SocketAddr,
     /// TCP write stream (wrapped for thread-safety, read half is used by read_loop)
     write_stream: Arc<Mutex<OwnedWriteHalf>>,
-    /// When the connection was established
-    pub connected_at: u64,
 }
 
 impl PeerConnection {
@@ -125,26 +129,37 @@ impl PeerConnection {
         // This prevents deadlock: read loop won't block writes
         let (read_half, write_half) = stream.into_split();
         let write_stream = Arc::new(Mutex::new(write_half));
+        let last_pong = Arc::new(RwLock::new(Instant::now()));
 
         let (event_tx, event_rx) = mpsc::channel(100);
 
         let connection = PeerConnection {
-            device_id: peer_hello.device_id,
+            device_id: peer_hello.device_id.clone(),
             device_name: peer_hello.device_name,
-            address: addr,
             write_stream: write_stream.clone(),
-            connected_at: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_secs(),
         };
 
         // Notify connected
         let _ = event_tx.send(PeerEvent::Connected).await;
 
         // Spawn read loop with the read half (no lock contention with writes)
+        let last_pong_for_read = last_pong.clone();
+        let event_tx_for_read = event_tx.clone();
         tokio::spawn(async move {
-            Self::read_loop(read_half, event_tx).await;
+            Self::read_loop(read_half, event_tx_for_read, last_pong_for_read).await;
+        });
+
+        // Spawn heartbeat task
+        let write_stream_for_heartbeat = write_stream.clone();
+        let last_pong_for_heartbeat = last_pong.clone();
+        let device_id_for_heartbeat = peer_hello.device_id;
+        tokio::spawn(async move {
+            Self::heartbeat_loop(
+                write_stream_for_heartbeat,
+                last_pong_for_heartbeat,
+                event_tx,
+                device_id_for_heartbeat,
+            ).await;
         });
 
         Ok((connection, event_rx))
@@ -152,7 +167,11 @@ impl PeerConnection {
 
     /// Read loop for incoming messages
     /// Takes ownership of the read half (no lock needed since we're the only reader)
-    async fn read_loop(mut read_half: tokio::net::tcp::OwnedReadHalf, event_tx: mpsc::Sender<PeerEvent>) {
+    async fn read_loop(
+        mut read_half: tokio::net::tcp::OwnedReadHalf,
+        event_tx: mpsc::Sender<PeerEvent>,
+        last_pong: Arc<RwLock<Instant>>,
+    ) {
         let mut buffer = vec![0u8; 4096];
         let mut read_buffer = Vec::new();
 
@@ -178,10 +197,16 @@ impl PeerConnection {
 
                 match decode_message(&read_buffer) {
                     Ok((message, consumed)) => {
-                        let _ = event_tx.send(PeerEvent::MessageReceived {
-                            msg_type: message.msg_type as u8,
-                            payload: message.payload,
-                        }).await;
+                        // Handle Pong internally for heartbeat tracking
+                        if message.msg_type == MessageType::Pong {
+                            *last_pong.write().await = Instant::now();
+                        } else {
+                            // Forward other messages to the event channel
+                            let _ = event_tx.send(PeerEvent::MessageReceived {
+                                msg_type: message.msg_type as u8,
+                                payload: message.payload,
+                            }).await;
+                        }
                         read_buffer.drain(..consumed);
                     }
                     Err(ProtocolError::MessageTooShort { .. }) |
@@ -211,22 +236,42 @@ impl PeerConnection {
         let _ = event_tx.send(PeerEvent::Disconnected).await;
     }
 
-    /// Send a message to the peer
-    pub async fn send(&self, msg_type: MessageType, payload: &[u8]) -> Result<(), std::io::Error> {
-        let message = encode_message(msg_type, payload);
-        let mut stream = self.write_stream.lock().await;
-        stream.write_all(&message).await
-    }
+    /// Heartbeat loop to detect stale connections
+    ///
+    /// Sends periodic pings and checks for pong responses.
+    /// Signals disconnect if connection becomes stale.
+    async fn heartbeat_loop(
+        write_stream: Arc<Mutex<OwnedWriteHalf>>,
+        last_pong: Arc<RwLock<Instant>>,
+        event_tx: mpsc::Sender<PeerEvent>,
+        device_id: String,
+    ) {
+        let mut interval = tokio::time::interval(Duration::from_secs(HEARTBEAT_INTERVAL_SECS));
 
-    /// Send a ping to check if the connection is alive
-    pub async fn ping(&self) -> Result<(), std::io::Error> {
-        self.send(MessageType::Ping, &[]).await
-    }
+        loop {
+            interval.tick().await;
 
-    /// Close the connection
-    pub async fn close(&self) -> Result<(), std::io::Error> {
-        let mut stream = self.write_stream.lock().await;
-        stream.shutdown().await
+            // Check if connection is stale (no pong received recently)
+            let elapsed = last_pong.read().await.elapsed();
+            if elapsed > Duration::from_secs(HEARTBEAT_TIMEOUT_SECS) {
+                println!(
+                    "[Heartbeat] Connection to {} stale - no pong for {:?}",
+                    device_id, elapsed
+                );
+                let _ = event_tx.send(PeerEvent::Error {
+                    message: format!("Connection stale - no response for {} seconds", elapsed.as_secs()),
+                }).await;
+                break;
+            }
+
+            // Send ping
+            let ping_msg = encode_message(MessageType::Ping, &[]);
+            let mut stream = write_stream.lock().await;
+            if let Err(e) = stream.write_all(&ping_msg).await {
+                println!("[Heartbeat] Failed to send ping to {}: {}", device_id, e);
+                break;
+            }
+        }
     }
 
     /// Get a clone of the write stream handle for sending messages

@@ -23,10 +23,19 @@ import {
   onPeerDisconnected,
   onSyncMessage,
   broadcastSync,
+  broadcastDeviceRegistry,
   getPeerCount,
   type DiscoveredPeer,
   type DeviceInfo,
 } from '@/lib/sync/local';
+import { MessageType } from '@/lib/sync/protocol';
+import {
+  getDeviceRegistryStore,
+  type DeviceRevokePayload,
+  type DeviceRenamePayload,
+  verifyRevocation,
+  blockDevice,
+} from '@/lib/devices';
 import { useToast } from './ToastContext';
 import { useObjects } from './ObjectContext';
 
@@ -125,7 +134,7 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
       });
 
       // Listen for peer connections
-      const unlistenPeerConnected = await onPeerConnected((event) => {
+      const unlistenPeerConnected = await onPeerConnected(async (event) => {
         console.log('[LocalSync] Peer connected:', event.deviceName);
         setConnectedPeerCount((prev) => prev + 1);
         addToast({
@@ -133,6 +142,18 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
           message: `Connected to ${event.deviceName}`,
           duration: 3000,
         });
+
+        // Exchange device registry with new peer
+        try {
+          const store = getDeviceRegistryStore();
+          if (store.isInitialized()) {
+            const registryData = store.exportForSync();
+            const count = await broadcastDeviceRegistry(registryData);
+            console.log('[LocalSync] Broadcast device registry to', count, 'peers');
+          }
+        } catch (err) {
+          console.error('[LocalSync] Failed to broadcast device registry:', err);
+        }
       });
 
       const unlistenPeerDisconnected = await onPeerDisconnected((event) => {
@@ -141,13 +162,97 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
       });
 
       // Listen for sync messages from peers
-      const unlistenSyncMessage = await onSyncMessage((event) => {
+      const unlistenSyncMessage = await onSyncMessage(async (event) => {
         console.log('[LocalSync] Received sync from:', event.deviceId, 'type:', event.msgType);
         // Convert number[] to Uint8Array
         const data = new Uint8Array(event.payload);
-        // Forward to the callback
-        if (onSyncReceivedRef.current) {
-          onSyncReceivedRef.current(data);
+
+        // Route based on message type
+        switch (event.msgType) {
+          case MessageType.UPDATE:
+            // Regular data sync - forward to the callback
+            if (onSyncReceivedRef.current) {
+              onSyncReceivedRef.current(data);
+            }
+            break;
+
+          case MessageType.DEVICE_REGISTRY:
+          case MessageType.DEVICE_UPDATE:
+            // Device registry sync - forward to device registry store
+            console.log('[LocalSync] Received device registry from peer');
+            try {
+              const store = getDeviceRegistryStore();
+              if (store.isInitialized()) {
+                store.handleSyncUpdate(data);
+              }
+            } catch (err) {
+              console.error('[LocalSync] Failed to handle device registry:', err);
+            }
+            break;
+
+          case MessageType.DEVICE_REVOKE:
+            // Device revocation from peer - verify and apply
+            console.log('[LocalSync] Received device revocation from peer');
+            try {
+              const payload: DeviceRevokePayload = JSON.parse(new TextDecoder().decode(data));
+              const store = getDeviceRegistryStore();
+              if (!store.isInitialized()) break;
+
+              // Get the revoking device to verify signature
+              const revokingDevice = store.getDevice(payload.revokedBy);
+              if (!revokingDevice) {
+                console.warn('[LocalSync] Revocation from unknown device:', payload.revokedBy);
+                break;
+              }
+
+              // Verify signature
+              const isValid = await verifyRevocation(
+                payload.deviceId,
+                payload.revokedAt,
+                payload.revokedBy,
+                payload.signature,
+                revokingDevice.publicSigningKey
+              );
+
+              if (!isValid) {
+                console.error('[LocalSync] Invalid revocation signature');
+                break;
+              }
+
+              // Apply revocation
+              store.revokeDevice({
+                deviceId: payload.deviceId,
+                revokedAt: payload.revokedAt,
+                revokedBy: payload.revokedBy,
+                reason: payload.reason,
+                signature: payload.signature,
+              });
+
+              // Block locally for P2P
+              await blockDevice(payload.deviceId);
+              console.log('[LocalSync] Applied P2P revocation for:', payload.deviceId);
+            } catch (err) {
+              console.error('[LocalSync] Failed to handle revocation:', err);
+            }
+            break;
+
+          case MessageType.DEVICE_RENAME:
+            // Device rename from peer
+            console.log('[LocalSync] Received device rename from peer');
+            try {
+              const payload: DeviceRenamePayload = JSON.parse(new TextDecoder().decode(data));
+              const store = getDeviceRegistryStore();
+              if (store.isInitialized()) {
+                store.renameDevice(payload.deviceId, payload.newName);
+              }
+            } catch (err) {
+              console.error('[LocalSync] Failed to handle rename:', err);
+            }
+            break;
+
+          default:
+            // Unknown message type - ignore
+            console.log('[LocalSync] Unknown message type:', event.msgType);
         }
       });
 

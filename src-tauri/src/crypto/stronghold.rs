@@ -87,23 +87,23 @@ impl StrongholdManager {
         Ok(key)
     }
 
-    /// Store device ID (for future multi-device identification)
-    #[allow(dead_code)]
+    /// Store device ID for persistent device identification
+    ///
+    /// The device ID is stored in plain text (not sensitive data).
+    /// Used to maintain consistent device identity across app restarts.
     pub fn store_device_id(&self, device_id: &str) -> Result<(), StrongholdError> {
         fs::write(self.device_id_path(), device_id)
             .map_err(|e| StrongholdError::StoreFailed(e.to_string()))?;
         Ok(())
     }
 
-    /// Get device ID
-    #[allow(dead_code)]
+    /// Get the persisted device ID
     pub fn get_device_id(&self) -> Result<String, StrongholdError> {
         fs::read_to_string(self.device_id_path())
             .map_err(|e| StrongholdError::RetrieveFailed(e.to_string()))
     }
 
-    /// Check if device ID exists
-    #[allow(dead_code)]
+    /// Check if a device ID has been persisted
     pub fn has_device_id(&self) -> bool {
         self.device_id_path().exists()
     }
