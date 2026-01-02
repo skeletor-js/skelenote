@@ -285,10 +285,11 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
           break;
         case 'Enter':
           e.preventDefault();
-          if (combinedResults[selectedIndex]) {
+          if (isCommandMode && combinedResults[selectedIndex]) {
+            // In command mode, execute the selected command
             executeAction(combinedResults[selectedIndex]);
           } else if (!isCommandMode && searchQueryText.trim()) {
-            // In search mode with no results, navigate to full search
+            // In search mode, always navigate to full search results
             navigateToSearch(searchQueryText);
             setQuery('');
             setIsFocused(false);

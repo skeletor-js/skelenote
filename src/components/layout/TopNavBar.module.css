@@ -30,9 +30,17 @@
   flex-shrink: 0;
 }
 
+.creationControls {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  flex-shrink: 0;
+}
+
 .rightControls {
   display: flex;
   align-items: center;
   gap: var(--mantine-spacing-xs);
   flex-shrink: 0;
+  margin-left: auto;
 }

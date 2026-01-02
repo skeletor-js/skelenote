@@ -88,7 +88,7 @@ export function TopNavBar({
       />
 
       {/* Creation controls (right of omnibar) */}
-      <Group gap="xs">
+      <Group gap="xs" className={classes.creationControls}>
         <CreationControls onCreateFromTemplate={onCreateFromTemplate} />
       </Group>
 
