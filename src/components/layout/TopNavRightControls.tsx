@@ -28,7 +28,6 @@ const excludedFromAddMenu: string[] = [
 ];
 
 interface TopNavRightControlsProps {
-  onOpenQuickCapture?: () => void;
   onCreateFromTemplate?: () => void;
 }
 
@@ -37,7 +36,6 @@ interface TopNavRightControlsProps {
  * Contains: Time Machine, Add New, Sync Indicator, Theme Toggle, Settings.
  */
 export function TopNavRightControls({
-  onOpenQuickCapture,
   onCreateFromTemplate,
 }: TopNavRightControlsProps) {
   const { navigateToView, navigateToObject, navigateToTimeMachine } = useNavigation();
