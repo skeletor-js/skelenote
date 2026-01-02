@@ -1,16 +1,14 @@
 import { useMemo, useCallback } from 'react';
-import { Stack, Divider, Group, ActionIcon, Text, ScrollArea, Box, NavLink } from '@mantine/core';
-import { Settings, Moon, Sun, ChevronLeft, Plus, Menu as MenuIcon } from 'lucide-react';
+import { Stack, Divider, ActionIcon, Text, ScrollArea, Box, NavLink } from '@mantine/core';
+import { Plus } from 'lucide-react';
 import { SidebarSection } from './SidebarSection';
 import { SidebarItem } from './SidebarItem';
 import { PinnedSection } from './PinnedSection';
 import { SavedViewsSection } from './SavedViewsSection';
 import { ObjectsSection } from './ObjectsSection';
-import { TitleBarSpacer } from './TitleBarSpacer';
-import { type TagColor, SyncIndicator } from '@/components/ui';
-import { Icon } from '@/components/ui/Icon';
+import { type TagColor } from '@/components/ui';
 import { useSidebar, useNavigation, useObjects, useTypeRegistry, type ViewType } from '@/contexts';
-import { useTheme, useLinkToDaily } from '@/hooks';
+import { useLinkToDaily } from '@/hooks';
 import { BuiltInTypeIds, type PropertyValue, type SavedView } from '@/lib/types';
 
 // Default properties for each type when creating
@@ -31,11 +29,10 @@ interface SidebarProps {
 }
 
 export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) {
-  const { isCollapsed, toggleCollapsed, selectedItem, setSelectedItem } = useSidebar();
+  const { selectedItem, setSelectedItem } = useSidebar();
   const { navigateToView, navigateToObject, navigateToSavedView, activeSavedViewId } = useNavigation();
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
-  const { theme, toggleTheme } = useTheme();
   const { linkToDaily } = useLinkToDaily();
 
   // Handle saved view selection
@@ -124,108 +121,6 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
     navigateToView(view);
   };
 
-  // Collapsed mini sidebar - shows quick nav icons and hamburger menu
-  if (isCollapsed) {
-    return (
-      <Box
-        component="aside"
-        style={{
-          width: 48,
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: 'var(--surface-canvas)',
-        }}
-      >
-        {/* Title bar spacer for macOS traffic lights - has bottom border */}
-        <TitleBarSpacer variant="sidebar" />
-
-        {/* Content wrapper with right border (starts below safe zone) */}
-        <Box
-          style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            borderRight: '1px solid var(--border-default)',
-            overflow: 'hidden',
-            minHeight: 0,
-          }}
-        >
-          {/* Quick navigation icons */}
-          <Stack gap={4} p="xs" align="center">
-            <ActionIcon
-              variant={selectedItem === 'inbox' ? 'light' : 'subtle'}
-              color={selectedItem === 'inbox' ? 'ember' : 'gray'}
-              size="lg"
-              onClick={() => handleNavigate('inbox')}
-              aria-label="Inbox"
-              title="Inbox"
-            >
-              <Icon name="inbox" size={20} />
-            </ActionIcon>
-            <ActionIcon
-              variant={selectedItem === 'daily-notes' ? 'light' : 'subtle'}
-              color={selectedItem === 'daily-notes' ? 'ember' : 'gray'}
-              size="lg"
-              onClick={() => handleNavigate('daily-notes')}
-              aria-label="Daily Notes"
-              title="Daily Notes"
-            >
-              <Icon name="calendar-days" size={20} />
-            </ActionIcon>
-            <ActionIcon
-              variant={selectedItem === 'search' ? 'light' : 'subtle'}
-              color={selectedItem === 'search' ? 'ember' : 'gray'}
-              size="lg"
-              onClick={() => handleNavigate('search')}
-              aria-label="Search"
-              title="Search"
-            >
-              <Icon name="search" size={20} />
-            </ActionIcon>
-            <ActionIcon
-              variant={selectedItem === 'archive' ? 'light' : 'subtle'}
-              color={selectedItem === 'archive' ? 'ember' : 'gray'}
-              size="lg"
-              onClick={() => handleNavigate('archive')}
-              aria-label="Archive"
-              title="Archive"
-            >
-              <Icon name="archive" size={20} />
-            </ActionIcon>
-            <ActionIcon
-              variant={selectedItem === 'time-machine' ? 'light' : 'subtle'}
-              color={selectedItem === 'time-machine' ? 'ember' : 'gray'}
-              size="lg"
-              onClick={() => handleNavigate('time-machine')}
-              aria-label="Time Machine"
-              title="Time Machine"
-            >
-              <Icon name="history" size={20} />
-            </ActionIcon>
-          </Stack>
-
-          {/* Spacer */}
-          <Box style={{ flex: 1 }} />
-
-          {/* Expand button */}
-          <Box p="xs" style={{ display: 'flex', justifyContent: 'center' }}>
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="lg"
-              onClick={toggleCollapsed}
-              aria-label="Open sidebar"
-              title="Expand sidebar"
-            >
-              <MenuIcon size={20} />
-            </ActionIcon>
-          </Box>
-        </Box>
-      </Box>
-    );
-  }
-
   return (
     <Box
       component="aside"
@@ -237,10 +132,7 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
         backgroundColor: 'var(--surface-canvas)',
       }}
     >
-      {/* Title bar spacer for macOS traffic lights - has bottom border */}
-      <TitleBarSpacer variant="sidebar" />
-
-      {/* Content wrapper with right border (starts below safe zone) */}
+      {/* Content wrapper with right border */}
       <Box
         style={{
           flex: 1,
@@ -253,41 +145,29 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
       >
         {/* Primary navigation - always visible at top */}
         <Box p="xs" pb={0}>
-        <Stack gap={0}>
-          <SidebarItem
-            id="inbox"
-            icon="inbox"
-            label="Inbox"
-            count={inboxCount}
-            onClick={() => handleNavigate('inbox')}
-          />
-          <SidebarItem
-            id="daily-notes"
-            icon="calendar-days"
-            label="Daily Notes"
-            onClick={() => handleNavigate('daily-notes')}
-          />
-          <SidebarItem
-            id="search"
-            icon="search"
-            label="Search"
-            onClick={() => handleNavigate('search')}
-          />
-          <SidebarItem
-            id="archive"
-            icon="archive"
-            label="Archive"
-            onClick={() => handleNavigate('archive')}
-          />
-          <SidebarItem
-            id="time-machine"
-            icon="history"
-            label="Time Machine"
-            onClick={() => handleNavigate('time-machine')}
-          />
-        </Stack>
-        <Divider my="xs" />
-      </Box>
+          <Stack gap={0}>
+            <SidebarItem
+              id="inbox"
+              icon="inbox"
+              label="Inbox"
+              count={inboxCount}
+              onClick={() => handleNavigate('inbox')}
+            />
+            <SidebarItem
+              id="daily-notes"
+              icon="calendar-days"
+              label="Daily Notes"
+              onClick={() => handleNavigate('daily-notes')}
+            />
+            <SidebarItem
+              id="archive"
+              icon="archive"
+              label="Archive"
+              onClick={() => handleNavigate('archive')}
+            />
+          </Stack>
+          <Divider my="xs" />
+        </Box>
 
         {/* Scrollable sections */}
         <ScrollArea flex={1} px="xs" pb="xs" scrollbarSize={0} type="scroll">
@@ -475,43 +355,6 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
             />
           </Stack>
         </ScrollArea>
-
-        {/* Footer with controls */}
-        <Box p="xs" style={{ borderTop: '1px solid var(--border-default)' }}>
-          <Group justify="space-between">
-            <SyncIndicator />
-
-            <Group gap="xs">
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                size="sm"
-                onClick={() => handleNavigate('settings')}
-                aria-label="Settings"
-              >
-                <Settings size={16} />
-              </ActionIcon>
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                size="sm"
-                onClick={toggleTheme}
-                aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-              >
-                {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-              </ActionIcon>
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                size="sm"
-                onClick={toggleCollapsed}
-                aria-label="Collapse sidebar"
-              >
-                <ChevronLeft size={16} />
-              </ActionIcon>
-            </Group>
-          </Group>
-        </Box>
       </Box>
     </Box>
   );
