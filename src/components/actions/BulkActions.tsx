@@ -6,7 +6,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Portal, Group, ActionIcon, Text, Divider, Box, Tooltip, Menu } from '@mantine/core';
 import { useObjects, useTypeRegistry, useToast, useUndo } from '@/contexts';
-import { useConfirmDialog } from '@/hooks';
+import { useConfirmDialog, useDuplicate } from '@/hooks';
 import { ConfirmDialog } from '@/components/ui';
 import { ObjectSearchModal } from '@/components/object/editors';
 import { Icon } from '@/components/ui/Icon';
@@ -34,6 +34,7 @@ export function BulkActions({
   const { addToast } = useToast();
   const { groupStart, groupEnd } = useUndo();
   const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
+  const { duplicateMany } = useDuplicate();
 
   // Modal states
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
@@ -323,6 +324,13 @@ export function BulkActions({
     [store, selectedIds, count, refreshData, onActionComplete, addToast]
   );
 
+  // Handle duplicate
+  const handleDuplicate = useCallback(() => {
+    duplicateMany(selectedIds);
+    onClearSelection();
+    onActionComplete?.();
+  }, [duplicateMany, selectedIds, onClearSelection, onActionComplete]);
+
   // Don't render if no selection
   if (count === 0) return null;
 
@@ -488,6 +496,18 @@ export function BulkActions({
                 ))}
               </Menu.Dropdown>
             </Menu>
+
+            {/* Duplicate */}
+            <Tooltip label="Duplicate items" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleDuplicate}
+                aria-label="Duplicate items"
+              >
+                <Icon name="copy" size={14} />
+              </ActionIcon>
+            </Tooltip>
           </Group>
 
           <Divider orientation="vertical" />

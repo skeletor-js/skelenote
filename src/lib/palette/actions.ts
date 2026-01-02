@@ -31,6 +31,7 @@ export interface PaletteAction {
 export const QUICK_CAPTURE_ACTION_ID = 'action-quick-capture';
 export const SEARCH_ACTION_ID = 'action-search';
 export const OPEN_IN_SPLIT_ACTION_ID = 'action-open-in-split';
+export const DUPLICATE_OBJECT_ACTION_ID = 'action-duplicate-object';
 export const KEYBOARD_SHORTCUTS_ACTION_ID = 'action-keyboard-shortcuts';
 export const CREATE_FROM_TEMPLATE_ACTION_ID = 'action-create-from-template';
 export const MANAGE_TEMPLATES_ACTION_ID = 'action-manage-templates';
@@ -45,6 +46,7 @@ export const navigationActions: PaletteAction[] = [
   { id: CREATE_FROM_TEMPLATE_ACTION_ID, label: 'Create from Template', icon: '📋', category: 'action' },
   { id: NEW_TEMPLATE_ACTION_ID, label: 'New Template', icon: '✨', category: 'action' },
   { id: OPEN_IN_SPLIT_ACTION_ID, label: 'Open in Split View', icon: '⊞', category: 'action' },
+  { id: DUPLICATE_OBJECT_ACTION_ID, label: 'Duplicate Object', icon: '📄', category: 'action' },
   { id: KEYBOARD_SHORTCUTS_ACTION_ID, label: 'Keyboard Shortcuts', icon: '⌨️', category: 'action' },
   { id: 'nav-inbox', label: 'Go to Inbox', icon: '📥', category: 'navigation', view: 'inbox' },
   { id: 'nav-today', label: 'Go to Today', icon: '📅', category: 'navigation', view: 'today' },

@@ -10,7 +10,7 @@ import { useObjects, useTypeRegistry, useToast } from '@/contexts';
 import { Tag, type TagColor } from '@/components/ui';
 import { Icon } from '@/components/ui/Icon';
 import { getIconFromEmoji } from '@/lib/icons';
-import { usePinnedObjects } from '@/hooks';
+import { usePinnedObjects, useDuplicate } from '@/hooks';
 import type { IconName } from '@/lib/icons';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
 import classes from './ObjectRow.module.css';
@@ -36,6 +36,7 @@ export function ObjectRow({
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
   const { isPinned, pin, unpin } = usePinnedObjects();
+  const { duplicate, canDuplicate } = useDuplicate();
 
   // Get type info
   const typeDef = typeRegistry.get(object.typeId);
@@ -133,6 +134,23 @@ export function ObjectRow({
     [handleTogglePin]
   );
 
+  // Handle duplicate (only if object can be duplicated)
+  const objectCanDuplicate = canDuplicate(object.id);
+  const handleDuplicate = useCallback(() => {
+    if (objectCanDuplicate) {
+      duplicate(object.id);
+    }
+  }, [duplicate, object.id, objectCanDuplicate]);
+
+  // Handle duplicate click (with event stop propagation)
+  const handleDuplicateClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      handleDuplicate();
+    },
+    [handleDuplicate]
+  );
+
   return (
       <UnstyledButton
         onClick={onClick}
@@ -193,6 +211,18 @@ export function ObjectRow({
               <Icon name="pin" size={14} />
             </ActionIcon>
           </Tooltip>
+          {objectCanDuplicate && (
+            <Tooltip label="Duplicate" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleDuplicateClick}
+                aria-label="Duplicate"
+              >
+                <Icon name="copy" size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
           {onArchive && (
             <Tooltip label="Archive" position="top" withArrow>
               <ActionIcon
