@@ -99,8 +99,12 @@ interface NavigationContextValue {
   browseTypeId: string | null;
   /** Go back to the previous view */
   navigateBack: () => void;
+  /** Go forward to the next view (after going back) */
+  navigateForward: () => void;
   /** Check if we can go back */
   canGoBack: boolean;
+  /** Check if we can go forward */
+  canGoForward: boolean;
   /** Navigation history stack */
   navigationHistory: NavigationState[];
 
@@ -144,6 +148,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     browseTypeId: null,
   });
   const [history, setHistory] = useState<NavigationState[]>([]);
+  const [forwardHistory, setForwardHistory] = useState<NavigationState[]>([]);
 
   // Split pane state
   const [splitPane, setSplitPaneState] = useState<SplitPaneState>({
@@ -161,6 +166,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
 
   const navigateToObject = useCallback((objectId: string) => {
     setHistory((prev) => [...prev, currentState]);
+    setForwardHistory([]); // Clear forward history on new navigation
     setCurrentState({
       view: 'object',
       objectId,
@@ -173,6 +179,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
 
   const navigateToView = useCallback((view: ViewType) => {
     setHistory((prev) => [...prev, currentState]);
+    setForwardHistory([]); // Clear forward history on new navigation
     setCurrentState({
       view,
       objectId: null,
@@ -185,6 +192,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
 
   const navigateToSearch = useCallback((query?: string) => {
     setHistory((prev) => [...prev, currentState]);
+    setForwardHistory([]); // Clear forward history on new navigation
     setCurrentState({
       view: 'search',
       objectId: null,
@@ -197,6 +205,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
 
   const navigateToTimeMachine = useCallback((objectId?: string) => {
     setHistory((prev) => [...prev, currentState]);
+    setForwardHistory([]); // Clear forward history on new navigation
     setCurrentState({
       view: 'time-machine',
       objectId: null,
@@ -209,6 +218,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
 
   const navigateToSavedView = useCallback((viewId: string) => {
     setHistory((prev) => [...prev, currentState]);
+    setForwardHistory([]); // Clear forward history on new navigation
     setCurrentState({
       view: 'saved-view',
       objectId: null,
@@ -221,6 +231,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
 
   const navigateToTypeBrowse = useCallback((typeId: string) => {
     setHistory((prev) => [...prev, currentState]);
+    setForwardHistory([]); // Clear forward history on new navigation
     setCurrentState({
       view: 'type-browse',
       objectId: null,
@@ -235,9 +246,19 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     if (history.length === 0) return;
 
     const previous = history[history.length - 1];
+    setForwardHistory((prev) => [...prev, currentState]); // Push current to forward
     setHistory((prev) => prev.slice(0, -1));
     setCurrentState(previous);
-  }, [history]);
+  }, [history, currentState]);
+
+  const navigateForward = useCallback(() => {
+    if (forwardHistory.length === 0) return;
+
+    const next = forwardHistory[forwardHistory.length - 1];
+    setHistory((prev) => [...prev, currentState]); // Push current to back history
+    setForwardHistory((prev) => prev.slice(0, -1));
+    setCurrentState(next);
+  }, [forwardHistory, currentState]);
 
   // Split pane methods
   const openInSplit = useCallback((objectId: string) => {
@@ -387,7 +408,9 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         navigateToTypeBrowse,
         browseTypeId: currentState.browseTypeId,
         navigateBack,
+        navigateForward,
         canGoBack: history.length > 0,
+        canGoForward: forwardHistory.length > 0,
         navigationHistory: history,
         // Split pane
         splitPane,
