@@ -78,15 +78,12 @@
   --border-default: #3F3F46;
   /* More visible borders (gray.7) */
 
-  /* Warm interaction states - visible ember glow on dark */
-  --hover-warm: rgba(184, 92, 80, 0.15);
-  /* Ember at 15% */
-  --hover-warm-strong: rgba(184, 92, 80, 0.22);
-  /* Ember at 22% */
-  --selection-glow: #3D2422;
-  /* Dark ember - visible warm glow */
+  /* Warm interaction states - subtle ember glow on dark */
+  --hover-warm: rgba(184, 92, 80, 0.10);
+  --hover-warm-strong: rgba(184, 92, 80, 0.15);
+  --selection-glow: rgba(184, 92, 80, 0.18);
+  /* Subtle and readable */
   --selection-border: #6E322B;
-  /* Ember-8 for dark mode */
 
   /* Override Mantine's default border to be more visible */
   --mantine-color-default-border: #3F3F46;
