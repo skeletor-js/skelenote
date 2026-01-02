@@ -46,6 +46,10 @@ interface ObjectHeaderProps {
   canArchive?: boolean;
   /** Whether the object is archived (determines Archive vs Delete Permanently) */
   isArchived?: boolean;
+  /** Callback for duplicating the object */
+  onDuplicate?: () => void;
+  /** Whether the object can be duplicated (false for daily notes) */
+  canDuplicate?: boolean;
 }
 
 export function ObjectHeader({
@@ -68,6 +72,8 @@ export function ObjectHeader({
   onArchive,
   canArchive = true,
   isArchived = false,
+  onDuplicate,
+  canDuplicate = true,
 }: ObjectHeaderProps) {
   const { openInSplit, splitPane } = useNavigation();
   // Determine which property holds the title (varies by type)
@@ -223,6 +229,21 @@ export function ObjectHeader({
             </Tooltip>
           )}
 
+          {/* Duplicate action */}
+          {onDuplicate && canDuplicate && (
+            <Tooltip label="Duplicate" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={onDuplicate}
+                aria-label="Duplicate"
+                className={styles.quickAction}
+              >
+                <Icon name="copy" size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+
           {/* Export action */}
           {onExport && (
             <Tooltip label="Export" withArrow>
@@ -337,6 +358,22 @@ export function ObjectHeader({
                 onClick={onPin}
               >
                 {isPinned ? 'Unpin' : 'Pin to sidebar'}
+              </Menu.Item>
+            )}
+
+            {/* Duplicate */}
+            {onDuplicate && (
+              <Menu.Item
+                leftSection={<Icon name="copy" size={14} />}
+                onClick={onDuplicate}
+                disabled={!canDuplicate}
+                rightSection={
+                  <Text size="xs" c="dimmed">
+                    Cmd+D
+                  </Text>
+                }
+              >
+                Duplicate
               </Menu.Item>
             )}
 
