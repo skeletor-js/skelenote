@@ -175,7 +175,7 @@ pub struct AckPayload {
 // Device Management Payloads
 // ============================================================================
 
-/// Device revocation payload
+/// Device revocation payload - used by network_broadcast_device_revoke
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DeviceRevokePayload {
     /// Device ID that was revoked
@@ -190,16 +190,7 @@ pub struct DeviceRevokePayload {
     pub signature: String,
 }
 
-/// Device revocation acknowledgment payload
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct DeviceRevokeAckPayload {
-    /// Device ID that was revoked
-    pub device_id: String,
-    /// Device ID acknowledging the revocation
-    pub acknowledged_by: String,
-}
-
-/// Device rename payload
+/// Device rename payload - used by network_broadcast_device_rename
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DeviceRenamePayload {
     /// Device ID being renamed
@@ -208,42 +199,6 @@ pub struct DeviceRenamePayload {
     pub new_name: String,
     /// Unix timestamp (ms) when rename occurred
     pub renamed_at: u64,
-}
-
-/// Extended hello payload with device registry info
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct ExtendedHelloPayload {
-    /// Unique device identifier
-    pub device_id: String,
-    /// Device name (user-friendly)
-    pub device_name: String,
-    /// Protocol version
-    pub protocol_version: u32,
-    /// Whether E2EE is enabled
-    pub encrypted: bool,
-    /// Key fingerprint for verification
-    pub fingerprint: String,
-    /// Device registry version (Loro lamport clock)
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub registry_version: Option<u64>,
-    /// Base64-encoded Ed25519 public signing key
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub signing_public_key: Option<String>,
-    /// Device IDs this device knows are revoked
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub known_revocations: Option<Vec<String>>,
-}
-
-/// Check if a message type is a device management message
-pub fn is_device_management_message(msg_type: MessageType) -> bool {
-    matches!(
-        msg_type,
-        MessageType::DeviceRegistry
-            | MessageType::DeviceUpdate
-            | MessageType::DeviceRevoke
-            | MessageType::DeviceRevokeAck
-            | MessageType::DeviceRename
-    )
 }
 
 #[cfg(test)]

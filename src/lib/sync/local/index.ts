@@ -256,3 +256,38 @@ export async function broadcastSync(data: Uint8Array): Promise<number> {
 export async function getPeerCount(): Promise<number> {
   return invoke<number>("network_peer_count");
 }
+
+// Device registry sync commands
+
+/**
+ * Broadcast device registry to all connected local peers.
+ * @param data The Loro snapshot bytes of the device registry.
+ * @returns The number of peers the data was sent to.
+ */
+export async function broadcastDeviceRegistry(data: Uint8Array): Promise<number> {
+  return invoke<number>("network_broadcast_device_registry", {
+    data: Array.from(data),
+  });
+}
+
+/**
+ * Broadcast device revocation to all connected local peers.
+ * @param payload JSON-stringified DeviceRevokePayload.
+ * @returns The number of peers the message was sent to.
+ */
+export async function broadcastDeviceRevoke(payload: string): Promise<number> {
+  return invoke<number>("network_broadcast_device_revoke", {
+    payload,
+  });
+}
+
+/**
+ * Broadcast device rename to all connected local peers.
+ * @param payload JSON-stringified DeviceRenamePayload.
+ * @returns The number of peers the message was sent to.
+ */
+export async function broadcastDeviceRename(payload: string): Promise<number> {
+  return invoke<number>("network_broadcast_device_rename", {
+    payload,
+  });
+}

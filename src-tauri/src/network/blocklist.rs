@@ -128,28 +128,10 @@ impl DeviceBlocklist {
         self.save().await
     }
 
-    /// Block multiple device IDs
-    pub async fn block_many(&self, device_ids: Vec<String>) -> Result<(), BlocklistError> {
-        {
-            let mut blocked = self.blocked.write().await;
-            for id in device_ids {
-                blocked.insert(id);
-            }
-        }
-
-        self.save().await
-    }
-
     /// Get all blocked device IDs
     pub async fn get_blocked(&self) -> Vec<String> {
         let blocked = self.blocked.read().await;
         blocked.iter().cloned().collect()
-    }
-
-    /// Get count of blocked devices
-    pub async fn count(&self) -> usize {
-        let blocked = self.blocked.read().await;
-        blocked.len()
     }
 
     /// Clear the blocklist (for testing)
@@ -210,22 +192,4 @@ mod tests {
         assert!(!blocklist2.is_blocked("device-3").await);
     }
 
-    #[tokio::test]
-    async fn test_blocklist_block_many() {
-        let blocklist = DeviceBlocklist::new();
-
-        blocklist
-            .block_many(vec![
-                "device-1".to_string(),
-                "device-2".to_string(),
-                "device-3".to_string(),
-            ])
-            .await
-            .unwrap();
-
-        assert!(blocklist.is_blocked("device-1").await);
-        assert!(blocklist.is_blocked("device-2").await);
-        assert!(blocklist.is_blocked("device-3").await);
-        assert_eq!(blocklist.count().await, 3);
-    }
 }
