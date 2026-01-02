@@ -8,7 +8,7 @@
   margin: 0 0.1em;
   /* Light mode: warm selection glow */
   background: var(--selection-glow);
-  color: var(--mantine-color-slate-6);
+  color: var(--mantine-color-text);
   border-radius: var(--mantine-radius-sm);
   font-size: 0.95em;
   font-weight: 500;
