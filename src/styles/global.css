@@ -37,30 +37,12 @@
   --mantine-color-default-border: #3F3F46;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Hide scrollbars globally while maintaining scroll functionality */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--mantine-color-gray-3);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--mantine-color-gray-4);
-}
-
-/* Dark mode scrollbar adjustments */
-[data-mantine-color-scheme="dark"] ::-webkit-scrollbar-thumb {
-  background: var(--mantine-color-gray-7);
-}
-
-[data-mantine-color-scheme="dark"] ::-webkit-scrollbar-thumb:hover {
-  background: var(--mantine-color-gray-6);
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }

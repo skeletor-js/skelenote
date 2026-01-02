@@ -455,5 +455,10 @@ export const theme = createTheme({
         },
       },
     },
+    ScrollArea: {
+      defaultProps: {
+        scrollbarSize: 0,
+      },
+    },
   },
 });

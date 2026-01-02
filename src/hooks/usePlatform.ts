@@ -34,13 +34,13 @@ export function usePlatform(): PlatformInfo {
   const isWindows = currentPlatform === 'windows';
   const isLinux = currentPlatform === 'linux';
 
-  // macOS traffic lights: ~28px height - minimal clearance
+  // macOS traffic lights: 32px height - centers the buttons visually
   return {
     platform: currentPlatform,
     isMacOS,
     isWindows,
     isLinux,
-    windowControlsHeight: isMacOS ? 28 : 0,
+    windowControlsHeight: isMacOS ? 32 : 0,
     windowControlsWidth: isMacOS ? 80 : 0,
   };
 }
