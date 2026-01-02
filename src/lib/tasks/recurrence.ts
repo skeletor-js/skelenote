@@ -4,7 +4,7 @@
  * When a recurring task is marked done:
  * 1. Current task → status: done
  * 2. New task is created with:
- *    - Same: title, priority, project, tags, note relations, recurrence
+ *    - Same: title, priority, project, area, tags, recurrence
  *    - New: id, createdAt, updatedAt
  *    - Calculated: dueDate based on recurrence rule
  *    - Reset: status: todo, inboxed: false
@@ -298,7 +298,7 @@ export function calculateNextDueDate(
 /**
  * Properties to copy from the original task to the new recurring instance
  */
-const COPIED_PROPERTIES = ['title', 'priority', 'project', 'note', 'tags', 'recurrence'] as const;
+const COPIED_PROPERTIES = ['title', 'priority', 'project', 'area', 'tags', 'recurrence'] as const;
 
 /**
  * Create the properties for a new recurring task instance

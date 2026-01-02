@@ -1,23 +1,24 @@
 /**
  * TaskRow.module.css - Hover states and hover-reveal actions for task rows
- * Follows InboxRow pattern for consistency
+ * Updated for "Cozy Rationalism" - warm hover and selection states
  */
 
 .row {
   transition: background-color 150ms ease;
 }
 
+/* Warm hover - "Fireplace Glow" effect */
 .row:hover {
-  background-color: var(--mantine-color-gray-0);
+  background-color: var(--hover-warm);
 }
 
-/* Selected rows keep their color on hover */
+/* Selection uses pale Ember glow - like a highlighter */
 .row[data-selected='true'] {
-  background-color: var(--mantine-color-clay-0);
+  background-color: var(--selection-glow);
 }
 
 .row[data-selected='true']:hover {
-  background-color: var(--mantine-color-clay-0);
+  background-color: var(--selection-glow);
 }
 
 /* Dark mode adjustments */
@@ -27,7 +28,7 @@
 
 :global([data-mantine-color-scheme="dark"]) .row[data-selected='true'],
 :global([data-mantine-color-scheme="dark"]) .row[data-selected='true']:hover {
-  background-color: var(--mantine-color-clay-9);
+  background-color: var(--mantine-color-ember-9);
 }
 
 /* Hover-reveal actions - hidden by default, takes no space */

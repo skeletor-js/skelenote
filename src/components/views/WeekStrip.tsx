@@ -124,7 +124,6 @@ export function WeekStrip({ selectedDate, onDateSelect, hasNote }: WeekStripProp
       px="md"
       py="sm"
       style={{
-        borderBottom: '1px solid var(--mantine-color-default-border)',
         flexShrink: 0,
       }}
     >

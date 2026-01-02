@@ -4,6 +4,7 @@ import { ChevronRight, Plus } from 'lucide-react';
 import { useSidebar, useNavigation, useObjects, useTypeRegistry } from '@/contexts';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { BuiltInTypeIds } from '@/lib/types';
+import styles from './SidebarItem.module.css';
 
 /**
  * Types to show in the Objects section
@@ -53,7 +54,14 @@ export function ObjectsSection({ availableTypes, onCreateObject }: ObjectsSectio
   const typeItems = useMemo(() => {
     return BROWSABLE_TYPES.map((typeId) => {
       const typeDef = typeRegistry.get(typeId);
-      const count = store?.getByType(typeId).length ?? 0;
+      let objects = store?.getByType(typeId) ?? [];
+
+      // Filter out daily notes from the 'note' count
+      if (typeId === BuiltInTypeIds.NOTE) {
+        objects = objects.filter(obj => !obj.properties.isDailyNote);
+      }
+
+      const count = objects.length;
       return {
         id: typeId,
         name: typeDef?.name ?? typeId,
@@ -118,6 +126,7 @@ export function ObjectsSection({ availableTypes, onCreateObject }: ObjectsSectio
         }
         disableRightSectionRotation
         variant="subtle"
+        className={styles.navLink}
         styles={{
           label: {
             fontWeight: 600,
@@ -147,6 +156,7 @@ export function ObjectsSection({ availableTypes, onCreateObject }: ObjectsSectio
                 active={isSelected}
                 onClick={() => handleTypeClick(item.id)}
                 variant="subtle"
+                className={styles.navLink}
               />
             );
           })}

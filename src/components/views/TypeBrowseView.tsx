@@ -67,7 +67,14 @@ export function TypeBrowseView({ typeId }: TypeBrowseViewProps) {
   // Get all objects of this type, sorted by creation date (newest first)
   const items = useMemo(() => {
     if (!store) return [];
-    return store.getByType(typeId).sort((a, b) => b.createdAt - a.createdAt);
+    let result = store.getByType(typeId);
+
+    // Filter out daily notes from the general 'note' view
+    if (typeId === 'note') {
+      result = result.filter(obj => !obj.properties.isDailyNote);
+    }
+
+    return result.sort((a, b) => b.createdAt - a.createdAt);
   }, [store, typeId]);
 
   // Get item IDs for selection hook

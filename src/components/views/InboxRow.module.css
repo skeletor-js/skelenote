@@ -1,18 +1,24 @@
 /**
  * InboxRow.module.css - Hover-reveal styles for inbox rows
- * Follows SearchResultCard pattern for consistency
+ * Updated for "Cozy Rationalism" - warm hover and selection states
  */
 
 .inboxRow {
   transition: background-color 150ms ease;
 }
 
+/* Warm hover - "Fireplace Glow" effect */
 .inboxRow:hover {
-  background-color: var(--mantine-color-gray-0);
+  background-color: var(--hover-warm);
 }
 
+/* Selection uses pale Ember glow - like a highlighter */
 .inboxRow[data-selected='true'] {
-  background-color: var(--mantine-color-clay-0);
+  background-color: var(--selection-glow);
+}
+
+.inboxRow[data-selected='true']:hover {
+  background-color: var(--selection-glow);
 }
 
 /* Dark mode adjustments */
@@ -21,7 +27,7 @@
 }
 
 :global([data-mantine-color-scheme="dark"]) .inboxRow[data-selected='true'] {
-  background-color: var(--mantine-color-clay-9);
+  background-color: var(--mantine-color-ember-9);
 }
 
 /* Hover-reveal actions - hidden by default, takes no space */
@@ -38,7 +44,4 @@
   opacity: 1;
 }
 
-/* Date group header - scrolls with content */
-.groupHeader {
-  /* Non-sticky: scrolls naturally with list items */
-}
+/* Date group header - scrolls naturally with list items */
