@@ -45,7 +45,4 @@
   opacity: 1;
 }
 
-/* Date group header - scrolls with content */
-.groupHeader {
-  /* Non-sticky: scrolls naturally with list items */
-}
+/* Date group header - scrolls naturally with list items */
