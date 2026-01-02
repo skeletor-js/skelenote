@@ -34,14 +34,13 @@ export function usePlatform(): PlatformInfo {
   const isWindows = currentPlatform === 'windows';
   const isLinux = currentPlatform === 'linux';
 
-  // macOS traffic lights: ~38px height provides clearance without excessive gap
-  // Traffic lights are ~12px diameter, positioned ~20px from top
+  // macOS traffic lights: ~28px height - minimal clearance
   return {
     platform: currentPlatform,
     isMacOS,
     isWindows,
     isLinux,
-    windowControlsHeight: isMacOS ? 38 : 0,
+    windowControlsHeight: isMacOS ? 28 : 0,
     windowControlsWidth: isMacOS ? 80 : 0,
   };
 }
