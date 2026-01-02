@@ -4,9 +4,11 @@
  */
 
 import { useState, useCallback } from 'react';
+import { Group, Button, Tooltip } from '@mantine/core';
 import { RelationChip } from './RelationChip';
 import { ObjectSearchModal } from './ObjectSearchModal';
-import './RelationPicker.css';
+import { Icon } from '@/components/ui/Icon';
+import type { SkelenoteObject } from '@/lib/types';
 
 interface RelationPickerProps {
   id: string;
@@ -14,6 +16,12 @@ interface RelationPickerProps {
   targetTypeIds?: string[];
   multiple?: boolean;
   onChange: (value: string[] | string | null) => void;
+  /** Optional filter function for ObjectSearchModal */
+  filterFn?: (object: SkelenoteObject) => boolean;
+  /** Whether removal is disabled (e.g., must remove project before clearing area) */
+  disableClear?: boolean;
+  /** Message to show when clear is disabled */
+  disableClearMessage?: string;
 }
 
 export function RelationPicker({
@@ -22,6 +30,9 @@ export function RelationPicker({
   targetTypeIds,
   multiple = true,
   onChange,
+  filterFn,
+  disableClear = false,
+  disableClearMessage,
 }: RelationPickerProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -49,31 +60,46 @@ export function RelationPicker({
 
   const handleRemove = useCallback(
     (objectId: string) => {
-      const newValue = valueArray.filter((id) => id !== objectId);
+      if (disableClear) return;
+      const newValue = valueArray.filter((objId) => objId !== objectId);
       onChange(newValue.length > 0 ? newValue : null);
     },
-    [valueArray, onChange]
+    [valueArray, onChange, disableClear]
   );
 
-  return (
-    <div className="relation-picker" id={id}>
-      <div className="relation-picker__chips">
-        {valueArray.map((objectId) => (
-          <RelationChip
-            key={objectId}
-            objectId={objectId}
-            onRemove={() => handleRemove(objectId)}
-          />
-        ))}
+  const renderChip = (objectId: string) => {
+    const chip = (
+      <RelationChip
+        key={objectId}
+        objectId={objectId}
+        onRemove={disableClear ? undefined : () => handleRemove(objectId)}
+        showRemove={!disableClear}
+      />
+    );
 
-        <button
-          type="button"
-          className="relation-picker__add"
-          onClick={() => setIsModalOpen(true)}
-        >
-          + Add
-        </button>
-      </div>
+    if (disableClear && disableClearMessage) {
+      return (
+        <Tooltip key={objectId} label={disableClearMessage} position="top" withArrow>
+          <span>{chip}</span>
+        </Tooltip>
+      );
+    }
+
+    return chip;
+  };
+
+  return (
+    <Group gap="xs" id={id} wrap="wrap">
+      {valueArray.map(renderChip)}
+
+      <Button
+        variant="subtle"
+        size="xs"
+        leftSection={<Icon name="plus" size={14} />}
+        onClick={() => setIsModalOpen(true)}
+      >
+        Add
+      </Button>
 
       <ObjectSearchModal
         isOpen={isModalOpen}
@@ -82,7 +108,8 @@ export function RelationPicker({
         targetTypeIds={targetTypeIds}
         excludeIds={valueArray}
         title={`Select ${targetTypeIds?.join(' / ') ?? 'Object'}`}
+        filterFn={filterFn}
       />
-    </div>
+    </Group>
   );
 }

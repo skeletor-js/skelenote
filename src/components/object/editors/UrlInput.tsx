@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
+import { TextInput, ActionIcon, Tooltip } from '@mantine/core';
 import { open } from '@tauri-apps/plugin-shell';
-import './editors.css';
+import { Icon } from '@/components/ui/Icon';
 
 interface UrlInputProps {
   id?: string;
@@ -9,6 +10,9 @@ interface UrlInputProps {
   placeholder?: string;
 }
 
+/**
+ * URL input with validation and open in browser button
+ */
 export function UrlInput({
   id,
   value,
@@ -68,28 +72,34 @@ export function UrlInput({
     }
   };
 
+  const showOpenButton = value && validateUrl(value);
+
   return (
-    <div className="editor-url">
-      <input
-        id={id}
-        type="url"
-        className={`editor-url__input ${!isValid ? 'editor-url__input--invalid' : ''}`}
-        value={localValue}
-        onChange={(e) => setLocalValue(e.target.value)}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-      />
-      {value && validateUrl(value) && (
-        <button
-          type="button"
-          className="editor-url__open"
-          onClick={handleOpenUrl}
-          title="Open URL in browser"
-        >
-          ↗
-        </button>
-      )}
-    </div>
+    <TextInput
+      id={id}
+      type="url"
+      value={localValue}
+      onChange={(e) => setLocalValue(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      placeholder={placeholder}
+      size="sm"
+      variant="filled"
+      error={!isValid}
+      rightSection={
+        showOpenButton && (
+          <Tooltip label="Open URL in browser" withArrow>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="sm"
+              onClick={handleOpenUrl}
+            >
+              <Icon name="external-link" size={14} />
+            </ActionIcon>
+          </Tooltip>
+        )
+      }
+    />
   );
 }

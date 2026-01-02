@@ -5,9 +5,9 @@
  */
 
 import { useState, useCallback } from 'react';
+import { Stack, Group, Title, Text, Button, Checkbox, Progress, Box } from '@mantine/core';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
 import { exportAllToZip, type BulkExportProgress } from '@/lib/export';
-import './ExportSettings.css';
 
 export function ExportSettings() {
   const { store } = useObjects();
@@ -114,93 +114,75 @@ export function ExportSettings() {
   };
 
   return (
-    <section className="export-settings">
-      <h2 className="export-settings__title">Export Data</h2>
+    <Box component="section">
+      <Title order={3} mb="md">Export Data</Title>
 
-      <div className="export-settings__section">
-        <p className="export-settings__description">
+      <Stack gap="md">
+        <Text size="sm" c="dimmed">
           Export all your objects as Markdown files in a ZIP archive.
           Perfect for backups or migrating to other tools like Obsidian.
-        </p>
+        </Text>
 
-        <div className="export-settings__stats">
-          <div className="export-settings__stat">
-            <span className="export-settings__stat-value">{counts.total}</span>
-            <span className="export-settings__stat-label">total objects</span>
-          </div>
+        <Group gap="lg">
+          <Box ta="center">
+            <Text size="xl" fw={700}>{counts.total}</Text>
+            <Text size="xs" c="dimmed">total objects</Text>
+          </Box>
           {counts.notes > 0 && (
-            <div className="export-settings__stat">
-              <span className="export-settings__stat-value">{counts.notes}</span>
-              <span className="export-settings__stat-label">notes</span>
-            </div>
+            <Box ta="center">
+              <Text size="xl" fw={700}>{counts.notes}</Text>
+              <Text size="xs" c="dimmed">notes</Text>
+            </Box>
           )}
           {counts.tasks > 0 && (
-            <div className="export-settings__stat">
-              <span className="export-settings__stat-value">{counts.tasks}</span>
-              <span className="export-settings__stat-label">tasks</span>
-            </div>
+            <Box ta="center">
+              <Text size="xl" fw={700}>{counts.tasks}</Text>
+              <Text size="xs" c="dimmed">tasks</Text>
+            </Box>
           )}
           {counts.projects > 0 && (
-            <div className="export-settings__stat">
-              <span className="export-settings__stat-value">{counts.projects}</span>
-              <span className="export-settings__stat-label">projects</span>
-            </div>
+            <Box ta="center">
+              <Text size="xl" fw={700}>{counts.projects}</Text>
+              <Text size="xs" c="dimmed">projects</Text>
+            </Box>
           )}
-        </div>
-      </div>
+        </Group>
 
-      <div className="export-settings__divider" />
-
-      <div className="export-settings__section">
-        <label className="export-settings__label">Options</label>
-
-        <label className="export-settings__toggle-label">
-          <input
-            type="checkbox"
-            className="export-settings__checkbox"
+        <Box>
+          <Text size="sm" fw={500} mb="xs">Options</Text>
+          <Checkbox
+            label="Organize files into folders by type"
             checked={organizeByType}
             onChange={(e) => setOrganizeByType(e.target.checked)}
             disabled={isExporting}
           />
-          <span className="export-settings__toggle-text">
-            Organize files into folders by type
-          </span>
-        </label>
-        <p className="export-settings__help">
-          Creates folders like /notes/, /tasks/, /projects/ in the ZIP.
-        </p>
-      </div>
+          <Text size="xs" c="dimmed" mt="xs">
+            Creates folders like /notes/, /tasks/, /projects/ in the ZIP.
+          </Text>
+        </Box>
 
-      <div className="export-settings__divider" />
-
-      <div className="export-settings__section">
         {progress && (
-          <div className="export-settings__progress">
-            <div className="export-settings__progress-bar">
-              <div
-                className="export-settings__progress-fill"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            <span className="export-settings__progress-text">
+          <Box>
+            <Progress value={progressPercent} mb="xs" />
+            <Text size="sm" c="dimmed">
               {getProgressMessage()} ({progress.current}/{progress.total})
-            </span>
-          </div>
+            </Text>
+          </Box>
         )}
 
-        <button
-          className="export-settings__button export-settings__button--primary"
+        <Button
           onClick={handleExport}
           disabled={isExporting || counts.total === 0}
+          loading={isExporting}
         >
           {isExporting ? 'Exporting...' : `Export All (${counts.total} objects)`}
-        </button>
+        </Button>
 
-        <p className="export-settings__help">
+        <Text size="xs" c="dimmed">
           Each object becomes a Markdown file with YAML frontmatter.
           Mentions are converted to [[wiki-links]].
-        </p>
-      </div>
-    </section>
+        </Text>
+      </Stack>
+    </Box>
   );
 }

@@ -1,8 +1,13 @@
 /**
  * BacklinkItem - Displays a single backlink to an object
+ * Inline format: "ObjectName (via property)"
  */
 
+import { UnstyledButton, Text } from '@mantine/core';
 import { useObjects, useNavigation, useTypeRegistry } from '@/contexts';
+import { Icon } from '@/components/ui/Icon';
+import { getIconFromEmoji } from '@/lib/icons';
+import styles from './BacklinksSection.module.css';
 
 interface BacklinkItemProps {
   sourceId: string;
@@ -33,14 +38,19 @@ export function BacklinkItem({ sourceId, propertyName }: BacklinkItemProps) {
   };
 
   return (
-    <button
-      type="button"
-      className="backlink-item"
+    <UnstyledButton
       onClick={handleClick}
+      className={styles.backlinkRow}
     >
-      <span className="backlink-item__icon">{icon}</span>
-      <span className="backlink-item__name">{name}</span>
-      <span className="backlink-item__via">via {propertyName}</span>
-    </button>
+      <Icon name={getIconFromEmoji(icon)} size={16} className={styles.backlinkIcon} />
+      <span className={styles.backlinkContent}>
+        <Text component="span" className={styles.backlinkName} truncate>
+          {name}
+        </Text>
+        <Text component="span" className={styles.backlinkVia}>
+          (via {propertyName})
+        </Text>
+      </span>
+    </UnstyledButton>
   );
 }

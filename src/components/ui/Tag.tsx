@@ -1,14 +1,36 @@
-import './Tag.css';
+import { Badge, Box, MantineColor, useMantineTheme } from '@mantine/core';
 
+/**
+ * Tag colors using our warm palette from the style guide
+ * - ember: Terracotta/primary accent
+ * - clay: Muted purple/mauve
+ * - sage: Green/success
+ * - ochre: Golden yellow/warning
+ * - brick: Dark red/danger
+ * - slate: Blue-gray/info
+ */
 export type TagColor =
   | 'gray'
-  | 'red'
-  | 'orange'
-  | 'yellow'
-  | 'green'
-  | 'blue'
-  | 'purple'
-  | 'pink';
+  | 'ember'
+  | 'clay'
+  | 'sage'
+  | 'ochre'
+  | 'brick'
+  | 'slate';
+
+/**
+ * Map tag colors to Mantine theme colors
+ * These are our custom colors defined in the Mantine theme
+ */
+const COLOR_MAP: Record<TagColor, MantineColor> = {
+  gray: 'gray',
+  ember: 'ember',
+  clay: 'clay',
+  sage: 'sage',
+  ochre: 'ochre',
+  brick: 'brick',
+  slate: 'slate',
+};
 
 interface TagProps {
   name: string;
@@ -17,12 +39,66 @@ interface TagProps {
   onClick?: () => void;
 }
 
-export function Tag({ name, color = 'gray', size = 'md', onClick }: TagProps) {
-  const isClickable = !!onClick;
+/**
+ * Colored dot indicator for the tag
+ */
+function TagDot({ color, size }: { color: MantineColor; size: 'sm' | 'md' }) {
+  const theme = useMantineTheme();
+  const dotSize = size === 'sm' ? 6 : 8;
+
+  // Get the appropriate color shade based on color scheme
+  const colorValue = theme.colors[color]?.[5] ?? theme.colors.gray[5];
 
   return (
-    <span
-      className={`tag tag--${color} tag--${size} ${isClickable ? 'tag--clickable' : ''}`}
+    <Box
+      component="span"
+      style={{
+        width: dotSize,
+        height: dotSize,
+        borderRadius: '50%',
+        backgroundColor: colorValue,
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
+/**
+ * Tag component for displaying colored labels
+ */
+export function Tag({ name, color = 'gray', size = 'md', onClick }: TagProps) {
+  const isClickable = !!onClick;
+  const mantineColor = COLOR_MAP[color] ?? 'gray';
+  const badgeSize = size === 'sm' ? 'xs' : 'sm';
+
+  return (
+    <Badge
+      size={badgeSize}
+      variant="transparent"
+      leftSection={<TagDot color={mantineColor} size={size} />}
+      styles={{
+        root: {
+          cursor: isClickable ? 'pointer' : 'default',
+          textTransform: 'none',
+          fontWeight: 500,
+          paddingLeft: 6,
+          paddingRight: 8,
+          '&:hover': isClickable ? {
+            backgroundColor: 'var(--mantine-color-gray-1)',
+          } : undefined,
+          // Dark mode overrides
+          '[data-mantine-color-scheme="dark"] &:hover': isClickable ? {
+            backgroundColor: 'var(--mantine-color-dark-5)',
+          } : undefined,
+        },
+        label: {
+          color: 'var(--mantine-color-gray-7)',
+          // Dark mode text color
+          '[data-mantine-color-scheme="dark"] &': {
+            color: 'var(--mantine-color-gray-4)',
+          },
+        },
+      }}
       onClick={onClick}
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
@@ -30,8 +106,7 @@ export function Tag({ name, color = 'gray', size = 'md', onClick }: TagProps) {
         isClickable ? (e) => e.key === 'Enter' && onClick?.() : undefined
       }
     >
-      <span className="tag__dot" />
-      <span className="tag__name">#{name}</span>
-    </span>
+      #{name}
+    </Badge>
   );
 }

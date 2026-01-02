@@ -1,0 +1,25 @@
+/**
+ * CalendarDay.module.css - Hover states for calendar day cells
+ */
+
+.day {
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.day:hover {
+  background-color: var(--mantine-color-gray-0);
+}
+
+/* Today has a different hover */
+.day[data-today='true']:hover {
+  background-color: var(--mantine-color-ember-0);
+}
+
+/* Dark mode */
+:global([data-mantine-color-scheme="dark"]) .day:hover {
+  background-color: var(--surface-raised);
+}
+
+:global([data-mantine-color-scheme="dark"]) .day[data-today='true']:hover {
+  background-color: var(--mantine-color-ember-9);
+}

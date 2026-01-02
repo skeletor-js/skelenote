@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { Stack, Group, Title, Text, Box, Switch, Badge, Alert, Button, ThemeIcon, Loader, Code } from '@mantine/core';
+import { Icon } from '@/components/ui';
 import { useLocalSyncSafe } from '@/contexts/LocalSyncContext';
 import { connectToPeer, getConnectedPeers } from '@/lib/sync/local';
-import './LocalSyncSettings.css';
 
 export function LocalSyncSettings() {
   const localSync = useLocalSyncSafe();
@@ -55,6 +56,21 @@ export function LocalSyncSettings() {
     }
   };
 
+  const getStatusColor = () => {
+    switch (status) {
+      case 'starting':
+      case 'discovering':
+        return 'ochre';
+      case 'connected':
+        return 'sage';
+      case 'error':
+        return 'brick';
+      case 'off':
+      default:
+        return 'gray';
+    }
+  };
+
   const getStatusLabel = () => {
     switch (status) {
       case 'starting':
@@ -71,138 +87,125 @@ export function LocalSyncSettings() {
     }
   };
 
-  const getStatusDotClass = () => {
-    switch (status) {
-      case 'starting':
-      case 'discovering':
-        return 'local-sync__status-dot--searching';
-      case 'connected':
-        return 'local-sync__status-dot--connected';
-      case 'error':
-        return 'local-sync__status-dot--error';
-      case 'off':
-      default:
-        return 'local-sync__status-dot--off';
-    }
-  };
-
   return (
-    <section className="local-sync">
-      <div className="local-sync__header">
-        <div className="local-sync__title-row">
-          <h3 className="local-sync__title">Local Network Sync</h3>
-          <label className="local-sync__toggle">
-            <input
-              type="checkbox"
-              checked={isEnabled}
-              onChange={handleToggle}
-              disabled={status === 'starting'}
-            />
-            <span className="local-sync__toggle-slider" />
-          </label>
-        </div>
-        <p className="local-sync__description">
-          Sync directly with devices on your WiFi network. No internet required.
-        </p>
-      </div>
+    <Box component="section">
+      <Group justify="space-between" mb="xs">
+        <Title order={4}>Local Network Sync</Title>
+        <Switch
+          checked={isEnabled}
+          onChange={handleToggle}
+          disabled={status === 'starting'}
+        />
+      </Group>
+
+      <Text size="sm" c="dimmed" mb="md">
+        Sync directly with devices on your WiFi network. No internet required.
+      </Text>
 
       {isEnabled && (
-        <div className="local-sync__content">
-          <div className="local-sync__status-row">
-            <span className={`local-sync__status-dot ${getStatusDotClass()}`} />
-            <span className="local-sync__status-label">{getStatusLabel()}</span>
-          </div>
+        <Stack gap="md">
+          <Group gap="xs">
+            <Badge color={getStatusColor()} variant="dot">
+              {getStatusLabel()}
+            </Badge>
+          </Group>
 
           {error && (
-            <div className="local-sync__error">
+            <Alert color="brick" variant="light">
               {error}
-            </div>
+            </Alert>
           )}
 
           {discoveredPeers.length > 0 && (
-            <div className="local-sync__peers">
-              <h4 className="local-sync__peers-title">Nearby Devices</h4>
-              <ul className="local-sync__peers-list">
+            <Box>
+              <Text size="xs" fw={600} c="dimmed" tt="uppercase" mb="xs">
+                Nearby Devices
+              </Text>
+              <Stack gap="xs">
                 {discoveredPeers.map((peer) => (
-                  <li key={peer.deviceId} className="local-sync__peer">
-                    <span className="local-sync__peer-icon">
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                        <line x1="8" y1="21" x2="16" y2="21" />
-                        <line x1="12" y1="17" x2="12" y2="21" />
-                      </svg>
-                    </span>
-                    <span className="local-sync__peer-name">{peer.deviceName}</span>
+                  <Group
+                    key={peer.deviceId}
+                    justify="space-between"
+                    p="xs"
+                    style={(theme) => ({
+                      borderRadius: theme.radius.sm,
+                      backgroundColor: 'var(--mantine-color-gray-0)',
+                    })}
+                  >
+                    <Group gap="sm">
+                      <ThemeIcon variant="light" color="slate" size="sm">
+                        <Icon name="monitor" size={14} />
+                      </ThemeIcon>
+                      <Text size="sm">{peer.deviceName}</Text>
+                    </Group>
                     {isConnected(peer.deviceId) ? (
-                      <span className="local-sync__peer-connected">
-                        <span className="local-sync__peer-dot local-sync__peer-dot--connected" />
-                        Connected
-                      </span>
+                      <Badge color="sage" variant="light" size="sm" radius="sm">
+                        <Group gap={4}>
+                          <Box
+                            w={6}
+                            h={6}
+                            style={{
+                              borderRadius: '50%',
+                              backgroundColor: 'var(--mantine-color-sage-6)',
+                            }}
+                          />
+                          Connected
+                        </Group>
+                      </Badge>
                     ) : (
-                      <button
-                        className="local-sync__connect-btn"
+                      <Button
+                        size="xs"
+                        variant="light"
                         onClick={() => handleConnect(peer.deviceId)}
                         disabled={connectingTo === peer.deviceId}
+                        loading={connectingTo === peer.deviceId}
                       >
-                        {connectingTo === peer.deviceId ? 'Connecting...' : 'Connect'}
-                      </button>
+                        Connect
+                      </Button>
                     )}
-                  </li>
+                  </Group>
                 ))}
-              </ul>
-            </div>
+              </Stack>
+            </Box>
           )}
 
           {status === 'discovering' && discoveredPeers.length === 0 && (
-            <div className="local-sync__searching">
-              <span className="local-sync__searching-icon">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 6v6l4 2" />
-                </svg>
-              </span>
-              <span>Looking for devices with the same Skeleton Key...</span>
-            </div>
+            <Group gap="sm" c="dimmed">
+              <Loader size="xs" />
+              <Text size="sm">Looking for devices with the same Skeleton Key...</Text>
+            </Group>
           )}
 
           {deviceInfo && (
-            <div className="local-sync__device-info">
-              <div className="local-sync__device-row">
-                <span className="local-sync__device-label">This device:</span>
-                <span className="local-sync__device-value">{deviceInfo.deviceName}</span>
-              </div>
-              {serverPort && (
-                <div className="local-sync__device-row">
-                  <span className="local-sync__device-label">Port:</span>
-                  <span className="local-sync__device-value">{serverPort}</span>
-                </div>
-              )}
-              {deviceInfo.fingerprint && (
-                <div className="local-sync__device-row">
-                  <span className="local-sync__device-label">Fingerprint:</span>
-                  <code className="local-sync__device-value local-sync__device-value--code">
-                    {deviceInfo.fingerprint}
-                  </code>
-                </div>
-              )}
-            </div>
+            <Box
+              p="sm"
+              style={(theme) => ({
+                borderRadius: theme.radius.sm,
+                backgroundColor: 'var(--mantine-color-gray-0)',
+              })}
+            >
+              <Stack gap="xs">
+                <Group justify="space-between">
+                  <Text size="xs" c="dimmed">This device:</Text>
+                  <Text size="sm" fw={500}>{deviceInfo.deviceName}</Text>
+                </Group>
+                {serverPort && (
+                  <Group justify="space-between">
+                    <Text size="xs" c="dimmed">Port:</Text>
+                    <Text size="sm">{serverPort}</Text>
+                  </Group>
+                )}
+                {deviceInfo.fingerprint && (
+                  <Group justify="space-between">
+                    <Text size="xs" c="dimmed">Fingerprint:</Text>
+                    <Code fz="xs">{deviceInfo.fingerprint}</Code>
+                  </Group>
+                )}
+              </Stack>
+            </Box>
           )}
-        </div>
+        </Stack>
       )}
-    </section>
+    </Box>
   );
 }

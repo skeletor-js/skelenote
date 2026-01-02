@@ -1,10 +1,10 @@
 /* MentionSuggestion - Suggestion menu styling */
 
 .mention-suggestion-menu {
-  background: var(--bg-raised);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  background: var(--mantine-color-gray-0);
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-md);
+  box-shadow: var(--mantine-shadow-lg);
   max-height: 300px;
   overflow-y: auto;
   min-width: 200px;
@@ -14,36 +14,36 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-xs) var(--spacing-sm);
+  gap: var(--mantine-spacing-sm);
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
   cursor: pointer;
-  transition: background-color var(--transition-fast);
+  transition: background-color 150ms ease;
 }
 
 .mention-suggestion-item:hover,
 .mention-suggestion-item--selected {
-  background: var(--surface-hover);
+  background: var(--mantine-color-gray-0);
 }
 
 .mention-suggestion-item__title {
   flex: 1;
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
+  font-size: var(--mantine-font-size-sm);
+  color: var(--mantine-color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .mention-suggestion-item__type {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
   text-transform: capitalize;
 }
 
 /* Empty state */
 .mention-suggestion-empty {
-  padding: var(--spacing-sm);
-  color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  padding: var(--mantine-spacing-sm);
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-sm);
   text-align: center;
 }

@@ -3,8 +3,8 @@
  */
 
 import { useRef, useEffect } from 'react';
+import { Stack, TextInput } from '@mantine/core';
 import type { CaptureType } from './TypeSelector';
-import './QuickCapture.css';
 
 interface CaptureFormProps {
   type: CaptureType;
@@ -35,60 +35,53 @@ export function CaptureForm({ type, values, onChange, onSubmit }: CaptureFormPro
 
   if (type === 'task') {
     return (
-      <div className="capture-form">
-        <input
+      <Stack gap="sm">
+        <TextInput
           ref={titleInputRef}
-          type="text"
-          className="capture-form__input"
           placeholder="Task title..."
           value={values.title || ''}
           onChange={(e) => onChange('title', e.target.value)}
           onKeyDown={handleKeyDown}
           autoFocus
         />
-      </div>
+      </Stack>
     );
   }
 
   if (type === 'note') {
     return (
-      <div className="capture-form">
-        <input
+      <Stack gap="sm">
+        <TextInput
           ref={titleInputRef}
-          type="text"
-          className="capture-form__input"
           placeholder="Note title..."
           value={values.title || ''}
           onChange={(e) => onChange('title', e.target.value)}
           onKeyDown={handleKeyDown}
           autoFocus
         />
-      </div>
+      </Stack>
     );
   }
 
   if (type === 'link') {
     return (
-      <div className="capture-form">
-        <input
+      <Stack gap="sm">
+        <TextInput
           ref={urlInputRef}
           type="url"
-          className="capture-form__input"
           placeholder="https://..."
           value={values.url || ''}
           onChange={(e) => onChange('url', e.target.value)}
           onKeyDown={handleKeyDown}
           autoFocus
         />
-        <input
-          type="text"
-          className="capture-form__input"
+        <TextInput
           placeholder="Title (optional)"
           value={values.title || ''}
           onChange={(e) => onChange('title', e.target.value)}
           onKeyDown={handleKeyDown}
         />
-      </div>
+      </Stack>
     );
   }
 

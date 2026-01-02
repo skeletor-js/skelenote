@@ -4,12 +4,13 @@
  */
 
 import { useMemo, useCallback, useEffect } from 'react';
+import { Stack, Text, Box, Loader, Center } from '@mantine/core';
 import { useTasks, useSelection } from '@/hooks';
 import { useObjects } from '@/contexts';
 import type { TaskFilter } from '@/lib/tasks/filters';
 import { BulkActions } from '@/components/actions';
+import { ViewHeader } from '@/components/ui';
 import { TaskList } from './TaskList';
-import './TaskView.css';
 
 interface TaskViewProps {
   /** Which filter to apply */
@@ -57,7 +58,7 @@ export function TaskView({ filter, title }: TaskViewProps) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
         // Only handle if focus is in the task view area
         const activeElement = document.activeElement;
-        if (activeElement?.closest('.task-view')) {
+        if (activeElement?.closest('[data-task-view]')) {
           e.preventDefault();
           selection.selectAll();
         }
@@ -76,21 +77,17 @@ export function TaskView({ filter, title }: TaskViewProps) {
 
   if (isLoading) {
     return (
-      <div className="task-view task-view--loading">
-        <span>Loading...</span>
-      </div>
+      <Center p="xl">
+        <Loader size="sm" />
+        <Text ml="sm" c="dimmed">Loading...</Text>
+      </Center>
     );
   }
 
   return (
-    <div className="task-view">
-      {/* Header */}
-      <header className="task-view__header">
-        <h1 className="task-view__title">{title}</h1>
-      </header>
-
-      {/* Content */}
-      <div className="task-view__content">
+    <Stack gap={0} h="100%" style={{ overflow: 'hidden' }} data-task-view>
+      <ViewHeader title={title} icon="list-checks" count={tasks.length > 0 ? tasks.length : undefined} />
+      <Box p="md" style={{ flex: 1, overflow: 'auto' }}>
         <TaskList
           tasks={tasks}
           onToggleComplete={toggleComplete}
@@ -100,7 +97,7 @@ export function TaskView({ filter, title }: TaskViewProps) {
           onSelectionChange={handleSelectionChange}
           hasSelection={selection.hasSelection}
         />
-      </div>
+      </Box>
 
       {/* Bulk Actions Bar */}
       <BulkActions
@@ -109,6 +106,6 @@ export function TaskView({ filter, title }: TaskViewProps) {
         onActionComplete={refreshData}
         viewType="tasks"
       />
-    </div>
+    </Stack>
   );
 }

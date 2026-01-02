@@ -23,7 +23,8 @@ export type ViewType =
   | 'settings'
   | 'time-machine'
   | 'search'
-  | 'saved-view';
+  | 'saved-view'
+  | 'type-browse';
 
 interface NavigationState {
   view: ViewType;
@@ -34,6 +35,8 @@ interface NavigationState {
   timeMachineFilter: string | null;
   /** Saved view ID when view is 'saved-view' */
   savedViewId: string | null;
+  /** Type ID when view is 'type-browse' */
+  browseTypeId: string | null;
 }
 
 /**
@@ -57,6 +60,11 @@ export interface SplitPaneState {
   historicalFrontier: Frontiers | null;
   /** Timestamp for historical version (when mode is 'version-comparison') */
   historicalTimestamp: number | null;
+  /** Source context for returning to Time Machine */
+  timeMachineContext: {
+    selectedDate: string;
+    changeIndex: number;
+  } | null;
 }
 
 interface NavigationContextValue {
@@ -80,6 +88,10 @@ interface NavigationContextValue {
   navigateToTimeMachine: (objectId?: string) => void;
   /** Navigate to a saved view */
   navigateToSavedView: (viewId: string) => void;
+  /** Navigate to browse objects by type */
+  navigateToTypeBrowse: (typeId: string) => void;
+  /** Type ID being browsed (when view is 'type-browse') */
+  browseTypeId: string | null;
   /** Go back to the previous view */
   navigateBack: () => void;
   /** Check if we can go back */
@@ -102,8 +114,13 @@ interface NavigationContextValue {
   openVersionComparison: (
     objectId: string,
     frontier: Frontiers,
-    timestamp: number
+    timestamp: number,
+    timeMachineContext?: { selectedDate: string; changeIndex: number }
   ) => void;
+  /** Update the version being compared (for prev/next navigation) */
+  updateVersionComparison: (frontier: Frontiers, timestamp: number) => void;
+  /** Return to Time Machine with the stored context */
+  returnToTimeMachine: () => void;
 }
 
 const NavigationContext = createContext<NavigationContextValue | null>(null);
@@ -119,6 +136,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     searchQuery: null,
     timeMachineFilter: null,
     savedViewId: null,
+    browseTypeId: null,
   });
   const [history, setHistory] = useState<NavigationState[]>([]);
 
@@ -130,6 +148,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     mode: 'normal',
     historicalFrontier: null,
     historicalTimestamp: null,
+    timeMachineContext: null,
   });
 
   const navigateToObject = useCallback((objectId: string) => {
@@ -140,6 +159,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       searchQuery: null,
       timeMachineFilter: null,
       savedViewId: null,
+      browseTypeId: null,
     });
   }, [currentState]);
 
@@ -151,6 +171,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       searchQuery: null,
       timeMachineFilter: null,
       savedViewId: null,
+      browseTypeId: null,
     });
   }, [currentState]);
 
@@ -162,6 +183,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       searchQuery: query ?? null,
       timeMachineFilter: null,
       savedViewId: null,
+      browseTypeId: null,
     });
   }, [currentState]);
 
@@ -173,6 +195,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       searchQuery: null,
       timeMachineFilter: objectId ?? null,
       savedViewId: null,
+      browseTypeId: null,
     });
   }, [currentState]);
 
@@ -184,6 +207,19 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       searchQuery: null,
       timeMachineFilter: null,
       savedViewId: viewId,
+      browseTypeId: null,
+    });
+  }, [currentState]);
+
+  const navigateToTypeBrowse = useCallback((typeId: string) => {
+    setHistory((prev) => [...prev, currentState]);
+    setCurrentState({
+      view: 'type-browse',
+      objectId: null,
+      searchQuery: null,
+      timeMachineFilter: null,
+      savedViewId: null,
+      browseTypeId: typeId,
     });
   }, [currentState]);
 
@@ -212,6 +248,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       mode: 'normal',
       historicalFrontier: null,
       historicalTimestamp: null,
+      timeMachineContext: null,
     });
   }, []);
 
@@ -237,6 +274,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       searchQuery: null,
       timeMachineFilter: null,
       savedViewId: null,
+      browseTypeId: null,
     });
 
     // Update split to show the former primary object
@@ -247,7 +285,12 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   }, [splitPane.objectId, currentState]);
 
   const openVersionComparison = useCallback(
-    (objectId: string, frontier: Frontiers, timestamp: number) => {
+    (
+      objectId: string,
+      frontier: Frontiers,
+      timestamp: number,
+      timeMachineContext?: { selectedDate: string; changeIndex: number }
+    ) => {
       // Navigate primary pane to the current version of the object
       setHistory((prev) => [...prev, currentState]);
       setCurrentState({
@@ -256,6 +299,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         searchQuery: null,
         timeMachineFilter: null,
         savedViewId: null,
+        browseTypeId: null,
       });
 
       // Open split pane with historical version
@@ -266,10 +310,56 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         mode: 'version-comparison',
         historicalFrontier: frontier,
         historicalTimestamp: timestamp,
+        timeMachineContext: timeMachineContext ?? null,
       });
     },
     [currentState]
   );
+
+  const updateVersionComparison = useCallback(
+    (frontier: Frontiers, timestamp: number) => {
+      setSplitPaneState((prev) => ({
+        ...prev,
+        historicalFrontier: frontier,
+        historicalTimestamp: timestamp,
+      }));
+    },
+    []
+  );
+
+  const returnToTimeMachine = useCallback(() => {
+    // Close split pane first
+    setSplitPaneState({
+      isOpen: false,
+      objectId: null,
+      width: 50,
+      mode: 'normal',
+      historicalFrontier: null,
+      historicalTimestamp: null,
+      timeMachineContext: null,
+    });
+
+    // Navigate back to time machine
+    // This will use the last time-machine entry in history
+    if (history.length > 0) {
+      const lastState = history[history.length - 1];
+      if (lastState.view === 'time-machine') {
+        setHistory((prev) => prev.slice(0, -1));
+        setCurrentState(lastState);
+        return;
+      }
+    }
+
+    // Fallback: navigate to time machine with context date if available
+    setCurrentState({
+      view: 'time-machine',
+      objectId: null,
+      searchQuery: null,
+      timeMachineFilter: null,
+      savedViewId: null,
+      browseTypeId: null,
+    });
+  }, [splitPane.timeMachineContext, history]);
 
   return (
     <NavigationContext.Provider
@@ -284,6 +374,8 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         navigateToSearch,
         navigateToTimeMachine,
         navigateToSavedView,
+        navigateToTypeBrowse,
+        browseTypeId: currentState.browseTypeId,
         navigateBack,
         canGoBack: history.length > 0,
         navigationHistory: history,
@@ -294,6 +386,8 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         setSplitWidth,
         swapPanes,
         openVersionComparison,
+        updateVersionComparison,
+        returnToTimeMachine,
       }}
     >
       {children}

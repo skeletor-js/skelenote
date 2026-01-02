@@ -4,11 +4,22 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import {
+  UnstyledButton,
+  Collapse,
+  Stack,
+  Group,
+  Text,
+  Box,
+  Badge,
+  ActionIcon,
+  Loader,
+} from '@mantine/core';
 import { useObjects, useTypeRegistry, useNavigation, useSemanticSearchSafe } from '@/contexts';
-import { EmptyState } from '@/components/ui';
+import { EmptyState, Icon } from '@/components/ui';
+import { getIconFromEmoji } from '@/lib/icons';
 import { copyMentionToClipboard } from '@/lib/editor';
 import type { SemanticSearchResult } from '@/lib/semantic';
-import './FindSimilar.css';
 
 interface FindSimilarProps {
   objectId: string;
@@ -152,56 +163,84 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
   const displayCount = similarItems.length > 0 ? similarItems.length : similarCount;
 
   return (
-    <section className="find-similar">
-      <button
-        type="button"
-        className="find-similar__header"
+    <Box component="section">
+      <Group
+        gap="xs"
+        py="xs"
         onClick={() => setIsExpanded(!isExpanded)}
+        style={{ cursor: 'pointer' }}
+        role="button"
         aria-expanded={isExpanded}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsExpanded(!isExpanded);
+          }
+        }}
       >
-        <span className="find-similar__collapse-icon">
-          {isExpanded ? '▼' : '▶'}
-        </span>
-        <h2 className="find-similar__title">
+        <Icon
+          name="chevron-right"
+          size={14}
+          style={{
+            transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+            transition: 'transform 150ms ease',
+          }}
+        />
+        <Text size="sm" c="dimmed">
           Find Similar
           {displayCount !== null && displayCount > 0 && ` (${displayCount})`}
-        </h2>
-        <span className="find-similar__badge">AI</span>
-      </button>
+        </Text>
+        <Badge size="xs" variant="light" color="clay" radius="sm">
+          AI
+        </Badge>
+      </Group>
 
-      {isExpanded && (
-        <div className="find-similar__list">
+      <Collapse in={isExpanded}>
+        <Stack gap={2} pl="md">
           {isLoading ? (
-            <div className="find-similar__loading">Finding similar objects...</div>
+            <Group gap="xs" p="xs">
+              <Loader size="xs" />
+              <Text size="sm" c="dimmed">Finding similar objects...</Text>
+            </Group>
           ) : similarItems.length === 0 ? (
             <EmptyState message="No similar objects found" size="small" />
           ) : (
             similarItems.map((item) => (
-              <div key={item.id} className="find-similar__item-row">
-                <button
-                  type="button"
-                  className="find-similar__item"
+              <Group key={item.id} gap="xs" wrap="nowrap">
+                <UnstyledButton
                   onClick={() => handleItemClick(item.id)}
+                  p="xs"
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--mantine-spacing-sm)',
+                    borderRadius: 'var(--mantine-radius-sm)',
+                  }}
                 >
-                  <span className="find-similar__item-icon">{item.typeIcon}</span>
-                  <span className="find-similar__item-name">{item.title}</span>
-                  <span className="find-similar__item-similarity">
+                  <Icon name={getIconFromEmoji(item.typeIcon)} size={16} />
+                  <Text size="sm" style={{ flex: 1 }} truncate>
+                    {item.title}
+                  </Text>
+                  <Text size="xs" c="dimmed">
                     {Math.round(item.similarity * 100)}%
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className={`find-similar__copy-btn ${copiedId === item.id ? 'find-similar__copy-btn--copied' : ''}`}
+                  </Text>
+                </UnstyledButton>
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  color={copiedId === item.id ? 'sage' : 'gray'}
                   onClick={(e) => handleCopyMention(item, e)}
                   title="Copy mention (paste in editor to link)"
                 >
-                  {copiedId === item.id ? '✓' : '@'}
-                </button>
-              </div>
+                  <Icon name={copiedId === item.id ? 'check' : 'copy'} size={14} />
+                </ActionIcon>
+              </Group>
             ))
           )}
-        </div>
-      )}
-    </section>
+        </Stack>
+      </Collapse>
+    </Box>
   );
 }

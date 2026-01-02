@@ -5,13 +5,19 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-
 type Theme = 'light' | 'dark';
 
 interface ThemeContextValue {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
+}
+
+/**
+ * Props passed to render function for Mantine integration
+ */
+interface ThemeRenderProps {
+  colorScheme: 'light' | 'dark';
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -36,7 +42,8 @@ function getInitialTheme(): Theme {
 }
 
 interface ThemeProviderProps {
-  children: ReactNode;
+  /** Children can be ReactNode or render function for Mantine integration */
+  children: ReactNode | ((props: ThemeRenderProps) => ReactNode);
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
@@ -56,9 +63,17 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     setThemeState((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
+  // Support render prop pattern for Mantine integration
+  const renderContent = () => {
+    if (typeof children === 'function') {
+      return children({ colorScheme: theme });
+    }
+    return children;
+  };
+
   return (
     <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
-      {children}
+      {renderContent()}
     </ThemeContext.Provider>
   );
 }

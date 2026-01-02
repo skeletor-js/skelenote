@@ -1,4 +1,4 @@
-import './editors.css';
+import { Select as MantineSelect, ComboboxData } from '@mantine/core';
 
 interface SelectProps {
   id?: string;
@@ -9,40 +9,6 @@ interface SelectProps {
   allowEmpty?: boolean;
 }
 
-export function Select({
-  id,
-  value,
-  options,
-  onChange,
-  placeholder = 'Select...',
-  allowEmpty = true,
-}: SelectProps) {
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedValue = e.target.value;
-    onChange(selectedValue === '' ? null : selectedValue);
-  };
-
-  return (
-    <select
-      id={id}
-      className="editor-select"
-      value={value ?? ''}
-      onChange={handleChange}
-    >
-      {allowEmpty && (
-        <option value="" className="editor-select__placeholder">
-          {placeholder}
-        </option>
-      )}
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {formatOptionLabel(option)}
-        </option>
-      ))}
-    </select>
-  );
-}
-
 /**
  * Format option value for display (e.g., "in-progress" -> "In Progress")
  */
@@ -51,4 +17,36 @@ function formatOptionLabel(value: string): string {
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+}
+
+/**
+ * Select dropdown using Mantine Select
+ */
+export function Select({
+  id,
+  value,
+  options,
+  onChange,
+  placeholder = 'Select...',
+  allowEmpty = true,
+}: SelectProps) {
+  // Convert options to Mantine format
+  const data: ComboboxData = options.map((option) => ({
+    value: option,
+    label: formatOptionLabel(option),
+  }));
+
+  return (
+    <MantineSelect
+      id={id}
+      value={value}
+      onChange={onChange}
+      data={data}
+      placeholder={placeholder}
+      clearable={allowEmpty}
+      size="sm"
+      variant="filled"
+      comboboxProps={{ withinPortal: false }}
+    />
+  );
 }

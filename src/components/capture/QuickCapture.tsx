@@ -3,14 +3,13 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { Modal, Stack, Group, Text, Button, Kbd } from '@mantine/core';
 import { useObjects, useNavigation } from '@/contexts';
 import { useLinkToDaily, useTemplates } from '@/hooks';
 import { TypeSelector, type CaptureType } from './TypeSelector';
 import { CaptureForm } from './CaptureForm';
 import { TemplatePicker } from '@/components/templates';
 import type { Template } from '@/lib/templates';
-import './QuickCapture.css';
 
 /**
  * Validate if a string is a valid URL
@@ -136,60 +135,22 @@ export function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
     navigateToObject(newObject.id);
   }, [store, selectedType, formValues, isValid, linkToDaily, refreshData, onClose, navigateToObject]);
 
-  // Handle backdrop click
-  const handleBackdropClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget) {
-        onClose();
-      }
-    },
-    [onClose]
-  );
-
-  // Handle escape key
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  const content = (
-    <div className="quick-capture__backdrop" onClick={handleBackdropClick}>
-      <div
-        className="quick-capture"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Quick Capture"
+  return (
+    <>
+      <Modal
+        opened={isOpen}
+        onClose={onClose}
+        title="Quick Capture"
+        centered
+        size="md"
       >
-        {/* Header */}
-        <div className="quick-capture__header">
-          <h2 className="quick-capture__title">Quick Capture</h2>
-          <button
-            type="button"
-            className="quick-capture__close"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="quick-capture__body">
+        <Stack gap="lg">
           <TypeSelector
             selectedType={selectedType}
             onSelectType={handleTypeSelect}
             hideTemplate={templates.length === 0}
           />
+
           {selectedType !== 'template' && (
             <CaptureForm
               type={selectedType}
@@ -198,39 +159,31 @@ export function QuickCapture({ isOpen, onClose }: QuickCaptureProps) {
               onSubmit={handleSubmit}
             />
           )}
-        </div>
 
-        {/* Template Picker */}
-        <TemplatePicker
-          isOpen={showTemplatePicker}
-          onClose={handleTemplatePickerClose}
-          onSelect={handleTemplateSelect}
-        />
+          <Group justify="space-between" pt="sm" style={{ borderTop: '1px solid var(--mantine-color-default-border)' }}>
+            <Group gap={4}>
+              <Text size="xs" c="dimmed">Press</Text>
+              <Kbd size="xs">Enter</Kbd>
+              <Text size="xs" c="dimmed">to save</Text>
+            </Group>
+            <Group gap="sm">
+              <Button variant="subtle" color="gray" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmit} disabled={!isValid()}>
+                Save
+              </Button>
+            </Group>
+          </Group>
+        </Stack>
+      </Modal>
 
-        {/* Footer */}
-        <div className="quick-capture__footer">
-          <span className="quick-capture__hint">
-            Press <kbd>↵</kbd> to save
-          </span>
-          <button
-            type="button"
-            className="quick-capture__button quick-capture__button--secondary"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="quick-capture__button quick-capture__button--primary"
-            onClick={handleSubmit}
-            disabled={!isValid()}
-          >
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
+      {/* Template Picker */}
+      <TemplatePicker
+        isOpen={showTemplatePicker}
+        onClose={handleTemplatePickerClose}
+        onSelect={handleTemplateSelect}
+      />
+    </>
   );
-
-  return createPortal(content, document.body);
 }

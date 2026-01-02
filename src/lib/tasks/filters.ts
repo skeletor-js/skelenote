@@ -3,7 +3,7 @@
  */
 
 import type { SkelenoteObject } from '../types';
-import { isToday, isOverdue, isThisWeek, isBeyondThisWeek } from '../utils/date';
+import { isToday, isOverdue, isThisWeek, isBeyondThisWeek, startOfDay, endOfDay } from '../utils/date';
 
 /**
  * Task filter types matching sidebar navigation
@@ -100,6 +100,21 @@ export function filterEventually(task: SkelenoteObject): boolean {
 export function filterCompleted(task: SkelenoteObject): boolean {
   const status = task.properties.status as string | null;
   return status === 'done';
+}
+
+/**
+ * Filter tasks by a specific date
+ * Returns all tasks (including completed) with dueDate on the given day
+ */
+export function filterTasksByDate(tasks: SkelenoteObject[], date: Date): SkelenoteObject[] {
+  const dayStart = startOfDay(date).getTime();
+  const dayEnd = endOfDay(date).getTime();
+
+  return tasks.filter((task) => {
+    const dueDate = task.properties.dueDate as number | null;
+    if (dueDate === null) return false;
+    return dueDate >= dayStart && dueDate <= dayEnd;
+  });
 }
 
 /**

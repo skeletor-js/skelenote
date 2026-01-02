@@ -1,22 +1,27 @@
 /**
  * Backlinks - Shows objects that reference the current object
+ * Smart default: expanded if ≤3 backlinks, collapsed if >3
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { Collapse, Stack, Group, Text, Box } from '@mantine/core';
 import { useObjects, useTypeRegistry } from '@/contexts';
 import { createRelationHelper } from '@/lib/loro';
-import { EmptyState } from '@/components/ui';
+import { Icon } from '@/components/ui';
 import { BacklinkItem } from './BacklinkItem';
-import './Backlinks.css';
+import styles from './BacklinksSection.module.css';
 
 interface BacklinksProps {
   objectId: string;
 }
 
+/** Threshold for smart default expansion */
+const SMART_EXPAND_THRESHOLD = 3;
+
 export function Backlinks({ objectId }: BacklinksProps) {
   const { store } = useObjects();
   const typeRegistry = useTypeRegistry();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState<boolean | null>(null);
 
   // Find all backlinks to this object
   const backlinks = useMemo(() => {
@@ -56,26 +61,47 @@ export function Backlinks({ objectId }: BacklinksProps) {
 
   const backlinkCount = groupedBacklinks.length;
 
-  return (
-    <section className="backlinks">
-      <button
-        type="button"
-        className="backlinks__header"
-        onClick={() => setIsExpanded(!isExpanded)}
-        aria-expanded={isExpanded}
-      >
-        <span className="backlinks__collapse-icon">
-          {isExpanded ? '▼' : '▶'}
-        </span>
-        <h2 className="backlinks__title">
-          Backlinks{backlinkCount > 0 && ` (${backlinkCount})`}
-        </h2>
-      </button>
+  // Smart default expansion: expanded if 1-3 backlinks, collapsed if more
+  useEffect(() => {
+    if (isExpanded === null) {
+      setIsExpanded(backlinkCount > 0 && backlinkCount <= SMART_EXPAND_THRESHOLD);
+    }
+  }, [backlinkCount, isExpanded]);
 
-      {isExpanded && (
-        <div className="backlinks__list">
+  // Use false as fallback until smart default is calculated
+  const expanded = isExpanded ?? false;
+
+  return (
+    <Box component="section" className={styles.section}>
+      <Group
+        gap="xs"
+        className={styles.sectionHeader}
+        onClick={() => setIsExpanded(!expanded)}
+        role="button"
+        aria-expanded={expanded}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsExpanded(!expanded);
+          }
+        }}
+      >
+        <Icon
+          name="chevron-right"
+          size={14}
+          className={styles.chevron}
+          data-expanded={expanded}
+        />
+        <Text className={styles.sectionTitle}>
+          Backlinks{backlinkCount > 0 && ` (${backlinkCount})`}
+        </Text>
+      </Group>
+
+      <Collapse in={expanded}>
+        <Stack gap={2} className={styles.backlinksList}>
           {groupedBacklinks.length === 0 ? (
-            <EmptyState message="No objects link to this one" size="small" />
+            <Text className={styles.emptyState}>No objects link to this one</Text>
           ) : (
             groupedBacklinks.map(({ sourceId, propertyNames }) => (
               <BacklinkItem
@@ -85,8 +111,8 @@ export function Backlinks({ objectId }: BacklinksProps) {
               />
             ))
           )}
-        </div>
-      )}
-    </section>
+        </Stack>
+      </Collapse>
+    </Box>
   );
 }

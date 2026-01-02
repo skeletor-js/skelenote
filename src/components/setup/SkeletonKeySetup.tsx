@@ -7,8 +7,24 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
+import {
+  Stack,
+  Group,
+  Title,
+  Text,
+  Button,
+  TextInput,
+  Textarea,
+  Alert,
+  SimpleGrid,
+  Box,
+  Image,
+  Center,
+  UnstyledButton,
+  ThemeIcon,
+} from '@mantine/core';
 import { useSkeletonKey } from '@/contexts/SkeletonKeyContext';
-import './SkeletonKeySetup.css';
+import { Icon } from '@/components/ui/Icon';
 
 type SetupStep = 'choice' | 'generate' | 'confirm' | 'import' | 'complete';
 
@@ -162,238 +178,194 @@ export function SkeletonKeySetup() {
   const displayError = localError || error;
 
   return (
-    <div className="skeleton-key-setup">
-      <div className="skeleton-key-setup__container">
+    <Center h="100vh" p="xl" style={{ backgroundColor: 'var(--mantine-color-body)' }}>
+      <Box maw={500} w="100%">
         {/* Header */}
-        <header className="skeleton-key-setup__header">
-          <div className="skeleton-key-setup__icon">
-            <svg
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
-            </svg>
-          </div>
-          <h1 className="skeleton-key-setup__title">Skeleton Key</h1>
-          <p className="skeleton-key-setup__subtitle">
+        <Stack align="center" gap="xs" mb="xl">
+          <ThemeIcon size={64} radius="sm" variant="light" color="ember">
+            <Icon name="key" size={32} />
+          </ThemeIcon>
+          <Title order={1} ta="center">Skeleton Key</Title>
+          <Text c="dimmed" ta="center">
             Your encryption key for secure, zero-knowledge sync
-          </p>
-        </header>
+          </Text>
+        </Stack>
 
         {/* Choice Step */}
         {step === 'choice' && (
-          <div className="skeleton-key-setup__step">
-            <p className="skeleton-key-setup__description">
+          <Stack gap="lg">
+            <Text ta="center">
               Your Skeleton Key is a 24-word phrase that encrypts all your data.
               The sync server never sees your notes - only you can read them.
-            </p>
+            </Text>
 
-            <div className="skeleton-key-setup__warning">
-              <strong>Important:</strong> If you lose your Skeleton Key, you
-              lose access to synced data. There is no recovery option.
-            </div>
+            <Alert color="ochre" variant="light">
+              <Text size="sm">
+                <strong>Important:</strong> If you lose your Skeleton Key, you
+                lose access to synced data. There is no recovery option.
+              </Text>
+            </Alert>
 
-            <div className="skeleton-key-setup__choices">
-              <button
-                type="button"
-                className="skeleton-key-setup__choice-btn skeleton-key-setup__choice-btn--primary"
+            <Stack gap="md">
+              <UnstyledButton
                 onClick={handleCreate}
                 disabled={isLoading}
+                p="md"
+                style={{
+                  backgroundColor: 'var(--mantine-color-ember-light)',
+                  borderRadius: 'var(--mantine-radius-md)',
+                  border: '2px solid var(--mantine-color-ember-6)',
+                }}
               >
-                <span className="skeleton-key-setup__choice-icon">+</span>
-                <span className="skeleton-key-setup__choice-text">
-                  <strong>Create New Skeleton Key</strong>
-                  <small>Generate a new encryption key</small>
-                </span>
-              </button>
+                <Group wrap="nowrap">
+                  <ThemeIcon size={40} radius="md" color="ember">
+                    <Icon name="plus" size={20} />
+                  </ThemeIcon>
+                  <Box>
+                    <Text fw={600}>Create New Skeleton Key</Text>
+                    <Text size="sm" c="dimmed">Generate a new encryption key</Text>
+                  </Box>
+                </Group>
+              </UnstyledButton>
 
-              <button
-                type="button"
-                className="skeleton-key-setup__choice-btn"
+              <UnstyledButton
                 onClick={() => setStep('import')}
                 disabled={isLoading}
+                p="md"
+                style={{
+                  backgroundColor: 'var(--mantine-color-default-hover)',
+                  borderRadius: 'var(--mantine-radius-md)',
+                  border: '2px solid transparent',
+                }}
               >
-                <span className="skeleton-key-setup__choice-icon">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
-                </span>
-                <span className="skeleton-key-setup__choice-text">
-                  <strong>Import Existing Key</strong>
-                  <small>Enter your 24-word phrase</small>
-                </span>
-              </button>
-            </div>
-          </div>
+                <Group wrap="nowrap">
+                  <ThemeIcon size={40} radius="md" variant="light" color="gray">
+                    <Icon name="download" size={20} />
+                  </ThemeIcon>
+                  <Box>
+                    <Text fw={600}>Import Existing Key</Text>
+                    <Text size="sm" c="dimmed">Enter your 24-word phrase</Text>
+                  </Box>
+                </Group>
+              </UnstyledButton>
+            </Stack>
+          </Stack>
         )}
 
         {/* Generate Step - Display the mnemonic */}
         {step === 'generate' && (
-          <div className="skeleton-key-setup__step">
-            <p className="skeleton-key-setup__description">
+          <Stack gap="lg">
+            <Text ta="center">
               Write down these 24 words in order and store them somewhere safe.
               You will need them to sync on other devices.
-            </p>
+            </Text>
 
-            <div className="skeleton-key-setup__mnemonic">
+            <SimpleGrid cols={4} spacing="xs">
               {words.map((word, index) => (
-                <div key={index} className="skeleton-key-setup__word">
-                  <span className="skeleton-key-setup__word-num">
-                    {index + 1}
-                  </span>
-                  <span className="skeleton-key-setup__word-text">{word}</span>
-                </div>
+                <Box
+                  key={index}
+                  p="xs"
+                  style={{
+                    backgroundColor: 'var(--mantine-color-default-hover)',
+                    borderRadius: 'var(--mantine-radius-sm)',
+                  }}
+                >
+                  <Text size="xs" c="dimmed">{index + 1}</Text>
+                  <Text size="sm" fw={500}>{word}</Text>
+                </Box>
               ))}
-            </div>
+            </SimpleGrid>
 
-            <button
-              type="button"
-              className="skeleton-key-setup__copy-btn"
+            <Button
+              variant="light"
+              leftSection={<Icon name={copied ? 'check' : 'copy'} size={16} />}
               onClick={handleCopyMnemonic}
+              fullWidth
             >
-              {copied ? (
-                <>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                  Copy to Clipboard
-                </>
-              )}
-            </button>
+              {copied ? 'Copied!' : 'Copy to Clipboard'}
+            </Button>
 
             {qrCode && (
-              <div className="skeleton-key-setup__qr-section">
-                <p className="skeleton-key-setup__qr-label">
+              <Stack align="center" gap="xs">
+                <Text size="sm" c="dimmed">
                   Or scan this QR code on another device:
-                </p>
-                <img
+                </Text>
+                <Image
                   src={qrCode}
                   alt="Skeleton Key QR Code"
-                  className="skeleton-key-setup__qr-code"
+                  w={160}
+                  h={160}
+                  radius="md"
                 />
-              </div>
+              </Stack>
             )}
 
-            <div className="skeleton-key-setup__actions">
-              <button
-                type="button"
-                className="skeleton-key-setup__btn skeleton-key-setup__btn--secondary"
-                onClick={handleBack}
-              >
+            <Group justify="space-between">
+              <Button variant="subtle" onClick={handleBack}>
                 Back
-              </button>
-              <button
-                type="button"
-                className="skeleton-key-setup__btn skeleton-key-setup__btn--primary"
-                onClick={handleProceedToConfirm}
-              >
+              </Button>
+              <Button onClick={handleProceedToConfirm}>
                 I've saved my Skeleton Key
-              </button>
-            </div>
-          </div>
+              </Button>
+            </Group>
+          </Stack>
         )}
 
         {/* Confirm Step - Verify backup */}
         {step === 'confirm' && (
-          <div className="skeleton-key-setup__step">
-            <p className="skeleton-key-setup__description">
+          <Stack gap="lg">
+            <Text ta="center">
               Enter the following words from your Skeleton Key to confirm you've
               saved it:
-            </p>
+            </Text>
 
-            <div className="skeleton-key-setup__confirm-fields">
+            <Stack gap="md">
               {verificationIndices.map((wordIndex, inputIndex) => (
-                <div key={wordIndex} className="skeleton-key-setup__confirm-row">
-                  <label className="skeleton-key-setup__confirm-label">
-                    Word #{wordIndex + 1}
-                  </label>
-                  <input
-                    type="text"
-                    className="skeleton-key-setup__input"
-                    value={confirmInputs[inputIndex]}
-                    onChange={(e) =>
-                      handleConfirmInputChange(inputIndex, e.target.value)
-                    }
-                    placeholder={`Enter word #${wordIndex + 1}`}
-                    autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                    spellCheck="false"
-                  />
-                </div>
+                <TextInput
+                  key={wordIndex}
+                  label={`Word #${wordIndex + 1}`}
+                  value={confirmInputs[inputIndex]}
+                  onChange={(e) =>
+                    handleConfirmInputChange(inputIndex, e.target.value)
+                  }
+                  placeholder={`Enter word #${wordIndex + 1}`}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                />
               ))}
-            </div>
+            </Stack>
 
             {displayError && (
-              <p className="skeleton-key-setup__error">{displayError}</p>
+              <Alert color="brick" variant="light">
+                {displayError}
+              </Alert>
             )}
 
-            <div className="skeleton-key-setup__actions">
-              <button
-                type="button"
-                className="skeleton-key-setup__btn skeleton-key-setup__btn--secondary"
-                onClick={() => setStep('generate')}
-              >
+            <Group justify="space-between">
+              <Button variant="subtle" onClick={() => setStep('generate')}>
                 Back
-              </button>
-              <button
-                type="button"
-                className="skeleton-key-setup__btn skeleton-key-setup__btn--primary"
+              </Button>
+              <Button
                 onClick={handleVerifyAndComplete}
-                disabled={
-                  isLoading || confirmInputs.some((input) => !input.trim())
-                }
+                disabled={isLoading || confirmInputs.some((input) => !input.trim())}
+                loading={isLoading}
               >
-                {isLoading ? 'Verifying...' : 'Verify & Continue'}
-              </button>
-            </div>
-          </div>
+                Verify & Continue
+              </Button>
+            </Group>
+          </Stack>
         )}
 
         {/* Import Step */}
         {step === 'import' && (
-          <div className="skeleton-key-setup__step">
-            <p className="skeleton-key-setup__description">
+          <Stack gap="lg">
+            <Text ta="center">
               Enter your 24-word Skeleton Key to sync with your existing data.
-            </p>
+            </Text>
 
-            <textarea
-              className="skeleton-key-setup__textarea"
+            <Textarea
               value={importInput}
               onChange={(e) => setImportInput(e.target.value)}
               placeholder="Enter your 24 words separated by spaces..."
@@ -401,59 +373,44 @@ export function SkeletonKeySetup() {
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="off"
-              spellCheck="false"
+              spellCheck={false}
             />
 
             {displayError && (
-              <p className="skeleton-key-setup__error">{displayError}</p>
+              <Alert color="brick" variant="light">
+                {displayError}
+              </Alert>
             )}
 
-            <div className="skeleton-key-setup__actions">
-              <button
-                type="button"
-                className="skeleton-key-setup__btn skeleton-key-setup__btn--secondary"
-                onClick={handleBack}
-              >
+            <Group justify="space-between">
+              <Button variant="subtle" onClick={handleBack}>
                 Back
-              </button>
-              <button
-                type="button"
-                className="skeleton-key-setup__btn skeleton-key-setup__btn--primary"
+              </Button>
+              <Button
                 onClick={handleImport}
                 disabled={isLoading || !importInput.trim()}
+                loading={isLoading}
               >
-                {isLoading ? 'Importing...' : 'Import Skeleton Key'}
-              </button>
-            </div>
-          </div>
+                Import Skeleton Key
+              </Button>
+            </Group>
+          </Stack>
         )}
 
         {/* Complete Step */}
         {step === 'complete' && (
-          <div className="skeleton-key-setup__step skeleton-key-setup__step--complete">
-            <div className="skeleton-key-setup__success-icon">
-              <svg
-                width="64"
-                height="64"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                <polyline points="22 4 12 14.01 9 11.01" />
-              </svg>
-            </div>
-            <h2 className="skeleton-key-setup__success-title">
-              Skeleton Key Ready
-            </h2>
-            <p className="skeleton-key-setup__description">
+          <Stack align="center" gap="lg">
+            <ThemeIcon size={80} radius="sm" color="sage" variant="light">
+              <Icon name="check-circle" size={40} />
+            </ThemeIcon>
+            <Title order={2} ta="center">Skeleton Key Ready</Title>
+            <Text c="dimmed" ta="center">
               Your encryption is set up. All synced data will be encrypted with
               your Skeleton Key.
-            </p>
-          </div>
+            </Text>
+          </Stack>
         )}
-      </div>
-    </div>
+      </Box>
+    </Center>
   );
 }

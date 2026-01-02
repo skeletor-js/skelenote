@@ -10,13 +10,16 @@ import {
   getTaskFilter,
   getDefaultSort,
   sortTasks,
+  filterTasksByDate,
 } from '@/lib/tasks/filters';
 import { prepareNextRecurringTask } from '@/lib/tasks/recurrence';
 import { removeMentionsFromContent } from '@/lib/editor';
 
 export interface UseTasksOptions {
-  /** Which task view filter to apply */
-  filter: TaskFilter;
+  /** Which task view filter to apply (mutually exclusive with date) */
+  filter?: TaskFilter;
+  /** Filter by specific date (mutually exclusive with filter) */
+  date?: Date;
 }
 
 export interface UseTasksResult {
@@ -55,7 +58,7 @@ export interface UseTasksResult {
  * );
  * ```
  */
-export function useTasks(options: UseTasksOptions): UseTasksResult {
+export function useTasks(options: UseTasksOptions = {}): UseTasksResult {
   const { store, isLoading, refreshData } = useObjects();
 
   // Get all tasks and filter/sort them
@@ -63,12 +66,25 @@ export function useTasks(options: UseTasksOptions): UseTasksResult {
     if (!store) return [];
 
     const allTasks = store.getByType(BuiltInTypeIds.TASK);
-    const filterFn = getTaskFilter(options.filter);
-    const sortConfig = getDefaultSort(options.filter);
 
-    const filtered = allTasks.filter(filterFn);
-    return sortTasks(filtered, sortConfig);
-  }, [store, options.filter]);
+    // If filtering by specific date
+    if (options.date) {
+      const filtered = filterTasksByDate(allTasks, options.date);
+      // Sort by priority (like today view)
+      return sortTasks(filtered, { field: 'priority', direction: 'desc' });
+    }
+
+    // If filtering by task filter type
+    if (options.filter) {
+      const filterFn = getTaskFilter(options.filter);
+      const sortConfig = getDefaultSort(options.filter);
+      const filtered = allTasks.filter(filterFn);
+      return sortTasks(filtered, sortConfig);
+    }
+
+    // No filter specified - return all tasks
+    return allTasks;
+  }, [store, options.filter, options.date]);
 
   // Toggle task completion
   const toggleComplete = useCallback(

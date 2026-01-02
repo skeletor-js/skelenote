@@ -1,0 +1,16 @@
+/**
+ * WeekStrip.module.css - Hover states for week day cells
+ */
+
+.dayCell {
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.dayCell:hover {
+  background-color: var(--mantine-color-gray-0);
+}
+
+/* Dark mode */
+:global([data-mantine-color-scheme="dark"]) .dayCell:hover {
+  background-color: var(--surface-raised);
+}

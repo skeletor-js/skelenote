@@ -3,7 +3,8 @@
  */
 
 import { useState, useCallback } from 'react';
-import './PinnedSection.css';
+import { NavLink, Badge, Box, Stack } from '@mantine/core';
+import { ChevronRight } from 'lucide-react';
 import { useSidebar } from '@/contexts';
 import { usePinnedObjects } from '@/hooks';
 import { PinnedItem } from './PinnedItem';
@@ -59,24 +60,39 @@ export function PinnedSection() {
   }
 
   return (
-    <div className="pinned-section">
-      <button
-        className="pinned-section__header"
+    <Box mb="xs">
+      <NavLink
+        label="Pinned"
+        leftSection={
+          <ChevronRight
+            size={14}
+            style={{
+              transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
+              transition: 'transform 150ms ease',
+            }}
+          />
+        }
+        rightSection={
+          <Badge size="xs" variant="light" color="gray" radius="sm">
+            {pinnedObjects.length}
+          </Badge>
+        }
         onClick={handleToggle}
-        aria-expanded={!isCollapsed}
+        opened={!isCollapsed}
+        disableRightSectionRotation
+        variant="subtle"
+        styles={{
+          label: {
+            fontWeight: 600,
+            fontSize: 'var(--mantine-font-size-xs)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            color: 'var(--mantine-color-dimmed)',
+          },
+        }}
       >
-        <span
-          className={`pinned-section__chevron ${isCollapsed ? 'pinned-section__chevron--collapsed' : ''}`}
-        >
-          &#9656;
-        </span>
-        <span className="pinned-section__title">Pinned</span>
-        <span className="pinned-section__count">{pinnedObjects.length}</span>
-      </button>
-
-      {!isCollapsed && (
-        <div
-          className="pinned-section__content"
+        <Stack
+          gap={0}
           onDragOver={handleContainerDragOver}
           onDrop={handleContainerDrop}
           role="listbox"
@@ -94,8 +110,8 @@ export function PinnedSection() {
               onDragEnd={handleDragEnd}
             />
           ))}
-        </div>
-      )}
-    </div>
+        </Stack>
+      </NavLink>
+    </Box>
   );
 }

@@ -1,0 +1,34 @@
+.objectRow {
+  transition: background-color 150ms ease;
+}
+
+.objectRow:hover {
+  background-color: var(--mantine-color-gray-0);
+}
+
+.objectRow[data-selected='true'] {
+  background-color: var(--mantine-color-slate-0);
+}
+
+/* Dark mode adjustments */
+:global([data-mantine-color-scheme="dark"]) .objectRow:hover {
+  background-color: var(--surface-raised);
+}
+
+:global([data-mantine-color-scheme="dark"]) .objectRow[data-selected='true'] {
+  background-color: var(--mantine-color-slate-9);
+}
+
+/* Hover-reveal actions - hidden by default, takes no space */
+.actions {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-width 150ms ease, opacity 150ms ease;
+}
+
+.objectRow:hover .actions,
+.objectRow:focus-within .actions {
+  max-width: 300px;
+  opacity: 1;
+}

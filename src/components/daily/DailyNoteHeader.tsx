@@ -3,9 +3,10 @@
  */
 
 import { useCallback } from 'react';
+import { Group, Button, Text } from '@mantine/core';
 import { useNavigation, useObjects } from '@/contexts';
+import { Icon } from '@/components/ui/Icon';
 import { getAdjacentDailyNote, formatDateTitle } from '@/lib/daily';
-import './DailyNoteHeader.css';
 
 interface DailyNoteHeaderProps {
   /** The timestamp of the current daily note's date */
@@ -38,31 +39,46 @@ export function DailyNoteHeader({ dateTimestamp }: DailyNoteHeaderProps) {
   }, [navigateToView]);
 
   return (
-    <div className="daily-note-header">
-      <div className="daily-note-header__nav">
-        <button
-          className="daily-note-header__nav-btn"
+    <Group
+      justify="space-between"
+      wrap="nowrap"
+      px="md"
+      py="sm"
+      style={{
+        borderBottom: '1px solid var(--mantine-color-default-border)',
+        flexShrink: 0,
+      }}
+    >
+      <Group gap="xs">
+        <Button
+          variant="subtle"
+          size="xs"
           onClick={handlePreviousDay}
+          leftSection={<Icon name="chevron-left" size={14} />}
           aria-label="Previous day"
         >
-          ← Prev
-        </button>
-        <span className="daily-note-header__date">{dateLabel}</span>
-        <button
-          className="daily-note-header__nav-btn"
+          Prev
+        </Button>
+        <Text fw={500} size="sm">{dateLabel}</Text>
+        <Button
+          variant="subtle"
+          size="xs"
           onClick={handleNextDay}
+          rightSection={<Icon name="chevron-right" size={14} />}
           aria-label="Next day"
         >
-          Next →
-        </button>
-      </div>
-      <button
-        className="daily-note-header__calendar-btn"
+          Next
+        </Button>
+      </Group>
+      <Button
+        variant="subtle"
+        size="xs"
         onClick={handleGoToCalendar}
+        leftSection={<Icon name="calendar-days" size={14} />}
         aria-label="Back to calendar"
       >
         Calendar
-      </button>
-    </div>
+      </Button>
+    </Group>
   );
 }

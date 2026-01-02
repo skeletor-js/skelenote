@@ -3,18 +3,22 @@
  *
  * Provides calendar and timeline navigation to browse version history,
  * view historical object snapshots, and restore previous states.
+ *
+ * Layout: Calendar | Horizontal Timeline + Object List/Preview
  */
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import { Stack, Text, Button, Box } from '@mantine/core';
 import { useObjects, useNavigation, useToast, useTypeRegistry } from '@/contexts';
+import { Icon } from '@/components/ui/Icon';
+import { ViewHeader } from '@/components/ui/ViewHeader';
+import { getIconFromEmoji } from '@/lib/icons';
 import { CalendarView } from './CalendarView';
-import { TimelineSlider } from './TimelineSlider';
+import { HorizontalTimeline } from './HorizontalTimeline';
 import { SnapshotPreview } from './SnapshotPreview';
-import { ObjectPreview } from './ObjectPreview';
 import { RestoreDialog, type RestoreScope } from './RestoreDialog';
 import type { DayChanges, ChangePoint, ObjectVersionHistory } from '@/lib/loro/versions';
 import type { SkelenoteObject } from '@/lib/types';
-import './TimeMachine.css';
 
 interface RestoreDialogState {
   isOpen: boolean;
@@ -36,7 +40,8 @@ export function TimeMachine() {
   });
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedChangeIndex, setSelectedChangeIndex] = useState(0);
-  const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
+  // Track object ID for restore dialog (not for navigation anymore)
+  const [restoreObjectId, setRestoreObjectId] = useState<string | null>(null);
 
   // Restore dialog state
   const [restoreDialog, setRestoreDialog] = useState<RestoreDialogState>({
@@ -92,23 +97,18 @@ export function TimeMachine() {
   }, [selectedDayChanges, selectedChangeIndex]);
 
   // Get objects at the selected frontier
-  // In filtered mode, use the cumulative frontier to get the correct document state
   const historicalObjects = useMemo((): SkelenoteObject[] => {
     if (!selectedChangePoint) return [];
 
-    // Get the full version history to build the cumulative frontier
     const fullHistory = docStore.getVersionHistory();
     const allChangePoints = fullHistory.changePoints;
 
-    // Find the cumulative frontier at this change point's timestamp
-    // This combines all peers' changes up to this point
     const relevantChanges = allChangePoints.filter(
       (cp) => cp.timestamp <= selectedChangePoint.timestamp
     );
 
     if (relevantChanges.length === 0) return [];
 
-    // Build cumulative frontier
     const peerMaxCounters = new Map<string, number>();
     for (const cp of relevantChanges) {
       const frontierOp = cp.frontier[0];
@@ -126,10 +126,8 @@ export function TimeMachine() {
 
     if (cumulativeFrontier.length === 0) return [];
 
-    // Get all objects at this cumulative frontier
     const allObjects = docStore.getObjectsAtVersion(cumulativeFrontier as any) as SkelenoteObject[];
 
-    // In filtered mode, only return the filtered object
     if (isFiltered && timeMachineObjectFilter) {
       const filteredObj = allObjects.find((obj) => obj.id === timeMachineObjectFilter);
       return filteredObj ? [filteredObj] : [];
@@ -138,33 +136,26 @@ export function TimeMachine() {
     return allObjects;
   }, [docStore, selectedChangePoint, isFiltered, timeMachineObjectFilter]);
 
-  // Get the selected object for detail view
-  const selectedObject = useMemo((): SkelenoteObject | null => {
-    if (!selectedObjectId) return null;
-    return historicalObjects.find((obj) => obj.id === selectedObjectId) ?? null;
-  }, [selectedObjectId, historicalObjects]);
+  // Get current object IDs to detect deleted objects
+  const currentObjectIds = useMemo((): Set<string> => {
+    const fullHistory = docStore.getVersionHistory();
+    const latestFrontier = fullHistory.changePoints.slice(-1)[0]?.frontier;
+    if (!latestFrontier) return new Set();
+
+    const currentObjects = docStore.getObjectsAtVersion(latestFrontier as any) as SkelenoteObject[];
+    return new Set(currentObjects.map((obj) => obj.id));
+  }, [docStore]);
 
   // Handlers
   const handleDateSelect = useCallback((date: string) => {
     setSelectedDate(date);
     setSelectedChangeIndex(0);
-    setSelectedObjectId(null);
   }, []);
 
   const handleChangeIndexChange = useCallback((index: number) => {
     setSelectedChangeIndex(index);
-    setSelectedObjectId(null);
   }, []);
 
-  const handleObjectSelect = useCallback((objectId: string) => {
-    setSelectedObjectId(objectId);
-  }, []);
-
-  const handleObjectClose = useCallback(() => {
-    setSelectedObjectId(null);
-  }, []);
-
-  // Open restore dialog for full restore
   const handleRestoreFull = useCallback(() => {
     if (!selectedChangePoint) return;
     setRestoreDialog({
@@ -173,24 +164,24 @@ export function TimeMachine() {
     });
   }, [selectedChangePoint]);
 
-  // Open restore dialog for single object restore
-  const handleRestoreObject = useCallback(() => {
-    if (!selectedChangePoint || !selectedObjectId) return;
+  // Handler for restoring a single object (called from inline expansion)
+  const handleRestoreObject = useCallback((objectId: string) => {
+    if (!selectedChangePoint) return;
 
-    const obj = historicalObjects.find((o) => o.id === selectedObjectId);
+    const obj = historicalObjects.find((o) => o.id === objectId);
     const title =
       (obj?.properties?.title as string) ||
       (obj?.properties?.name as string) ||
       'this object';
 
+    setRestoreObjectId(objectId);
     setRestoreDialog({
       isOpen: true,
       scope: 'single',
       objectTitle: title,
     });
-  }, [selectedChangePoint, selectedObjectId, historicalObjects]);
+  }, [selectedChangePoint, historicalObjects]);
 
-  // Actually perform the restore
   const handleRestoreConfirm = useCallback(() => {
     if (!selectedChangePoint) return;
 
@@ -201,14 +192,15 @@ export function TimeMachine() {
       success = docStore.restoreFromVersion(selectedChangePoint.frontier, {
         type: 'full',
       });
-    } else if (selectedObjectId) {
+    } else if (restoreObjectId) {
       success = docStore.restoreFromVersion(selectedChangePoint.frontier, {
         type: 'single',
-        objectId: selectedObjectId,
+        objectId: restoreObjectId,
       });
     }
 
     setRestoreDialog({ isOpen: false, scope: 'single' });
+    setRestoreObjectId(null);
 
     if (success) {
       refreshData();
@@ -222,50 +214,44 @@ export function TimeMachine() {
         message: 'Failed to restore. Check the console for details.',
       });
     }
-  }, [selectedChangePoint, selectedObjectId, restoreDialog, docStore, refreshData, addToast]);
+  }, [selectedChangePoint, restoreObjectId, restoreDialog, docStore, refreshData, addToast]);
 
-  // Cancel the restore dialog
   const handleRestoreCancel = useCallback(() => {
     setRestoreDialog({ isOpen: false, scope: 'single' });
   }, []);
 
-  // Navigate back to the filtered object
   const handleBackToObject = useCallback(() => {
     if (timeMachineObjectFilter) {
       navigateToObject(timeMachineObjectFilter);
     }
   }, [timeMachineObjectFilter, navigateToObject]);
 
-  // Clear filter to view all history
   const handleViewAllHistory = useCallback(() => {
-    navigateToTimeMachine(); // Navigate without filter
+    navigateToTimeMachine();
   }, [navigateToTimeMachine]);
 
   const handleCompareWithCurrent = useCallback(
     (objectId: string) => {
-      if (!selectedChangePoint) return;
-      // Open version comparison: current on left, historical on right
+      if (!selectedChangePoint || !selectedDate) return;
       openVersionComparison(
         objectId,
         selectedChangePoint.frontier,
-        selectedChangePoint.timestamp
+        selectedChangePoint.timestamp,
+        { selectedDate, changeIndex: selectedChangeIndex }
       );
     },
-    [openVersionComparison, selectedChangePoint]
+    [openVersionComparison, selectedChangePoint, selectedDate, selectedChangeIndex]
   );
 
-  // Keyboard navigation
+  // Keyboard navigation (Escape handled by SnapshotPreview for expansion collapse)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle Escape at this level for navigation
+      // SnapshotPreview handles Escape for collapsing expanded items
       if (e.key === 'Escape') {
-        if (selectedObjectId) {
-          // First, clear object selection
-          setSelectedObjectId(null);
-        } else if (isFiltered) {
-          // If in filtered mode, go back to the object
+        if (isFiltered) {
           handleBackToObject();
         } else {
-          // Otherwise, exit Time Machine
           navigateBack();
         }
       }
@@ -273,45 +259,44 @@ export function TimeMachine() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [navigateBack, selectedObjectId, isFiltered, handleBackToObject]);
+  }, [navigateBack, isFiltered, handleBackToObject]);
 
   return (
-    <div className="time-machine">
-      <header className="time-machine__header">
-        {isFiltered ? (
-          <>
-            <button className="time-machine__back" onClick={handleBackToObject}>
-              ← Back
-            </button>
-            <div className="time-machine__filter-info">
-              <span className="time-machine__filter-label">History:</span>
-              {filteredObjectIcon && (
-                <span className="time-machine__filter-icon" aria-hidden="true">
-                  {filteredObjectIcon}
-                </span>
-              )}
-              <span className="time-machine__filter-title">{objectTitle}</span>
-            </div>
-            <button
-              className="time-machine__view-all"
-              onClick={handleViewAllHistory}
-            >
-              View All History
-            </button>
-          </>
-        ) : (
-          <>
-            <button className="time-machine__back" onClick={navigateBack}>
-              ← Back to Notes
-            </button>
-            <h1 className="time-machine__title">Time Machine</h1>
-          </>
-        )}
-      </header>
+    <Stack gap={0} h="100%" style={{ overflow: 'hidden' }}>
+      {/* Header */}
+      {isFiltered ? (
+        <ViewHeader
+          title={objectTitle || 'History'}
+          icon={filteredObjectIcon ? getIconFromEmoji(filteredObjectIcon) : 'history'}
+          backButton={{
+            label: 'Back',
+            onClick: handleBackToObject,
+          }}
+          rightSection={
+            <Button variant="subtle" size="xs" onClick={handleViewAllHistory}>
+              All History
+            </Button>
+          }
+        />
+      ) : (
+        <ViewHeader
+          title="History"
+          icon="history"
+        />
+      )}
 
-      <div className="time-machine__content">
-        {/* Left column: Calendar + Timeline */}
-        <div className="time-machine__nav">
+      {/* Main content - 2-column CSS Grid layout */}
+      <Box
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '280px 1px 1fr',
+          flex: 1,
+          overflow: 'hidden',
+          minHeight: 0,
+        }}
+      >
+        {/* Left column: Calendar */}
+        <Box p="md" style={{ overflow: 'auto' }}>
           <CalendarView
             currentMonth={currentMonth}
             changesByDate={byDate}
@@ -319,59 +304,85 @@ export function TimeMachine() {
             onDateSelect={handleDateSelect}
             onMonthChange={setCurrentMonth}
           />
+        </Box>
 
-          {selectedDayChanges && (
-            <TimelineSlider
-              date={selectedDate!}
-              changePoints={selectedDayChanges.changePoints}
-              selectedIndex={selectedChangeIndex}
-              onIndexChange={handleChangeIndexChange}
-            />
-          )}
-        </div>
+        {/* Divider */}
+        <Box style={{ backgroundColor: 'var(--mantine-color-default-border)' }} />
 
-        {/* Right column: Preview */}
-        <div className="time-machine__preview">
-          {selectedChangePoint ? (
-            selectedObject ? (
-              <ObjectPreview
-                object={selectedObject}
-                frontier={selectedChangePoint.frontier}
-                timestamp={selectedChangePoint.timestamp}
-                onRestore={handleRestoreObject}
-                onCompareWithCurrent={() => handleCompareWithCurrent(selectedObject.id)}
-                onClose={handleObjectClose}
+        {/* Right column: Horizontal Timeline + Object List / Preview */}
+        <Box style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {/* Horizontal Timeline - fixed at top */}
+          {selectedDayChanges ? (
+            <Box
+              p="md"
+              pb="lg"
+              style={{
+                borderBottom: '1px solid var(--mantine-color-default-border)',
+                flexShrink: 0,
+              }}
+            >
+              <HorizontalTimeline
+                date={selectedDate!}
+                changePoints={selectedDayChanges.changePoints}
+                selectedIndex={selectedChangeIndex}
+                onIndexChange={handleChangeIndexChange}
               />
-            ) : (
+            </Box>
+          ) : (
+            <Box
+              p="md"
+              style={{
+                borderBottom: '1px solid var(--mantine-color-default-border)',
+                flexShrink: 0,
+              }}
+            >
+              <Text size="sm" c="dimmed" ta="center">
+                Select a date to view changes
+              </Text>
+            </Box>
+          )}
+
+          {/* Object List - scrollable, with inline expansion */}
+          <Box
+            p="md"
+            style={{
+              flex: 1,
+              overflow: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {selectedChangePoint ? (
               <SnapshotPreview
                 timestamp={selectedChangePoint.timestamp}
                 frontier={selectedChangePoint.frontier}
                 objects={historicalObjects}
-                onObjectSelect={handleObjectSelect}
                 onRestore={handleRestoreFull}
+                onRestoreObject={handleRestoreObject}
                 onCompareWithCurrent={handleCompareWithCurrent}
+                currentObjectIds={currentObjectIds}
               />
-            )
-          ) : isFiltered && byDate.size === 0 ? (
-            <div className="time-machine__empty time-machine__empty--filtered">
-              <p className="time-machine__empty-title">No recorded history for this object</p>
-              <p className="time-machine__empty-message">
-                Changes made before history tracking was enabled are not available in Time Machine.
-              </p>
-              <button
-                className="time-machine__view-all time-machine__view-all--prominent"
-                onClick={handleViewAllHistory}
-              >
-                View All History
-              </button>
-            </div>
-          ) : (
-            <div className="time-machine__empty">
-              <p>Select a date with changes to view historical state</p>
-            </div>
-          )}
-        </div>
-      </div>
+            ) : isFiltered && byDate.size === 0 ? (
+              <Stack align="center" justify="center" h="100%" gap="md">
+                <Text fw={500}>No recorded history for this object</Text>
+                <Text size="sm" c="dimmed" ta="center">
+                  Changes made before history tracking was enabled are not available.
+                </Text>
+                <Button variant="subtle" onClick={handleViewAllHistory}>
+                  View All History
+                </Button>
+              </Stack>
+            ) : (
+              <Stack align="center" justify="center" h="100%">
+                <Icon name="history" size={32} style={{ color: 'var(--mantine-color-dimmed)' }} />
+                <Text c="dimmed" ta="center">
+                  Select a date and time to view historical state
+                </Text>
+              </Stack>
+            )}
+          </Box>
+        </Box>
+      </Box>
 
       {/* Restore Dialog */}
       <RestoreDialog
@@ -383,6 +394,6 @@ export function TimeMachine() {
         onConfirm={handleRestoreConfirm}
         onCancel={handleRestoreCancel}
       />
-    </div>
+    </Stack>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
+import { TextInput, ActionIcon, Tooltip } from '@mantine/core';
 import { open } from '@tauri-apps/plugin-shell';
-import './editors.css';
+import { Mail } from 'lucide-react';
 
 interface EmailInputProps {
   id?: string;
@@ -9,6 +10,9 @@ interface EmailInputProps {
   placeholder?: string;
 }
 
+/**
+ * Email input with validation and mailto button
+ */
 export function EmailInput({
   id,
   value,
@@ -64,28 +68,34 @@ export function EmailInput({
     }
   };
 
+  const showMailButton = value && validateEmail(value);
+
   return (
-    <div className="editor-email">
-      <input
-        id={id}
-        type="email"
-        className={`editor-email__input ${!isValid ? 'editor-email__input--invalid' : ''}`}
-        value={localValue}
-        onChange={(e) => setLocalValue(e.target.value)}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-      />
-      {value && validateEmail(value) && (
-        <button
-          type="button"
-          className="editor-email__open"
-          onClick={handleOpenMailto}
-          title="Send email"
-        >
-          ✉
-        </button>
-      )}
-    </div>
+    <TextInput
+      id={id}
+      type="email"
+      value={localValue}
+      onChange={(e) => setLocalValue(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      placeholder={placeholder}
+      size="sm"
+      variant="filled"
+      error={!isValid}
+      rightSection={
+        showMailButton && (
+          <Tooltip label="Send email" withArrow>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="sm"
+              onClick={handleOpenMailto}
+            >
+              <Mail size={14} />
+            </ActionIcon>
+          </Tooltip>
+        )
+      }
+    />
   );
 }

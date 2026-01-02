@@ -80,12 +80,19 @@ pub enum ProtocolError {
     MessageTooShort { expected: usize, actual: usize },
     #[error("Payload length mismatch: header says {header_len} bytes, but only {available} available")]
     PayloadLengthMismatch { header_len: u32, available: usize },
+    #[error("Message too large: {size} bytes exceeds {max} byte limit")]
+    MessageTooLarge { size: u32, max: u32 },
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 }
 
 /// Minimum message size (type + length)
 pub const HEADER_SIZE: usize = 5;
+
+/// Maximum message size (128 MB) - prevents DoS via memory exhaustion
+/// Typical sync messages: 10 KB - 600 KB
+/// Large collections (1000+ objects with rich content): 10-50 MB
+pub const MAX_MESSAGE_SIZE: u32 = 128 * 1024 * 1024;
 
 /// Encode a message with type prefix and length
 ///
@@ -118,6 +125,15 @@ pub fn decode_message(data: &[u8]) -> Result<(Message, usize), ProtocolError> {
 
     let msg_type = MessageType::try_from(data[0])?;
     let length = u32::from_le_bytes([data[1], data[2], data[3], data[4]]);
+
+    // Reject messages larger than MAX_MESSAGE_SIZE to prevent DoS
+    if length > MAX_MESSAGE_SIZE {
+        return Err(ProtocolError::MessageTooLarge {
+            size: length,
+            max: MAX_MESSAGE_SIZE,
+        });
+    }
+
     let total_len = HEADER_SIZE + length as usize;
 
     if data.len() < total_len {
@@ -268,5 +284,21 @@ mod tests {
         let data = [0x01, 0, 0]; // Only 3 bytes
         let result = decode_message(&data);
         assert!(matches!(result, Err(ProtocolError::MessageTooShort { .. })));
+    }
+
+    #[test]
+    fn test_decode_message_too_large() {
+        // Create a header claiming a payload larger than MAX_MESSAGE_SIZE
+        let huge_size: u32 = MAX_MESSAGE_SIZE + 1;
+        let mut data = vec![0x02]; // MessageType::Update
+        data.extend_from_slice(&huge_size.to_le_bytes());
+        data.extend_from_slice(&[0u8; 10]); // Some payload bytes
+
+        let result = decode_message(&data);
+        assert!(matches!(
+            result,
+            Err(ProtocolError::MessageTooLarge { size, max })
+            if size == huge_size && max == MAX_MESSAGE_SIZE
+        ));
     }
 }

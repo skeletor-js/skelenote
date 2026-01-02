@@ -3,50 +3,50 @@
 .mention-chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-2xs);
+  gap: 2px;
   padding: 0.1em 0.4em;
   margin: 0 0.1em;
-  background: var(--surface-active);
-  color: var(--tag-blue);
-  border-radius: var(--radius-sm);
+  background: var(--mantine-color-slate-0);
+  color: var(--mantine-color-slate-5);
+  border-radius: var(--mantine-radius-sm);
   font-size: 0.95em;
   font-weight: 500;
   cursor: pointer;
   user-select: none;
   vertical-align: baseline;
-  transition: background-color var(--transition-fast);
+  transition: background-color 150ms ease;
 }
 
 .mention-chip:hover {
-  background: var(--surface-hover);
+  background: var(--mantine-color-gray-0);
   text-decoration: underline;
 }
 
 /* Different colors for different object types */
 .mention-chip[data-type-id="task"] {
-  color: var(--tag-orange);
+  color: var(--mantine-color-ochre-5);
 }
 
 .mention-chip[data-type-id="project"] {
-  color: var(--tag-purple);
+  color: var(--mantine-color-clay-5);
 }
 
 .mention-chip[data-type-id="note"] {
-  color: var(--tag-blue);
+  color: var(--mantine-color-slate-5);
 }
 
 .mention-chip[data-type-id="meeting"] {
-  color: var(--tag-green);
+  color: var(--mantine-color-sage-5);
 }
 
 .mention-chip[data-type-id="person"] {
-  color: var(--tag-pink);
+  color: var(--mantine-color-clay-4);
 }
 
 .mention-chip[data-type-id="link"] {
-  color: var(--tag-cyan);
+  color: var(--mantine-color-slate-4);
 }
 
 .mention-chip[data-type-id="tag"] {
-  color: var(--tag-yellow);
+  color: var(--mantine-color-ochre-4);
 }

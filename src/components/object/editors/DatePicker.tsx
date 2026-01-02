@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import './editors.css';
+import { DatePickerInput, DateTimePicker } from '@mantine/dates';
+import dayjs from 'dayjs';
 
 interface DatePickerProps {
   id?: string;
@@ -8,79 +9,71 @@ interface DatePickerProps {
   showTime?: boolean;
 }
 
+/**
+ * Date picker using Mantine DatePickerInput or DateTimePicker
+ * Mantine 8 uses string values in YYYY-MM-DD format
+ */
 export function DatePicker({
   id,
   value,
   onChange,
   showTime = false,
 }: DatePickerProps) {
-  // Convert timestamp to local date string for input
+  // Convert timestamp to string for Mantine (YYYY-MM-DD or YYYY-MM-DD HH:mm)
   const dateValue = useMemo(() => {
-    if (!value) return '';
-    const date = new Date(value);
-    if (showTime) {
-      // Format: YYYY-MM-DDTHH:mm in local time
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    }
-    // Format: YYYY-MM-DD in local time
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    if (!value) return null;
+    const format = showTime ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD';
+    return dayjs(value).format(format);
   }, [value, showTime]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    if (!inputValue) {
+  const handleChange = (dateString: string | null) => {
+    if (!dateString) {
       onChange(null);
       return;
     }
 
-    // Parse as local time, not UTC
-    // For date-only input like "2024-12-26", create date at local midnight
-    let date: Date;
-    if (showTime) {
-      // datetime-local input: "2024-12-26T14:30"
-      date = new Date(inputValue);
+    const parsed = dayjs(dateString);
+    if (!parsed.isValid()) {
+      onChange(null);
+      return;
+    }
+
+    // For date-only, set to midnight local time
+    if (!showTime) {
+      const localDate = parsed.startOf('day');
+      onChange(localDate.valueOf());
     } else {
-      // date input: "2024-12-26" - parse as local date at midnight
-      const [year, month, day] = inputValue.split('-').map(Number);
-      date = new Date(year, month - 1, day, 0, 0, 0, 0);
-    }
-
-    if (!isNaN(date.getTime())) {
-      onChange(date.getTime());
+      onChange(parsed.valueOf());
     }
   };
 
-  const handleClear = () => {
-    onChange(null);
-  };
-
-  return (
-    <div className="editor-date">
-      <input
+  if (showTime) {
+    return (
+      <DateTimePicker
         id={id}
-        type={showTime ? 'datetime-local' : 'date'}
-        className="editor-input editor-input--date"
         value={dateValue}
         onChange={handleChange}
+        clearable
+        size="sm"
+        variant="filled"
+        valueFormat="MMM D, YYYY h:mm A"
+        placeholder="Select date & time..."
+        popoverProps={{ withinPortal: false }}
       />
-      {value && (
-        <button
-          type="button"
-          className="editor-date__clear"
-          onClick={handleClear}
-          aria-label="Clear date"
-        >
-          ×
-        </button>
-      )}
-    </div>
+    );
+  }
+
+  return (
+    <DatePickerInput
+      id={id}
+      value={dateValue}
+      onChange={handleChange}
+      clearable
+      size="sm"
+      variant="filled"
+      valueFormat="MMM D, YYYY"
+      placeholder="Select date..."
+      popoverProps={{ withinPortal: false }}
+    />
   );
 }

@@ -1,11 +1,15 @@
 /**
  * Hook for querying inbox items (objects with inboxed: true)
+ * Excludes tags and projects since they appear in sidebar and don't need decisioning
  */
 
 import { useMemo, useCallback } from 'react';
 import { useObjects } from '@/contexts';
-import type { SkelenoteObject } from '@/lib/types';
+import { BuiltInTypeIds, type SkelenoteObject } from '@/lib/types';
 import { removeMentionsFromContent } from '@/lib/editor';
+
+/** Types to exclude from inbox (they appear in sidebar and don't need decisioning) */
+const EXCLUDED_INBOX_TYPES = [BuiltInTypeIds.TAG, BuiltInTypeIds.PROJECT, BuiltInTypeIds.AREA];
 
 export interface UseInboxResult {
   /** All inboxed items sorted by createdAt (newest first) */
@@ -40,13 +44,15 @@ export interface UseInboxResult {
 export function useInbox(): UseInboxResult {
   const { store, isLoading, refreshData } = useObjects();
 
-  // Get all inboxed items, sorted by createdAt descending
+  // Get all inboxed items, excluding tags and projects, sorted by createdAt descending
   const items = useMemo(() => {
     if (!store) return [];
 
     const inboxed = store.getInboxed();
-    // Sort by createdAt descending (newest first)
-    return inboxed.sort((a, b) => b.createdAt - a.createdAt);
+    // Filter out excluded types (tags, projects) and sort by createdAt descending (newest first)
+    return inboxed
+      .filter((item) => !(EXCLUDED_INBOX_TYPES as readonly string[]).includes(item.typeId))
+      .sort((a, b) => b.createdAt - a.createdAt);
   }, [store]);
 
   // Mark an item as processed (removes from inbox)

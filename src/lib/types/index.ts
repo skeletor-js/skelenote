@@ -27,8 +27,9 @@ export {
   TaskStatusOptions,
   TaskPriorityOptions,
   ProjectStatusOptions,
+  MeetingDurationOptions,
 } from './built-in-types';
-export type { TaskStatus, TaskPriority, ProjectStatus } from './built-in-types';
+export type { TaskStatus, TaskPriority, ProjectStatus, MeetingDuration } from './built-in-types';
 
 // Saved views
 export type { SavedView, CreateSavedViewInput, UpdateSavedViewInput } from './saved-view';

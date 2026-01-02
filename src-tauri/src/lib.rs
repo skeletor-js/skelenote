@@ -33,8 +33,19 @@ fn greet(name: &str) -> String {
 /// Initialize the crypto subsystem
 ///
 /// Must be called on app startup. Returns true if a Skeleton Key already exists.
+/// Guards against double-initialization (e.g., from React StrictMode).
 #[tauri::command]
 async fn crypto_init(app: AppHandle, state: State<'_, CryptoState>) -> Result<bool, String> {
+    // Check if already initialized (guard against double-initialization)
+    {
+        let guard = state.stronghold.lock()
+            .map_err(|e| format!("Failed to acquire stronghold lock: {}", e))?;
+        if guard.is_some() {
+            // Already initialized, just return the current state
+            return Ok(guard.as_ref().unwrap().has_master_key());
+        }
+    }
+
     let app_data = app
         .path()
         .app_data_dir()
@@ -48,10 +59,12 @@ async fn crypto_init(app: AppHandle, state: State<'_, CryptoState>) -> Result<bo
     if has_key {
         let master_key = manager.get_master_key().map_err(|e| e.to_string())?;
         let sync_key = derive_sync_key(&master_key);
-        *state.sync_key.lock().unwrap() = Some(sync_key);
+        *state.sync_key.lock()
+            .map_err(|e| format!("Failed to acquire sync_key lock: {}", e))? = Some(sync_key);
     }
 
-    *state.stronghold.lock().unwrap() = Some(manager);
+    *state.stronghold.lock()
+        .map_err(|e| format!("Failed to acquire stronghold lock: {}", e))? = Some(manager);
 
     Ok(has_key)
 }
@@ -83,7 +96,8 @@ async fn crypto_import_key(
 
     // Store in Stronghold
     {
-        let stronghold_guard = state.stronghold.lock().unwrap();
+        let stronghold_guard = state.stronghold.lock()
+            .map_err(|e| format!("Failed to acquire stronghold lock: {}", e))?;
         let manager = stronghold_guard
             .as_ref()
             .ok_or("Crypto not initialized - call crypto_init first")?;
@@ -94,19 +108,21 @@ async fn crypto_import_key(
 
     // Derive and cache sync key
     let sync_key = derive_sync_key(&master_key);
-    *state.sync_key.lock().unwrap() = Some(sync_key);
+    *state.sync_key.lock()
+        .map_err(|e| format!("Failed to acquire sync_key lock: {}", e))? = Some(sync_key);
 
     Ok(())
 }
 
 /// Check if a Skeleton Key exists
 #[tauri::command]
-fn crypto_has_key(state: State<'_, CryptoState>) -> bool {
-    let stronghold_guard = state.stronghold.lock().unwrap();
-    stronghold_guard
+fn crypto_has_key(state: State<'_, CryptoState>) -> Result<bool, String> {
+    let stronghold_guard = state.stronghold.lock()
+        .map_err(|e| format!("Failed to acquire stronghold lock: {}", e))?;
+    Ok(stronghold_guard
         .as_ref()
         .map(|m| m.has_master_key())
-        .unwrap_or(false)
+        .unwrap_or(false))
 }
 
 /// Encrypt data for sync transmission
@@ -114,7 +130,8 @@ fn crypto_has_key(state: State<'_, CryptoState>) -> bool {
 /// Returns encrypted bytes that can be sent to the sync server.
 #[tauri::command]
 fn crypto_encrypt(data: Vec<u8>, state: State<'_, CryptoState>) -> Result<Vec<u8>, String> {
-    let sync_key_guard = state.sync_key.lock().unwrap();
+    let sync_key_guard = state.sync_key.lock()
+        .map_err(|e| format!("Failed to acquire sync_key lock: {}", e))?;
     let key = sync_key_guard
         .as_ref()
         .ok_or("No Skeleton Key available - import or generate one first")?;
@@ -127,7 +144,8 @@ fn crypto_encrypt(data: Vec<u8>, state: State<'_, CryptoState>) -> Result<Vec<u8
 /// Returns decrypted plaintext bytes.
 #[tauri::command]
 fn crypto_decrypt(data: Vec<u8>, state: State<'_, CryptoState>) -> Result<Vec<u8>, String> {
-    let sync_key_guard = state.sync_key.lock().unwrap();
+    let sync_key_guard = state.sync_key.lock()
+        .map_err(|e| format!("Failed to acquire sync_key lock: {}", e))?;
     let key = sync_key_guard
         .as_ref()
         .ok_or("No Skeleton Key available - import or generate one first")?;
@@ -166,7 +184,8 @@ fn crypto_validate_mnemonic(mnemonic: String) -> bool {
 /// ensuring they connect to the same sync room.
 #[tauri::command]
 fn crypto_get_user_id(state: State<'_, CryptoState>) -> Result<String, String> {
-    let stronghold_guard = state.stronghold.lock().unwrap();
+    let stronghold_guard = state.stronghold.lock()
+        .map_err(|e| format!("Failed to acquire stronghold lock: {}", e))?;
     let manager = stronghold_guard
         .as_ref()
         .ok_or("Crypto not initialized - call crypto_init first")?;
@@ -182,10 +201,12 @@ fn crypto_get_user_id(state: State<'_, CryptoState>) -> Result<String, String> {
 #[tauri::command]
 fn crypto_clear_key(state: State<'_, CryptoState>) -> Result<(), String> {
     // Clear the cached sync key
-    *state.sync_key.lock().unwrap() = None;
+    *state.sync_key.lock()
+        .map_err(|e| format!("Failed to acquire sync_key lock: {}", e))? = None;
 
     // Clear the stored master key
-    let stronghold_guard = state.stronghold.lock().unwrap();
+    let stronghold_guard = state.stronghold.lock()
+        .map_err(|e| format!("Failed to acquire stronghold lock: {}", e))?;
     if let Some(manager) = stronghold_guard.as_ref() {
         manager.clear().map_err(|e| e.to_string())?;
     }
@@ -235,7 +256,8 @@ async fn network_start_server(
 
     // Get fingerprint from user ID
     let fingerprint = {
-        let stronghold_guard = crypto_state.stronghold.lock().unwrap();
+        let stronghold_guard = crypto_state.stronghold.lock()
+            .map_err(|e| format!("Failed to acquire stronghold lock: {}", e))?;
         let manager = stronghold_guard
             .as_ref()
             .ok_or("Crypto not initialized - call crypto_init first")?;
@@ -387,7 +409,8 @@ async fn network_start_discovery(
 
     // Get fingerprint from user ID
     let fingerprint = {
-        let stronghold_guard = crypto_state.stronghold.lock().unwrap();
+        let stronghold_guard = crypto_state.stronghold.lock()
+            .map_err(|e| format!("Failed to acquire stronghold lock: {}", e))?;
         let manager = stronghold_guard
             .as_ref()
             .ok_or("Crypto not initialized - call crypto_init first")?;
@@ -685,7 +708,8 @@ async fn network_peer_count(
 /// All devices with the same Skeleton Key will have the same signing keypair.
 #[tauri::command]
 fn device_get_signing_public_key(state: State<'_, CryptoState>) -> Result<String, String> {
-    let stronghold_guard = state.stronghold.lock().unwrap();
+    let stronghold_guard = state.stronghold.lock()
+        .map_err(|e| format!("Failed to acquire stronghold lock: {}", e))?;
     let manager = stronghold_guard
         .as_ref()
         .ok_or("Crypto not initialized - call crypto_init first")?;
@@ -708,7 +732,8 @@ fn device_sign_revocation(
     revoked_by: String,
     state: State<'_, CryptoState>,
 ) -> Result<String, String> {
-    let stronghold_guard = state.stronghold.lock().unwrap();
+    let stronghold_guard = state.stronghold.lock()
+        .map_err(|e| format!("Failed to acquire stronghold lock: {}", e))?;
     let manager = stronghold_guard
         .as_ref()
         .ok_or("Crypto not initialized - call crypto_init first")?;

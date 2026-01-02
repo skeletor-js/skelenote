@@ -5,12 +5,13 @@
  */
 
 import { useState } from 'react';
+import { Stack, Group, Title, Text, Box, ActionIcon, Alert, Loader, Center } from '@mantine/core';
+import { Icon } from '@/components/ui';
 import { useDeviceRegistrySafe } from '@/contexts/DeviceRegistryContext';
 import { DeviceListItem } from './DeviceListItem';
 import { RevokeConfirmDialog } from './RevokeConfirmDialog';
 import { RenameDialog } from './RenameDialog';
 import type { DeviceInfo } from '@/lib/devices';
-import './DeviceManager.css';
 
 export function DeviceManager() {
   const registry = useDeviceRegistrySafe();
@@ -59,58 +60,56 @@ export function DeviceManager() {
 
   if (isLoading) {
     return (
-      <section className="device-manager">
-        <div className="device-manager__header">
-          <h3 className="device-manager__title">Devices</h3>
-        </div>
-        <div className="device-manager__loading">
-          Loading devices...
-        </div>
-      </section>
+      <Box component="section">
+        <Group justify="space-between" mb="sm">
+          <Title order={4}>Devices</Title>
+        </Group>
+        <Center py="xl">
+          <Loader size="sm" />
+        </Center>
+      </Box>
     );
   }
 
   return (
-    <section className="device-manager">
-      <div className="device-manager__header">
-        <h3 className="device-manager__title">Devices</h3>
-        <button
-          className="device-manager__refresh"
+    <Box component="section">
+      <Group justify="space-between" mb="sm">
+        <Title order={4}>Devices</Title>
+        <ActionIcon
+          variant="subtle"
+          color="gray"
           onClick={refresh}
           title="Refresh device list"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-            <path d="M21 3v5h-5" />
-          </svg>
-        </button>
-      </div>
+          <Icon name="refresh-cw" size={16} />
+        </ActionIcon>
+      </Group>
 
-      <p className="device-manager__description">
+      <Text size="sm" c="dimmed" mb="md">
         Manage devices that have access to your encrypted vault.
-      </p>
+      </Text>
 
       {error && (
-        <div className="device-manager__error">
+        <Alert color="brick" mb="md">
           {error}
-        </div>
+        </Alert>
       )}
 
       {activeDevices.length === 0 ? (
-        <div className="device-manager__empty">
+        <Text size="sm" c="dimmed" ta="center" py="lg">
           No devices registered yet.
-        </div>
+        </Text>
       ) : (
-        <div className="device-manager__list">
-          <h4 className="device-manager__list-title">Active Devices</h4>
-          <ul className="device-manager__devices">
+        <Stack gap={0} mb="md">
+          <Text size="xs" fw={600} c="dimmed" tt="uppercase" mb="xs">
+            Active Devices
+          </Text>
+          <Box
+            component="ul"
+            m={0}
+            p={0}
+            style={{ listStyle: 'none' }}
+          >
             {activeDevices.map((device) => (
               <DeviceListItem
                 key={device.deviceId}
@@ -119,14 +118,21 @@ export function DeviceManager() {
                 onRevoke={() => setRevokeTarget(device)}
               />
             ))}
-          </ul>
-        </div>
+          </Box>
+        </Stack>
       )}
 
       {revokedDevices.length > 0 && (
-        <div className="device-manager__list device-manager__list--revoked">
-          <h4 className="device-manager__list-title">Revoked Devices</h4>
-          <ul className="device-manager__devices">
+        <Stack gap={0}>
+          <Text size="xs" fw={600} c="dimmed" tt="uppercase" mb="xs">
+            Revoked Devices
+          </Text>
+          <Box
+            component="ul"
+            m={0}
+            p={0}
+            style={{ listStyle: 'none' }}
+          >
             {revokedDevices.map((device) => (
               <DeviceListItem
                 key={device.deviceId}
@@ -134,8 +140,8 @@ export function DeviceManager() {
                 disabled
               />
             ))}
-          </ul>
-        </div>
+          </Box>
+        </Stack>
       )}
 
       {/* Revoke Confirmation Dialog */}
@@ -157,6 +163,6 @@ export function DeviceManager() {
           onCancel={() => setRenameTarget(null)}
         />
       )}
-    </section>
+    </Box>
   );
 }

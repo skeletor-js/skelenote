@@ -1,2 +1,4 @@
 export { SettingsView } from './SettingsView';
-export { SyncSettings } from './SyncSettings';
+export { SettingsSidebar } from './SettingsSidebar';
+export { SettingsNavItem, type SettingsSection } from './SettingsNavItem';
+export * from './panels';
