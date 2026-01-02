@@ -450,6 +450,149 @@ export class ObjectStore {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // Duplication Operations
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Generate a unique "(Copy)" name for duplicated objects
+   * Handles collisions: "Title (Copy)", "Title (Copy 2)", etc.
+   */
+  private generateDuplicateName(
+    originalName: string,
+    typeId: string,
+    propertyId: 'title' | 'name'
+  ): string {
+    const existingObjects = this.getByType(typeId, { includeArchived: true });
+    const existingNames = new Set(
+      existingObjects
+        .map((obj) => obj.properties[propertyId])
+        .filter((name): name is string => typeof name === 'string')
+    );
+
+    let newName = `${originalName} (Copy)`;
+    let counter = 2;
+
+    while (existingNames.has(newName)) {
+      newName = `${originalName} (Copy ${counter})`;
+      counter++;
+    }
+
+    return newName;
+  }
+
+  /**
+   * Check if an object can be duplicated
+   * Daily notes cannot be duplicated
+   */
+  canDuplicate(id: string): boolean {
+    const obj = this.get(id);
+    if (!obj) return false;
+
+    // Daily notes cannot be duplicated
+    if (obj.typeId === 'note' && obj.properties.isDailyNote === true) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Duplicate an object with smart defaults
+   * - Copies all properties with type-specific transformations
+   * - Copies rich text content
+   * - Resets metadata (inboxed, pinned, archived, timestamps)
+   * - Generates unique "(Copy)" name
+   *
+   * @throws Error if object is a daily note (cannot be duplicated)
+   */
+  duplicate(id: string): SkelenoteObject {
+    const original = this.getOrThrow(id);
+
+    // Block daily note duplication
+    if (original.typeId === 'note' && original.properties.isDailyNote === true) {
+      throw new ValidationError('Daily notes cannot be duplicated');
+    }
+
+    // Determine which property holds the name
+    const namePropertyId = original.properties.title !== undefined ? 'title' : 'name';
+    const originalName = String(original.properties[namePropertyId] ?? 'Untitled');
+
+    // Generate unique name
+    const newName = this.generateDuplicateName(originalName, original.typeId, namePropertyId);
+
+    // Copy and transform properties
+    const newProperties: Record<string, PropertyValue> = {
+      ...original.properties,
+      [namePropertyId]: newName,
+    };
+
+    // Type-specific transformations
+    switch (original.typeId) {
+      case 'task':
+        // Reset task status to "todo" (never copy "done")
+        newProperties.status = 'todo';
+        // Clear recurrence (duplicate is one-off)
+        newProperties.recurrence = null;
+        break;
+
+      case 'note':
+        // Clear isDailyNote flag (already blocked above, but be safe)
+        newProperties.isDailyNote = false;
+        break;
+
+      case 'project':
+        // Reset dates for new project timeline
+        newProperties.startDate = null;
+        newProperties.endDate = null;
+        // If completed, reset to active
+        if (newProperties.status === 'completed') {
+          newProperties.status = 'active';
+        }
+        break;
+    }
+
+    // Clear the dailyNote relation (will be linked to today by the hook)
+    newProperties.dailyNote = null;
+
+    // Create the duplicate
+    const duplicate = this.create({
+      typeId: original.typeId,
+      properties: newProperties,
+      withContent: original.hasContent,
+      inboxed: true, // Duplicates need triage
+    });
+
+    // Copy content if present
+    if (original.hasContent) {
+      const content = this.getContent(original.id);
+      if (content) {
+        this.setContent(duplicate.id, content);
+      }
+    }
+
+    return duplicate;
+  }
+
+  /**
+   * Duplicate multiple objects
+   */
+  duplicateMany(ids: string[]): { duplicated: SkelenoteObject[]; errors: string[] } {
+    const duplicated: SkelenoteObject[] = [];
+    const errors: string[] = [];
+
+    for (const id of ids) {
+      try {
+        const dup = this.duplicate(id);
+        duplicated.push(dup);
+      } catch {
+        errors.push(id);
+      }
+    }
+
+    return { duplicated, errors };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // Batch Operations
   // ─────────────────────────────────────────────────────────────────────────
 
