@@ -20,6 +20,7 @@ import {
   useTypeRegistry,
   useToast,
   useKeyboardShortcuts,
+  useSemanticSearchSafe,
 } from '@/contexts';
 import { useConfirmDialog, useDuplicate } from '@/hooks';
 import styles from './ObjectDetailView.module.css';
@@ -38,6 +39,7 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
   const { dialogState, confirm, handleConfirm, handleCancel } = useConfirmDialog();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
   const { duplicate, canDuplicate } = useDuplicate();
+  const semanticContext = useSemanticSearchSafe();
 
   // Check if we're in version comparison mode
   const isVersionComparison = splitPane.mode === 'version-comparison';
@@ -246,9 +248,18 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
       // Don't call refreshData here - editor handles its own state
       // But do schedule a save to persist content changes
       scheduleSave();
+      // Notify semantic search of content change (will be indexed on blur)
+      semanticContext?.notifyContentChange(objectId);
     },
-    [store, objectId, scheduleSave]
+    [store, objectId, scheduleSave, semanticContext]
   );
+
+  // Flush semantic index changes when leaving editor
+  useEffect(() => {
+    return () => {
+      semanticContext?.flushContentChanges(objectId);
+    };
+  }, [objectId, semanticContext]);
 
   // Get current content for the editor
   const currentContent = useMemo(() => {

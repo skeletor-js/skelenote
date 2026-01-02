@@ -2,7 +2,7 @@
  * DailyNotesView - Week strip navigation with inline daily note content
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Stack, Box, Text, Loader, Center } from '@mantine/core';
 import { ViewHeader } from '@/components/ui';
 import { WeekStrip } from './WeekStrip';
@@ -17,6 +17,7 @@ import {
   useObjects,
   useTypeRegistry,
   useToast,
+  useSemanticSearchSafe,
 } from '@/contexts';
 import { useConfirmDialog } from '@/hooks';
 import {
@@ -30,6 +31,10 @@ export function DailyNotesView() {
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
   const { dialogState, confirm, handleConfirm, handleCancel } = useConfirmDialog();
+  const semanticContext = useSemanticSearchSafe();
+
+  // Track previous daily note ID for flushing on date change
+  const previousNoteIdRef = useRef<string | null>(null);
 
   // Selected date state (defaults to today)
   const [selectedDate, setSelectedDate] = useState(() => new Date());
@@ -91,9 +96,27 @@ export function DailyNotesView() {
       if (!store || !dailyNote) return;
       store.setContent(dailyNote.id, content);
       scheduleSave();
+      // Notify semantic search of content change (will be indexed on flush)
+      semanticContext?.notifyContentChange(dailyNote.id);
     },
-    [store, dailyNote, scheduleSave]
+    [store, dailyNote, scheduleSave, semanticContext]
   );
+
+  // Flush semantic index when switching dates or unmounting
+  useEffect(() => {
+    // Flush previous note when daily note changes
+    if (previousNoteIdRef.current && previousNoteIdRef.current !== dailyNote?.id) {
+      semanticContext?.flushContentChanges(previousNoteIdRef.current);
+    }
+    previousNoteIdRef.current = dailyNote?.id ?? null;
+
+    // Flush on unmount
+    return () => {
+      if (previousNoteIdRef.current) {
+        semanticContext?.flushContentChanges(previousNoteIdRef.current);
+      }
+    };
+  }, [dailyNote?.id, semanticContext]);
 
   // Handler for date selection from WeekStrip
   const handleDateSelect = useCallback((date: Date) => {

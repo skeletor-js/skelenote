@@ -36,3 +36,8 @@ export {
   setSemanticEngine,
   type IndexableContent,
 } from './engine';
+export {
+  extractPlainText,
+  getIndexableContentForObject,
+  getAllIndexableContent,
+} from './indexable';

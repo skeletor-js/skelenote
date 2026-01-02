@@ -20,6 +20,7 @@ import {
   SemanticProgress,
   IndexableContent,
 } from '@/lib/semantic';
+import { useSemanticIndexSync } from '@/hooks/useSemanticIndexSync';
 
 const STORAGE_KEY = 'skelenote:semanticSearchEnabled';
 const THRESHOLD_KEY = 'skelenote:semanticThreshold';
@@ -49,6 +50,10 @@ interface SemanticSearchContextValue {
   getEngine: () => SemanticEngine | null;
   /** Update the similarity threshold */
   setThreshold: (threshold: number) => void;
+  /** Notify that an object's content changed (for auto-indexing) */
+  notifyContentChange: (objectId: string) => void;
+  /** Flush pending content changes immediately (call on editor blur) */
+  flushContentChanges: (objectId?: string) => void;
 }
 
 const SemanticSearchContext = createContext<SemanticSearchContextValue | null>(null);
@@ -191,6 +196,13 @@ export function SemanticSearchProvider({ children }: SemanticSearchProviderProps
 
   const getEngine = useCallback(() => engine, [engine]);
 
+  // Automatic index sync for object changes
+  const { notifyContentChange, flushContentChanges } = useSemanticIndexSync({
+    getEngine,
+    isEnabled,
+    engineStatus: status,
+  });
+
   return (
     <SemanticSearchContext.Provider
       value={{
@@ -205,6 +217,8 @@ export function SemanticSearchProvider({ children }: SemanticSearchProviderProps
         rebuildIndex,
         getEngine,
         setThreshold,
+        notifyContentChange,
+        flushContentChanges,
       }}
     >
       {children}

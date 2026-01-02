@@ -18,24 +18,37 @@ export function DataSettings() {
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState<BulkExportProgress | null>(null);
   const [organizeByType, setOrganizeByType] = useState(true);
+  const [includeArchived, setIncludeArchived] = useState(false);
 
-  // Get object counts for display
+  // Get object counts for display - grouped by type
   const objectCounts = useCallback(() => {
-    if (!store) return { total: 0, notes: 0, tasks: 0, projects: 0, others: 0 };
+    if (!store || !typeRegistry) return { total: 0, byType: [] as { typeId: string; name: string; count: number }[] };
 
-    const all = store.getAll();
-    const nonDaily = all.filter((obj) => !obj.properties.isDailyNote);
+    const all = store.getAll({ includeArchived });
+
+    // Group by type
+    const typeCountMap = new Map<string, number>();
+    for (const obj of all) {
+      typeCountMap.set(obj.typeId, (typeCountMap.get(obj.typeId) || 0) + 1);
+    }
+
+    // Convert to array with type names, sorted by count descending
+    const byType = Array.from(typeCountMap.entries())
+      .map(([typeId, count]) => {
+        const typeDef = typeRegistry.get(typeId);
+        return {
+          typeId,
+          name: typeDef?.name || typeId,
+          count,
+        };
+      })
+      .sort((a, b) => b.count - a.count);
 
     return {
-      total: nonDaily.length,
-      notes: nonDaily.filter((obj) => obj.typeId === 'note').length,
-      tasks: nonDaily.filter((obj) => obj.typeId === 'task').length,
-      projects: nonDaily.filter((obj) => obj.typeId === 'project').length,
-      others: nonDaily.filter(
-        (obj) => !['note', 'task', 'project'].includes(obj.typeId)
-      ).length,
+      total: all.length,
+      byType,
     };
-  }, [store]);
+  }, [store, typeRegistry, includeArchived]);
 
   const handleExport = useCallback(async () => {
     if (!store || !typeRegistry) return;
@@ -44,7 +57,7 @@ export function DataSettings() {
     setProgress(null);
 
     try {
-      const objects = store.getAll();
+      const objects = store.getAll({ includeArchived });
 
       // Create resolver function for object names
       const resolveObjectName = (id: string): string | undefined => {
@@ -89,7 +102,7 @@ export function DataSettings() {
       setIsExporting(false);
       setProgress(null);
     }
-  }, [store, typeRegistry, organizeByType, addToast, progress?.total, objectCounts]);
+  }, [store, typeRegistry, organizeByType, includeArchived, addToast, progress?.total, objectCounts]);
 
   const counts = objectCounts();
 
@@ -131,42 +144,35 @@ export function DataSettings() {
           Perfect for backups or migrating to other tools like Obsidian.
         </Text>
 
-        <Group gap="lg" mb="md">
+        <Group gap="lg" mb="md" wrap="wrap">
           <Box ta="center">
             <Text size="xl" fw={700}>{counts.total}</Text>
             <Text size="xs" c="dimmed">total objects</Text>
           </Box>
-          {counts.notes > 0 && (
-            <Box ta="center">
-              <Text size="xl" fw={700}>{counts.notes}</Text>
-              <Text size="xs" c="dimmed">notes</Text>
+          {counts.byType.map((typeCount) => (
+            <Box key={typeCount.typeId} ta="center">
+              <Text size="xl" fw={700}>{typeCount.count}</Text>
+              <Text size="xs" c="dimmed">{typeCount.name.toLowerCase()}s</Text>
             </Box>
-          )}
-          {counts.tasks > 0 && (
-            <Box ta="center">
-              <Text size="xl" fw={700}>{counts.tasks}</Text>
-              <Text size="xs" c="dimmed">tasks</Text>
-            </Box>
-          )}
-          {counts.projects > 0 && (
-            <Box ta="center">
-              <Text size="xl" fw={700}>{counts.projects}</Text>
-              <Text size="xs" c="dimmed">projects</Text>
-            </Box>
-          )}
+          ))}
         </Group>
 
         <Box mb="md">
           <Text size="sm" fw={500} mb="xs">Options</Text>
-          <Checkbox
-            label="Organize files into folders by type"
-            checked={organizeByType}
-            onChange={(e) => setOrganizeByType(e.target.checked)}
-            disabled={isExporting}
-          />
-          <Text size="xs" c="dimmed" mt="xs">
-            Creates folders like /notes/, /tasks/, /projects/ in the ZIP.
-          </Text>
+          <Stack gap="xs">
+            <Checkbox
+              label="Organize files into folders by type"
+              checked={organizeByType}
+              onChange={(e) => setOrganizeByType(e.target.checked)}
+              disabled={isExporting}
+            />
+            <Checkbox
+              label="Include archived objects"
+              checked={includeArchived}
+              onChange={(e) => setIncludeArchived(e.target.checked)}
+              disabled={isExporting}
+            />
+          </Stack>
         </Box>
 
         {progress && (

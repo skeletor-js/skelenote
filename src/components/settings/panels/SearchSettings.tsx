@@ -19,7 +19,7 @@ import {
 } from '@mantine/core';
 import { useSemanticSearchSafe, useObjects } from '@/contexts';
 import { SemanticEnableModal } from '../SemanticEnableModal';
-import { IndexableContent } from '@/lib/semantic';
+import { IndexableContent, extractPlainText } from '@/lib/semantic';
 
 export function SearchSettings() {
   const semanticContext = useSemanticSearchSafe();
@@ -253,44 +253,4 @@ export function SearchSettings() {
       />
     </Stack>
   );
-}
-
-/**
- * Extract plain text from BlockNote blocks.
- */
-function extractPlainText(blocks: unknown[]): string {
-  const texts: string[] = [];
-
-  function processBlock(block: unknown) {
-    if (!block || typeof block !== 'object') return;
-
-    const b = block as Record<string, unknown>;
-
-    // Extract text content
-    if (b.content && Array.isArray(b.content)) {
-      for (const item of b.content) {
-        if (item && typeof item === 'object') {
-          const c = item as Record<string, unknown>;
-          if (c.type === 'text' && typeof c.text === 'string') {
-            texts.push(c.text);
-          } else if (c.type === 'link' && typeof c.text === 'string') {
-            texts.push(c.text);
-          }
-        }
-      }
-    }
-
-    // Process children
-    if (b.children && Array.isArray(b.children)) {
-      for (const child of b.children) {
-        processBlock(child);
-      }
-    }
-  }
-
-  for (const block of blocks) {
-    processBlock(block);
-  }
-
-  return texts.join(' ');
 }

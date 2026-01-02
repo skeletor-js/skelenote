@@ -159,10 +159,6 @@ export function HistoricalObjectView() {
     updateVersionComparison(nextPoint.frontier, nextPoint.timestamp);
   }, [canGoNext, objectChangePoints, currentVersionIndex, updateVersionComparison]);
 
-  const handleBackToTimeMachine = useCallback(() => {
-    returnToTimeMachine();
-  }, [returnToTimeMachine]);
-
   // Close handler - return to Time Machine if we came from there, otherwise just close
   const handleClose = useCallback(() => {
     if (splitPane.timeMachineContext) {
@@ -289,28 +285,17 @@ export function HistoricalObjectView() {
         flexDirection: 'column',
       }}
     >
-      {/* Header - with back, version nav, and close */}
+      {/* Header - with version nav and close */}
       <Group
         justify="space-between"
         px="md"
-        py="sm"
+        py="xs"
         style={{
           borderBottom: '1px solid var(--mantine-color-default-border)',
+          minHeight: 44,
         }}
       >
         <Group gap="xs">
-          {splitPane.timeMachineContext && (
-            <Tooltip label="Back to Time Machine" withArrow>
-              <ActionIcon
-                variant="subtle"
-                size="sm"
-                onClick={handleBackToTimeMachine}
-                aria-label="Back to Time Machine"
-              >
-                <Icon name="arrow-left" size={14} />
-              </ActionIcon>
-            </Tooltip>
-          )}
           <Text size="sm" fw={600}>Historical Version</Text>
           {objectChangePoints.length > 1 && (
             <Text size="xs" c="dimmed">
