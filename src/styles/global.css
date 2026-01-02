@@ -43,9 +43,10 @@
   /* Ember at 4% - subtle warmth */
   --hover-warm-strong: rgba(184, 92, 80, 0.08);
   /* Ember at 8% - stronger warmth */
-  --selection-glow: #FDF5F4;
-  /* Ember-0 - pale glow */
+  --selection-glow: #F9E4E1;
+  /* Ember-1 - visible warm glow */
   --selection-border: #F2CEC9;
+  /* Ember-2 - selection accent */
   /* Ember-2 - selection accent */
 
   /* Override Mantine's default border to use Vellum */
