@@ -10,8 +10,8 @@ import { Icon } from '@/components/ui/Icon';
 import { getIconFromEmoji } from '@/lib/icons';
 import { getBestSnippet, type SearchResult, type TextSegment } from '@/lib/search';
 import { MatchTypeBadge } from './MatchTypeBadge';
-import { ContextMenu, ConfirmDialog, Tag, type ContextMenuItem, type TagColor } from '@/components/ui';
-import { useContextMenu, useConfirmDialog, usePinnedObjects } from '@/hooks';
+import { ContextMenu, Tag, type ContextMenuItem, type TagColor } from '@/components/ui';
+import { useContextMenu, usePinnedObjects } from '@/hooks';
 import { ObjectSearchModal } from '@/components/object/editors';
 import classes from './SearchResultCard.module.css';
 
@@ -30,8 +30,8 @@ interface SearchResultCardProps {
   onMouseEnter?: () => void;
   /** Formatted date string (e.g., "Updated 2h ago") */
   dateLabel?: string;
-  /** Called when item is deleted */
-  onDelete?: (itemId: string) => void;
+  /** Called when item is archived */
+  onArchive?: (itemId: string) => void;
   /** Callback when selection checkbox is toggled */
   onSelectionChange?: (id: string, shiftKey: boolean) => void;
   /** Whether any item in the list is selected (enables "selecting mode") */
@@ -74,14 +74,13 @@ export function SearchResultCard({
   onOpenInSplit,
   onMouseEnter,
   dateLabel,
-  onDelete,
+  onArchive,
   onSelectionChange,
   isSelectingMode = false,
 }: SearchResultCardProps) {
   const typeRegistry = useTypeRegistry();
   const { store } = useObjects();
   const { addToast } = useToast();
-  const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
   const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
   const { isPinned, pin, unpin } = usePinnedObjects();
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
@@ -138,28 +137,6 @@ export function SearchResultCard({
       addToast({ type: 'success', message: 'Pinned to sidebar' });
     }
   }, [itemIsPinned, pin, unpin, result.item.id, addToast]);
-
-  // Handle delete with confirmation
-  const handleDelete = useCallback(async () => {
-    const confirmed = await confirm({
-      title: `Delete ${typeName}?`,
-      message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
-      confirmLabel: 'Delete',
-      variant: 'danger',
-    });
-
-    if (confirmed) {
-      if (onDelete) {
-        onDelete(result.item.id);
-      } else {
-        store?.delete(result.item.id);
-      }
-      addToast({
-        type: 'success',
-        message: `"${title}" deleted`,
-      });
-    }
-  }, [confirm, typeName, title, result.item.id, onDelete, store, addToast]);
 
   // Handle add tag
   const handleAddTag = useCallback(
@@ -250,12 +227,22 @@ export function SearchResultCard({
     [handleTogglePin]
   );
 
-  const handleDeleteClick = useCallback(
+  // Handle archive
+  const handleArchive = useCallback(() => {
+    if (!onArchive) return;
+    onArchive(result.item.id);
+    addToast({
+      type: 'success',
+      message: `"${title}" archived`,
+    });
+  }, [onArchive, result.item.id, title, addToast]);
+
+  const handleArchiveClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      handleDelete();
+      handleArchive();
     },
-    [handleDelete]
+    [handleArchive]
   );
 
   // Handle select from context menu
@@ -281,13 +268,16 @@ export function SearchResultCard({
       icon: 'pin',
       onClick: handleTogglePin,
     },
-    {
-      id: 'delete',
-      label: 'Delete',
-      icon: 'trash-2',
-      variant: 'danger',
-      onClick: handleDelete,
-    },
+    ...(onArchive
+      ? [
+          {
+            id: 'archive',
+            label: 'Archive',
+            icon: 'archive',
+            onClick: handleArchive,
+          } as ContextMenuItem,
+        ]
+      : []),
   ];
 
   // Determine if row should show selected state (either bulk selection or keyboard)
@@ -419,17 +409,18 @@ export function SearchResultCard({
                 <Icon name="pin" size={14} />
               </ActionIcon>
             </Tooltip>
-            <Tooltip label="Delete" position="top" withArrow>
-              <ActionIcon
-                variant="subtle"
-                size="sm"
-                color="brick"
-                onClick={handleDeleteClick}
-                aria-label="Delete"
-              >
-                <Icon name="trash-2" size={14} />
-              </ActionIcon>
-            </Tooltip>
+            {onArchive && (
+              <Tooltip label="Archive" position="top" withArrow>
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  onClick={handleArchiveClick}
+                  aria-label="Archive"
+                >
+                  <Icon name="archive" size={14} />
+                </ActionIcon>
+              </Tooltip>
+            )}
           </Group>
         </Group>
       </UnstyledButton>
@@ -440,18 +431,6 @@ export function SearchResultCard({
         position={position}
         isOpen={isOpen}
         onClose={closeContextMenu}
-      />
-
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        isOpen={dialogState.isOpen}
-        title={dialogState.title}
-        message={dialogState.message}
-        confirmLabel={dialogState.confirmLabel}
-        cancelLabel={dialogState.cancelLabel}
-        variant={dialogState.variant}
-        onConfirm={handleConfirm}
-        onCancel={handleCancel}
       />
 
       {/* Tag Picker Modal */}

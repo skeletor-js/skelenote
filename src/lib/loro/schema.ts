@@ -90,6 +90,10 @@ export function deserializeObject(data: string): SkelenoteObject {
   if (obj.pinned === undefined) {
     obj.pinned = false;
   }
+  // Handle backward compatibility for objects created before archived was added
+  if (obj.archived === undefined) {
+    obj.archived = false;
+  }
   return obj;
 }
 

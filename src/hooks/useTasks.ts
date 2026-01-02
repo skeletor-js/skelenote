@@ -31,6 +31,8 @@ export interface UseTasksResult {
   toggleComplete: (taskId: string) => void;
   /** Update task properties */
   updateTask: (taskId: string, properties: Record<string, PropertyValue>) => void;
+  /** Archive a task (hide from default views) */
+  archiveTask: (taskId: string) => void;
   /** Delete a task and clean up mentions */
   deleteTask: (taskId: string) => void;
 }
@@ -132,6 +134,16 @@ export function useTasks(options: UseTasksOptions = {}): UseTasksResult {
     [store, refreshData]
   );
 
+  // Archive a task
+  const archiveTask = useCallback(
+    (taskId: string) => {
+      if (!store) return;
+      store.archive(taskId);
+      refreshData();
+    },
+    [store, refreshData]
+  );
+
   // Delete a task and clean up mentions
   const deleteTask = useCallback(
     (taskId: string) => {
@@ -166,6 +178,7 @@ export function useTasks(options: UseTasksOptions = {}): UseTasksResult {
     isLoading,
     toggleComplete,
     updateTask,
+    archiveTask,
     deleteTask,
   };
 }

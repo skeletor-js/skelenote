@@ -13,8 +13,8 @@ interface TaskListProps {
   tasks: SkelenoteObject[];
   /** Callback when task completion is toggled */
   onToggleComplete: (taskId: string) => void;
-  /** Callback when task is deleted */
-  onDeleteTask: (taskId: string) => void;
+  /** Callback when task is archived */
+  onArchiveTask?: (taskId: string) => void;
   /** Message to show when list is empty */
   emptyMessage?: string;
   /** Check if a task is selected */
@@ -28,7 +28,7 @@ interface TaskListProps {
 export function TaskList({
   tasks,
   onToggleComplete,
-  onDeleteTask,
+  onArchiveTask,
   emptyMessage = 'No tasks',
   isSelected,
   onSelectionChange,
@@ -47,7 +47,7 @@ export function TaskList({
           key={task.id}
           task={task}
           onToggleComplete={onToggleComplete}
-          onDelete={onDeleteTask}
+          onArchive={onArchiveTask}
           onClick={() => navigateToObject(task.id)}
           onOpenInSplit={() => openInSplit(task.id)}
           isSelected={isSelected?.(task.id)}

@@ -30,7 +30,7 @@ const EMPTY_MESSAGES: Record<TaskFilter, string> = {
 };
 
 export function TaskView({ filter, title }: TaskViewProps) {
-  const { tasks, isLoading, toggleComplete, deleteTask } = useTasks({ filter });
+  const { tasks, isLoading, toggleComplete, archiveTask } = useTasks({ filter });
   const { refreshData } = useObjects();
 
   // Get task IDs for selection hook
@@ -91,7 +91,7 @@ export function TaskView({ filter, title }: TaskViewProps) {
         <TaskList
           tasks={tasks}
           onToggleComplete={toggleComplete}
-          onDeleteTask={deleteTask}
+          onArchiveTask={archiveTask}
           emptyMessage={EMPTY_MESSAGES[filter]}
           isSelected={selection.isSelected}
           onSelectionChange={handleSelectionChange}
