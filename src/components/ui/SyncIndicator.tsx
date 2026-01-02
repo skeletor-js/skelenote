@@ -1,6 +1,6 @@
 import { UnstyledButton, Group, Text, Box, Tooltip, MantineColor, Loader } from '@mantine/core';
 import { Icon } from './Icon';
-import { useSyncContextSafe, useSkeletonKeySafe, useLocalSyncSafe } from '@/contexts';
+import { useSyncContextSafe, useLocalSyncSafe } from '@/contexts';
 
 interface StatusConfig {
   color: MantineColor;
@@ -12,7 +12,6 @@ interface StatusConfig {
 
 export function SyncIndicator() {
   const syncContext = useSyncContextSafe();
-  const skeletonKeyContext = useSkeletonKeySafe();
   const localSyncContext = useLocalSyncSafe();
 
   // When SyncProvider is not available, show "Local only" state
@@ -21,7 +20,6 @@ export function SyncIndicator() {
   const hasError = syncContext?.hasError ?? false;
   const reconnect = syncContext?.reconnect;
   const hasSyncProvider = syncContext !== null;
-  const isEncrypted = skeletonKeyContext?.hasSkeletonKey ?? false;
 
   // Local network sync status
   const isLocalSyncConnected = localSyncContext?.isEnabled && localSyncContext?.connectedPeerCount > 0;
@@ -118,13 +116,6 @@ export function SyncIndicator() {
 
   const buttonContent = (
     <Group gap={6} wrap="nowrap">
-      {isEncrypted && (
-        <Tooltip label="End-to-end encrypted" withArrow>
-          <Box component="span" style={{ display: 'flex' }}>
-            <Icon name="lock" size={12} color="var(--mantine-color-gray-6)" />
-          </Box>
-        </Tooltip>
-      )}
       {config.showLocalIcon && (
         <Tooltip label="Local network sync active" withArrow>
           <Box component="span" style={{ display: 'flex' }}>

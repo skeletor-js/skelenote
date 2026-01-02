@@ -1,0 +1,60 @@
+/* TopNavBar - Main top navigation bar */
+
+.topNavBar {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-md);
+  height: 100%;
+  width: 100%;
+  background-color: var(--surface-paper);
+  border-bottom: 1px solid var(--border-default);
+  transition: background-color 150ms ease;
+}
+
+/* Make the area draggable except for interactive elements */
+.topNavBar {
+  -webkit-app-region: drag;
+}
+
+.topNavBar button,
+.topNavBar input,
+.topNavBar [data-mantine-popover],
+.topNavBar [role="menu"],
+.topNavBar [role="menuitem"] {
+  -webkit-app-region: no-drag;
+}
+
+.navButtonGroup {
+  display: flex;
+  gap: var(--mantine-spacing-xs);
+  flex-shrink: 0;
+}
+
+.centerGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-md);
+  flex: 1;
+  justify-content: center;
+}
+
+.navControls {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  flex-shrink: 0;
+}
+
+.creationControls {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  flex-shrink: 0;
+}
+
+.rightControls {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  flex-shrink: 0;
+}

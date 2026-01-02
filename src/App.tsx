@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Layout, SplitPane } from '@/components/layout';
 import { ObjectDetailView } from '@/components/object';
 import { TaskView, InboxView, DailyNotesView, SavedViewContent, TypeBrowseView, ArchiveView } from '@/components/views';
-import { CommandPalette } from '@/components/palette';
 import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
 import { SkeletonKeySetup } from '@/components/setup';
@@ -11,7 +10,7 @@ import { SearchResultsView } from '@/components/search';
 import { KeyboardShortcutsModal } from '@/components/help';
 import { TemplatePicker, TemplateEditor } from '@/components/templates';
 import { useNavigation, useObjects, useSkeletonKey, useKeyboardShortcuts, useUndo, type ViewType } from '@/contexts';
-import { useCommandPalette, useTodaysDailyNote, useTemplates } from '@/hooks';
+import { useTodaysDailyNote, useTemplates } from '@/hooks';
 import type { Template } from '@/lib/templates';
 import { runFirstRunSetup } from '@/lib/first-run';
 import type { TaskFilter } from '@/lib/tasks/filters';
@@ -217,7 +216,7 @@ function App() {
   const { store, refreshData, saveNow } = useObjects();
   const { isInitialized: isCryptoInitialized, hasSkeletonKey } = useSkeletonKey();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
-  const { splitPane, closeSplit, swapPanes, navigateToView, navigateToSearch, isEditorFocused } = useNavigation();
+  const { splitPane, closeSplit, swapPanes, navigateToView, navigateToSearch, navigateBack, navigateForward, canGoBack, canGoForward, isEditorFocused } = useNavigation();
   const { undo, redo } = useUndo();
   // Exclude tags, projects, and areas from inbox count (they appear in sidebar)
   const inboxCount =
@@ -226,7 +225,6 @@ function App() {
       item.typeId !== BuiltInTypeIds.PROJECT &&
       item.typeId !== BuiltInTypeIds.AREA
     ).length ?? 0;
-  const { isOpen: isPaletteOpen, close: closePalette, toggle: togglePalette } = useCommandPalette();
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
@@ -234,6 +232,12 @@ function App() {
   const { ensureExists: ensureTodaysDailyNote } = useTodaysDailyNote();
   const { createObject: createFromTemplate } = useTemplates();
   const startupCompleteRef = useRef(false);
+  const omnibarFocusRef = useRef<(() => void) | null>(null);
+
+  // Callback to receive the omnibar focus function from Layout
+  const handleRegisterOmnibarFocus = useCallback((focusFn: () => void) => {
+    omnibarFocusRef.current = focusFn;
+  }, []);
 
   // Auto-create today's daily note and run first-run setup on app launch
   useEffect(() => {
@@ -300,11 +304,28 @@ function App() {
 
   // Register global keyboard shortcuts
   useEffect(() => {
-    registerShortcut('command-palette', {
-      key: 'k',
+    // Cmd+[ to navigate back
+    registerShortcut('navigate-back', {
+      key: '[',
       metaKey: true,
-      action: togglePalette,
-      description: 'Open command palette',
+      action: () => {
+        if (canGoBack) {
+          navigateBack();
+        }
+      },
+      description: 'Navigate back',
+    });
+
+    // Cmd+] to navigate forward
+    registerShortcut('navigate-forward', {
+      key: ']',
+      metaKey: true,
+      action: () => {
+        if (canGoForward) {
+          navigateForward();
+        }
+      },
+      description: 'Navigate forward',
     });
 
     // Cmd+\ to close split view (only when open)
@@ -382,6 +403,16 @@ function App() {
       description: 'New Template',
     });
 
+    // Cmd+K to focus omnibar
+    registerShortcut('focus-omnibar', {
+      key: 'k',
+      metaKey: true,
+      action: () => {
+        omnibarFocusRef.current?.();
+      },
+      description: 'Focus Omnibar',
+    });
+
     // Cmd+Z to undo (returns false when editor focused to let BlockNote handle it)
     registerShortcut('global-undo', {
       key: 'z',
@@ -423,7 +454,8 @@ function App() {
     });
 
     return () => {
-      unregisterShortcut('command-palette');
+      unregisterShortcut('navigate-back');
+      unregisterShortcut('navigate-forward');
       unregisterShortcut('close-split');
       unregisterShortcut('swap-panes');
       unregisterShortcut('escape-close-split');
@@ -432,11 +464,12 @@ function App() {
       unregisterShortcut('keyboard-shortcuts');
       unregisterShortcut('keyboard-shortcuts-alt');
       unregisterShortcut('new-template');
+      unregisterShortcut('focus-omnibar');
       unregisterShortcut('global-undo');
       unregisterShortcut('global-redo');
       unregisterShortcut('global-redo-y');
     };
-  }, [registerShortcut, unregisterShortcut, togglePalette, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, toggleShortcutsModal, openTemplateEditor, isEditorFocused, undo, redo]);
+  }, [registerShortcut, unregisterShortcut, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, navigateBack, navigateForward, canGoBack, canGoForward, toggleShortcutsModal, openTemplateEditor, isEditorFocused, undo, redo]);
 
   // Show loading only during initial crypto initialization
   // (not during subsequent operations like key generation)
@@ -464,17 +497,16 @@ function App() {
 
   return (
     <>
-      <Layout inboxCount={inboxCount} onCreateFromTemplate={openTemplatePicker}>
-        <MainContent />
-      </Layout>
-      <CommandPalette
-        isOpen={isPaletteOpen}
-        onClose={closePalette}
+      <Layout
+        inboxCount={inboxCount}
+        onCreateFromTemplate={openTemplatePicker}
         onQuickCapture={openQuickCapture}
         onOpenShortcuts={toggleShortcutsModal}
-        onCreateFromTemplate={openTemplatePicker}
         onNewTemplate={openTemplateEditor}
-      />
+        onRegisterOmnibarFocus={handleRegisterOmnibarFocus}
+      >
+        <MainContent />
+      </Layout>
       <QuickCapture isOpen={isQuickCaptureOpen} onClose={closeQuickCapture} />
       <KeyboardShortcutsModal isOpen={isShortcutsModalOpen} onClose={closeShortcutsModal} />
       <TemplatePicker

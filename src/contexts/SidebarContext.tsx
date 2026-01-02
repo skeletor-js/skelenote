@@ -8,7 +8,6 @@ import {
 } from 'react';
 
 const STORAGE_KEY_COLLAPSED_SECTIONS = 'skelenote-sidebar-collapsed-sections';
-const STORAGE_KEY_SIDEBAR_COLLAPSED = 'skelenote-sidebar-collapsed';
 
 function loadCollapsedSections(): Set<string> {
   try {
@@ -22,26 +21,16 @@ function loadCollapsedSections(): Set<string> {
   return new Set();
 }
 
-function loadSidebarCollapsed(): boolean {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY_SIDEBAR_COLLAPSED);
-    if (stored !== null) {
-      return JSON.parse(stored);
-    }
-  } catch {
-    // Ignore parse errors
-  }
-  return false;
-}
-
 interface SidebarContextValue {
-  isCollapsed: boolean;
-  setCollapsed: (collapsed: boolean) => void;
-  toggleCollapsed: () => void;
+  /** Currently selected item in the sidebar */
   selectedItem: string | null;
+  /** Set the selected item */
   setSelectedItem: (item: string | null) => void;
+  /** Set of collapsed section IDs */
   collapsedSections: Set<string>;
+  /** Toggle a section's collapsed state */
   toggleSection: (sectionId: string) => void;
+  /** Check if a section is collapsed */
   isSectionCollapsed: (sectionId: string) => boolean;
 }
 
@@ -52,16 +41,10 @@ interface SidebarProviderProps {
 }
 
 export function SidebarProvider({ children }: SidebarProviderProps) {
-  const [isCollapsed, setCollapsed] = useState(loadSidebarCollapsed);
   const [selectedItem, setSelectedItem] = useState<string | null>('inbox');
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
     loadCollapsedSections
   );
-
-  // Persist sidebar collapsed state
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_SIDEBAR_COLLAPSED, JSON.stringify(isCollapsed));
-  }, [isCollapsed]);
 
   // Persist section collapsed states
   useEffect(() => {
@@ -70,10 +53,6 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
       JSON.stringify([...collapsedSections])
     );
   }, [collapsedSections]);
-
-  const toggleCollapsed = useCallback(() => {
-    setCollapsed((prev) => !prev);
-  }, []);
 
   const toggleSection = useCallback((sectionId: string) => {
     setCollapsedSections((prev) => {
@@ -95,9 +74,6 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
   return (
     <SidebarContext.Provider
       value={{
-        isCollapsed,
-        setCollapsed,
-        toggleCollapsed,
         selectedItem,
         setSelectedItem,
         collapsedSections,
