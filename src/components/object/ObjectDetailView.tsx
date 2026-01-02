@@ -121,12 +121,23 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
         action: handleExport,
       });
 
+      // Only register duplicate shortcut if object can be duplicated
+      if (canDuplicate(objectId)) {
+        registerShortcut('duplicate-object', {
+          key: 'd',
+          metaKey: true,
+          description: 'Duplicate object',
+          action: handleDuplicate,
+        });
+      }
+
       return () => {
         unregisterShortcut('view-object-history');
         unregisterShortcut('export-to-markdown');
+        unregisterShortcut('duplicate-object');
       };
     }
-  }, [paneType, isVersionComparison, handleViewHistory, handleExport, registerShortcut, unregisterShortcut]);
+  }, [paneType, isVersionComparison, handleViewHistory, handleExport, handleDuplicate, canDuplicate, objectId, registerShortcut, unregisterShortcut]);
 
   // Handler to archive object
   const handleArchive = useCallback(() => {
