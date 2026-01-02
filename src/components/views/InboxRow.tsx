@@ -10,7 +10,7 @@ import { useObjects, useTypeRegistry, useToast } from '@/contexts';
 import { Tag, ContextMenu, type TagColor, type ContextMenuItem } from '@/components/ui';
 import { Icon } from '@/components/ui/Icon';
 import { getIconFromEmoji } from '@/lib/icons';
-import { useContextMenu, usePinnedObjects } from '@/hooks';
+import { useContextMenu, usePinnedObjects, useDuplicate } from '@/hooks';
 import type { IconName } from '@/lib/icons';
 import { ObjectSearchModal } from '@/components/object/editors';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
@@ -50,6 +50,7 @@ export function InboxRow({
   const { addToast } = useToast();
   const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
   const { isPinned, pin, unpin } = usePinnedObjects();
+  const { duplicate, canDuplicate } = useDuplicate();
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
   const [projectPickerOpen, setProjectPickerOpen] = useState(false);
   const [areaPickerOpen, setAreaPickerOpen] = useState(false);
@@ -216,6 +217,23 @@ export function InboxRow({
     setAreaPickerOpen(true);
   }, []);
 
+  // Handle duplicate (only if item can be duplicated)
+  const itemCanDuplicate = canDuplicate(item.id);
+  const handleDuplicate = useCallback(() => {
+    if (itemCanDuplicate) {
+      duplicate(item.id);
+    }
+  }, [duplicate, item.id, itemCanDuplicate]);
+
+  // Handle duplicate click (with event stop propagation)
+  const handleDuplicateClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      handleDuplicate();
+    },
+    [handleDuplicate]
+  );
+
   // Handle row click - shift+click toggles selection, regular click navigates
   const handleRowClick = useCallback(
     (e: React.MouseEvent) => {
@@ -247,6 +265,16 @@ export function InboxRow({
       icon: 'pin',
       onClick: handleTogglePin,
     },
+    ...(itemCanDuplicate
+      ? [
+          {
+            id: 'duplicate',
+            label: 'Duplicate',
+            icon: 'copy',
+            onClick: handleDuplicate,
+          } as ContextMenuItem,
+        ]
+      : []),
     ...(onArchive
       ? [
           {
@@ -382,6 +410,18 @@ export function InboxRow({
               <Icon name="pin" size={14} />
             </ActionIcon>
           </Tooltip>
+          {itemCanDuplicate && (
+            <Tooltip label="Duplicate" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleDuplicateClick}
+                aria-label="Duplicate"
+              >
+                <Icon name="copy" size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
           {onArchive && (
             <Tooltip label="Archive" position="top" withArrow>
               <ActionIcon
