@@ -300,7 +300,7 @@ export function SearchResultCard({
           alignItems: 'center',
           gap: 'var(--mantine-spacing-sm)',
           borderRadius: 'var(--mantine-radius-sm)',
-          borderBottom: '1px solid var(--mantine-color-gray-2)',
+          borderBottom: '1px solid var(--border-subtle)',
           width: '100%',
         }}
       >

@@ -71,7 +71,6 @@ export function SplitPane({
             minWidth: 0,
             borderLeft: '1px solid var(--mantine-color-default-border)',
           }}
-          p="md"
         >
           {secondaryContent}
         </Box>

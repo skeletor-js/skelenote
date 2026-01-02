@@ -38,10 +38,7 @@
   opacity: 1;
 }
 
-/* Date group header */
+/* Date group header - scrolls with content */
 .groupHeader {
-  position: sticky;
-  top: 0;
-  background-color: var(--mantine-color-body);
-  z-index: 1;
+  /* Non-sticky: scrolls naturally with list items */
 }

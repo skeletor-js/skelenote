@@ -8,7 +8,7 @@
   align-items: center;
   gap: var(--mantine-spacing-sm);
   padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
-  border-bottom: 1px solid var(--mantine-color-gray-2);
+  border-bottom: 1px solid var(--border-default);
   background-color: var(--mantine-color-body);
   flex-shrink: 0;
   min-height: 44px;
@@ -78,7 +78,7 @@
 
 /* Dark mode */
 :global([data-mantine-color-scheme="dark"]) .header {
-  border-bottom-color: var(--mantine-color-gray-8);
+  border-bottom-color: var(--border-default);
   background-color: var(--mantine-color-dark-7);
 }
 
