@@ -28,6 +28,7 @@ import {
   blockDevice,
 } from '@/lib/devices';
 import { getDeviceId } from '@/lib/sync';
+import { broadcastDeviceRegistry, broadcastDeviceRevoke } from '@/lib/sync/local';
 import { useSyncContextSafe } from './SyncContext';
 
 interface DeviceRegistryContextValue {
@@ -222,6 +223,37 @@ export function DeviceRegistryProvider({ children }: DeviceRegistryProviderProps
     };
   }, [syncClient, store]);
 
+  // Wire up store's broadcast callback for automatic sync
+  useEffect(() => {
+    if (!store) return;
+
+    // Set up broadcast callback to sync registry changes to both relay and P2P
+    store.setBroadcastCallback(async (data: Uint8Array) => {
+      console.log('[DeviceRegistry] Broadcasting registry update');
+
+      // Broadcast to cloud relay
+      if (syncClient) {
+        syncClient.sendDeviceRegistryUpdate(data);
+      }
+
+      // Broadcast to P2P peers
+      try {
+        const peerCount = await broadcastDeviceRegistry(data);
+        if (peerCount > 0) {
+          console.log('[DeviceRegistry] Broadcast to', peerCount, 'P2P peers');
+        }
+      } catch (err) {
+        // P2P might not be enabled, that's ok
+        console.debug('[DeviceRegistry] P2P broadcast failed:', err);
+      }
+    });
+
+    return () => {
+      // Clear callback on cleanup
+      store.setBroadcastCallback(async () => {});
+    };
+  }, [store, syncClient]);
+
   // Register current device
   const registerCurrentDevice = useCallback(async () => {
     if (!store) {
@@ -309,6 +341,24 @@ export function DeviceRegistryProvider({ children }: DeviceRegistryProviderProps
           signature: revocation.signature,
         });
         console.log('[DeviceRegistry] Broadcast revocation via relay for:', deviceId);
+      }
+
+      // Broadcast revocation to P2P peers
+      try {
+        const payload: DeviceRevokePayload = {
+          deviceId: revocation.deviceId,
+          revokedAt: revocation.revokedAt,
+          revokedBy: revocation.revokedBy,
+          reason: revocation.reason,
+          signature: revocation.signature,
+        };
+        const peerCount = await broadcastDeviceRevoke(JSON.stringify(payload));
+        if (peerCount > 0) {
+          console.log('[DeviceRegistry] Broadcast revocation to', peerCount, 'P2P peers');
+        }
+      } catch (err) {
+        // P2P might not be enabled, that's ok
+        console.debug('[DeviceRegistry] P2P revocation broadcast failed:', err);
       }
 
       await loadDevices();
