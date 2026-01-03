@@ -2,25 +2,27 @@
 
 ## Current State Assessment
 
-**Overall Verdict: Nearly Ready** - Core features complete, but needs configuration fixes, critical tests, and CI/CD before release.
+**Overall Verdict: Ready for CI/CD** - Core features complete, configuration fixed, critical tests added. Only CI/CD remains before release.
 
 | Area | Status | Action Required |
 |------|--------|-----------------|
 | Features | ✅ Complete | All v1 features implemented |
-| Build Config | ⚠️ Issue | Set `devtools: false` |
-| Test Coverage | ⚠️ Low | Add critical tests |
+| Build Config | ✅ Complete | `devtools: false` set |
+| Test Coverage | ✅ Complete | 223 tests passing (112 new) |
 | CI/CD | ❌ Missing | Create GitHub Actions |
-| Console Logs | ⚠️ Noisy | Clean up sync/crypto logs |
+| Console Logs | ✅ Complete | High-priority logs cleaned |
 | Security | ✅ Solid | Minor improvements only |
 
 ---
 
-## Phase 1: Critical Configuration (Must Do)
+## Phase 1: Critical Configuration ✅ COMPLETE
 
-### 1.1 Disable DevTools for Release
+### 1.1 Disable DevTools for Release ✅
 **File:** [tauri.conf.json](src-tauri/tauri.conf.json)
 
-Change line 24 from `"devtools": true` to `"devtools": false`
+~~Change line 24 from `"devtools": true` to `"devtools": false`~~
+
+Done - DevTools disabled in production builds.
 
 ### 1.2 Verify Dev-Test Exclusion
 **File:** [dev-test.ts](src/lib/semantic/dev-test.ts)
@@ -51,48 +53,58 @@ Create `.github/workflows/` directory with three workflows:
 
 ---
 
-## Phase 3: Critical Tests
+## Phase 3: Critical Tests ✅ COMPLETE
 
-### 3.1 ObjectStore Tests (Priority 1)
-**Create:** `src/lib/loro/__tests__/objects.test.ts`
+### 3.1 ObjectStore Tests ✅
+**Created:** [src/lib/loro/__tests__/objects.test.ts](src/lib/loro/__tests__/objects.test.ts)
 
-Test coverage:
-- CRUD operations (create, get, update, delete)
-- `getAll()` excludes archived by default
-- Property validation
-- Content operations
-- Pin/unpin, archive/unarchive
+61 tests covering:
+- CRUD operations (create, get, getOrThrow, update, setProperty, delete, exists)
+- Retrieval (getAll excludes archived, getByType, getInboxed, getArchived)
+- Content operations (getContent, setContent, hasContent validation)
+- Inbox workflow (markProcessed)
+- Pinning (pin, unpin, reorderPinned, getPinnedObjects)
+- Archive (archive sets inboxed=false, unarchive)
+- Duplication and batch operations
+- Edge cases (ValidationError for unknown type, ObjectNotFoundError)
 
-### 3.2 Query Tests (Priority 2)
-**Create:** `src/lib/loro/__tests__/queries.test.ts`
+### 3.2 Query Tests ✅
+**Created:** [src/lib/loro/__tests__/queries.test.ts](src/lib/loro/__tests__/queries.test.ts)
 
-Test coverage:
-- Filter operators (eq, neq, gt, lt, contains)
-- Sort operations
-- QueryBuilder fluent API
+51 tests covering:
+- All filter operators (eq, neq, gt, gte, lt, lte, contains, startsWith, endsWith, in, notIn, isNull, isNotNull)
+- Built-in field access (id, typeId, inboxed, pinned, archived, createdAt, updatedAt)
+- Sorting (ascending/descending, null handling)
+- Pagination (limit, offset, combined)
+- QueryBuilder fluent API (where, whereEquals, ofType, inboxed, archived, sortBy, sortByCreated, sortByUpdated, limit, offset, execute, first, count)
 
-### 3.3 Add Coverage Config
+### 3.3 Coverage Config ✅
 **File:** [vite.config.ts](vite.config.ts)
 
-Add to test config:
+Added coverage configuration:
 ```typescript
 coverage: {
+  provider: 'v8',
   reporter: ['text', 'json', 'html'],
   include: ['src/lib/**/*.ts'],
-  exclude: ['**/*.test.ts', '**/dev-test.ts'],
+  exclude: ['src/lib/**/*.test.ts', 'src/lib/**/__tests__/**'],
 }
 ```
 
+Run `pnpm test -- --coverage` to generate coverage report.
+
 ---
 
-## Phase 4: Console Log Cleanup
+## Phase 4: Console Log Cleanup ✅ COMPLETE
 
-### High Priority (User-Visible Operations)
-| File | Count | Action |
-|------|-------|--------|
-| [client.ts](src/lib/sync/client.ts) | 22 | Remove or conditionalize |
-| [devices/store.ts](src/lib/devices/store.ts) | 12 | Remove or conditionalize |
-| [crypto/index.ts](src/lib/crypto/index.ts) | 6 | Keep errors, remove info |
+### High Priority ✅
+| File | Removed | Kept |
+|------|---------|------|
+| [client.ts](src/lib/sync/client.ts) | 22 info logs | 16 error logs |
+| [devices/store.ts](src/lib/devices/store.ts) | 12 info logs | 5 error logs |
+| [crypto/index.ts](src/lib/crypto/index.ts) | 6 info logs | 12 error logs |
+
+**Total:** 40 informational logs removed, all `console.error` retained for debugging.
 
 ### Medium Priority (Can defer to post-alpha)
 - [loro/store.ts](src/lib/loro/store.ts) - 13 logs
@@ -107,9 +119,10 @@ coverage: {
 ## Phase 5: Release Process
 
 ### Pre-Release Checklist
-- [ ] `devtools: false` in tauri.conf.json
+- [x] `devtools: false` in tauri.conf.json
+- [x] All tests passing (223 tests)
+- [ ] CI/CD workflows created
 - [ ] Version numbers synced across all config files
-- [ ] All tests passing
 - [ ] Manual testing of core flows
 - [ ] Successful builds on all platforms
 
@@ -131,17 +144,17 @@ git push origin main --tags
 
 ## Implementation Order
 
-| Step | Task | Effort |
+| Step | Task | Status |
 |------|------|--------|
-| 1 | Set `devtools: false` | 5 min |
-| 2 | Create CI/CD workflows | 2-3 hrs |
-| 3 | Add ObjectStore tests | 3-4 hrs |
-| 4 | Add Query tests | 1-2 hrs |
-| 5 | Clean up high-priority console logs | 1-2 hrs |
-| 6 | Manual testing | 1 hr |
-| 7 | Update versions and tag release | 30 min |
+| 1 | Set `devtools: false` | ✅ Complete |
+| 2 | Create CI/CD workflows | ⏳ Pending |
+| 3 | Add ObjectStore tests | ✅ Complete (61 tests) |
+| 4 | Add Query tests | ✅ Complete (51 tests) |
+| 5 | Clean up high-priority console logs | ✅ Complete (40 removed) |
+| 6 | Manual testing | ⏳ Pending |
+| 7 | Update versions and tag release | ⏳ Pending |
 
-**Total estimated effort: 1-2 days**
+**Remaining effort: ~3-4 hours** (CI/CD setup + manual testing + version bump)
 
 ---
 

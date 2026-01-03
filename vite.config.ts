@@ -17,6 +17,12 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: ['src/lib/**/*.ts'],
+      exclude: ['src/lib/**/*.test.ts', 'src/lib/**/__tests__/**'],
+    },
   },
   // Prevent vite from obscuring rust errors
   clearScreen: false,
