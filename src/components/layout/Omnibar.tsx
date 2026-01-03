@@ -27,6 +27,8 @@ import classes from './Omnibar.module.css';
 export interface OmnibarRef {
   focus: () => void;
   blur: () => void;
+  /** Focus the omnibar with "/" prefix to enter command/create mode */
+  focusCommandMode: () => void;
 }
 
 interface OmnibarProps {
@@ -72,6 +74,17 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
     },
     blur: () => {
       inputRef.current?.blur();
+    },
+    focusCommandMode: () => {
+      setQuery('/');
+      inputRef.current?.focus();
+      // Move cursor to end after "/" prefix
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.selectionStart = 1;
+          inputRef.current.selectionEnd = 1;
+        }
+      }, 0);
     },
   }));
 
@@ -226,14 +239,30 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
         // Object navigation
         navigateToObject(action.objectId);
       } else if (action.typeId && store) {
-        // Create action
+        // Create action - set default properties based on type
         let properties: Record<string, string | number | boolean | string[] | null> = {};
-        if (action.typeId === 'task') {
-          properties = { title: 'New Task', status: 'todo' };
-        } else if (action.typeId === 'note') {
-          properties = { title: 'New Note' };
-        } else if (action.typeId === 'link') {
-          properties = { url: '', title: 'New Link' };
+        switch (action.typeId) {
+          case 'task':
+            properties = { title: 'New Task', status: 'todo' };
+            break;
+          case 'note':
+            properties = { title: 'New Note' };
+            break;
+          case 'link':
+            properties = { url: '', title: 'New Link' };
+            break;
+          case 'meeting':
+            properties = { title: 'New Meeting', startTime: Date.now() };
+            break;
+          case 'project':
+            properties = { name: 'New Project', status: 'active' };
+            break;
+          case 'area':
+            properties = { name: 'New Area' };
+            break;
+          case 'tag':
+            properties = { name: 'New Tag' };
+            break;
         }
         const newObject = store.create({
           typeId: action.typeId,
