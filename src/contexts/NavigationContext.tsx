@@ -17,7 +17,7 @@ export type ViewType =
   | 'daily-notes'
   | 'this-week'      // DEPRECATED: Use 'tasks' instead
   | 'overdue'        // DEPRECATED: Use 'tasks' instead
-  | 'blocked'        // DEPRECATED: Use 'tasks' instead (renamed to 'waiting')
+  | 'waiting'        // NEW: Renamed from 'blocked' for clearer meaning
   | 'eventually'     // DEPRECATED: Use 'tasks' instead
   | 'completed'      // DEPRECATED: Use 'tasks' instead
   | 'object'
@@ -165,7 +165,26 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   // Editor focus state for undo/redo routing
   const [isEditorFocused, setEditorFocused] = useState(false);
 
+  // Helper to close split pane when leaving version comparison
+  const closeVersionComparisonIfActive = useCallback(() => {
+    if (splitPane.mode === 'version-comparison') {
+      setSplitPaneState({
+        isOpen: false,
+        objectId: null,
+        width: 50,
+        mode: 'normal',
+        historicalFrontier: null,
+        historicalTimestamp: null,
+        timeMachineContext: null,
+      });
+    }
+  }, [splitPane.mode]);
+
   const navigateToObject = useCallback((objectId: string) => {
+    // Close version comparison if navigating to a different object
+    if (splitPane.mode === 'version-comparison' && splitPane.objectId !== objectId) {
+      closeVersionComparisonIfActive();
+    }
     setHistory((prev) => [...prev, currentState]);
     setForwardHistory([]); // Clear forward history on new navigation
     setCurrentState({
@@ -176,9 +195,10 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       savedViewId: null,
       browseTypeId: null,
     });
-  }, [currentState]);
+  }, [currentState, splitPane.mode, splitPane.objectId, closeVersionComparisonIfActive]);
 
   const navigateToView = useCallback((view: ViewType) => {
+    closeVersionComparisonIfActive();
     setHistory((prev) => [...prev, currentState]);
     setForwardHistory([]); // Clear forward history on new navigation
     setCurrentState({
@@ -189,9 +209,10 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       savedViewId: null,
       browseTypeId: null,
     });
-  }, [currentState]);
+  }, [currentState, closeVersionComparisonIfActive]);
 
   const navigateToSearch = useCallback((query?: string) => {
+    closeVersionComparisonIfActive();
     setHistory((prev) => [...prev, currentState]);
     setForwardHistory([]); // Clear forward history on new navigation
     setCurrentState({
@@ -202,9 +223,10 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       savedViewId: null,
       browseTypeId: null,
     });
-  }, [currentState]);
+  }, [currentState, closeVersionComparisonIfActive]);
 
   const navigateToTimeMachine = useCallback((objectId?: string) => {
+    closeVersionComparisonIfActive();
     setHistory((prev) => [...prev, currentState]);
     setForwardHistory([]); // Clear forward history on new navigation
     setCurrentState({
@@ -215,9 +237,10 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       savedViewId: null,
       browseTypeId: null,
     });
-  }, [currentState]);
+  }, [currentState, closeVersionComparisonIfActive]);
 
   const navigateToSavedView = useCallback((viewId: string) => {
+    closeVersionComparisonIfActive();
     setHistory((prev) => [...prev, currentState]);
     setForwardHistory([]); // Clear forward history on new navigation
     setCurrentState({
@@ -228,9 +251,10 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       savedViewId: viewId,
       browseTypeId: null,
     });
-  }, [currentState]);
+  }, [currentState, closeVersionComparisonIfActive]);
 
   const navigateToTypeBrowse = useCallback((typeId: string) => {
+    closeVersionComparisonIfActive();
     setHistory((prev) => [...prev, currentState]);
     setForwardHistory([]); // Clear forward history on new navigation
     setCurrentState({
@@ -241,25 +265,27 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       savedViewId: null,
       browseTypeId: typeId,
     });
-  }, [currentState]);
+  }, [currentState, closeVersionComparisonIfActive]);
 
   const navigateBack = useCallback(() => {
     if (history.length === 0) return;
 
+    closeVersionComparisonIfActive();
     const previous = history[history.length - 1];
     setForwardHistory((prev) => [...prev, currentState]); // Push current to forward
     setHistory((prev) => prev.slice(0, -1));
     setCurrentState(previous);
-  }, [history, currentState]);
+  }, [history, currentState, closeVersionComparisonIfActive]);
 
   const navigateForward = useCallback(() => {
     if (forwardHistory.length === 0) return;
 
+    closeVersionComparisonIfActive();
     const next = forwardHistory[forwardHistory.length - 1];
     setHistory((prev) => [...prev, currentState]); // Push current to back history
     setForwardHistory((prev) => prev.slice(0, -1));
     setCurrentState(next);
-  }, [forwardHistory, currentState]);
+  }, [forwardHistory, currentState, closeVersionComparisonIfActive]);
 
   // Split pane methods
   const openInSplit = useCallback((objectId: string) => {

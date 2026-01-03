@@ -192,13 +192,10 @@ export function HorizontalTimeline({
 
   return (
     <Stack gap="sm">
-      {/* Header with date and change count */}
-      <Group justify="space-between">
-        <Text size="sm" fw={500}>{formatDateLabel(date)}</Text>
-        <Text size="xs" c="dimmed">
-          {changePoints.length} change{changePoints.length !== 1 ? 's' : ''}
-        </Text>
-      </Group>
+      {/* Change count header (date context now provided by HistoryWeekStrip) */}
+      <Text size="xs" c="dimmed" ta="right">
+        {changePoints.length} change{changePoints.length !== 1 ? 's' : ''}
+      </Text>
 
       {/* Horizontal scrubber */}
       <Group gap="xs" wrap="nowrap" align="center">
