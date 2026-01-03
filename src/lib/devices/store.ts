@@ -103,14 +103,12 @@ export class DeviceRegistryStore {
     const fileExists = await exists(filePath);
 
     if (!fileExists) {
-      console.log('[DeviceRegistryStore] No existing registry found');
       return;
     }
 
     try {
       const data = await readFile(filePath);
       this.registry.import(data);
-      console.log('[DeviceRegistryStore] Registry loaded from disk');
     } catch (error) {
       console.error('[DeviceRegistryStore] Failed to load registry:', error);
     }
@@ -142,7 +140,6 @@ export class DeviceRegistryStore {
       const filePath = await join(this.dataPath, REGISTRY_FILENAME);
       const data = this.registry.export();
       await writeFile(filePath, data);
-      console.log('[DeviceRegistryStore] Registry saved to disk');
     } catch (error) {
       console.error('[DeviceRegistryStore] Failed to save registry:', error);
     }
@@ -164,7 +161,6 @@ export class DeviceRegistryStore {
       const json = new TextDecoder().decode(data);
       const blocklist: LocalBlocklist = JSON.parse(json);
       this.localBlocklist = new Set(blocklist.revokedDeviceIds);
-      console.log('[DeviceRegistryStore] Blocklist loaded:', this.localBlocklist.size, 'devices');
     } catch (error) {
       console.error('[DeviceRegistryStore] Failed to load blocklist:', error);
     }
@@ -184,7 +180,6 @@ export class DeviceRegistryStore {
       };
       const data = new TextEncoder().encode(JSON.stringify(blocklist, null, 2));
       await writeFile(filePath, data);
-      console.log('[DeviceRegistryStore] Blocklist saved');
     } catch (error) {
       console.error('[DeviceRegistryStore] Failed to save blocklist:', error);
     }
@@ -227,7 +222,6 @@ export class DeviceRegistryStore {
       if (this.broadcastCallback) {
         const data = this.registry.export();
         await this.broadcastCallback(data);
-        console.log('[DeviceRegistryStore] Registry broadcast sent');
       }
     }, 100);
   }
@@ -258,7 +252,6 @@ export class DeviceRegistryStore {
     });
 
     this.registry.registerDevice(record);
-    console.log('[DeviceRegistryStore] Current device registered:', this.currentDeviceId);
   }
 
   /**
@@ -266,7 +259,6 @@ export class DeviceRegistryStore {
    */
   registerPeerDevice(record: DeviceRecord): void {
     this.registry.registerDevice(record);
-    console.log('[DeviceRegistryStore] Peer device registered:', record.deviceId);
   }
 
   /**
@@ -290,7 +282,6 @@ export class DeviceRegistryStore {
    */
   renameDevice(deviceId: string, newName: string): void {
     this.registry.renameDevice(deviceId, newName);
-    console.log('[DeviceRegistryStore] Device renamed:', deviceId, '->', newName);
   }
 
   /**
@@ -307,8 +298,6 @@ export class DeviceRegistryStore {
 
     // Save blocklist
     this.saveBlocklist();
-
-    console.log('[DeviceRegistryStore] Device revoked:', revocation.deviceId);
   }
 
   /**
@@ -418,7 +407,6 @@ export class DeviceRegistryStore {
    * Handle incoming registry sync data
    */
   handleSyncUpdate(data: Uint8Array): void {
-    console.log('[DeviceRegistryStore] Received sync update, size:', data.length);
     try {
       this.registry.import(data);
 
@@ -427,7 +415,6 @@ export class DeviceRegistryStore {
       for (const rev of revocations) {
         if (!this.localBlocklist.has(rev.deviceId)) {
           this.localBlocklist.add(rev.deviceId);
-          console.log('[DeviceRegistryStore] Added to blocklist from sync:', rev.deviceId);
         }
       }
 

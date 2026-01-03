@@ -24,7 +24,6 @@ function isTauri(): boolean {
  */
 export async function initCrypto(): Promise<boolean> {
   if (!isTauri()) {
-    console.warn('[Crypto] Not running in Tauri environment, crypto disabled');
     return false;
   }
   try {
@@ -48,10 +47,7 @@ export async function generateKey(): Promise<string> {
     throw new Error('Crypto operations require Tauri environment');
   }
   try {
-    console.log('[Crypto] Generating new key...');
-    const result = await invoke<string>('crypto_generate_key');
-    console.log('[Crypto] Key generated successfully');
-    return result;
+    return await invoke<string>('crypto_generate_key');
   } catch (err) {
     console.error('[Crypto] generateKey failed:', err);
     throw err;
@@ -72,9 +68,7 @@ export async function importKey(mnemonic: string): Promise<void> {
     throw new Error('Crypto operations require Tauri environment');
   }
   try {
-    console.log('[Crypto] Importing key...');
     await invoke<void>('crypto_import_key', { mnemonic });
-    console.log('[Crypto] Key imported successfully');
   } catch (err) {
     console.error('[Crypto] importKey failed:', err);
     throw err;
@@ -241,9 +235,7 @@ export async function clearKey(): Promise<void> {
     throw new Error('Crypto operations require Tauri environment');
   }
   try {
-    console.log('[Crypto] Clearing key...');
     await invoke<void>('crypto_clear_key');
-    console.log('[Crypto] Key cleared successfully');
   } catch (err) {
     console.error('[Crypto] clearKey failed:', err);
     throw err;

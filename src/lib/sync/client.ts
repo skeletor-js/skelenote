@@ -78,7 +78,6 @@ export class SyncClient {
   async enableEncryption(): Promise<boolean> {
     try {
       this.encryptionEnabled = await hasKey();
-      console.log(`[SyncClient] Encryption ${this.encryptionEnabled ? 'enabled' : 'disabled'}`);
       return this.encryptionEnabled;
     } catch (err) {
       console.error('[SyncClient] Failed to check encryption key:', err);
@@ -214,7 +213,6 @@ export class SyncClient {
     const payload: CatchUpPayload = { fromSequence };
     const message = encodeMessage(MessageType.CATCH_UP, encodeJsonPayload(payload));
     this.ws.send(message);
-    console.log(`[SyncClient] Requesting catch-up from sequence ${fromSequence}`);
   }
 
   /**
@@ -244,7 +242,6 @@ export class SyncClient {
 
     const message = encodeMessage(MessageType.COMPACT, payload);
     this.ws.send(message);
-    console.log(`[SyncClient] Requesting compaction up to sequence ${upToSequence}`);
   }
 
   /**
@@ -392,7 +389,6 @@ export class SyncClient {
 
       // Check if connection was rejected (device revoked)
       if (ack.rejected) {
-        console.log(`[SyncClient] Connection rejected: ${ack.reason}`);
         this.setStatus('disconnected');
 
         // Notify listener of revocation
@@ -408,13 +404,10 @@ export class SyncClient {
         return;
       }
 
-      console.log(`[SyncClient] Connected. ${ack.sessionCount} device(s) in room.`);
-
       // Update sequence tracking
       if (ack.currentSequence !== undefined) {
         // Check if we need to catch up
         if (ack.hasHistory && this.lastSequence < ack.currentSequence) {
-          console.log(`[SyncClient] Need to catch up: local=${this.lastSequence} server=${ack.currentSequence}`);
           this.requestCatchUp(this.lastSequence);
         }
         this.lastSequence = ack.currentSequence;
@@ -431,14 +424,12 @@ export class SyncClient {
    * Handle UPDATE message from another device
    */
   private async handleUpdate(payload: Uint8Array): Promise<void> {
-    console.log('[SyncClient] Received UPDATE, encrypted size:', payload.length);
     let decrypted = payload;
 
     // Decrypt if encryption is enabled
     if (this.encryptionEnabled) {
       try {
         decrypted = await decrypt(payload);
-        console.log('[SyncClient] Decrypted UPDATE, size:', decrypted.length);
       } catch (err) {
         console.error('[SyncClient] Decryption failed:', err);
         this.emit({ type: 'error', error: new Error('Decryption failed') });
@@ -447,10 +438,7 @@ export class SyncClient {
     }
 
     if (this.onUpdateCallback) {
-      console.log('[SyncClient] Calling onUpdateCallback');
       this.onUpdateCallback(decrypted);
-    } else {
-      console.warn('[SyncClient] No onUpdateCallback registered');
     }
     this.emit({ type: 'sync' });
   }
@@ -500,8 +488,6 @@ export class SyncClient {
       const headerBytes = payload.slice(4, 4 + headerLen);
       const header = decodeJsonPayload<HistoryHeaderPayload>(headerBytes);
 
-      console.log(`[SyncClient] Receiving ${header.count} historical updates (${header.fromSequence}-${header.toSequence})`);
-
       // Decrypt and collect updates
       const updates: Uint8Array[] = [];
       let offset = 4 + headerLen;
@@ -549,7 +535,6 @@ export class SyncClient {
 
     // Check for revocation close code (4001)
     if (event.code === 4001) {
-      console.log(`[SyncClient] Disconnected due to revocation: ${event.reason}`);
       if (this.onDeviceRevokedCallback) {
         this.onDeviceRevokedCallback(this.config.deviceId, event.reason);
       }
@@ -596,10 +581,9 @@ export class SyncClient {
    * Schedule a reconnection attempt
    */
   private scheduleReconnect(): void {
-    const delay = this.connectionManager.scheduleReconnect(() => {
+    this.connectionManager.scheduleReconnect(() => {
       this.connect();
     });
-    console.log(`[SyncClient] Reconnecting in ${delay}ms (attempt ${this.connectionManager.getRetryCount()})`);
   }
 
   /**
@@ -695,7 +679,6 @@ export class SyncClient {
     if (this.ws?.readyState === WebSocket.OPEN) {
       const message = encodeMessage(MessageType.DEVICE_REGISTRY, data);
       this.ws.send(message);
-      console.log(`[SyncClient] Sent DEVICE_REGISTRY (${data.byteLength} bytes)`);
     }
   }
 
@@ -706,7 +689,6 @@ export class SyncClient {
     if (this.ws?.readyState === WebSocket.OPEN) {
       const message = encodeMessage(MessageType.DEVICE_UPDATE, data);
       this.ws.send(message);
-      console.log(`[SyncClient] Sent DEVICE_UPDATE (${data.byteLength} bytes)`);
     }
   }
 
@@ -717,7 +699,6 @@ export class SyncClient {
     if (this.ws?.readyState === WebSocket.OPEN) {
       const message = encodeMessage(MessageType.DEVICE_REVOKE, encodeJsonPayload(payload));
       this.ws.send(message);
-      console.log(`[SyncClient] Sent DEVICE_REVOKE for ${payload.deviceId}`);
     }
   }
 
@@ -728,7 +709,6 @@ export class SyncClient {
     if (this.ws?.readyState === WebSocket.OPEN) {
       const message = encodeMessage(MessageType.DEVICE_RENAME, encodeJsonPayload(payload));
       this.ws.send(message);
-      console.log(`[SyncClient] Sent DEVICE_RENAME for ${payload.deviceId}`);
     }
   }
 
@@ -740,7 +720,6 @@ export class SyncClient {
    * Handle DEVICE_REGISTRY message
    */
   private handleDeviceRegistry(payload: Uint8Array): void {
-    console.log(`[SyncClient] Received DEVICE_REGISTRY (${payload.byteLength} bytes)`);
     if (this.onDeviceRegistryCallback) {
       this.onDeviceRegistryCallback(payload);
     }
@@ -750,7 +729,6 @@ export class SyncClient {
    * Handle DEVICE_UPDATE message
    */
   private handleDeviceUpdate(payload: Uint8Array): void {
-    console.log(`[SyncClient] Received DEVICE_UPDATE (${payload.byteLength} bytes)`);
     if (this.onDeviceUpdateCallback) {
       this.onDeviceUpdateCallback(payload);
     }
@@ -762,11 +740,9 @@ export class SyncClient {
   private handleDeviceRevoke(payload: Uint8Array): void {
     try {
       const revocation = decodeJsonPayload<DeviceRevokePayload>(payload);
-      console.log(`[SyncClient] Received DEVICE_REVOKE for ${revocation.deviceId}`);
 
       // Check if we are the revoked device
       if (revocation.deviceId === this.config.deviceId) {
-        console.log('[SyncClient] This device has been revoked!');
         if (this.onDeviceRevokedCallback) {
           this.onDeviceRevokedCallback(revocation.deviceId, revocation.reason);
         }
@@ -789,7 +765,6 @@ export class SyncClient {
   private handleDeviceRevokeAck(payload: Uint8Array): void {
     try {
       const ack = decodeJsonPayload<DeviceRevokeAckPayload>(payload);
-      console.log(`[SyncClient] Received DEVICE_REVOKE_ACK for ${ack.deviceId}: ${ack.accepted ? 'accepted' : 'rejected'}`);
 
       if (this.onDeviceRevokeAckCallback) {
         this.onDeviceRevokeAckCallback(ack);
@@ -805,7 +780,6 @@ export class SyncClient {
   private handleDeviceRename(payload: Uint8Array): void {
     try {
       const rename = decodeJsonPayload<DeviceRenamePayload>(payload);
-      console.log(`[SyncClient] Received DEVICE_RENAME for ${rename.deviceId}: ${rename.newName}`);
 
       if (this.onDeviceRenameCallback) {
         this.onDeviceRenameCallback(rename);
