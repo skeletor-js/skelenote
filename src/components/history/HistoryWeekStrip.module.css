@@ -1,0 +1,11 @@
+/**
+ * HistoryWeekStrip.module.css - Hover states for week day cells
+ */
+
+.dayCell {
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.dayCell:hover:not(:disabled) {
+  background-color: var(--hover-warm);
+}

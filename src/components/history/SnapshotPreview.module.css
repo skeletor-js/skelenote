@@ -7,7 +7,7 @@
 }
 
 .snapshotRow:hover {
-  background-color: var(--mantine-color-gray-0);
+  background-color: var(--hover-warm);
 }
 
 /* Focused state (keyboard navigation) */
@@ -27,7 +27,4 @@
   opacity: 1;
 }
 
-/* Dark mode */
-[data-mantine-color-scheme="dark"] .snapshotRow:hover {
-  background-color: var(--mantine-color-gray-8);
-}
+/* Dark mode handled by --hover-warm CSS variable */
