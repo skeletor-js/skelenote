@@ -14,3 +14,11 @@
 :global([data-mantine-color-scheme="dark"]) .dayCell:hover {
   background-color: rgba(184, 92, 80, 0.06);
 }
+
+.dayCell[data-today="true"]:not([aria-pressed="true"]) {
+  background-color: var(--mantine-color-ember-0);
+}
+
+:global([data-mantine-color-scheme="dark"]) .dayCell[data-today="true"]:not([aria-pressed="true"]) {
+  background-color: rgba(184, 92, 80, 0.15);
+}
