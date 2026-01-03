@@ -310,7 +310,7 @@ export function HistoryWeekStrip({
           return (
             <Button
               key={dateKey}
-              variant={isSelected ? 'light' : 'subtle'}
+              variant={isSelected ? 'filled' : 'subtle'}
               color={isSelected ? 'ember' : 'gray'}
               onClick={() => hasChanges && onDateSelect(dateKey)}
               disabled={!hasChanges}
@@ -318,6 +318,7 @@ export function HistoryWeekStrip({
               w={48}
               p={0}
               className={styles.dayCell}
+              data-today={isTodayDate}
               aria-label={`${date.toLocaleDateString('en-US', {
                 weekday: 'long',
                 month: 'long',
@@ -327,16 +328,6 @@ export function HistoryWeekStrip({
               aria-pressed={isSelected}
               style={{
                 position: 'relative',
-                backgroundColor: isSelected
-                  ? 'var(--selection-glow)'
-                  : isTodayDate && hasChanges
-                    ? 'var(--mantine-color-ember-0)'
-                    : undefined,
-                border: isTodayDate && hasChanges
-                  ? '2px solid var(--mantine-color-ember-4)'
-                  : isSelected
-                    ? '1px solid var(--selection-border)'
-                    : undefined,
               }}
             >
               <Stack gap={0} align="center">

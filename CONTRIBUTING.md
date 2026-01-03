@@ -1,0 +1,183 @@
+# Contributing to Skelenote
+
+Thank you for your interest in contributing to Skelenote! This guide will help you get set up and understand our development workflow.
+
+## Prerequisites
+
+### Required
+
+- **Node.js 18+** - [Download](https://nodejs.org/)
+- **Rust (latest stable)** - [Install via rustup](https://rustup.rs/)
+- **pnpm** - [Install pnpm](https://pnpm.io/installation)
+
+### Platform-Specific Dependencies
+
+#### macOS
+```bash
+xcode-select --install
+```
+
+#### Windows
+- [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+- [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (usually pre-installed on Windows 10/11)
+
+#### Linux (Debian/Ubuntu)
+```bash
+sudo apt update
+sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
+  libssl-dev libayatana-appindicator3-dev librsvg2-dev
+```
+
+## Development Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/jordanstella/skelenote.git
+cd skelenote
+```
+
+### 2. Install Dependencies
+
+```bash
+pnpm install
+```
+
+### 3. Start Development Server
+
+```bash
+pnpm tauri dev
+```
+
+This starts the Vite dev server and launches the Tauri app with hot reload. Changes to React code will hot-reload; changes to Rust code require a restart.
+
+### 4. Build for Production
+
+```bash
+pnpm tauri build
+```
+
+Produces platform-specific binaries in `src-tauri/target/release/bundle/`.
+
+## Code Style
+
+### TypeScript/React
+
+- **Strict mode** enabled with `noUnusedLocals` and `noUnusedParameters`
+- **Path aliases**: Use `@/` for imports from `src/` (e.g., `import { useObjects } from '@/contexts'`)
+- **Component style**: Functional components with hooks
+- **UI Framework**: Mantine 8 - use Mantine components for all UI
+- **Icons**: Lucide React only - see `src/lib/icons.ts` for the icon map
+
+### Rust
+
+- Follow standard Rust conventions
+- Use `cargo fmt` before committing
+- Use `cargo clippy` to catch common issues
+
+### Design System
+
+Before making UI changes, review `docs/design/style-guide.md`. Key principles:
+- Dark mode only (warm palette: ember, clay, sage, ochre, brick, slate)
+- No emojis in the interface
+- Linear-inspired minimal aesthetic
+- High-density, keyboard-first design
+
+## Testing
+
+```bash
+pnpm test                   # Run all tests
+pnpm test -- path/to/test   # Run specific test file
+pnpm test:ui                # Run tests with Vitest UI
+```
+
+Test files are co-located with source files using `.test.ts` or `.spec.ts` suffix.
+
+## Git Workflow
+
+### Branching
+
+- `main` - Stable, production-ready code
+- `feature/*` - New features
+- `fix/*` - Bug fixes
+- `docs/*` - Documentation updates
+
+### Commit Messages
+
+Use clear, descriptive commit messages:
+```
+feat: add keyboard shortcut for quick create
+fix: resolve sync conflict in object store
+docs: update contributing guide
+refactor: simplify object context provider
+```
+
+### Pull Request Process
+
+1. Fork the repository
+2. Create a feature branch from `main`
+3. Make your changes
+4. Ensure tests pass (`pnpm test`)
+5. Ensure TypeScript compiles (`pnpm exec tsc --noEmit`)
+6. Push to your fork
+7. Open a Pull Request against `main`
+
+### PR Review Checklist
+
+- [ ] Tests added/updated for new functionality
+- [ ] TypeScript types are correct
+- [ ] No console.log statements left in code
+- [ ] UI changes follow the style guide
+- [ ] Documentation updated if needed
+
+## Project Structure
+
+```
+skelenote/
+├── src/                    # React frontend
+│   ├── components/         # UI components by feature
+│   ├── contexts/           # React Context providers
+│   ├── hooks/              # Custom React hooks
+│   ├── lib/                # Core business logic
+│   │   ├── loro/           # CRDT store and queries
+│   │   ├── sync/           # P2P sync protocol
+│   │   ├── crypto/         # Encryption wrapper
+│   │   ├── types/          # TypeScript types
+│   │   └── search/         # Search implementation
+│   ├── theme/              # Mantine theme config
+│   └── styles/             # Global CSS
+├── src-tauri/              # Rust backend
+│   └── src/
+│       ├── crypto/         # Encryption, key management
+│       ├── network/        # P2P networking
+│       └── lib.rs          # Tauri command handlers
+└── docs/                   # Documentation
+    ├── design/             # Design system, brand
+    ├── developer/          # Technical docs
+    └── user/               # User guides
+```
+
+## Debugging
+
+### Frontend
+- Use browser DevTools (Cmd+Option+I in the Tauri window)
+- React DevTools extension works normally
+
+### Rust/Tauri
+- Add `println!` or use the `dbg!` macro
+- Output appears in the terminal running `pnpm tauri dev`
+
+### Data Location
+- **macOS**: `~/Library/Application Support/com.skelenote.app/`
+- **Windows**: `%APPDATA%\com.skelenote.app\`
+- **Linux**: `~/.local/share/com.skelenote.app/`
+
+## Getting Help
+
+- Open an issue for bugs or feature requests
+- Check existing issues before creating new ones
+- For questions, use GitHub Discussions
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the same license as the project (Apache 2.0 with Commons Clause).
