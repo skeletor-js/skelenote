@@ -205,11 +205,11 @@ export function WeekStrip({ selectedDate, onDateSelect, hasNote }: WeekStripProp
                 month: 'long',
                 day: 'numeric',
               })}${dateHasNote ? ', has note' : ''}`}
+              data-today={isTodayDate}
               aria-current={isTodayDate ? 'date' : undefined}
               aria-pressed={isSelected}
               style={{
                 position: 'relative',
-                backgroundColor: isTodayDate && !isSelected ? 'var(--mantine-color-ember-0)' : undefined,
               }}
             >
               <Stack gap={0} align="center">
