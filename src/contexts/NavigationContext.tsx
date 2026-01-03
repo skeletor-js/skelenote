@@ -12,13 +12,14 @@ import type { Frontiers } from 'loro-crdt';
  */
 export type ViewType =
   | 'inbox'
-  | 'today'
+  | 'tasks'          // NEW: Consolidated tasks view with tabs
+  | 'today'          // DEPRECATED: Use 'tasks' instead
   | 'daily-notes'
-  | 'this-week'
-  | 'overdue'
-  | 'blocked'
-  | 'eventually'
-  | 'completed'
+  | 'this-week'      // DEPRECATED: Use 'tasks' instead
+  | 'overdue'        // DEPRECATED: Use 'tasks' instead
+  | 'blocked'        // DEPRECATED: Use 'tasks' instead (renamed to 'waiting')
+  | 'eventually'     // DEPRECATED: Use 'tasks' instead
+  | 'completed'      // DEPRECATED: Use 'tasks' instead
   | 'object'
   | 'settings'
   | 'time-machine'

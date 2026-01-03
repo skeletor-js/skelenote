@@ -250,11 +250,12 @@ export function groupTasksBy(
 
 /**
  * Status display labels
+ * Note: 'blocked' is displayed as 'Waiting' to users for clearer meaning
  */
 export const STATUS_LABELS: Record<string, string> = {
   todo: 'To Do',
   'in-progress': 'In Progress',
-  blocked: 'Blocked',
+  blocked: 'Waiting', // Renamed from 'Blocked' for clearer meaning
   done: 'Done',
 };
 

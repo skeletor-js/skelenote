@@ -1,0 +1,104 @@
+/**
+ * TasksView styles - "Study with a Fireplace" aesthetic
+ *
+ * Warm palette, high density, no cold blues:
+ * - Ember (#B85C50) for active indicators
+ * - Graphite (#52525B) for inactive text
+ * - Carbon (#18181B) for active text
+ * - Vellum (#E4E4E7) for borders
+ * - Ochre for urgency (not alarm-red)
+ */
+
+/* Tab container - sticky at top */
+.tabsContainer {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--surface-canvas);
+  border-bottom: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+/* Tabs root */
+.tabsRoot {
+  width: 100%;
+}
+
+/* Tab list - horizontal, no gaps, high density */
+.tabsList {
+  gap: 0;
+  padding: 0 var(--mantine-spacing-md);
+  flex-wrap: nowrap;
+  border-bottom: none; /* We use container border instead */
+}
+
+/* Individual tabs - warm palette styling */
+.tab {
+  color: var(--mantine-color-gray-6); /* Graphite - soft contrast */
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 12px; /* High density */
+  font-size: var(--mantine-font-size-sm); /* 12px */
+  font-weight: 500;
+  transition: all 150ms ease;
+  border-radius: 0;
+}
+
+.tab:hover:not([data-active]) {
+  color: var(--mantine-color-gray-9); /* Carbon - never pure black */
+  background: transparent;
+}
+
+.tab[data-active] {
+  color: var(--mantine-color-gray-9); /* Carbon */
+  background: transparent;
+  border-bottom-color: var(--mantine-color-ember-5); /* Warm terracotta */
+}
+
+/* Remove Mantine's default focus ring, use ember glow */
+.tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--selection-glow);
+}
+
+/* Tab panel - no extra padding, content handles its own */
+.tabPanel {
+  padding: 0;
+}
+
+/* Badge in tabs - compact styling */
+.badge {
+  margin-left: 4px;
+  min-width: 18px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+}
+
+/* Content area - scrollable */
+.content {
+  flex: 1;
+  overflow: auto;
+  padding: var(--mantine-spacing-md);
+}
+
+/* Dark mode adjustments */
+[data-mantine-color-scheme="dark"] {
+  .tabsContainer {
+    background-color: var(--surface-canvas);
+  }
+
+  .tab {
+    color: var(--mantine-color-gray-4); /* Stone in dark mode */
+  }
+
+  .tab:hover:not([data-active]) {
+    color: var(--mantine-color-gray-2);
+  }
+
+  .tab[data-active] {
+    color: var(--mantine-color-gray-0);
+    border-bottom-color: var(--mantine-color-ember-5);
+  }
+}
