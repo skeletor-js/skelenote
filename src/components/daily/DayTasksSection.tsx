@@ -64,7 +64,7 @@ export function DayTasksSection({ date }: DayTasksSectionProps) {
             transition: 'transform 150ms ease',
           }}
         />
-        <Text size="sm" c="dimmed">
+        <Text size="sm" c="dimmed" fw={500}>
           Tasks Due{taskCount > 0 && ` (${taskCount})`}
         </Text>
       </Group>

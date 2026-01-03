@@ -187,7 +187,7 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
             transition: 'transform 150ms ease',
           }}
         />
-        <Text size="sm" c="dimmed">
+        <Text size="sm" c="dimmed" fw={500}>
           Find Similar
           {displayCount !== null && displayCount > 0 && ` (${displayCount})`}
         </Text>

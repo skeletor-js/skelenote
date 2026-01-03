@@ -1,12 +1,18 @@
-/* Editor container styles */
+/* Editor container styles - seamless integration with page */
 .editor-container {
   width: 100%;
-  min-height: 200px;
+}
+
+/* Remove any BlockNote wrapper styling that creates a box */
+.editor-container [class*="bn-container"],
+.editor-container .bn-editor {
+  background: transparent !important;
 }
 
 /* Override BlockNote theme variables to match our design system */
 .editor-container .bn-editor {
-  --bn-colors-editor-background: var(--mantine-color-body);
+  /* Transparent background so editor blends with page */
+  --bn-colors-editor-background: transparent;
   --bn-colors-editor-text: var(--mantine-color-text);
   --bn-colors-menu-background: var(--mantine-color-gray-0);
   --bn-colors-menu-text: var(--mantine-color-text);
@@ -25,7 +31,8 @@
   --bn-font-family: var(--mantine-font-family);
 
   font-family: var(--mantine-font-family);
-  padding: var(--mantine-spacing-sm);
+  /* Remove padding for seamless integration with page */
+  padding: 0;
 }
 
 /* Placeholder styling */

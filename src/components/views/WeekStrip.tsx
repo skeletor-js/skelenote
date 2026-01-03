@@ -80,6 +80,32 @@ function formatWeekLabel(weekStart: Date): string {
   }
 }
 
+/**
+ * Get relative week context (e.g., "This Week", "Last Week", "2 weeks ago")
+ */
+function getRelativeWeekContext(weekStart: Date): string | null {
+  const today = new Date();
+  const currentWeekStart = getWeekStart(today);
+
+  // Calculate difference in weeks
+  const diffTime = currentWeekStart.getTime() - weekStart.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  const diffWeeks = Math.round(diffDays / 7);
+
+  if (diffWeeks === 0) {
+    return 'This Week';
+  } else if (diffWeeks === 1) {
+    return 'Last Week';
+  } else if (diffWeeks === -1) {
+    return 'Next Week';
+  } else if (diffWeeks > 1) {
+    return `${diffWeeks} weeks ago`;
+  } else if (diffWeeks < -1) {
+    return `In ${Math.abs(diffWeeks)} weeks`;
+  }
+  return null;
+}
+
 export function WeekStrip({ selectedDate, onDateSelect, hasNote }: WeekStripProps) {
   // Calculate week start (Monday) from selected date
   const weekStart = useMemo(() => getWeekStart(selectedDate), [selectedDate]);
@@ -89,6 +115,12 @@ export function WeekStrip({ selectedDate, onDateSelect, hasNote }: WeekStripProp
 
   // Week label for display
   const weekLabel = useMemo(() => formatWeekLabel(weekStart), [weekStart]);
+
+  // Relative week context (This Week, Last Week, etc.)
+  const relativeContext = useMemo(() => getRelativeWeekContext(weekStart), [weekStart]);
+
+  // Check if selected date is today (to hide Today button)
+  const isSelectedToday = useMemo(() => isToday(selectedDate), [selectedDate]);
 
   // Navigation handlers
   const goToPreviousWeek = useCallback(() => {
@@ -125,11 +157,12 @@ export function WeekStrip({ selectedDate, onDateSelect, hasNote }: WeekStripProp
       py="sm"
       style={{
         flexShrink: 0,
+        borderBottom: '1px solid var(--border-default)',
       }}
     >
-      {/* Week label */}
+      {/* Week label with relative context */}
       <Text size="sm" fw={500} c="dimmed" ta="center" mb="xs">
-        {weekLabel}
+        {relativeContext ? `${relativeContext} · ${weekLabel}` : weekLabel}
       </Text>
 
       {/* Combined navigation row */}
@@ -176,7 +209,7 @@ export function WeekStrip({ selectedDate, onDateSelect, hasNote }: WeekStripProp
               aria-pressed={isSelected}
               style={{
                 position: 'relative',
-                border: isTodayDate && !isSelected ? '2px solid var(--mantine-color-ember-4)' : undefined,
+                backgroundColor: isTodayDate && !isSelected ? 'var(--mantine-color-ember-0)' : undefined,
               }}
             >
               <Stack gap={0} align="center">
@@ -195,10 +228,9 @@ export function WeekStrip({ selectedDate, onDateSelect, hasNote }: WeekStripProp
                     bottom: 4,
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    width: '50%',
-                    maxWidth: 16,
-                    height: 3,
-                    borderRadius: 1,
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
                     backgroundColor: isSelected
                       ? 'var(--mantine-color-white)'
                       : 'var(--mantine-color-ember-5)',
@@ -228,15 +260,17 @@ export function WeekStrip({ selectedDate, onDateSelect, hasNote }: WeekStripProp
           <Icon name="chevrons-right" size={16} />
         </ActionIcon>
 
-        {/* Today button */}
-        <Button
-          variant="subtle"
-          size="xs"
-          onClick={goToToday}
-          ml="xs"
-        >
-          Today
-        </Button>
+        {/* Today button - hidden when already viewing today */}
+        {!isSelectedToday && (
+          <Button
+            variant="subtle"
+            size="xs"
+            onClick={goToToday}
+            ml="xs"
+          >
+            Today
+          </Button>
+        )}
       </Group>
     </Box>
   );

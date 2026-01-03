@@ -1,84 +1,115 @@
 /**
- * DailyNoteHeader - Navigation header for daily note detail view
+ * DailyNoteHeader - Journal-style date header for Daily Notes view
+ * Displays date prominently without visual separation from editor
  */
 
-import { useCallback } from 'react';
-import { Group, Button, Text } from '@mantine/core';
-import { useNavigation, useObjects } from '@/contexts';
+import { Group, Text, ActionIcon, Menu } from '@mantine/core';
+import { MoreHorizontal } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
-import { getAdjacentDailyNote, formatDateTitle } from '@/lib/daily';
+import styles from './DailyNoteHeader.module.css';
 
 interface DailyNoteHeaderProps {
-  /** The timestamp of the current daily note's date */
-  dateTimestamp: number;
+  /** The date to display */
+  date: Date;
+  /** Callback for viewing object history */
+  onViewHistory?: () => void;
+  /** Callback for exporting to markdown */
+  onExport?: () => void;
+  /** Callback for deleting the daily note */
+  onDelete?: () => void;
 }
 
-export function DailyNoteHeader({ dateTimestamp }: DailyNoteHeaderProps) {
-  const { store, refreshData } = useObjects();
-  const { navigateToObject, navigateToView } = useNavigation();
+/**
+ * Format date as journal-style: "Thursday, January 2"
+ */
+function formatJournalDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+}
 
-  const currentDate = new Date(dateTimestamp);
-  const dateLabel = formatDateTitle(currentDate);
+/**
+ * Check if the date is in the current year
+ */
+function isCurrentYear(date: Date): boolean {
+  return date.getFullYear() === new Date().getFullYear();
+}
 
-  const handlePreviousDay = useCallback(() => {
-    if (!store) return;
-    const prevNote = getAdjacentDailyNote(store, currentDate, -1);
-    refreshData();
-    navigateToObject(prevNote.id);
-  }, [store, currentDate, refreshData, navigateToObject]);
-
-  const handleNextDay = useCallback(() => {
-    if (!store) return;
-    const nextNote = getAdjacentDailyNote(store, currentDate, 1);
-    refreshData();
-    navigateToObject(nextNote.id);
-  }, [store, currentDate, refreshData, navigateToObject]);
-
-  const handleGoToCalendar = useCallback(() => {
-    navigateToView('daily-notes');
-  }, [navigateToView]);
+export function DailyNoteHeader({
+  date,
+  onViewHistory,
+  onExport,
+  onDelete,
+}: DailyNoteHeaderProps) {
+  const dateLabel = formatJournalDate(date);
+  const showYear = !isCurrentYear(date);
 
   return (
     <Group
+      component="header"
       justify="space-between"
       wrap="nowrap"
-      px="md"
-      py="sm"
-      style={{
-        borderBottom: '1px solid var(--mantine-color-default-border)',
-        flexShrink: 0,
-      }}
+      className={styles.header}
     >
-      <Group gap="xs">
-        <Button
-          variant="subtle"
-          size="xs"
-          onClick={handlePreviousDay}
-          leftSection={<Icon name="chevron-left" size={14} />}
-          aria-label="Previous day"
-        >
-          Prev
-        </Button>
-        <Text fw={500} size="sm">{dateLabel}</Text>
-        <Button
-          variant="subtle"
-          size="xs"
-          onClick={handleNextDay}
-          rightSection={<Icon name="chevron-right" size={14} />}
-          aria-label="Next day"
-        >
-          Next
-        </Button>
-      </Group>
-      <Button
-        variant="subtle"
-        size="xs"
-        onClick={handleGoToCalendar}
-        leftSection={<Icon name="calendar-days" size={14} />}
-        aria-label="Back to calendar"
-      >
-        Calendar
-      </Button>
+      <div>
+        <Text size="xl" fw={600} className={styles.dateTitle}>
+          {dateLabel}
+        </Text>
+        {showYear && (
+          <Text size="sm" c="dimmed" className={styles.yearSubtitle}>
+            {date.getFullYear()}
+          </Text>
+        )}
+      </div>
+
+      <Menu position="bottom-end" withinPortal>
+        <Menu.Target>
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="sm"
+            aria-label="More actions"
+            className={styles.menuTrigger}
+          >
+            <MoreHorizontal size={16} />
+          </ActionIcon>
+        </Menu.Target>
+        <Menu.Dropdown>
+          {onViewHistory && (
+            <Menu.Item
+              leftSection={<Icon name="history" size={14} />}
+              onClick={onViewHistory}
+            >
+              View history
+            </Menu.Item>
+          )}
+          {onExport && (
+            <Menu.Item
+              leftSection={<Icon name="download" size={14} />}
+              onClick={onExport}
+              rightSection={
+                <Text size="xs" c="dimmed">
+                  Cmd+Shift+E
+                </Text>
+              }
+            >
+              Export to Markdown
+            </Menu.Item>
+          )}
+          {(onViewHistory || onExport) && onDelete && <Menu.Divider />}
+          {onDelete && (
+            <Menu.Item
+              color="brick"
+              leftSection={<Icon name="trash-2" size={14} />}
+              onClick={onDelete}
+            >
+              Delete note
+            </Menu.Item>
+          )}
+        </Menu.Dropdown>
+      </Menu>
     </Group>
   );
 }
