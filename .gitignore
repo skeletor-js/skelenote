@@ -35,8 +35,15 @@ yarn-error.log*
 # TypeScript cache
 *.tsbuildinfo
 
+# Wrangler (Cloudflare Workers)
+.wrangler/
+
+# Debug artifacts
+*.pem
+
 # Testing
 coverage/
 
 # Claude Code config
 CLAUDE.md
+.claude/

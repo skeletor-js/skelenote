@@ -165,5 +165,5 @@ You control which devices can access your vault:
 
 ## Further Reading
 
-- [Campfire Mode Guide](./campfire-guide.md) — Local network sync with air-gap security
-- [Cloud Sync Setup](./cloud-sync-guide.md) — Optional relay server configuration
+- [Campfire Mode Guide](campfire-guide.md) — Local network sync with air-gap security
+- [Cloud Sync Setup](cloud-sync-guide.md) — Optional relay server configuration
