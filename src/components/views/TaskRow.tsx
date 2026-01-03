@@ -299,20 +299,6 @@ export function TaskRow({
           </Box>
         )}
 
-        {/* Completion checkbox */}
-        <Box onClick={handleCheckboxClick} style={{ display: 'flex', alignItems: 'center' }}>
-          <Checkbox
-            checked={isComplete}
-            onChange={() => {}}
-            size="sm"
-            aria-label={isComplete ? 'Mark as incomplete' : 'Mark as complete'}
-            styles={{ input: { cursor: 'pointer' } }}
-          />
-        </Box>
-
-        {/* Task type icon - matches InboxRow/SearchResultCard pattern */}
-        <Icon name="circle-check" size={16} style={{ color: 'var(--mantine-color-gray-6)', flexShrink: 0 }} />
-
         {/* Title and inline metadata */}
         <Group gap="xs" style={{ flex: 1, minWidth: 0 }} wrap="nowrap">
           <Text
@@ -368,6 +354,17 @@ export function TaskRow({
 
           {/* Hover-reveal action icons - appear to the right of tags */}
           <Group gap={4} className={styles.actions} wrap="nowrap">
+          <Tooltip label={isComplete ? 'Mark as incomplete' : 'Mark as complete'} position="top" withArrow>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              color="sage"
+              onClick={handleCheckboxClick}
+              aria-label={isComplete ? 'Mark as incomplete' : 'Mark as complete'}
+            >
+              <Icon name="check" size={14} />
+            </ActionIcon>
+          </Tooltip>
           <Tooltip label="Open in split pane" position="top" withArrow>
             <ActionIcon
               variant="subtle"
