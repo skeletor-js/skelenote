@@ -10,7 +10,7 @@
   background-color: var(--mantine-color-gray-0);
 }
 
-/* Dark mode */
+/* Dark mode - warm hover with ember tint */
 :global([data-mantine-color-scheme="dark"]) .dayCell:hover {
-  background-color: var(--surface-raised);
+  background-color: rgba(184, 92, 80, 0.06);
 }

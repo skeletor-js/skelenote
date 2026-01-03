@@ -6,8 +6,7 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Stack, Box, Text, Loader, Center } from '@mantine/core';
 import { ViewHeader } from '@/components/ui';
 import { WeekStrip } from './WeekStrip';
-import { ObjectHeader } from '@/components/object/ObjectHeader';
-import { PropertyList } from '@/components/object/PropertyList';
+import { DailyNoteHeader } from '@/components/daily';
 import { Backlinks } from '@/components/object/Backlinks';
 import { FindSimilar } from '@/components/object/FindSimilar';
 import { DayTasksSection } from '@/components/daily/DayTasksSection';
@@ -24,7 +23,6 @@ import {
   getOrCreateDailyNote,
   getDailyNoteByDate,
 } from '@/lib/daily';
-import type { PropertyValue } from '@/lib/types';
 
 export function DailyNotesView() {
   const { store, isLoading, refreshData, scheduleSave } = useObjects();
@@ -69,26 +67,6 @@ export function DailyNotesView() {
       return null;
     }
   }, [store, dailyNote]);
-
-  // Handler for title changes
-  const handleTitleChange = useCallback(
-    (newTitle: string) => {
-      if (!store || !dailyNote) return;
-      store.setProperty(dailyNote.id, 'title', newTitle);
-      refreshData();
-    },
-    [store, dailyNote, refreshData]
-  );
-
-  // Handler for property changes
-  const handlePropertyChange = useCallback(
-    (propertyId: string, value: PropertyValue) => {
-      if (!store || !dailyNote) return;
-      store.setProperty(dailyNote.id, propertyId, value);
-      refreshData();
-    },
-    [store, dailyNote, refreshData]
-  );
 
   // Handler for content changes
   const handleContentChange = useCallback(
@@ -175,22 +153,10 @@ export function DailyNotesView() {
       <Box style={{ flex: 1, overflow: 'auto' }} p="md">
         {dailyNote && typeDef && (
           <Stack gap="md">
-            {/* Header with overflow menu (title not editable for daily notes) */}
-            <ObjectHeader
-              object={dailyNote}
-              typeDef={typeDef}
-              onTitleChange={handleTitleChange}
+            {/* Journal-style date header */}
+            <DailyNoteHeader
+              date={selectedDate}
               onDelete={handleDelete}
-              canDelete={true}
-              titleEditable={false}
-              paneType="primary"
-            />
-
-            {/* Properties as inline chips */}
-            <PropertyList
-              object={dailyNote}
-              typeDef={typeDef}
-              onPropertyChange={handlePropertyChange}
             />
 
             {/* Content Section with BlockNote Editor */}
