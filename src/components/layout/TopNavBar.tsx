@@ -11,13 +11,17 @@ import { Omnibar, type OmnibarRef } from './Omnibar';
 import { CreationControls, SystemControls } from './TopNavRightControls';
 import classes from './TopNavBar.module.css';
 
+export interface OmnibarFocusFunctions {
+  focus: () => void;
+  focusCommandMode: () => void;
+}
+
 interface TopNavBarProps {
-  onQuickCapture?: () => void;
   onOpenShortcuts?: () => void;
   onCreateFromTemplate?: () => void;
   onNewTemplate?: () => void;
-  /** Callback to register the omnibar focus function for global shortcut */
-  onRegisterOmnibarFocus?: (focusFn: () => void) => void;
+  /** Callback to register the omnibar focus functions for global shortcuts */
+  onRegisterOmnibarFocus?: (fns: OmnibarFocusFunctions) => void;
   /** Whether zen mode (sidebar hidden) is active */
   isZenMode?: boolean;
   /** Callback to toggle zen mode */
@@ -32,7 +36,6 @@ interface TopNavBarProps {
  * - System controls: Sync, Theme, Settings (far right)
  */
 export function TopNavBar({
-  onQuickCapture,
   onOpenShortcuts,
   onCreateFromTemplate,
   onNewTemplate,
@@ -44,11 +47,16 @@ export function TopNavBar({
   const { windowControlsHeight, windowControlsWidth, isMacOS, isWindows, isLinux } = usePlatform();
   const omnibarRef = useRef<OmnibarRef>(null);
 
-  // Register omnibar focus function for Cmd+K shortcut
+  // Register omnibar focus functions for Cmd+K and Cmd+N shortcuts
   useEffect(() => {
     if (onRegisterOmnibarFocus) {
-      onRegisterOmnibarFocus(() => {
-        omnibarRef.current?.focus();
+      onRegisterOmnibarFocus({
+        focus: () => {
+          omnibarRef.current?.focus();
+        },
+        focusCommandMode: () => {
+          omnibarRef.current?.focusCommandMode();
+        },
       });
     }
   }, [onRegisterOmnibarFocus]);
@@ -90,7 +98,6 @@ export function TopNavBar({
         </Group>
         <Omnibar
           ref={omnibarRef}
-          onQuickCapture={onQuickCapture}
           onOpenShortcuts={onOpenShortcuts}
           onCreateFromTemplate={onCreateFromTemplate}
           onNewTemplate={onNewTemplate}

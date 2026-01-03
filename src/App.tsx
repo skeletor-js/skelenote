@@ -1,8 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Layout, SplitPane } from '@/components/layout';
+import { Layout, SplitPane, type OmnibarFocusFunctions } from '@/components/layout';
 import { ObjectDetailView } from '@/components/object';
 import { TaskView, TasksView, InboxView, DailyNotesView, SavedViewContent, TypeBrowseView, ArchiveView } from '@/components/views';
-import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
 import { SkeletonKeySetup } from '@/components/setup';
 import { TimeMachine, HistoricalObjectView } from '@/components/history';
@@ -27,7 +26,7 @@ function PlaceholderView({ view }: { view: ViewType }) {
     'daily-notes': 'Daily Notes',
     'this-week': 'This Week',
     overdue: 'Overdue',
-    blocked: 'Blocked',
+    waiting: 'Waiting',
     eventually: 'Eventually',
     completed: 'Completed',
     object: 'Object Detail',
@@ -123,7 +122,7 @@ function PrimaryContent() {
     today: { filter: 'today', title: 'Today' },
     'this-week': { filter: 'this-week', title: 'This Week' },
     overdue: { filter: 'overdue', title: 'Overdue' },
-    blocked: { filter: 'blocked', title: 'Blocked' },
+    waiting: { filter: 'waiting', title: 'Waiting' },
     eventually: { filter: 'eventually', title: 'Eventually' },
     completed: { filter: 'completed', title: 'Completed' },
   };
@@ -222,7 +221,7 @@ function App() {
   const { store, refreshData, saveNow } = useObjects();
   const { isInitialized: isCryptoInitialized, hasSkeletonKey } = useSkeletonKey();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
-  const { splitPane, closeSplit, swapPanes, navigateToView, navigateToSearch, navigateBack, navigateForward, canGoBack, canGoForward, isEditorFocused } = useNavigation();
+  const { splitPane, closeSplit, swapPanes, navigateToView, navigateToSearch, navigateBack, navigateForward, canGoBack, canGoForward, isEditorFocused, currentView, selectedObjectId } = useNavigation();
   const { undo, redo } = useUndo();
   // Exclude tags, projects, and areas from inbox count (they appear in sidebar)
   const inboxCount =
@@ -231,18 +230,17 @@ function App() {
       item.typeId !== BuiltInTypeIds.PROJECT &&
       item.typeId !== BuiltInTypeIds.AREA
     ).length ?? 0;
-  const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
   const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false);
   const { ensureExists: ensureTodaysDailyNote } = useTodaysDailyNote();
   const { createObject: createFromTemplate } = useTemplates();
   const startupCompleteRef = useRef(false);
-  const omnibarFocusRef = useRef<(() => void) | null>(null);
+  const omnibarFocusRef = useRef<OmnibarFocusFunctions | null>(null);
 
-  // Callback to receive the omnibar focus function from Layout
-  const handleRegisterOmnibarFocus = useCallback((focusFn: () => void) => {
-    omnibarFocusRef.current = focusFn;
+  // Callback to receive the omnibar focus functions from Layout
+  const handleRegisterOmnibarFocus = useCallback((fns: OmnibarFocusFunctions) => {
+    omnibarFocusRef.current = fns;
   }, []);
 
   // Auto-create today's daily note and run first-run setup on app launch
@@ -267,14 +265,6 @@ function App() {
       startupCompleteRef.current = true;
     }
   }, [store, hasSkeletonKey, ensureTodaysDailyNote, refreshData, saveNow]);
-
-  const openQuickCapture = useCallback(() => {
-    setIsQuickCaptureOpen(true);
-  }, []);
-
-  const closeQuickCapture = useCallback(() => {
-    setIsQuickCaptureOpen(false);
-  }, []);
 
   const toggleShortcutsModal = useCallback(() => {
     setIsShortcutsModalOpen((prev) => !prev);
@@ -414,7 +404,7 @@ function App() {
       key: 'k',
       metaKey: true,
       action: () => {
-        omnibarFocusRef.current?.();
+        omnibarFocusRef.current?.focus();
       },
       description: 'Focus Omnibar',
     });
@@ -459,6 +449,107 @@ function App() {
       description: 'Redo',
     });
 
+    // Cmd+1 to go to Inbox
+    registerShortcut('go-to-inbox', {
+      key: '1',
+      metaKey: true,
+      action: () => navigateToView('inbox'),
+      description: 'Go to Inbox',
+    });
+
+    // Cmd+2 to go to Daily Notes
+    registerShortcut('go-to-daily-notes', {
+      key: '2',
+      metaKey: true,
+      action: () => navigateToView('daily-notes'),
+      description: 'Go to Daily Notes',
+    });
+
+    // Cmd+3 to go to Tasks
+    registerShortcut('go-to-tasks', {
+      key: '3',
+      metaKey: true,
+      action: () => navigateToView('tasks'),
+      description: 'Go to Tasks',
+    });
+
+    // Cmd+4 to go to Archive
+    registerShortcut('go-to-archive', {
+      key: '4',
+      metaKey: true,
+      action: () => navigateToView('archive'),
+      description: 'Go to Archive',
+    });
+
+    // Cmd+N to open omnibar in create mode
+    registerShortcut('new-object', {
+      key: 'n',
+      metaKey: true,
+      action: () => {
+        omnibarFocusRef.current?.focusCommandMode();
+      },
+      description: 'New object',
+    });
+
+    // Cmd+, to open Settings
+    registerShortcut('open-settings', {
+      key: ',',
+      metaKey: true,
+      action: () => navigateToView('settings'),
+      description: 'Open Settings',
+    });
+
+    // Cmd+Backspace to archive current object
+    registerShortcut('archive-object', {
+      key: 'Backspace',
+      metaKey: true,
+      action: () => {
+        if (currentView === 'object' && selectedObjectId && store) {
+          store.archive(selectedObjectId);
+          refreshData();
+        }
+      },
+      description: 'Archive object',
+    });
+
+    // Cmd+Shift+P to pin/unpin current object
+    registerShortcut('toggle-pin', {
+      key: 'p',
+      metaKey: true,
+      shiftKey: true,
+      action: () => {
+        if (currentView === 'object' && selectedObjectId && store) {
+          const obj = store.get(selectedObjectId);
+          if (obj) {
+            if (obj.pinned) {
+              store.unpin(selectedObjectId);
+            } else {
+              store.pin(selectedObjectId);
+            }
+            refreshData();
+          }
+        }
+      },
+      description: 'Pin/Unpin object',
+    });
+
+    // E to toggle task completion (when viewing a task)
+    registerShortcut('toggle-task-complete', {
+      key: 'e',
+      action: () => {
+        if (currentView === 'object' && selectedObjectId && store) {
+          const obj = store.get(selectedObjectId);
+          if (obj && obj.typeId === BuiltInTypeIds.TASK) {
+            const currentStatus = obj.properties.status;
+            const newStatus = currentStatus === 'done' ? 'todo' : 'done';
+            store.update(selectedObjectId, { properties: { ...obj.properties, status: newStatus } });
+            refreshData();
+          }
+        }
+      },
+      description: 'Complete task',
+    });
+
     return () => {
       unregisterShortcut('navigate-back');
       unregisterShortcut('navigate-forward');
@@ -474,8 +565,17 @@ function App() {
       unregisterShortcut('global-undo');
       unregisterShortcut('global-redo');
       unregisterShortcut('global-redo-y');
+      unregisterShortcut('go-to-inbox');
+      unregisterShortcut('go-to-daily-notes');
+      unregisterShortcut('go-to-tasks');
+      unregisterShortcut('go-to-archive');
+      unregisterShortcut('new-object');
+      unregisterShortcut('open-settings');
+      unregisterShortcut('archive-object');
+      unregisterShortcut('toggle-pin');
+      unregisterShortcut('toggle-task-complete');
     };
-  }, [registerShortcut, unregisterShortcut, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, navigateBack, navigateForward, canGoBack, canGoForward, toggleShortcutsModal, isEditorFocused, undo, redo]);
+  }, [registerShortcut, unregisterShortcut, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, navigateBack, navigateForward, canGoBack, canGoForward, toggleShortcutsModal, isEditorFocused, undo, redo, currentView, selectedObjectId, store, refreshData]);
 
   // Show loading only during initial crypto initialization
   // (not during subsequent operations like key generation)
@@ -506,14 +606,12 @@ function App() {
       <Layout
         inboxCount={inboxCount}
         onCreateFromTemplate={openTemplatePicker}
-        onQuickCapture={openQuickCapture}
         onOpenShortcuts={toggleShortcutsModal}
         onNewTemplate={openTemplateEditor}
         onRegisterOmnibarFocus={handleRegisterOmnibarFocus}
       >
         <MainContent />
       </Layout>
-      <QuickCapture isOpen={isQuickCaptureOpen} onClose={closeQuickCapture} />
       <KeyboardShortcutsModal isOpen={isShortcutsModalOpen} onClose={closeShortcutsModal} />
       <TemplatePicker
         isOpen={isTemplatePickerOpen}

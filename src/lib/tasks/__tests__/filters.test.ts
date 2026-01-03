@@ -4,7 +4,7 @@ import {
   filterToday,
   filterThisWeek,
   filterOverdue,
-  filterBlocked,
+  filterWaiting,
   filterEventually,
   filterCompleted,
   getTaskFilter,
@@ -113,15 +113,15 @@ describe('Task Filters', () => {
     });
   });
 
-  describe('filterBlocked', () => {
-    it('should include blocked tasks', () => {
-      const task = createMockTask({ status: 'blocked' });
-      expect(filterBlocked(task)).toBe(true);
+  describe('filterWaiting', () => {
+    it('should include waiting tasks', () => {
+      const task = createMockTask({ status: 'waiting' });
+      expect(filterWaiting(task)).toBe(true);
     });
 
-    it('should exclude non-blocked tasks', () => {
+    it('should exclude non-waiting tasks', () => {
       const task = createMockTask({ status: 'todo' });
-      expect(filterBlocked(task)).toBe(false);
+      expect(filterWaiting(task)).toBe(false);
     });
   });
 
@@ -142,7 +142,7 @@ describe('Task Filters', () => {
       expect(getTaskFilter('today')).toBe(filterToday);
       expect(getTaskFilter('this-week')).toBe(filterThisWeek);
       expect(getTaskFilter('overdue')).toBe(filterOverdue);
-      expect(getTaskFilter('blocked')).toBe(filterBlocked);
+      expect(getTaskFilter('waiting')).toBe(filterWaiting);
       expect(getTaskFilter('eventually')).toBe(filterEventually);
       expect(getTaskFilter('completed')).toBe(filterCompleted);
     });
