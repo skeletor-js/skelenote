@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { AppShell, Box } from '@mantine/core';
 import { Sidebar } from './Sidebar';
-import { TopNavBar } from './TopNavBar';
+import { TopNavBar, type OmnibarFocusFunctions } from './TopNavBar';
 import { usePlatform } from '@/hooks';
 
 // Layout dimensions per style guide
@@ -14,8 +14,8 @@ interface LayoutProps {
   onQuickCapture?: () => void;
   onOpenShortcuts?: () => void;
   onNewTemplate?: () => void;
-  /** Callback to register the omnibar focus function for global shortcut */
-  onRegisterOmnibarFocus?: (focusFn: () => void) => void;
+  /** Callback to register the omnibar focus functions for global shortcuts */
+  onRegisterOmnibarFocus?: (fns: OmnibarFocusFunctions) => void;
 }
 
 export function Layout({
