@@ -196,21 +196,10 @@ skelenote/
 
 ## Roadmap
 
-### Phase I: The Foundation (Current)
-- Native desktop app (Tauri/Rust)
-- PARA structure with Object Graph
-- Campfire P2P sync
-- XChaCha20 encryption with Skeleton Key
-- Time Machine (Loro CRDTs)
-
-### Phase II: The Exodus (Next)
+### The Exodus (Next)
 - **Import Wizards** — One-click migration from Notion, Obsidian, and Roam
 - **Native Mobile** — iOS and Android apps (same vault, same encryption)
 - **Local Whisper** — Unlimited offline voice transcription (bring your own model)
-- **Semantic Search** — Local ML-powered conceptual search (runs entirely on device)
-
-### Phase III: The Network (Future)
-- **Cloud Relay** — Optional encrypted relay for syncing across the internet
 - **Skelenote Publish** — One-click web publishing from your vault
 - **Graph View** — Visualize the neural network of your knowledge
 
