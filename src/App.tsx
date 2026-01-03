@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Layout, SplitPane } from '@/components/layout';
 import { ObjectDetailView } from '@/components/object';
-import { TaskView, InboxView, DailyNotesView, SavedViewContent, TypeBrowseView, ArchiveView } from '@/components/views';
+import { TaskView, TasksView, InboxView, DailyNotesView, SavedViewContent, TypeBrowseView, ArchiveView } from '@/components/views';
 import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
 import { SkeletonKeySetup } from '@/components/setup';
@@ -22,6 +22,7 @@ import { BuiltInTypeIds } from '@/lib/types';
 function PlaceholderView({ view }: { view: ViewType }) {
   const viewLabels: Record<ViewType, string> = {
     inbox: 'Inbox',
+    tasks: 'Tasks',
     today: 'Today',
     'daily-notes': 'Daily Notes',
     'this-week': 'This Week',
@@ -112,7 +113,12 @@ function PrimaryContent() {
     return <ObjectDetailView objectId={selectedObjectId} paneType="primary" />;
   }
 
-  // Task views
+  // Consolidated Tasks view (with tabs)
+  if (currentView === 'tasks') {
+    return <TasksView />;
+  }
+
+  // Legacy task views (DEPRECATED - kept for backwards compatibility)
   const taskViewConfig: Record<string, { filter: TaskFilter; title: string }> = {
     today: { filter: 'today', title: 'Today' },
     'this-week': { filter: 'this-week', title: 'This Week' },
@@ -394,13 +400,13 @@ function App() {
       description: 'Keyboard Shortcuts',
     });
 
-    // Cmd+Shift+T to create new template
-    registerShortcut('new-template', {
+    // Cmd+Shift+T to open Tasks view
+    registerShortcut('tasks-view', {
       key: 't',
       metaKey: true,
       shiftKey: true,
-      action: openTemplateEditor,
-      description: 'New Template',
+      action: () => navigateToView('tasks'),
+      description: 'Open Tasks',
     });
 
     // Cmd+K to focus omnibar
@@ -463,13 +469,13 @@ function App() {
       unregisterShortcut('search');
       unregisterShortcut('keyboard-shortcuts');
       unregisterShortcut('keyboard-shortcuts-alt');
-      unregisterShortcut('new-template');
+      unregisterShortcut('tasks-view');
       unregisterShortcut('focus-omnibar');
       unregisterShortcut('global-undo');
       unregisterShortcut('global-redo');
       unregisterShortcut('global-redo-y');
     };
-  }, [registerShortcut, unregisterShortcut, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, navigateBack, navigateForward, canGoBack, canGoForward, toggleShortcutsModal, openTemplateEditor, isEditorFocused, undo, redo]);
+  }, [registerShortcut, unregisterShortcut, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, navigateBack, navigateForward, canGoBack, canGoForward, toggleShortcutsModal, isEditorFocused, undo, redo]);
 
   // Show loading only during initial crypto initialization
   // (not during subsequent operations like key generation)

@@ -26,6 +26,7 @@ export type IconName =
   | 'history'         // Time Machine
   | 'calendar-days'   // Daily Notes
   | 'settings'        // Settings
+  | 'list-checks'     // Tasks view
 
   // Theme
   | 'moon'            // Dark mode
@@ -65,6 +66,7 @@ export type IconName =
   | 'check-circle'    // Completed
   | 'circle'          // Pending
   | 'loader'          // Loading
+  | 'calendar-check'  // Tasks completed for day
 
   // Content
   | 'external-link'   // External link
@@ -177,7 +179,7 @@ const VALID_ICON_NAMES: Set<string> = new Set([
   // Object types
   'circle-check', 'file-text', 'folder', 'layers', 'link', 'calendar', 'tag', 'user', 'clipboard', 'file',
   // Navigation
-  'inbox', 'search', 'history', 'calendar-days', 'settings',
+  'inbox', 'search', 'history', 'calendar-days', 'settings', 'list-checks',
   // Theme
   'moon', 'sun',
   // Actions
@@ -185,7 +187,7 @@ const VALID_ICON_NAMES: Set<string> = new Set([
   // Arrows & Chevrons
   'arrow-left', 'chevron-left', 'chevron-right', 'chevrons-left', 'chevrons-right', 'chevron-up', 'chevron-down',
   // Status indicators
-  'alert-triangle', 'ban', 'check-circle', 'circle', 'loader',
+  'alert-triangle', 'ban', 'check-circle', 'circle', 'loader', 'calendar-check',
   // Content
   'external-link', 'copy', 'download', 'upload', 'refresh-cw', 'more-horizontal', 'grip-vertical', 'arrow-up-down', 'filter', 'list', 'layout-grid',
   // History

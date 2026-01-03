@@ -162,6 +162,12 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
               onClick={() => handleNavigate('daily-notes')}
             />
             <SidebarItem
+              id="tasks"
+              icon="list-checks"
+              label="Tasks"
+              onClick={() => handleNavigate('tasks')}
+            />
+            <SidebarItem
               id="archive"
               icon="archive"
               label="Archive"
@@ -182,55 +188,6 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
               availableTypes={availableTypes}
               onCreateObject={handleCreateObject}
             />
-
-            {/* Tasks section */}
-            <SidebarSection
-              id="tasks"
-              title="Tasks"
-              action={
-                <ActionIcon
-                  variant="subtle"
-                  color="gray"
-                  size="xs"
-                  onClick={() => handleCreateObject(BuiltInTypeIds.TASK)}
-                  aria-label="Create new task"
-                  title="Create new task"
-                >
-                  <Plus size={14} />
-                </ActionIcon>
-              }
-            >
-              <SidebarItem
-                id="today"
-                label="Today"
-                onClick={() => handleNavigate('today')}
-              />
-              <SidebarItem
-                id="this-week"
-                label="This Week"
-                onClick={() => handleNavigate('this-week')}
-              />
-              <SidebarItem
-                id="overdue"
-                label="Overdue"
-                onClick={() => handleNavigate('overdue')}
-              />
-              <SidebarItem
-                id="blocked"
-                label="Blocked"
-                onClick={() => handleNavigate('blocked')}
-              />
-              <SidebarItem
-                id="eventually"
-                label="Eventually"
-                onClick={() => handleNavigate('eventually')}
-              />
-              <SidebarItem
-                id="completed"
-                label="Completed"
-                onClick={() => handleNavigate('completed')}
-              />
-            </SidebarSection>
 
             {/* Areas section (PARA) */}
             <SidebarSection
