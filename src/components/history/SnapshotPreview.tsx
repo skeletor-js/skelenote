@@ -49,7 +49,7 @@ export function SnapshotPreview({
   currentObjectIds,
 }: SnapshotPreviewProps) {
   const typeRegistry = useTypeRegistry();
-  const [focusedIndex, setFocusedIndex] = useState(0);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Sort objects by updatedAt descending (most recently modified first)
@@ -168,7 +168,7 @@ export function SnapshotPreview({
               const rawIcon = typeDef?.icon ?? '📄';
               const iconName = rawIcon.length <= 2 ? getIconFromEmoji(rawIcon) : rawIcon;
               const title = getObjectTitle(obj);
-              const isFocused = focusedIndex === index;
+              const isFocused = focusedIndex >= 0 && focusedIndex === index;
               const existsInCurrent = objectExistsInCurrent(obj.id);
 
               return (

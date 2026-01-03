@@ -1,10 +1,10 @@
 /**
  * TimeMachine - Main container for Time Machine feature
  *
- * Provides calendar and timeline navigation to browse version history,
+ * Provides week strip and timeline navigation to browse version history,
  * view historical object snapshots, and restore previous states.
  *
- * Layout: Calendar | Horizontal Timeline + Object List/Preview
+ * Layout: WeekStrip → HorizontalTimeline → ObjectList
  */
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
@@ -13,7 +13,7 @@ import { useObjects, useNavigation, useToast, useTypeRegistry } from '@/contexts
 import { Icon } from '@/components/ui/Icon';
 import { ViewHeader } from '@/components/ui/ViewHeader';
 import { getIconFromEmoji } from '@/lib/icons';
-import { CalendarView } from './CalendarView';
+import { HistoryWeekStrip } from './HistoryWeekStrip';
 import { HorizontalTimeline } from './HorizontalTimeline';
 import { SnapshotPreview } from './SnapshotPreview';
 import { RestoreDialog, type RestoreScope } from './RestoreDialog';
@@ -34,10 +34,6 @@ export function TimeMachine() {
   const { openVersionComparison } = useNavigation();
 
   // State
-  const [currentMonth, setCurrentMonth] = useState(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
-  });
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedChangeIndex, setSelectedChangeIndex] = useState(0);
   // Track object ID for restore dialog (not for navigation anymore)
@@ -285,103 +281,83 @@ export function TimeMachine() {
         />
       )}
 
-      {/* Main content - 2-column CSS Grid layout */}
-      <Box
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '280px 1px 1fr',
-          flex: 1,
-          overflow: 'hidden',
-          minHeight: 0,
-        }}
-      >
-        {/* Left column: Calendar */}
-        <Box p="md" style={{ overflow: 'auto' }}>
-          <CalendarView
-            currentMonth={currentMonth}
-            changesByDate={byDate}
-            selectedDate={selectedDate}
-            onDateSelect={handleDateSelect}
-            onMonthChange={setCurrentMonth}
+      {/* Week Strip Navigation */}
+      <HistoryWeekStrip
+        selectedDate={selectedDate}
+        changesByDate={byDate}
+        onDateSelect={handleDateSelect}
+      />
+
+      {/* Horizontal Timeline */}
+      {selectedDayChanges ? (
+        <Box
+          px="md"
+          py="sm"
+          style={{
+            borderBottom: '1px solid var(--border-default)',
+            flexShrink: 0,
+          }}
+        >
+          <HorizontalTimeline
+            date={selectedDate!}
+            changePoints={selectedDayChanges.changePoints}
+            selectedIndex={selectedChangeIndex}
+            onIndexChange={handleChangeIndexChange}
           />
         </Box>
-
-        {/* Divider */}
-        <Box style={{ backgroundColor: 'var(--mantine-color-default-border)' }} />
-
-        {/* Right column: Horizontal Timeline + Object List / Preview */}
-        <Box style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          {/* Horizontal Timeline - fixed at top */}
-          {selectedDayChanges ? (
-            <Box
-              p="md"
-              pb="lg"
-              style={{
-                borderBottom: '1px solid var(--mantine-color-default-border)',
-                flexShrink: 0,
-              }}
-            >
-              <HorizontalTimeline
-                date={selectedDate!}
-                changePoints={selectedDayChanges.changePoints}
-                selectedIndex={selectedChangeIndex}
-                onIndexChange={handleChangeIndexChange}
-              />
-            </Box>
-          ) : (
-            <Box
-              p="md"
-              style={{
-                borderBottom: '1px solid var(--mantine-color-default-border)',
-                flexShrink: 0,
-              }}
-            >
-              <Text size="sm" c="dimmed" ta="center">
-                Select a date to view changes
-              </Text>
-            </Box>
-          )}
-
-          {/* Object List - scrollable, with inline expansion */}
-          <Box
-            p="md"
-            style={{
-              flex: 1,
-              overflow: 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            {selectedChangePoint ? (
-              <SnapshotPreview
-                timestamp={selectedChangePoint.timestamp}
-                frontier={selectedChangePoint.frontier}
-                objects={historicalObjects}
-                onRestore={handleRestoreFull}
-                onRestoreObject={handleRestoreObject}
-                onCompareWithCurrent={handleCompareWithCurrent}
-                currentObjectIds={currentObjectIds}
-              />
-            ) : isFiltered && byDate.size === 0 ? (
-              <Stack align="center" justify="center" h="100%" gap="md">
-                <Text fw={500}>No recorded history for this object</Text>
-                <Text size="sm" c="dimmed" ta="center">
-                  Changes made before history tracking was enabled are not available.
-                </Text>
-                <Button variant="subtle" onClick={handleViewAllHistory}>
-                  View All History
-                </Button>
-              </Stack>
-            ) : (
-              <Stack align="center" justify="center" h="100%">
-                <Icon name="history" size={32} style={{ color: 'var(--mantine-color-dimmed)' }} />
-                <Text c="dimmed" ta="center">
-                  Select a date and time to view historical state
-                </Text>
-              </Stack>
-            )}
-          </Box>
+      ) : (
+        <Box
+          px="md"
+          py="md"
+          style={{
+            borderBottom: '1px solid var(--border-default)',
+            flexShrink: 0,
+          }}
+        >
+          <Text size="sm" c="dimmed" ta="center">
+            Select a date to view changes
+          </Text>
         </Box>
+      )}
+
+      {/* Object List - scrollable */}
+      <Box
+        p="md"
+        style={{
+          flex: 1,
+          overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {selectedChangePoint ? (
+          <SnapshotPreview
+            timestamp={selectedChangePoint.timestamp}
+            frontier={selectedChangePoint.frontier}
+            objects={historicalObjects}
+            onRestore={handleRestoreFull}
+            onRestoreObject={handleRestoreObject}
+            onCompareWithCurrent={handleCompareWithCurrent}
+            currentObjectIds={currentObjectIds}
+          />
+        ) : isFiltered && byDate.size === 0 ? (
+          <Stack align="center" justify="center" h="100%" gap="md">
+            <Text fw={500}>No recorded history for this object</Text>
+            <Text size="sm" c="dimmed" ta="center">
+              Changes made before history tracking was enabled are not available.
+            </Text>
+            <Button variant="subtle" onClick={handleViewAllHistory}>
+              View All History
+            </Button>
+          </Stack>
+        ) : (
+          <Stack align="center" justify="center" h="100%">
+            <Icon name="history" size={32} style={{ color: 'var(--mantine-color-dimmed)' }} />
+            <Text c="dimmed" ta="center">
+              Select a date and time to view historical state
+            </Text>
+          </Stack>
+        )}
       </Box>
 
       {/* Restore Dialog */}
