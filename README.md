@@ -2,7 +2,7 @@
 
 **The Permanent Operating System for Your Mind**
 
-A local-first, zero-knowledge private workspace. Your vault lives on your device, encrypted with keys only you control.
+A local-first, zero-knowledge private study. Your vault lives on your device, encrypted with keys only you control.
 
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](https://github.com/jordanstella/skelenote/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-green)](LICENSE)
@@ -237,10 +237,16 @@ See [LICENSE](LICENSE) for the full text.
 
 ## Documentation
 
-- [Security & Privacy Architecture](docs/security-privacy.md) — Encryption, threat model, zero-knowledge design
-- [Campfire Mode Guide](docs/campfire-guide.md) — Local P2P sync setup and use cases
-- [Cloud Sync Setup](docs/cloud-sync-guide.md) — Optional relay server configuration
-- [Design System](docs/style-guide.md) — UI components and patterns
+### User Guides
+- [Getting Started](docs/user/getting-started.md) — Your first day in the Study
+- [Security & Privacy](docs/user/security-privacy.md) — Encryption, threat model, zero-knowledge design
+- [Campfire Mode](docs/user/campfire-guide.md) — Local P2P sync setup and use cases
+- [Cloud Sync](docs/user/cloud-sync-guide.md) — Optional relay server configuration
+
+### For Contributors
+- [Design System](docs/internal/style-guide.md) — UI components and patterns
+- [Brand Bible](docs/internal/skelenote-brand-bible.md) — Voice, lexicon, and strategic positioning
+- [Feature List](docs/internal/skelenote-feature-list.md) — Current and planned features
 
 ---
 

@@ -185,5 +185,5 @@ You can use both: Campfire for local sync when available, Cloud Relay for remote
 
 ## Further Reading
 
-- [Security & Privacy Deep Dive](./security-privacy.md) — Full encryption architecture
-- [Cloud Sync Setup](./cloud-sync-guide.md) — Configure relay server sync
+- [Security & Privacy Deep Dive](security-privacy.md) — Full encryption architecture
+- [Cloud Sync Setup](cloud-sync-guide.md) — Configure relay server sync

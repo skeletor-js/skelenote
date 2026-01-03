@@ -13,7 +13,7 @@ Cloud Sync uses a WebSocket relay server to sync data between devices anywhere i
 - Optional—Skelenote works fully offline without it
 - Self-hostable for complete control
 
-Use Cloud Sync when devices aren't on the same network. For local sync, see [Campfire Mode](./campfire-guide.md).
+Use Cloud Sync when devices aren't on the same network. For local sync, see [Campfire Mode](campfire-guide.md).
 
 ---
 
@@ -226,5 +226,5 @@ Loro CRDTs handle conflicts automatically. If you see unexpected content:
 
 ## Further Reading
 
-- [Security & Privacy Deep Dive](./security-privacy.md) — Full encryption architecture
-- [Campfire Mode Guide](./campfire-guide.md) — Local network sync
+- [Security & Privacy Deep Dive](security-privacy.md) — Full encryption architecture
+- [Campfire Mode Guide](campfire-guide.md) — Local network sync
