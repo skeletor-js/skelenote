@@ -96,7 +96,7 @@ export function Backlinks({ objectId }: BacklinksProps) {
             transition: 'transform 150ms ease',
           }}
         />
-        <Text size="sm" c="dimmed">
+        <Text size="sm" c="dimmed" fw={500}>
           Backlinks{backlinkCount > 0 && ` (${backlinkCount})`}
         </Text>
       </Group>

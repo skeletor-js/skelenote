@@ -24,7 +24,7 @@ const EMPTY_MESSAGES: Record<TaskFilter, string> = {
   today: 'No tasks due today.',
   'this-week': 'No tasks due this week.',
   overdue: 'Nothing overdue. Nice!',
-  blocked: 'No blocked tasks.',
+  waiting: 'No tasks waiting on others.',
   eventually: 'No future tasks scheduled.',
   completed: 'No completed tasks yet.',
 };
