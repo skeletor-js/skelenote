@@ -53,8 +53,6 @@ Calendar-based daily notes for journaling and time-based organization.
 ### Clean, Focused UI
 Monochromatic black/white/gray design. Tags provide the only color—intentionally minimal to keep focus on your content.
 
-### Google Calendar Integration
-Read-only sync of calendar events as Meeting objects. See your schedule alongside your notes.
 
 ---
 

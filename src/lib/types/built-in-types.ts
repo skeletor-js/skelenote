@@ -8,7 +8,7 @@ import { BuiltInTypeIds } from './type-definition';
 /**
  * Task status options
  */
-export const TaskStatusOptions = ['todo', 'in-progress', 'blocked', 'done'] as const;
+export const TaskStatusOptions = ['todo', 'in-progress', 'waiting', 'done'] as const;
 export type TaskStatus = (typeof TaskStatusOptions)[number];
 
 /**

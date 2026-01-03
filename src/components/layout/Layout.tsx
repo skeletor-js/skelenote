@@ -11,7 +11,6 @@ interface LayoutProps {
   children: ReactNode;
   inboxCount?: number;
   onCreateFromTemplate?: () => void;
-  onQuickCapture?: () => void;
   onOpenShortcuts?: () => void;
   onNewTemplate?: () => void;
   /** Callback to register the omnibar focus functions for global shortcuts */
@@ -22,7 +21,6 @@ export function Layout({
   children,
   inboxCount = 0,
   onCreateFromTemplate,
-  onQuickCapture,
   onOpenShortcuts,
   onNewTemplate,
   onRegisterOmnibarFocus,
@@ -46,7 +44,6 @@ export function Layout({
     >
       <AppShell.Header>
         <TopNavBar
-          onQuickCapture={onQuickCapture}
           onOpenShortcuts={onOpenShortcuts}
           onCreateFromTemplate={onCreateFromTemplate}
           onNewTemplate={onNewTemplate}

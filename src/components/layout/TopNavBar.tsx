@@ -17,7 +17,6 @@ export interface OmnibarFocusFunctions {
 }
 
 interface TopNavBarProps {
-  onQuickCapture?: () => void;
   onOpenShortcuts?: () => void;
   onCreateFromTemplate?: () => void;
   onNewTemplate?: () => void;
@@ -37,7 +36,6 @@ interface TopNavBarProps {
  * - System controls: Sync, Theme, Settings (far right)
  */
 export function TopNavBar({
-  onQuickCapture,
   onOpenShortcuts,
   onCreateFromTemplate,
   onNewTemplate,
@@ -100,7 +98,6 @@ export function TopNavBar({
         </Group>
         <Omnibar
           ref={omnibarRef}
-          onQuickCapture={onQuickCapture}
           onOpenShortcuts={onOpenShortcuts}
           onCreateFromTemplate={onCreateFromTemplate}
           onNewTemplate={onNewTemplate}

@@ -2,7 +2,6 @@ export { useTheme } from './useTheme';
 export { useTasks, type UseTasksOptions, type UseTasksResult } from './useTasks';
 export { useInbox, type UseInboxResult } from './useInbox';
 export { useArchive, type UseArchiveResult } from './useArchive';
-export { useQuickCaptureShortcut } from './useGlobalShortcut';
 export { useDailyNote, useTodaysDailyNote, type UseDailyNoteResult } from './useDailyNote';
 export { useCalendar, type UseCalendarResult } from './useCalendar';
 export { useLinkToDaily } from './useLinkToDaily';

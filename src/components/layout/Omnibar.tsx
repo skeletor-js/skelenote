@@ -11,7 +11,6 @@ import {
   getStaticActions,
   filterActions,
   type PaletteAction,
-  QUICK_CAPTURE_ACTION_ID,
   SEARCH_ACTION_ID,
   OPEN_IN_SPLIT_ACTION_ID,
   DUPLICATE_OBJECT_ACTION_ID,
@@ -32,7 +31,6 @@ export interface OmnibarRef {
 }
 
 interface OmnibarProps {
-  onQuickCapture?: () => void;
   onOpenShortcuts?: () => void;
   onCreateFromTemplate?: () => void;
   onNewTemplate?: () => void;
@@ -43,7 +41,7 @@ interface OmnibarProps {
  * Exposes focus/blur methods via ref for keyboard shortcut integration.
  */
 export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
-  { onQuickCapture, onOpenShortcuts, onCreateFromTemplate, onNewTemplate },
+  { onOpenShortcuts, onCreateFromTemplate, onNewTemplate },
   ref
 ) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -165,15 +163,6 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
         return;
       }
 
-      // Quick Capture action
-      if (action.id === QUICK_CAPTURE_ACTION_ID) {
-        setQuery('');
-        setIsFocused(false);
-        inputRef.current?.blur();
-        onQuickCapture?.();
-        return;
-      }
-
       // Open in Split View
       if (action.id === OPEN_IN_SPLIT_ACTION_ID) {
         if (currentView === 'object' && selectedObjectId) {
@@ -286,7 +275,6 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
       store,
       linkToDaily,
       refreshData,
-      onQuickCapture,
       onOpenShortcuts,
       onCreateFromTemplate,
       onNewTemplate,

@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Layout, SplitPane, type OmnibarFocusFunctions } from '@/components/layout';
 import { ObjectDetailView } from '@/components/object';
 import { TaskView, TasksView, InboxView, DailyNotesView, SavedViewContent, TypeBrowseView, ArchiveView } from '@/components/views';
-import { QuickCapture } from '@/components/capture';
 import { SettingsView } from '@/components/settings';
 import { SkeletonKeySetup } from '@/components/setup';
 import { TimeMachine, HistoricalObjectView } from '@/components/history';
@@ -231,7 +230,6 @@ function App() {
       item.typeId !== BuiltInTypeIds.PROJECT &&
       item.typeId !== BuiltInTypeIds.AREA
     ).length ?? 0;
-  const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
   const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false);
@@ -267,14 +265,6 @@ function App() {
       startupCompleteRef.current = true;
     }
   }, [store, hasSkeletonKey, ensureTodaysDailyNote, refreshData, saveNow]);
-
-  const openQuickCapture = useCallback(() => {
-    setIsQuickCaptureOpen(true);
-  }, []);
-
-  const closeQuickCapture = useCallback(() => {
-    setIsQuickCaptureOpen(false);
-  }, []);
 
   const toggleShortcutsModal = useCallback(() => {
     setIsShortcutsModalOpen((prev) => !prev);
@@ -616,14 +606,12 @@ function App() {
       <Layout
         inboxCount={inboxCount}
         onCreateFromTemplate={openTemplatePicker}
-        onQuickCapture={openQuickCapture}
         onOpenShortcuts={toggleShortcutsModal}
         onNewTemplate={openTemplateEditor}
         onRegisterOmnibarFocus={handleRegisterOmnibarFocus}
       >
         <MainContent />
       </Layout>
-      <QuickCapture isOpen={isQuickCaptureOpen} onClose={closeQuickCapture} />
       <KeyboardShortcutsModal isOpen={isShortcutsModalOpen} onClose={closeShortcutsModal} />
       <TemplatePicker
         isOpen={isTemplatePickerOpen}

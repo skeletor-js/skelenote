@@ -28,7 +28,6 @@ export interface PaletteAction {
 /**
  * Special action IDs (handled specially by the palette)
  */
-export const QUICK_CAPTURE_ACTION_ID = 'action-quick-capture';
 export const SEARCH_ACTION_ID = 'action-search';
 export const OPEN_IN_SPLIT_ACTION_ID = 'action-open-in-split';
 export const DUPLICATE_OBJECT_ACTION_ID = 'action-duplicate-object';
@@ -43,7 +42,6 @@ export const TOGGLE_THEME_ACTION_ID = 'action-toggle-theme';
  */
 export const navigationActions: PaletteAction[] = [
   { id: SEARCH_ACTION_ID, label: 'Search', icon: 'search', category: 'action' },
-  { id: QUICK_CAPTURE_ACTION_ID, label: 'Quick Capture', icon: 'zap', category: 'action' },
   { id: CREATE_FROM_TEMPLATE_ACTION_ID, label: 'Create from Template', icon: 'clipboard', category: 'action' },
   { id: NEW_TEMPLATE_ACTION_ID, label: 'New Template', icon: 'sparkles', category: 'action' },
   { id: OPEN_IN_SPLIT_ACTION_ID, label: 'Open in Split View', icon: 'columns-2', category: 'action' },

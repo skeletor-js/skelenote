@@ -8,7 +8,7 @@ import { isToday, isOverdue, isThisWeek, isBeyondThisWeek, startOfDay, endOfDay 
 /**
  * Task filter types matching sidebar navigation
  */
-export type TaskFilter = 'today' | 'this-week' | 'overdue' | 'blocked' | 'eventually' | 'completed';
+export type TaskFilter = 'today' | 'this-week' | 'overdue' | 'waiting' | 'eventually' | 'completed';
 
 /**
  * Priority order for sorting (higher number = higher priority)
@@ -71,12 +71,12 @@ export function filterOverdue(task: SkelenoteObject): boolean {
 }
 
 /**
- * Filter function for Blocked view
- * Tasks with status = blocked (regardless of done status per PRD)
+ * Filter function for Waiting view
+ * Tasks with status = waiting
  */
-export function filterBlocked(task: SkelenoteObject): boolean {
+export function filterWaiting(task: SkelenoteObject): boolean {
   const status = task.properties.status as string | null;
-  return status === 'blocked';
+  return status === 'waiting';
 }
 
 /**
@@ -128,8 +128,8 @@ export function getTaskFilter(filter: TaskFilter): (task: SkelenoteObject) => bo
       return filterThisWeek;
     case 'overdue':
       return filterOverdue;
-    case 'blocked':
-      return filterBlocked;
+    case 'waiting':
+      return filterWaiting;
     case 'eventually':
       return filterEventually;
     case 'completed':
@@ -156,7 +156,7 @@ export function getDefaultSort(filter: TaskFilter): SortConfig {
       return { field: 'dueDate', direction: 'asc' };
     case 'overdue':
       return { field: 'dueDate', direction: 'asc' };
-    case 'blocked':
+    case 'waiting':
       return { field: 'updatedAt', direction: 'desc' };
     case 'eventually':
       return { field: 'dueDate', direction: 'asc' };
@@ -250,12 +250,11 @@ export function groupTasksBy(
 
 /**
  * Status display labels
- * Note: 'blocked' is displayed as 'Waiting' to users for clearer meaning
  */
 export const STATUS_LABELS: Record<string, string> = {
   todo: 'To Do',
   'in-progress': 'In Progress',
-  blocked: 'Waiting', // Renamed from 'Blocked' for clearer meaning
+  waiting: 'Waiting',
   done: 'Done',
 };
 
@@ -263,5 +262,5 @@ export const STATUS_LABELS: Record<string, string> = {
  * Get ordered status list for kanban columns
  */
 export function getStatusOrder(): string[] {
-  return ['todo', 'in-progress', 'blocked', 'done'];
+  return ['todo', 'in-progress', 'waiting', 'done'];
 }
