@@ -34,12 +34,14 @@ export const CATEGORY_INFO: Record<ShortcutCategory, { label: string; order: num
  */
 export const SHORTCUTS: Shortcut[] = [
   // Global shortcuts
-  { keys: ['Cmd', 'Shift', 'Space'], description: 'Quick Capture', category: 'global' },
   { keys: ['Cmd', 'K'], description: 'Command Palette', category: 'global' },
   { keys: ['Cmd', '?'], description: 'Keyboard Shortcuts', category: 'global' },
   { keys: ['Cmd', 'Shift', 'F'], description: 'Search', category: 'global' },
+  { keys: ['Cmd', ','], description: 'Settings', category: 'global' },
 
   // Navigation shortcuts
+  { keys: ['Cmd', '['], description: 'Navigate back', category: 'navigation' },
+  { keys: ['Cmd', ']'], description: 'Navigate forward', category: 'navigation' },
   { keys: ['↑', '↓'], description: 'Move selection', category: 'navigation' },
   { keys: ['Tab'], description: 'Next focusable element', category: 'navigation' },
   { keys: ['Shift', 'Tab'], description: 'Previous focusable element', category: 'navigation' },
@@ -48,18 +50,27 @@ export const SHORTCUTS: Shortcut[] = [
 
   // View shortcuts
   { keys: ['Cmd', '1'], description: 'Go to Inbox', category: 'views' },
-  { keys: ['Cmd', '2'], description: 'Go to Today', category: 'views' },
+  { keys: ['Cmd', '2'], description: 'Go to Daily Notes', category: 'views' },
+  { keys: ['Cmd', '3'], description: 'Go to Tasks', category: 'views' },
+  { keys: ['Cmd', '4'], description: 'Go to Archive', category: 'views' },
+  { keys: ['Cmd', 'Shift', 'T'], description: 'Go to Tasks', category: 'views' },
   { keys: ['Cmd', '\\'], description: 'Close split view', category: 'views' },
   { keys: ['Cmd', 'Shift', '\\'], description: 'Swap split panes', category: 'views' },
   { keys: ['Cmd', 'Shift', 'H'], description: 'Time Machine', category: 'views' },
 
   // Object shortcuts
   { keys: ['Cmd', 'N'], description: 'New object', category: 'objects' },
+  { keys: ['Cmd', 'D'], description: 'Duplicate (when viewing)', category: 'objects' },
+  { keys: ['Cmd', 'Shift', 'P'], description: 'Pin / Unpin (when viewing)', category: 'objects' },
   { keys: ['Cmd', 'Shift', 'E'], description: 'Export to Markdown', category: 'objects' },
-  { keys: ['Cmd', 'Backspace'], description: 'Delete object', category: 'objects' },
+  { keys: ['Cmd', 'Backspace'], description: 'Archive object', category: 'objects' },
+  { keys: ['H'], description: 'View history (when viewing)', category: 'objects' },
+  { keys: ['E'], description: 'Complete task (when viewing task)', category: 'objects' },
 
   // Editing shortcuts
   { keys: ['@'], description: 'Mention object', category: 'editing' },
+  { keys: ['Cmd', 'F'], description: 'Find in document', category: 'editing' },
+  { keys: ['Cmd', 'A'], description: 'Select all', category: 'editing' },
   { keys: ['Cmd', 'B'], description: 'Bold', category: 'editing' },
   { keys: ['Cmd', 'I'], description: 'Italic', category: 'editing' },
   { keys: ['Cmd', 'U'], description: 'Underline', category: 'editing' },

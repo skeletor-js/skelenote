@@ -28,7 +28,6 @@ export interface PaletteAction {
 /**
  * Special action IDs (handled specially by the palette)
  */
-export const QUICK_CAPTURE_ACTION_ID = 'action-quick-capture';
 export const SEARCH_ACTION_ID = 'action-search';
 export const OPEN_IN_SPLIT_ACTION_ID = 'action-open-in-split';
 export const DUPLICATE_OBJECT_ACTION_ID = 'action-duplicate-object';
@@ -43,7 +42,6 @@ export const TOGGLE_THEME_ACTION_ID = 'action-toggle-theme';
  */
 export const navigationActions: PaletteAction[] = [
   { id: SEARCH_ACTION_ID, label: 'Search', icon: 'search', category: 'action' },
-  { id: QUICK_CAPTURE_ACTION_ID, label: 'Quick Capture', icon: 'zap', category: 'action' },
   { id: CREATE_FROM_TEMPLATE_ACTION_ID, label: 'Create from Template', icon: 'clipboard', category: 'action' },
   { id: NEW_TEMPLATE_ACTION_ID, label: 'New Template', icon: 'sparkles', category: 'action' },
   { id: OPEN_IN_SPLIT_ACTION_ID, label: 'Open in Split View', icon: 'columns-2', category: 'action' },
@@ -54,7 +52,7 @@ export const navigationActions: PaletteAction[] = [
   { id: 'nav-daily-notes', label: 'Go to Daily Notes', icon: 'calendar-days', category: 'navigation', view: 'daily-notes' },
   { id: 'nav-this-week', label: 'Go to This Week', icon: 'list', category: 'navigation', view: 'this-week' },
   { id: 'nav-overdue', label: 'Go to Overdue', icon: 'alert-triangle', category: 'navigation', view: 'overdue' },
-  { id: 'nav-blocked', label: 'Go to Blocked', icon: 'ban', category: 'navigation', view: 'blocked' },
+  { id: 'nav-waiting', label: 'Go to Waiting', icon: 'clock', category: 'navigation', view: 'waiting' },
   { id: 'nav-eventually', label: 'Go to Eventually', icon: 'pin', category: 'navigation', view: 'eventually' },
   { id: 'nav-completed', label: 'Go to Completed', icon: 'check-circle', category: 'navigation', view: 'completed' },
   { id: 'nav-time-machine', label: 'Go to Time Machine', icon: 'history', category: 'navigation', view: 'time-machine' },
@@ -70,6 +68,10 @@ export const createActions: PaletteAction[] = [
   { id: 'create-task', label: 'Create new Task', icon: 'circle-check', category: 'create', typeId: BuiltInTypeIds.TASK },
   { id: 'create-note', label: 'Create new Note', icon: 'file-text', category: 'create', typeId: BuiltInTypeIds.NOTE },
   { id: 'create-link', label: 'Create new Link', icon: 'link', category: 'create', typeId: BuiltInTypeIds.LINK },
+  { id: 'create-meeting', label: 'Create new Meeting', icon: 'calendar', category: 'create', typeId: BuiltInTypeIds.MEETING },
+  { id: 'create-project', label: 'Create new Project', icon: 'folder', category: 'create', typeId: BuiltInTypeIds.PROJECT },
+  { id: 'create-area', label: 'Create new Area', icon: 'layers', category: 'create', typeId: BuiltInTypeIds.AREA },
+  { id: 'create-tag', label: 'Create new Tag', icon: 'tag', category: 'create', typeId: BuiltInTypeIds.TAG },
 ];
 
 /**

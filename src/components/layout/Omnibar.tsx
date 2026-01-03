@@ -11,7 +11,6 @@ import {
   getStaticActions,
   filterActions,
   type PaletteAction,
-  QUICK_CAPTURE_ACTION_ID,
   SEARCH_ACTION_ID,
   OPEN_IN_SPLIT_ACTION_ID,
   DUPLICATE_OBJECT_ACTION_ID,
@@ -27,10 +26,11 @@ import classes from './Omnibar.module.css';
 export interface OmnibarRef {
   focus: () => void;
   blur: () => void;
+  /** Focus the omnibar with "/" prefix to enter command/create mode */
+  focusCommandMode: () => void;
 }
 
 interface OmnibarProps {
-  onQuickCapture?: () => void;
   onOpenShortcuts?: () => void;
   onCreateFromTemplate?: () => void;
   onNewTemplate?: () => void;
@@ -41,7 +41,7 @@ interface OmnibarProps {
  * Exposes focus/blur methods via ref for keyboard shortcut integration.
  */
 export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
-  { onQuickCapture, onOpenShortcuts, onCreateFromTemplate, onNewTemplate },
+  { onOpenShortcuts, onCreateFromTemplate, onNewTemplate },
   ref
 ) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -72,6 +72,17 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
     },
     blur: () => {
       inputRef.current?.blur();
+    },
+    focusCommandMode: () => {
+      setQuery('/');
+      inputRef.current?.focus();
+      // Move cursor to end after "/" prefix
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.selectionStart = 1;
+          inputRef.current.selectionEnd = 1;
+        }
+      }, 0);
     },
   }));
 
@@ -152,15 +163,6 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
         return;
       }
 
-      // Quick Capture action
-      if (action.id === QUICK_CAPTURE_ACTION_ID) {
-        setQuery('');
-        setIsFocused(false);
-        inputRef.current?.blur();
-        onQuickCapture?.();
-        return;
-      }
-
       // Open in Split View
       if (action.id === OPEN_IN_SPLIT_ACTION_ID) {
         if (currentView === 'object' && selectedObjectId) {
@@ -226,14 +228,30 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
         // Object navigation
         navigateToObject(action.objectId);
       } else if (action.typeId && store) {
-        // Create action
+        // Create action - set default properties based on type
         let properties: Record<string, string | number | boolean | string[] | null> = {};
-        if (action.typeId === 'task') {
-          properties = { title: 'New Task', status: 'todo' };
-        } else if (action.typeId === 'note') {
-          properties = { title: 'New Note' };
-        } else if (action.typeId === 'link') {
-          properties = { url: '', title: 'New Link' };
+        switch (action.typeId) {
+          case 'task':
+            properties = { title: 'New Task', status: 'todo' };
+            break;
+          case 'note':
+            properties = { title: 'New Note' };
+            break;
+          case 'link':
+            properties = { url: '', title: 'New Link' };
+            break;
+          case 'meeting':
+            properties = { title: 'New Meeting', startTime: Date.now() };
+            break;
+          case 'project':
+            properties = { name: 'New Project', status: 'active' };
+            break;
+          case 'area':
+            properties = { name: 'New Area' };
+            break;
+          case 'tag':
+            properties = { name: 'New Tag' };
+            break;
         }
         const newObject = store.create({
           typeId: action.typeId,
@@ -257,7 +275,6 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
       store,
       linkToDaily,
       refreshData,
-      onQuickCapture,
       onOpenShortcuts,
       onCreateFromTemplate,
       onNewTemplate,

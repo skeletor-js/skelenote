@@ -22,7 +22,7 @@ const TASK_TABS: Array<{ value: TaskFilter; label: string }> = [
   { value: 'today', label: 'Today' },
   { value: 'this-week', label: 'This Week' },
   { value: 'overdue', label: 'Overdue' },
-  { value: 'blocked', label: 'Waiting' }, // 'blocked' internally, 'Waiting' for display
+  { value: 'waiting', label: 'Waiting' },
   { value: 'eventually', label: 'Eventually' },
   { value: 'completed', label: 'Completed' },
 ];
@@ -55,7 +55,7 @@ const EMPTY_STATES: Record<TaskFilter, EmptyStateConfig> = {
     title: 'Nothing overdue',
     message: "You're on top of everything. Nice!",
   },
-  blocked: {
+  waiting: {
     icon: 'unlock',
     title: 'Nothing waiting',
     message: 'All systems go.',
@@ -73,7 +73,7 @@ const EMPTY_STATES: Record<TaskFilter, EmptyStateConfig> = {
 };
 
 /** Tabs that should show count badges */
-const TABS_WITH_COUNTS: Set<TaskFilter> = new Set(['today', 'this-week', 'overdue', 'blocked']);
+const TABS_WITH_COUNTS: Set<TaskFilter> = new Set(['today', 'this-week', 'overdue', 'waiting']);
 
 export function TasksView() {
   const [activeTab, setActiveTab] = useState<TaskFilter>('today');
@@ -91,7 +91,7 @@ export function TasksView() {
       countToday: allTasks.filter(getTaskFilter('today')).length,
       countThisWeek: allTasks.filter(getTaskFilter('this-week')).length,
       countOverdue: allTasks.filter(getTaskFilter('overdue')).length,
-      countWaiting: allTasks.filter(getTaskFilter('blocked')).length,
+      countWaiting: allTasks.filter(getTaskFilter('waiting')).length,
     };
   }, [store]);
 
@@ -104,7 +104,7 @@ export function TasksView() {
         return countThisWeek || undefined;
       case 'overdue':
         return countOverdue || undefined;
-      case 'blocked':
+      case 'waiting':
         return countWaiting || undefined;
       default:
         return undefined;

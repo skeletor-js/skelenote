@@ -38,10 +38,8 @@ function getStatusColor(value: PropertyValue): string {
     case 'in-progress':
     case 'active':
       return 'slate';
-    case 'blocked':
-      return 'brick';
-    case 'on-hold':
     case 'waiting':
+    case 'on-hold':
       return 'ochre';
     case 'todo':
     default:
@@ -79,10 +77,8 @@ function getStatusIcon(value: PropertyValue): IconName {
     case 'in-progress':
     case 'active':
       return 'loader';
-    case 'blocked':
-      return 'ban';
-    case 'on-hold':
     case 'waiting':
+    case 'on-hold':
       return 'clock';
     case 'todo':
     default:
