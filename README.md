@@ -9,111 +9,26 @@ A local-first, zero-knowledge private study. Your vault lives on your device, en
 
 ---
 
-## Why Skelenote?
+## Vision & Philosophy
 
-For the last decade, we traded ownership for access. We stopped buying software and started paying landlords. The modern productivity landscape is a noisy open-plan office—loud, rented, and hostile to deep work.
+Skelenote is built for the "Digital Study"—a quiet room you own, not a noisy service you visit. 
 
-**Skelenote is the rejection of that era.**
+- **Local. Encrypted. Yours.** — Physical proximity is the ultimate encryption.
+- **Structure is Freedom** — PARA method by default, your way by choice.
+- **No Lock-in** — Your data lives in files, not a database we control.
 
-It is your **Digital Study**—a quiet room you own, not a noisy service you visit. The door locks, the tools are yours, and your thoughts remain private until you choose to share them.
-
-| | Cloud Apps | Skelenote |
-|---|---|---|
-| **Where Data Lives** | Their servers | Your vault, on your device |
-| **Who Can Read It** | The company, hackers, governments | Only you (zero-knowledge) |
-| **Offline?** | Limited or broken | Full functionality, always |
-| **Sync Model** | They see everything | [Campfire](#campfire-sync-local-first-p2p): encrypted P2P |
-| **Lock-in** | Export? Good luck. | Your files. Walk away anytime. |
-
-### Core Principles
-
-- **Local. Encrypted. Yours.** — Your vault lives on your device, encrypted with XChaCha20-Poly1305 before anything leaves your machine. The key? A 24-word "Skeleton Key" that only you control.
-
-- **Campfire Sync** — Physical proximity is the ultimate encryption. Devices on the same network discover each other and sync directly—no cloud, no relay, no middleman. [Learn more](#campfire-sync-local-first-p2p).
-
-- **Structure is Freedom** — Skelenote comes furnished with the PARA method (Projects, Areas, Resources, Archives). Step into a working system on day one. In a future update, you'll be able to rearrange the furniture.
-
-- **Offline-First, Always** — Full functionality without internet. No spinners waiting for the cloud. Changes sync when you reconnect.
-
-- **No Lock-in** — Your objects live in files on your computer. Export to Markdown anytime. Walk away whenever you want.
-
-### Built to Own
-
-Skelenote costs $19.99—once. No subscription, no account required.
-
-You own version 1 forever. Future major versions are separate purchases (like Sketch or Things 3). We only charge recurring fees for optional infrastructure services. Technical users can self-host everything.
+For a deeper dive into our vision and how we handle ownership, see:
+- [Philosophy & Manifesto](docs/user/about/philosophy-manifesto.md)
+- [Ownership & Pricing](docs/user/about/ownership-pricing.md)
 
 ---
 
-## Features
+## Core Features
 
-### The Object Graph
-Everything is an **Object**: tasks, notes, projects, areas, links, meetings, people. A todo item has the same power as a 5,000-word thesis—same properties, tags, and linking capabilities. Objects connect via typed relations with automatic backlinks, forming your personal knowledge graph.
-
-### Inbox-Driven Workflow
-New objects land in your inbox for intentional triage. Process them when you're ready, not when they arrive. Your study stays quiet; the noise stays in the inbox.
-
-### Quick Capture
-Global hotkey (`Cmd+Shift+Space` / `Ctrl+Shift+Space`) captures thoughts from anywhere without switching apps. Thoughts go to inbox; triage happens later.
-
-### Command Palette
-Navigate anywhere instantly with `Cmd+K` / `Ctrl+K`. Search objects, run commands, switch views. Keyboard-first design for flow states.
-
-### Time Machine
-Built on [Loro CRDTs](https://loro.dev/), Skelenote records the history of your vault. Revert a single object—or your entire vault—to any previous state. Fear of deleting the wrong paragraph is gone.
-
-### Clean, Focused UI
-Warm earth tones (ember, sage, clay) replace cold corporate blues. High-density, low-noise interface that recedes until needed. Your content, not our chrome.
-
-
----
-
-## How It Works
-
-### The Skeleton Key
-
-Your Skeleton Key is a 24-word phrase (BIP39 mnemonic) that serves as your master encryption key. It's generated once, stored securely on your device, and used to derive all encryption keys.
-
-```
-example: abandon ability able about above absent absorb abstract absurd abuse access accident ...
-```
-
-**Important:** Save your Skeleton Key somewhere safe. It's the only way to decrypt your data on a new device. We can't recover it for you—that's the point.
-
-### Campfire Sync: Local-First P2P
-
-When devices share the same network, they find each other automatically and sync directly—no internet required. Physical proximity is the ultimate encryption: your data never leaves your local network.
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        Your Local Network (WiFi/LAN)                     │
-│                                                                          │
-│   ┌─────────────────┐              Direct TCP             ┌─────────────────┐
-│   │    Device A     │◄────────────────────────────────────►│    Device B     │
-│   │   (MacBook)     │         Encrypted Packets            │    (iPhone)     │
-│   │                 │                                      │                 │
-│   │  ┌───────────┐  │                                      │  ┌───────────┐  │
-│   │  │ Loro CRDT │  │    ┌────────────────────────────┐    │  │ Loro CRDT │  │
-│   │  │   Store   │  │    │  mDNS/Bonjour Discovery    │    │  │   Store   │  │
-│   │  └───────────┘  │    │  _skelenote._tcp.local     │    │  └───────────┘  │
-│   │                 │    └────────────────────────────┘    │                 │
-│   │  ┌───────────┐  │                                      │  ┌───────────┐  │
-│   │  │ XChaCha20 │  │         No external servers          │  │ XChaCha20 │  │
-│   │  │ Encrypt   │  │         No cloud dependency          │  │ Encrypt   │  │
-│   │  └───────────┘  │         No data leaves network       │  └───────────┘  │
-│   └─────────────────┘                                      └─────────────────┘
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
-
-1. Devices discover each other via mDNS/Bonjour on your local network
-2. Direct TCP connections are established between devices
-3. You make a change locally (edit a note, create a task)
-4. The update is encrypted with your Skeleton Key (XChaCha20-Poly1305)
-5. Encrypted data syncs directly to other devices on the network
-6. Loro CRDT merges changes automatically (no conflicts)
-
-**Your data never leaves your network.** No cloud, no relay servers, no third parties.
+- **Object Graph**: Everything is an object (tasks, notes, projects) with typed relations.
+- **Campfire Sync**: Local-first P2P synchronization via mDNS/Bonjour.
+- **Time Machine**: Infinite history built on Loro CRDTs.
+- **Quiet Interface**: High-density UI designed for flow states.
 
 ---
 
@@ -125,7 +40,7 @@ When devices share the same network, they find each other automatically and sync
 | Frontend | React 18 + TypeScript |
 | Editor | [BlockNote](https://www.blocknotejs.org/) |
 | Data Layer | [Loro CRDT](https://loro.dev/) |
-| Encryption | XChaCha20-Poly1305, BIP39, HKDF-SHA256 |
+| Encryption | XChaCha20-Poly1305, BIP39 |
 | P2P Sync | mDNS/Bonjour + Direct TCP |
 
 ---
@@ -149,7 +64,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm tauri:dev
+pnpm tauri dev
 ```
 
 This starts the Vite dev server and launches the Tauri app with hot reload.
@@ -157,7 +72,7 @@ This starts the Vite dev server and launches the Tauri app with hot reload.
 ### Build
 
 ```bash
-pnpm tauri:build
+pnpm tauri build
 ```
 
 Produces platform-specific binaries in `src-tauri/target/release/bundle/`.
@@ -207,8 +122,9 @@ skelenote/
 
 ## Contributing
 
-Contributions are welcome! Here's how to get started:
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed setup instructions.
 
+Quick start:
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
@@ -239,14 +155,20 @@ See [LICENSE](LICENSE) for the full text.
 
 ### User Guides
 - [Getting Started](docs/user/getting-started.md) — Your first day in the Study
-- [Security & Privacy](docs/user/security-privacy.md) — Encryption, threat model, zero-knowledge design
-- [Campfire Mode](docs/user/campfire-guide.md) — Local P2P sync setup and use cases
-- [Cloud Sync](docs/user/cloud-sync-guide.md) — Optional relay server configuration
+- [Campfire Mode](docs/user/guides/campfire-guide.md) — Local P2P sync setup and use cases
+- [Cloud Sync](docs/user/guides/cloud-sync-guide.md) — Optional relay server configuration
+
+### About Skelenote
+- [Philosophy & Manifesto](docs/user/about/philosophy-manifesto.md) — The Core Narrative and Three Laws
+- [Security & Privacy](docs/user/about/security-privacy.md) — Encryption, threat model, zero-knowledge design
+- [Ownership & Pricing](docs/user/about/ownership-pricing.md) — The Sovereign Business Model
 
 ### For Contributors
-- [Design System](docs/internal/style-guide.md) — UI components and patterns
-- [Brand Bible](docs/internal/skelenote-brand-bible.md) — Voice, lexicon, and strategic positioning
-- [Feature List](docs/internal/skelenote-feature-list.md) — Current and planned features
+- [Design System](docs/design/style-guide.md) — UI components and patterns
+- [Brand Bible](docs/design/skelenote-brand-bible.md) — Voice, lexicon, and strategic positioning
+- [Feature List](docs/design/skelenote-feature-list.md) — Current and planned features
+- [Architecture](docs/developer/architecture.md) — Data flow and system design
+- [Tauri API](docs/developer/tauri-api.md) — Rust command reference
 
 ---
 

@@ -144,6 +144,6 @@ You now have the essentials. The study is yours to arrange.
 
 For deeper understanding:
 - [Security & Privacy Architecture](security-privacy.md) — How encryption protects you
-- [Brand Bible](../internal/skelenote-brand-bible.md) — The philosophy behind the design
+- [Philosophy & Manifesto](philosophy-manifesto.md) — The philosophy behind the design
 
 **Local. Encrypted. Yours.**
