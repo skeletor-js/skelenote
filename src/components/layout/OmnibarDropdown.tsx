@@ -25,10 +25,6 @@ export function OmnibarDropdown({
   onSelect,
   onMouseEnter,
 }: OmnibarDropdownProps) {
-  // Group results by category for better organization
-  const actionResults = results.filter((r) => r.category !== 'object');
-  const objectResults = results.filter((r) => r.category === 'object');
-
   // Render icon - either as Lucide icon name or emoji fallback
   const renderIcon = (icon: string) => {
     if (/^[a-z0-9-]+$/.test(icon)) {
@@ -71,9 +67,6 @@ export function OmnibarDropdown({
               ~{semanticPercent ? `${semanticPercent}%` : ''}
             </Badge>
           )}
-          <Text size="xs" c="dimmed" tt="capitalize" style={{ flexShrink: 0 }}>
-            {action.category}
-          </Text>
         </Group>
       </UnstyledButton>
     );
@@ -89,35 +82,10 @@ export function OmnibarDropdown({
     );
   }
 
-  // Calculate indices for each section
-  let currentIndex = 0;
-
   return (
     <ScrollArea.Autosize mah={400} className={classes.dropdown}>
       <Stack gap={0} p="xs">
-        {/* Actions section */}
-        {actionResults.length > 0 && (
-          <>
-            <Text className={classes.categoryHeader}>Actions</Text>
-            {actionResults.map((action) => {
-              const item = renderItem(action, currentIndex);
-              currentIndex++;
-              return item;
-            })}
-          </>
-        )}
-
-        {/* Objects section */}
-        {objectResults.length > 0 && (
-          <>
-            <Text className={classes.categoryHeader}>Objects</Text>
-            {objectResults.map((action) => {
-              const item = renderItem(action, currentIndex);
-              currentIndex++;
-              return item;
-            })}
-          </>
-        )}
+        {results.map((action, index) => renderItem(action, index))}
       </Stack>
     </ScrollArea.Autosize>
   );

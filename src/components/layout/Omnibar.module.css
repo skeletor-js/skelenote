@@ -24,6 +24,10 @@
 
 /* Dropdown panel */
 .dropdown {
+  background: var(--mantine-color-body);
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-sm);
+  box-shadow: none;
   max-height: 400px;
   overflow-y: auto;
 }
@@ -41,20 +45,20 @@
 
 .resultItem:hover,
 .resultItem[data-selected='true'] {
-  background-color: var(--mantine-color-gray-light);
+  background-color: var(--hover-warm-strong);
 }
 
-/* Category headers */
-.categoryHeader {
-  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
-  padding-top: var(--mantine-spacing-sm);
-  font-size: var(--mantine-font-size-xs);
-  font-weight: 500;
-  color: var(--mantine-color-dimmed);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+/* ================================================================
+   Dark Mode Overrides
+   Using semantic surface variables for consistency with design system
+   ================================================================ */
+
+[data-mantine-color-scheme="dark"] .dropdown {
+  background: var(--surface-paper);
+  border-color: var(--mantine-color-default-border);
 }
 
-.categoryHeader:first-child {
-  padding-top: var(--mantine-spacing-xs);
+[data-mantine-color-scheme="dark"] .resultItem:hover,
+[data-mantine-color-scheme="dark"] .resultItem[data-selected='true'] {
+  background: var(--surface-raised);
 }
