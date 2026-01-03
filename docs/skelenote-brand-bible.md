@@ -125,19 +125,3 @@ We don't use breathless hype ("Revolutionary!" "Game Changing!"). We speak with 
 * **Relay:** The optional internet sync. Avoid "Cloud Storage." (Implies transit, not residency).
 
 ---
-
-## VII. The Roadmap
-
-1.  **Phase I: The Foundation (Now)**
-    * Tauri/Rust Desktop App.
-    * Native PARA & Loro Encryption.
-    * Campfire P2P Sync.
-
-2.  **Phase II: The Exodus (Next)**
-    * **The Importers:** One-click wizards to migrate from Notion (Databases -> Objects) and Obsidian (Frontmatter -> Properties).
-    * **Native Mobile:** The full experience in your pocket.
-    * **Local Whisper:** Integrated voice notes.
-
-3.  **Phase III: The Network (Future)**
-    * **Skelenote Publish:** One-click web publishing.
-    * **Graph View:** Visualizing the neural network of the vault.
