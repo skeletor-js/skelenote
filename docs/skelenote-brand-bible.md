@@ -30,8 +30,9 @@ Skelenote is designed around three non-negotiable laws that dictate every pixel 
 ### Law 1: Structure is Freedom (Native PARA)
 Most local-first apps (like Obsidian) hand you a blank text file and wish you luck. This isn't freedom; it's a burden. It forces you to become a systems architect when you just want to get work done.
 
-Skelenote comes furnished.
-* **The Skeleton:** The app launches with the **PARA Method** (Projects, Areas, Resources, Archives) hard-coded into its DNA. You don't build the system; you step into it.
+Skelenote comes furnished, but you will be able to rearrange the furniture.
+* **The Skeleton:** The app launches with the **PARA Method** (Projects, Areas, Resources, Archives) as a sensible default. You step into a working system on day one.
+* **Your House, Your Rules:** In a future update, Settings will include a toggle to unlock the built-in PARA types—allowing you to rename, restructure, or replace them entirely. The framework is a foundation, not a cage.
 * **The Object Graph:** We dissolved the barrier between "Tasks" and "Notes." In Skelenote, everything is an **Object**. A Todo list item has the same power as a 5,000-word thesis. They share the same properties, tags, and linking capabilities.
 
 ### Law 2: Privacy is Power (Local Intelligence)
@@ -70,12 +71,13 @@ We combine the high-density efficiency of a code editor with the warmth of a phy
 
 Our pricing strategy is our biggest differentiator. It aligns our incentives with the user's well-being, not their addiction.
 
-### 1. Buy the Tool ($9.99 One-Time)
-This is the "Impulse Buy" that disrupts the market. For the price of a sandwich, the user gets:
+### 1. Buy the Tool ($19.99 Version License)
+This is the "Sketch/Things Model"—buy once, own forever. For less than a month of most productivity subscriptions, the user gets:
 * The full Desktop (Tauri/Rust) and Mobile apps.
 * All local features (XChaCha20 Encryption, AI, Graph, PARA).
-* **Campfire Mode:** Serverless P2P collaboration (LAN sync).
-* *Why:* It signals that the software is a finished product, not a recurring service.
+* **Campfire Mode:** Serverless P2P sync (LAN sync).
+* Lifetime access to v1.x updates.
+* *Philosophy:* You own version 1 forever. When version 2 arrives (typically every two years), you decide whether the new features are worth another purchase. No forced upgrades, no feature degradation, no subscription anxiety.
 
 ### 2. Rent the Infrastructure (Optional Subscription)
 We only charge recurring fees for recurring costs.
@@ -87,18 +89,19 @@ We only charge recurring fees for recurring costs.
 
 ## V. Strategic Positioning: The "Campfire"
 
-Skelenote establishes a new rhythm for creative work: **Solitude by default, collaboration by choice.**
+Skelenote establishes a new rhythm for creative work: **Solitude by default, sharing by choice.**
 
 While competitors force you into "Always-On Cloud Collaboration" (the digital equivalent of a noisy open-plan office), we introduce **"Campfire Mode."**
 
-### The Concept: Proximity Networking
-Deep work happens in the **Digital Study**—alone, focused, and private. But when the work is ready, you step out to the **Campfire**.
+### The Concept: The Privacy Air-Gap
+Deep work happens in the **Digital Study**—alone, focused, and private. But when the work is ready to be shared, you step out to the **Campfire**.
 
-* **The Mechanic:** You and your team are in a room. The internet goes down. In Skelenote, you keep working. Your computers find each other over the local network. Changes sync instantly, peer-to-peer.
-* **The Feeling:** It captures the nostalgia of a LAN party—the intimacy and speed of connecting directly to the people next to you, without a corporate server in the middle.
+* **The Principle:** Physical proximity is the ultimate encryption. The only way to share data that nobody can intercept is to never send it over the internet at all.
+* **The Mechanic:** Devices discover each other over your local network (mDNS/Bonjour). Data syncs directly between machines, encrypted end-to-end, without ever touching an external server. No cloud. No relay. No exposure.
+* **The Feeling:** The intimacy and speed of connecting directly to the people next to you—like a LAN party, but with enterprise-grade security.
 
 ### The Differentiator
-Most modern tools are obsessed with bridging the gap between remote workers. We are the only tool optimizing for people who are **physically together**. We don't build bridges across oceans; we build a fire for the people in the room.
+Most modern tools obsess over bridging oceans between remote workers. We are the only tool that recognizes **proximity is security**. When you are in the same room, same building, or same network—your data stays there. We do not build bridges across the internet; we build a fire for the people who are already together.
 
 ---
 
@@ -118,6 +121,7 @@ We don't use breathless hype ("Revolutionary!" "Game Changing!"). We speak with 
 * **Vault:** The database/file storage. Avoid "Account" or "Cloud." (Implies security and total ownership).
 * **Object:** The fundamental unit of information. Avoid "Page," "Note," or "Task." (Implies structure and malleability).
 * **Campfire:** The local sync mode. Avoid "Collaboration" or "Multiplayer." (Implies proximity and intimacy).
+* **Air-Gap:** The security posture of Campfire mode. Avoid "Offline sync." (Implies the security guarantee of physical isolation).
 * **Relay:** The optional internet sync. Avoid "Cloud Storage." (Implies transit, not residency).
 
 ---

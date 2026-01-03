@@ -1,6 +1,8 @@
 # Skelenote
 
-**A local-first, zero-knowledge note-taking app for object-based thinking.**
+**The Permanent Operating System for Your Mind**
+
+A local-first, zero-knowledge private workspace. Your vault lives on your device, encrypted with keys only you control.
 
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](https://github.com/jordanstella/skelenote/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-green)](LICENSE)
@@ -9,49 +11,59 @@
 
 ## Why Skelenote?
 
-Most note-taking apps store your thoughts on someone else's servers. Skelenote is different.
+For the last decade, we traded ownership for access. We stopped buying software and started paying landlords. The modern productivity landscape is a noisy open-plan office—loud, rented, and hostile to deep work.
 
-| | Traditional Apps | Skelenote |
+**Skelenote is the rejection of that era.**
+
+It is your **Digital Study**—a quiet room you own, not a noisy service you visit. The door locks, the tools are yours, and your thoughts remain private until you choose to share them.
+
+| | Cloud Apps | Skelenote |
 |---|---|---|
-| **Data Location** | Their servers | Your device |
-| **Who Can Read It** | The company, hackers, governments | Only you |
-| **Works Offline** | Limited or not at all | Full functionality |
-| **Sync Privacy** | They see everything | Zero-knowledge encryption |
-| **Vendor Lock-in** | Export? Good luck. | Your data, your files |
+| **Where Data Lives** | Their servers | Your vault, on your device |
+| **Who Can Read It** | The company, hackers, governments | Only you (zero-knowledge) |
+| **Offline?** | Limited or broken | Full functionality, always |
+| **Sync Model** | They see everything | [Campfire](#campfire-sync-local-first-p2p): encrypted P2P |
+| **Lock-in** | Export? Good luck. | Your files. Walk away anytime. |
 
 ### Core Principles
 
-- **Your Data, Your Device** — All data stored locally using conflict-free replicated data types (CRDTs). No account required. No cloud dependency.
+- **Local. Encrypted. Yours.** — Your vault lives on your device, encrypted with XChaCha20-Poly1305 before anything leaves your machine. The key? A 24-word "Skeleton Key" that only you control.
 
-- **True P2P Sync** — Sync directly between your devices on the same network. No cloud servers, no relay, no middleman. Your data never leaves your local network.
+- **Campfire Sync** — Physical proximity is the ultimate encryption. Devices on the same network discover each other and sync directly—no cloud, no relay, no middleman. [Learn more](#campfire-sync-local-first-p2p).
 
-- **End-to-End Encrypted** — Your data is encrypted with XChaCha20-Poly1305 before it ever leaves your device. The encryption key? A 24-word "Skeleton Key" that only you control.
+- **Structure is Freedom** — Skelenote comes furnished with the PARA method (Projects, Areas, Resources, Archives). Step into a working system on day one. In a future update, you'll be able to rearrange the furniture.
 
-- **Works Offline** — Full functionality without an internet connection. Changes sync automatically when you reconnect.
+- **Offline-First, Always** — Full functionality without internet. No spinners waiting for the cloud. Changes sync when you reconnect.
 
-- **No Vendor Lock-in** — Your notes live in files on your computer. You're never locked into our ecosystem.
+- **No Lock-in** — Your objects live in files on your computer. Export to Markdown anytime. Walk away whenever you want.
+
+### Built to Own
+
+Skelenote costs $19.99—once. No subscription, no account required.
+
+You own version 1 forever. Future major versions are separate purchases (like Sketch or Things 3). We only charge recurring fees for optional infrastructure services. Technical users can self-host everything.
 
 ---
 
 ## Features
 
-### Object-Based Thinking
-Everything is an object: notes, tasks, projects, links, meetings. Objects connect via typed relations with automatic backlinks, forming your personal knowledge graph.
+### The Object Graph
+Everything is an **Object**: tasks, notes, projects, areas, links, meetings, people. A todo item has the same power as a 5,000-word thesis—same properties, tags, and linking capabilities. Objects connect via typed relations with automatic backlinks, forming your personal knowledge graph.
 
 ### Inbox-Driven Workflow
-New objects land in your inbox for intentional triage. Process them when you're ready, not when they arrive.
+New objects land in your inbox for intentional triage. Process them when you're ready, not when they arrive. Your study stays quiet; the noise stays in the inbox.
 
 ### Quick Capture
-Global hotkey (`Cmd+Shift+Space` / `Ctrl+Shift+Space`) lets you capture thoughts from anywhere without switching apps.
+Global hotkey (`Cmd+Shift+Space` / `Ctrl+Shift+Space`) captures thoughts from anywhere without switching apps. Thoughts go to inbox; triage happens later.
 
 ### Command Palette
-Navigate anywhere instantly with `Cmd+K` / `Ctrl+K`. Search objects, run commands, switch views.
+Navigate anywhere instantly with `Cmd+K` / `Ctrl+K`. Search objects, run commands, switch views. Keyboard-first design for flow states.
 
-### Daily Notes
-Calendar-based daily notes for journaling and time-based organization.
+### Time Machine
+Built on [Loro CRDTs](https://loro.dev/), Skelenote records the history of your vault. Revert a single object—or your entire vault—to any previous state. Fear of deleting the wrong paragraph is gone.
 
 ### Clean, Focused UI
-Monochromatic black/white/gray design. Tags provide the only color—intentionally minimal to keep focus on your content.
+Warm earth tones (ember, sage, clay) replace cold corporate blues. High-density, low-noise interface that recedes until needed. Your content, not our chrome.
 
 
 ---
@@ -68,7 +80,9 @@ example: abandon ability able about above absent absorb abstract absurd abuse ac
 
 **Important:** Save your Skeleton Key somewhere safe. It's the only way to decrypt your data on a new device. We can't recover it for you—that's the point.
 
-### P2P Sync Architecture
+### Campfire Sync: Local-First P2P
+
+When devices share the same network, they find each other automatically and sync directly—no internet required. Physical proximity is the ultimate encryption: your data never leaves your local network.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -182,22 +196,23 @@ skelenote/
 
 ## Roadmap
 
-### The P2P Release (Next)
-- **Device Management** — View, rename, and revoke access for synced devices
-- **Time Machine** — Browse your entire knowledge base at any point in time, restore previous versions
-- **Semantic Search** — Local ML-powered conceptual search (opt-in, runs entirely on device)
-- **Side-by-Side View** — Compare objects or versions in split pane layout
+### Phase I: The Foundation (Current)
+- Native desktop app (Tauri/Rust)
+- PARA structure with Object Graph
+- Campfire P2P sync
+- XChaCha20 encryption with Skeleton Key
+- Time Machine (Loro CRDTs)
 
-### The Convenience Release
-- **Custom Saved Views** — Save filtered, sorted views of your objects
-- **Templates** — Quick-create objects from templates
-- **Markdown Export** — Export notes to standard markdown
-- **Bulk Operations** — Select and act on multiple objects at once
-- **Pinned Objects** — Pin frequently accessed objects to the top
-- **Transclusion** — Embed content from one note into another
+### Phase II: The Exodus (Next)
+- **Import Wizards** — One-click migration from Notion, Obsidian, and Roam
+- **Native Mobile** — iOS and Android apps (same vault, same encryption)
+- **Local Whisper** — Unlimited offline voice transcription (bring your own model)
+- **Semantic Search** — Local ML-powered conceptual search (runs entirely on device)
 
-### Future
-- **Mobile Apps** — iOS and Android clients
+### Phase III: The Network (Future)
+- **Cloud Relay** — Optional encrypted relay for syncing across the internet
+- **Skelenote Publish** — One-click web publishing from your vault
+- **Graph View** — Visualize the neural network of your knowledge
 
 ---
 
@@ -231,6 +246,15 @@ See [LICENSE](LICENSE) for the full text.
 
 ---
 
+## Documentation
+
+- [Security & Privacy Architecture](docs/security-privacy.md) — Encryption, threat model, zero-knowledge design
+- [Campfire Mode Guide](docs/campfire-guide.md) — Local P2P sync setup and use cases
+- [Cloud Sync Setup](docs/cloud-sync-guide.md) — Optional relay server configuration
+- [Design System](docs/style-guide.md) — UI components and patterns
+
+---
+
 <p align="center">
-  <strong>Your notes. Your device. Your keys.</strong>
+  <strong>Local. Encrypted. Yours.</strong>
 </p>
