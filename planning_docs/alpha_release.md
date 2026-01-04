@@ -2,7 +2,7 @@
 
 ## Current State Assessment
 
-**Overall Verdict: Ready for CI/CD** - Core features complete, configuration fixed, critical tests added. Only CI/CD remains before release.
+**Overall Verdict: RELEASED** - v0.1.0-alpha.1 tagged and pushed. CI/CD building release artifacts.
 
 | Area | Status | Action Required |
 |------|--------|-----------------|
@@ -123,8 +123,8 @@ Run `pnpm test -- --coverage` to generate coverage report.
 - [x] All tests passing (223 tests)
 - [x] CI/CD workflows created
 - [x] Version numbers synced across all config files
-- [ ] Manual testing of core flows
-- [ ] Successful builds on all platforms
+- [x] Manual testing of core flows (macOS, Linux verified)
+- [ ] Successful builds on all platforms (CI in progress)
 
 ### Version Update
 Set version to `0.1.0-alpha.1` in:
@@ -151,10 +151,10 @@ git push origin main --tags
 | 3 | Add ObjectStore tests | ✅ Complete (61 tests) |
 | 4 | Add Query tests | ✅ Complete (51 tests) |
 | 5 | Clean up high-priority console logs | ✅ Complete (40 removed) |
-| 6 | Manual testing | ⏳ Pending |
-| 7 | Update versions and tag release | ⏳ Pending |
+| 6 | Manual testing | ✅ Complete (macOS, Linux) |
+| 7 | Update versions and tag release | ✅ Complete |
 
-**Remaining effort: ~3-4 hours** (CI/CD setup + manual testing + version bump)
+**Status: v0.1.0-alpha.1 released** - Tag pushed, awaiting CI builds
 
 ---
 
