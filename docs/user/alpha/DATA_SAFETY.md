@@ -112,7 +112,7 @@ Full import from Markdown is coming soon. For now, you can manually recreate obj
 2. Check [Known Issues](./KNOWN_ISSUES.md) for the new version
 3. Try restarting the app
 4. If the app won't launch, your data is still safe in the data folder
-5. Report the issue on [GitHub](https://github.com/jordanstella/skelenote/issues/new?template=bug_report.yml) or [Discord](https://discord.gg/4apsgSRB7D)
+5. Report the issue on [GitHub](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml) or [Discord](https://discord.gg/4apsgSRB7D)
 
 ### "I think I lost data"
 
@@ -178,4 +178,4 @@ Planned features for better data safety:
 
 - [Troubleshooting Guide](./TROUBLESHOOTING.md)
 - [Discord](https://discord.gg/4apsgSRB7D)
-- [Report an Issue](https://github.com/jordanstella/skelenote/issues/new?template=bug_report.yml)
+- [Report an Issue](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml)

@@ -7,7 +7,7 @@
 If you discover a security vulnerability in Skelenote, please report it privately:
 
 1. **Email**: security@skelenote.com (or create a private security advisory on GitHub)
-2. **GitHub Security Advisory**: [Report a vulnerability](https://github.com/jordanstella/skelenote/security/advisories/new)
+2. **GitHub Security Advisory**: [Report a vulnerability](https://github.com/skeletor-js/skelenote/security/advisories/new)
 
 ### What to Include
 

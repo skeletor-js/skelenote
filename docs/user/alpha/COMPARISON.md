@@ -179,7 +179,7 @@ Honest gaps compared to mature competitors:
 
 The best comparison is trying Skelenote with your actual workflow:
 
-1. [Download the alpha](https://github.com/jordanstella/skelenote/releases)
+1. [Download the alpha](https://github.com/skeletor-js/skelenote/releases)
 2. Import some test content
 3. See if it fits how you think
 

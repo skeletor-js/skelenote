@@ -130,7 +130,7 @@ body:
     attributes:
       label: Pre-submission Checklist
       options:
-        - label: I checked the [Known Issues](https://github.com/jordanstella/skelenote/blob/main/docs/user/alpha/KNOWN_ISSUES.md) and this isn't listed
+        - label: I checked the [Known Issues](https://github.com/skeletor-js/skelenote/blob/main/docs/user/alpha/KNOWN_ISSUES.md) and this isn't listed
           required: true
         - label: I searched existing issues and this hasn't been reported
           required: true

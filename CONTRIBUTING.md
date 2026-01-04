@@ -8,9 +8,9 @@ Thank you for your interest in contributing to Skelenote! This guide will help y
 
 We're in alpha and actively seeking testers. This is one of the most valuable contributions right now:
 
-1. **Test the app** - Download from [Releases](https://github.com/jordanstella/skelenote/releases) and use it
-2. **Report bugs** - [Open a bug report](https://github.com/jordanstella/skelenote/issues/new?template=bug_report.yml) with steps to reproduce
-3. **Request features** - [Open a feature request](https://github.com/jordanstella/skelenote/issues/new?template=feature_request.yml) with your ideas
+1. **Test the app** - Download from [Releases](https://github.com/skeletor-js/skelenote/releases) and use it
+2. **Report bugs** - [Open a bug report](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml) with steps to reproduce
+3. **Request features** - [Open a feature request](https://github.com/skeletor-js/skelenote/issues/new?template=feature_request.yml) with your ideas
 4. **Join Discord** - Chat with other testers and provide real-time feedback
 
 See the [Alpha Tester Guide](docs/user/alpha/README.md) for detailed instructions.
@@ -50,7 +50,7 @@ sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/jordanstella/skelenote.git
+git clone https://github.com/skeletor-js/skelenote.git
 cd skelenote
 ```
 
@@ -239,10 +239,10 @@ The CI pipeline builds and tests on all platforms automatically.
 
 ## Getting Help
 
-- **Bugs**: [Open a bug report](https://github.com/jordanstella/skelenote/issues/new?template=bug_report.yml)
-- **Features**: [Open a feature request](https://github.com/jordanstella/skelenote/issues/new?template=feature_request.yml)
+- **Bugs**: [Open a bug report](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml)
+- **Features**: [Open a feature request](https://github.com/skeletor-js/skelenote/issues/new?template=feature_request.yml)
 - **Questions**: Join our [Discord](https://discord.gg/4apsgSRB7D)
-- Check [existing issues](https://github.com/jordanstella/skelenote/issues) before creating new ones
+- Check [existing issues](https://github.com/skeletor-js/skelenote/issues) before creating new ones
 
 ## License
 

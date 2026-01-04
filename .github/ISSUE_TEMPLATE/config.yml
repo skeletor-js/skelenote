@@ -1,13 +1,13 @@
 blank_issues_enabled: false
 contact_links:
   - name: Alpha Tester Guide
-    url: https://github.com/jordanstella/skelenote/blob/main/docs/user/alpha/README.md
+    url: https://github.com/skeletor-js/skelenote/blob/main/docs/user/alpha/README.md
     about: New to alpha testing? Start here for setup and expectations.
   - name: Known Issues
-    url: https://github.com/jordanstella/skelenote/blob/main/docs/user/alpha/KNOWN_ISSUES.md
+    url: https://github.com/skeletor-js/skelenote/blob/main/docs/user/alpha/KNOWN_ISSUES.md
     about: Check if your issue is already documented before reporting.
   - name: Troubleshooting Guide
-    url: https://github.com/jordanstella/skelenote/blob/main/docs/user/alpha/TROUBLESHOOTING.md
+    url: https://github.com/skeletor-js/skelenote/blob/main/docs/user/alpha/TROUBLESHOOTING.md
     about: Try these fixes before reporting a bug.
   - name: Discord Community
     url: https://discord.gg/4apsgSRB7D
