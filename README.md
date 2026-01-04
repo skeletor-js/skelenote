@@ -7,6 +7,9 @@ A local-first, zero-knowledge private study. Your vault lives on your device, en
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](https://github.com/jordanstella/skelenote/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-green)](LICENSE)
 [![Build](https://img.shields.io/github/actions/workflow/status/jordanstella/skelenote/build.yml?branch=main)](https://github.com/jordanstella/skelenote/actions)
+[![Encryption](https://img.shields.io/badge/encryption-XChaCha20--Poly1305-purple)](docs/user/about/security-privacy.md)
+[![Zero Knowledge](https://img.shields.io/badge/zero--knowledge-E2E%20encrypted-purple)](docs/user/about/security-faq.md)
+[![Local First](https://img.shields.io/badge/local--first-your%20device-orange)](docs/user/about/philosophy-manifesto.md)
 
 ---
 

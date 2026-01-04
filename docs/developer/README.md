@@ -2,6 +2,10 @@
 
 Technical reference for contributors.
 
+## Getting Started
+
+- [Quick Start](QUICK_START.md) - Ship your first PR in 30 minutes
+
 ## Architecture
 
 - [Architecture](architecture.md) - System design, data flow, module responsibilities
