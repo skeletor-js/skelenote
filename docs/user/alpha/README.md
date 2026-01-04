@@ -14,7 +14,7 @@ You're using early software. Expect rough edges:
 
 ## Getting Started
 
-1. **Download** the latest release from [GitHub Releases](https://github.com/jordanstella/skelenote/releases)
+1. **Download** the latest release from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases)
 2. **Install** following the platform-specific instructions below
 3. **Set up your Skeleton Key** - this is your encryption password. Write down the 24 words somewhere safe.
 4. **Explore** - create objects, try sync, break things
@@ -44,12 +44,12 @@ chmod +x Skelenote_*.AppImage
 ## How to Help
 
 ### Report Bugs
-Found something broken? [Open a bug report](https://github.com/jordanstella/skelenote/issues/new?template=bug_report.yml).
+Found something broken? [Open a bug report](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml).
 
 Before reporting:
 - Check [Known Issues](./KNOWN_ISSUES.md) to see if it's already documented
 - Try the [Troubleshooting Guide](./TROUBLESHOOTING.md) first
-- Search [existing issues](https://github.com/jordanstella/skelenote/issues) to avoid duplicates
+- Search [existing issues](https://github.com/skeletor-js/skelenote/issues) to avoid duplicates
 
 Good bug reports include:
 - Steps to reproduce
@@ -58,7 +58,7 @@ Good bug reports include:
 - Screenshots or logs if relevant
 
 ### Request Features
-Have an idea? [Open a feature request](https://github.com/jordanstella/skelenote/issues/new?template=feature_request.yml).
+Have an idea? [Open a feature request](https://github.com/skeletor-js/skelenote/issues/new?template=feature_request.yml).
 
 ### Join the Conversation
 **Discord**: [Join our server](https://discord.gg/4apsgSRB7D) for real-time discussion, questions, and feedback.
@@ -110,8 +110,8 @@ See the full [Testing Checklist](./TEST_PLAN.md) for detailed scenarios.
 
 | Need | Action |
 |------|--------|
-| Report a bug | [GitHub Issue](https://github.com/jordanstella/skelenote/issues/new?template=bug_report.yml) |
-| Request a feature | [GitHub Issue](https://github.com/jordanstella/skelenote/issues/new?template=feature_request.yml) |
+| Report a bug | [GitHub Issue](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml) |
+| Request a feature | [GitHub Issue](https://github.com/skeletor-js/skelenote/issues/new?template=feature_request.yml) |
 | Ask a question | [Discord](https://discord.gg/4apsgSRB7D) |
 | Check known issues | [Known Issues](./KNOWN_ISSUES.md) |
 | Troubleshoot | [Troubleshooting Guide](./TROUBLESHOOTING.md) |

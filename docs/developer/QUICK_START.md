@@ -29,7 +29,7 @@ sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libssl-dev
 ### Clone & Install
 
 ```bash
-git clone https://github.com/jordanstella/skelenote.git
+git clone https://github.com/skeletor-js/skelenote.git
 cd skelenote
 pnpm install
 ```
@@ -63,8 +63,8 @@ This starts Vite + Tauri with hot reload. The app window should open in ~30 seco
 
 ### Find Something to Work On
 
-- [Good first issues](https://github.com/jordanstella/skelenote/labels/good%20first%20issue)
-- [Help wanted](https://github.com/jordanstella/skelenote/labels/help%20wanted)
+- [Good first issues](https://github.com/skeletor-js/skelenote/labels/good%20first%20issue)
+- [Help wanted](https://github.com/skeletor-js/skelenote/labels/help%20wanted)
 
 ### Example: Add a Keyboard Shortcut
 
@@ -184,7 +184,7 @@ src/
 ## Getting Help
 
 - [Discord](https://discord.gg/4apsgSRB7D) - Quick questions
-- [GitHub Issues](https://github.com/jordanstella/skelenote/issues) - Bug reports
+- [GitHub Issues](https://github.com/skeletor-js/skelenote/issues) - Bug reports
 - [CONTRIBUTING.md](../../CONTRIBUTING.md) - Full guide
 - [Architecture](./architecture.md) - How it all fits together
 

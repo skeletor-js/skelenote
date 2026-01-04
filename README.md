@@ -4,9 +4,9 @@
 
 A local-first, zero-knowledge private study. Your vault lives on your device, encrypted with keys only you control.
 
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](https://github.com/jordanstella/skelenote/releases)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](https://github.com/skeletor-js/skelenote/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-green)](LICENSE)
-[![Build](https://img.shields.io/github/actions/workflow/status/jordanstella/skelenote/build.yml?branch=main)](https://github.com/jordanstella/skelenote/actions)
+[![Build](https://img.shields.io/github/actions/workflow/status/skeletor-js/skelenote/build.yml?branch=main)](https://github.com/skeletor-js/skelenote/actions)
 [![Encryption](https://img.shields.io/badge/encryption-XChaCha20--Poly1305-purple)](docs/user/about/security-privacy.md)
 [![Zero Knowledge](https://img.shields.io/badge/zero--knowledge-E2E%20encrypted-purple)](docs/user/about/security-faq.md)
 [![Local First](https://img.shields.io/badge/local--first-your%20device-orange)](docs/user/about/philosophy-manifesto.md)
@@ -33,10 +33,10 @@ Skelenote is currently in **alpha**. We're looking for testers to help shape the
 
 **Want to help test?**
 
-1. Download from [Releases](https://github.com/jordanstella/skelenote/releases)
+1. Download from [Releases](https://github.com/skeletor-js/skelenote/releases)
 2. Read the [Alpha Tester Guide](docs/user/alpha/README.md)
 3. Join our [Discord](https://discord.gg/4apsgSRB7D) for discussion
-4. Report bugs via [GitHub Issues](https://github.com/jordanstella/skelenote/issues/new?template=bug_report.yml)
+4. Report bugs via [GitHub Issues](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml)
 
 See also:
 - [Known Issues](docs/user/alpha/KNOWN_ISSUES.md)
@@ -89,7 +89,7 @@ All platforms are automatically built and tested via GitHub Actions CI/CD.
 ### Clone & Install
 
 ```bash
-git clone https://github.com/jordanstella/skelenote.git
+git clone https://github.com/skeletor-js/skelenote.git
 cd skelenote
 pnpm install
 ```
