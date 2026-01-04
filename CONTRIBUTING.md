@@ -86,12 +86,32 @@ Before making UI changes, review `docs/design/style-guide.md`. Key principles:
 ## Testing
 
 ```bash
-pnpm test                   # Run all tests
+pnpm test                   # Run all tests (watch mode)
+pnpm test:run               # Run all tests once (CI mode)
 pnpm test -- path/to/test   # Run specific test file
 pnpm test:ui                # Run tests with Vitest UI
 ```
 
 Test files are co-located with source files using `.test.ts` or `.spec.ts` suffix.
+
+### Running the Full Test Suite
+
+Before submitting a PR, run the complete test suite that CI runs:
+
+```bash
+# Frontend linting and type checking
+pnpm lint
+pnpm exec tsc --noEmit
+
+# Frontend tests
+pnpm test:run
+
+# Rust tests
+cd src-tauri
+cargo test
+cargo fmt --check
+cargo clippy
+```
 
 ## Git Workflow
 
@@ -117,18 +137,27 @@ refactor: simplify object context provider
 1. Fork the repository
 2. Create a feature branch from `main`
 3. Make your changes
-4. Ensure tests pass (`pnpm test`)
-5. Ensure TypeScript compiles (`pnpm exec tsc --noEmit`)
-6. Push to your fork
-7. Open a Pull Request against `main`
+4. Ensure tests pass (`pnpm test:run`)
+5. Ensure linting passes (`pnpm lint`)
+6. Ensure TypeScript compiles (`pnpm exec tsc --noEmit`)
+7. Push to your fork
+8. Open a Pull Request against `main`
+
+GitHub Actions will automatically:
+- Run tests on Ubuntu
+- Run linting and type checking
+- Build for macOS (ARM + Intel), Windows, and Linux
 
 ### PR Review Checklist
 
 - [ ] Tests added/updated for new functionality
-- [ ] TypeScript types are correct
+- [ ] All tests pass locally (`pnpm test:run`)
+- [ ] Linting passes (`pnpm lint`)
+- [ ] TypeScript types are correct (`pnpm exec tsc --noEmit`)
 - [ ] No console.log statements left in code
 - [ ] UI changes follow the style guide
 - [ ] Documentation updated if needed
+- [ ] CI checks pass (visible in PR)
 
 ## Project Structure
 
@@ -171,6 +200,25 @@ skelenote/
 - **macOS**: `~/Library/Application Support/com.skelenote.app/`
 - **Windows**: `%APPDATA%\com.skelenote.app\`
 - **Linux**: `~/.local/share/com.skelenote.app/`
+
+## CI/CD Pipeline
+
+Skelenote uses GitHub Actions for continuous integration and deployment. See [docs/developer/ci-cd.md](docs/developer/ci-cd.md) for details.
+
+### Workflows
+
+- **Test** - Runs on every push and PR. Executes linting, frontend tests, and Rust tests.
+- **Build** - Runs on pushes to `main` and PRs. Builds binaries for all platforms (macOS, Windows, Linux).
+- **Release** - Runs on version tags (`v*`). Creates GitHub releases with signed binaries.
+
+### Cross-Platform Testing
+
+Skelenote is fully tested and supported on:
+- macOS (ARM64 and x86_64)
+- Windows (x86_64)
+- Linux (Ubuntu, Fedora, and other distros via AppImage)
+
+The CI pipeline builds and tests on all platforms automatically.
 
 ## Getting Help
 

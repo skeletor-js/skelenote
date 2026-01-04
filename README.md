@@ -6,6 +6,7 @@ A local-first, zero-knowledge private study. Your vault lives on your device, en
 
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](https://github.com/jordanstella/skelenote/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-green)](LICENSE)
+[![Build](https://img.shields.io/github/actions/workflow/status/jordanstella/skelenote/build.yml?branch=main)](https://github.com/jordanstella/skelenote/actions)
 
 ---
 
@@ -45,6 +46,16 @@ For a deeper dive into our vision and how we handle ownership, see:
 
 ---
 
+## Platform Support
+
+Skelenote is fully tested and works on:
+
+- **macOS** - Apple Silicon (ARM64) and Intel (x86_64), macOS 10.15+
+- **Windows** - Windows 10/11 (x86_64)
+- **Linux** - Ubuntu, Fedora, and other distros via .deb, .rpm, or AppImage
+
+All platforms are automatically built and tested via GitHub Actions CI/CD.
+
 ## Getting Started
 
 ### Prerequisites
@@ -52,6 +63,7 @@ For a deeper dive into our vision and how we handle ownership, see:
 - **Node.js** 18+
 - **Rust** (latest stable) — [Install Rust](https://rustup.rs/)
 - **pnpm** (recommended) or npm/yarn
+- Platform-specific dependencies (see [CONTRIBUTING.md](CONTRIBUTING.md#platform-specific-dependencies))
 
 ### Clone & Install
 
@@ -77,10 +89,13 @@ pnpm tauri build
 
 Produces platform-specific binaries in `src-tauri/target/release/bundle/`.
 
+For cross-platform builds and CI/CD details, see [docs/developer/ci-cd.md](docs/developer/ci-cd.md).
+
 ### Testing
 
 ```bash
-pnpm test        # Run tests
+pnpm test        # Run tests (watch mode)
+pnpm test:run    # Run tests once (CI mode)
 pnpm test:ui     # Run tests with UI
 ```
 
@@ -164,6 +179,8 @@ See [LICENSE](LICENSE) for the full text.
 - [Ownership & Pricing](docs/user/about/ownership-pricing.md) — The Sovereign Business Model
 
 ### For Contributors
+- [Contributing Guide](CONTRIBUTING.md) — Setup, workflow, and PR process
+- [CI/CD Pipeline](docs/developer/ci-cd.md) — GitHub Actions workflows and cross-platform builds
 - [Design System](docs/design/style-guide.md) — UI components and patterns
 - [Brand Bible](docs/design/skelenote-brand-bible.md) — Voice, lexicon, and strategic positioning
 - [Feature List](docs/design/skelenote-feature-list.md) — Current and planned features
