@@ -9,7 +9,7 @@
 | Features | ✅ Complete | All v1 features implemented |
 | Build Config | ✅ Complete | `devtools: false` set |
 | Test Coverage | ✅ Complete | 223 tests passing (112 new) |
-| CI/CD | ❌ Missing | Create GitHub Actions |
+| CI/CD | ✅ Complete | GitHub Actions created |
 | Console Logs | ✅ Complete | High-priority logs cleaned |
 | Security | ✅ Solid | Minor improvements only |
 
@@ -121,8 +121,8 @@ Run `pnpm test -- --coverage` to generate coverage report.
 ### Pre-Release Checklist
 - [x] `devtools: false` in tauri.conf.json
 - [x] All tests passing (223 tests)
-- [ ] CI/CD workflows created
-- [ ] Version numbers synced across all config files
+- [x] CI/CD workflows created
+- [x] Version numbers synced across all config files
 - [ ] Manual testing of core flows
 - [ ] Successful builds on all platforms
 
@@ -147,7 +147,7 @@ git push origin main --tags
 | Step | Task | Status |
 |------|------|--------|
 | 1 | Set `devtools: false` | ✅ Complete |
-| 2 | Create CI/CD workflows | ⏳ Pending |
+| 2 | Create CI/CD workflows | ✅ Complete |
 | 3 | Add ObjectStore tests | ✅ Complete (61 tests) |
 | 4 | Add Query tests | ✅ Complete (51 tests) |
 | 5 | Clean up high-priority console logs | ✅ Complete (40 removed) |
