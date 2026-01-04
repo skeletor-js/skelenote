@@ -1,0 +1,32 @@
+{
+    "mcpServers": {
+        "context7": {
+            "type": "http",
+            "url": "https://mcp.context7.com/mcp",
+            "headers": {
+                "CONTEXT7_API_KEY": "$CONTEXT7_API_KEY"
+            }
+        },
+        "mantine": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@mantine/mcp-server"
+            ]
+        },
+        "cloudflare-workers-builds": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@nicholasoxford/mcp-server-cloudflare-workers-builds"
+            ]
+        },
+        "cloudflare-workers-bindings": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@nicholasoxford/mcp-server-cloudflare-workers-bindings"
+            ]
+        }
+    }
+}
