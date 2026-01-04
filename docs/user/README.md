@@ -18,6 +18,7 @@ Guides for using Skelenote.
 
 - [Philosophy & Manifesto](about/philosophy-manifesto.md) - Why Skelenote exists
 - [Security & Privacy](about/security-privacy.md) - Encryption and threat model
+- [Security FAQ](about/security-faq.md) - Quick answers to security questions
 - [Ownership & Pricing](about/ownership-pricing.md) - Business model and pricing
 
 ## Alpha Testing
@@ -26,3 +27,5 @@ Guides for using Skelenote.
 - [Known Issues](alpha/KNOWN_ISSUES.md) - Current bugs and workarounds
 - [Troubleshooting](alpha/TROUBLESHOOTING.md) - Common fixes before reporting
 - [Testing Checklist](alpha/TEST_PLAN.md) - Structured test scenarios
+- [Data Safety](alpha/DATA_SAFETY.md) - Backup and recovery guide
+- [Comparison](alpha/COMPARISON.md) - How Skelenote compares to alternatives
