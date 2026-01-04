@@ -131,7 +131,7 @@ function chunkWithSentences(
 
       // Start new chunk with overlap (keep last few sentences)
       let overlapLength = 0;
-      let overlapSentences: string[] = [];
+      const overlapSentences: string[] = [];
 
       for (let j = currentChunk.length - 1; j >= 0 && overlapLength < overlap; j--) {
         overlapSentences.unshift(currentChunk[j]);

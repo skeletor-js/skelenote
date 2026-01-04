@@ -125,7 +125,8 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
   const handlePropertyChange = useCallback((propertyId: string, value: PropertyValue) => {
     setDefaultProperties((prev) => {
       if (value === null || value === undefined || value === '') {
-        const { [propertyId]: _, ...rest } = prev;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [propertyId]: _removed, ...rest } = prev;
         return rest;
       }
       return { ...prev, [propertyId]: value };

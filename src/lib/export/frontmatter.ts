@@ -27,7 +27,7 @@ function formatDate(timestamp: number): string {
  */
 function escapeYamlString(str: string): string {
   // If string contains special characters, wrap in quotes
-  if (/[:\#\[\]\{\}\,\&\*\!\|\>\'\"\%\@\`]/.test(str) || str.includes('\n')) {
+  if (/[:#{}[\],&*!|>'"%@`]/.test(str) || str.includes('\n')) {
     // Escape double quotes and wrap
     return `"${str.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`;
   }

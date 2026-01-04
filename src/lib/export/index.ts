@@ -242,7 +242,7 @@ export async function exportAllToZip(
     );
 
     // Generate unique filename
-    let baseFilename = sanitizeFilename(title) || 'untitled';
+    const baseFilename = sanitizeFilename(title) || 'untitled';
     const count = usedFilenames.get(baseFilename) || 0;
     usedFilenames.set(baseFilename, count + 1);
 

@@ -44,12 +44,12 @@ export function useConfirmDialog(): UseConfirmDialogResult {
   const handleConfirm = useCallback(() => {
     dialogState.resolve?.(true);
     setDialogState(initialState);
-  }, [dialogState.resolve]);
+  }, [dialogState]);
 
   const handleCancel = useCallback(() => {
     dialogState.resolve?.(false);
     setDialogState(initialState);
-  }, [dialogState.resolve]);
+  }, [dialogState]);
 
   return {
     dialogState,

@@ -97,7 +97,7 @@ export function ObjectProvider({ children }: ObjectProviderProps) {
   const store = useMemo(() => {
     if (!doc) return null;
     return createObjectStore(doc, typeRegistry);
-  }, [doc, typeRegistry, refreshCounter]);
+  }, [doc, typeRegistry]);
 
   const relationHelper = useMemo(() => {
     if (!store) return null;
@@ -188,6 +188,7 @@ export function ObjectProvider({ children }: ObjectProviderProps) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useObjects(): ObjectContextValue {
   const context = useContext(ObjectContext);
   if (!context) {
@@ -199,6 +200,7 @@ export function useObjects(): ObjectContextValue {
 /**
  * Convenience hook to get just the store with null check
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useObjectStore(): ObjectStore {
   const { store, isLoading } = useObjects();
   if (!store) {
@@ -214,6 +216,7 @@ export function useObjectStore(): ObjectStore {
 /**
  * Convenience hook to get the type registry
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTypeRegistry(): TypeRegistry {
   const { typeRegistry } = useObjects();
   return typeRegistry;
@@ -222,6 +225,7 @@ export function useTypeRegistry(): TypeRegistry {
 /**
  * Convenience hook to get the relation helper with null check
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useRelationHelper(): RelationHelper {
   const { relationHelper, isLoading } = useObjects();
   if (!relationHelper) {

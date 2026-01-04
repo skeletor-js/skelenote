@@ -226,6 +226,7 @@ export function SemanticSearchProvider({ children }: SemanticSearchProviderProps
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSemanticSearch(): SemanticSearchContextValue {
   const context = useContext(SemanticSearchContext);
   if (!context) {
@@ -234,6 +235,7 @@ export function useSemanticSearch(): SemanticSearchContextValue {
   return context;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSemanticSearchSafe(): SemanticSearchContextValue | null {
   return useContext(SemanticSearchContext);
 }

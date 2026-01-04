@@ -119,7 +119,7 @@ export class SyncClient {
       this.ws.onmessage = (event) => this.handleMessage(event);
       this.ws.onclose = (event) => this.handleClose(event);
       this.ws.onerror = () => this.handleError();
-    } catch (err) {
+    } catch {
       this.setStatus('disconnected');
       this.emit({ type: 'error', error: new Error('Failed to create WebSocket') });
       this.scheduleReconnect();

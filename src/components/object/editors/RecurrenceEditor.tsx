@@ -138,7 +138,7 @@ export function RecurrenceEditor({
       if (!newFrequency) return;
 
       const freq = newFrequency as RecurrenceValue['frequency'];
-      let newValue: RecurrenceValue = { frequency: freq };
+      const newValue: RecurrenceValue = { frequency: freq };
 
       // Set sensible defaults for each frequency
       if (freq === 'weekly') {
@@ -192,7 +192,8 @@ export function RecurrenceEditor({
       if (!val) return;
       const day = parseInt(val, 10);
       // When switching to day of month mode, remove weekOfMonth and dayOfWeek
-      const { weekOfMonth: _, dayOfWeek: __, ...rest } = recurrence;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { weekOfMonth: _wom, dayOfWeek: _dow, ...rest } = recurrence;
       onChange(
         serializeRecurrenceValue({
           ...rest,
@@ -208,7 +209,8 @@ export function RecurrenceEditor({
       if (!mode) return;
       if (mode === 'day') {
         // Switch to day of month mode
-        const { weekOfMonth: _, dayOfWeek: __, ...rest } = recurrence;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { weekOfMonth: _wom, dayOfWeek: _dow, ...rest } = recurrence;
         const today = new Date().getDate();
         onChange(
           serializeRecurrenceValue({
@@ -218,7 +220,8 @@ export function RecurrenceEditor({
         );
       } else {
         // Switch to nth weekday mode
-        const { dayOfMonth: _, ...rest } = recurrence;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { dayOfMonth: _dom, ...rest } = recurrence;
         const today = new Date().getDay();
         onChange(
           serializeRecurrenceValue({
@@ -397,6 +400,7 @@ export function RecurrenceEditor({
 /**
  * Format a recurrence value for display
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function formatRecurrenceDisplay(value: string | null): string {
   const recurrence = parseRecurrenceValue(value);
 
@@ -439,4 +443,5 @@ export function formatRecurrenceDisplay(value: string | null): string {
 }
 
 // Re-export the parse function for use in recurrence logic
+// eslint-disable-next-line react-refresh/only-export-components
 export { parseRecurrenceValue };
