@@ -137,7 +137,7 @@ function renderDiffBlock(blockDiff: BlockDiff, key: string): React.ReactNode {
         <p className={classes.paragraph}>{content || '\u00A0'}</p>
       );
 
-    case 'heading':
+    case 'heading': {
       const level = (block.props?.level as number) || 1;
       const HeadingTag = `h${Math.min(level, 6)}` as keyof JSX.IntrinsicElements;
       return renderWithDiff(
@@ -145,6 +145,7 @@ function renderDiffBlock(blockDiff: BlockDiff, key: string): React.ReactNode {
           {content}
         </HeadingTag>
       );
+    }
 
     case 'bulletListItem':
       return renderWithDiff(
@@ -162,7 +163,7 @@ function renderDiffBlock(blockDiff: BlockDiff, key: string): React.ReactNode {
         </div>
       );
 
-    case 'checkListItem':
+    case 'checkListItem': {
       const checked = (block.props?.checked as boolean) || false;
       return renderWithDiff(
         <div className={classes.listItem}>
@@ -170,19 +171,21 @@ function renderDiffBlock(blockDiff: BlockDiff, key: string): React.ReactNode {
           <span className={checked ? classes.checkedText : undefined}>{content}</span>
         </div>
       );
+    }
 
     case 'quote':
       return renderWithDiff(
         <blockquote className={classes.quote}>{content}</blockquote>
       );
 
-    case 'codeBlock':
+    case 'codeBlock': {
       const code = (block.props?.code as string) || '';
       return renderWithDiff(
         <pre className={classes.codeBlock}>
           <code>{code}</code>
         </pre>
       );
+    }
 
     default:
       // For unknown block types, try to render content if available

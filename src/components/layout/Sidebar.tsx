@@ -24,6 +24,14 @@ const defaultPropertiesForType: Record<string, Record<string, PropertyValue>> = 
   [BuiltInTypeIds.PERSON]: { name: 'New Person' },
 };
 
+// Types to exclude from the Add Object menu (these have dedicated creation methods)
+const EXCLUDED_FROM_ADD_MENU: string[] = [
+  BuiltInTypeIds.PROJECT,
+  BuiltInTypeIds.AREA,
+  BuiltInTypeIds.TAG,
+  BuiltInTypeIds.TEMPLATE,
+];
+
 interface SidebarProps {
   inboxCount?: number;
   onCreateFromTemplate?: () => void;
@@ -44,19 +52,11 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
     [navigateToSavedView]
   );
 
-  // Types to exclude from the Add Object menu (these have dedicated creation methods)
-  const excludedFromAddMenu: string[] = [
-    BuiltInTypeIds.PROJECT,
-    BuiltInTypeIds.AREA,
-    BuiltInTypeIds.TAG,
-    BuiltInTypeIds.TEMPLATE,
-  ];
-
   // Get available types for the selector (excluding types with dedicated creation methods)
   const availableTypes = useMemo(() => {
     return typeRegistry
       .getAll()
-      .filter((typeDef) => !excludedFromAddMenu.includes(typeDef.id))
+      .filter((typeDef) => !EXCLUDED_FROM_ADD_MENU.includes(typeDef.id))
       .map((typeDef) => ({
         id: typeDef.id,
         name: typeDef.name,

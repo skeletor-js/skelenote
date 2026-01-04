@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Paper, Group, Text, CloseButton, Button, MantineColor } from '@mantine/core';
 import { Icon } from './Icon';
 import type { Toast as ToastData, ToastType } from '@/contexts/ToastContext';
@@ -56,6 +56,14 @@ export function Toast({ toast, onDismiss }: ToastProps) {
   const color = getColor(toast.type);
   const iconName = getIconName(toast.type);
 
+  const handleDismiss = useCallback(() => {
+    setIsExiting(true);
+    // Wait for exit animation
+    setTimeout(() => {
+      onDismiss(toast.id);
+    }, 200);
+  }, [onDismiss, toast.id]);
+
   useEffect(() => {
     if (duration <= 0) return;
 
@@ -64,15 +72,7 @@ export function Toast({ toast, onDismiss }: ToastProps) {
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [duration]);
-
-  const handleDismiss = () => {
-    setIsExiting(true);
-    // Wait for exit animation
-    setTimeout(() => {
-      onDismiss(toast.id);
-    }, 200);
-  };
+  }, [duration, handleDismiss]);
 
   const handleActionClick = () => {
     toast.action?.onClick();

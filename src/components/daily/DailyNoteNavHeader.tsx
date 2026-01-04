@@ -3,7 +3,7 @@
  * Used when navigating to a daily note from another context
  */
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Group, Button, Text } from '@mantine/core';
 import { useNavigation, useObjects } from '@/contexts';
 import { Icon } from '@/components/ui/Icon';
@@ -18,7 +18,7 @@ export function DailyNoteNavHeader({ dateTimestamp }: DailyNoteNavHeaderProps) {
   const { store, refreshData } = useObjects();
   const { navigateToObject, navigateToView } = useNavigation();
 
-  const currentDate = new Date(dateTimestamp);
+  const currentDate = useMemo(() => new Date(dateTimestamp), [dateTimestamp]);
   const dateLabel = formatDateTitle(currentDate);
 
   const handlePreviousDay = useCallback(() => {

@@ -21,7 +21,7 @@ jobs:
           - platform: ubuntu-22.04
             args: ''
           - platform: windows-latest
-            args: ''
+            args: '--bundles nsis'
 
     runs-on: ${{ matrix.platform }}
 
@@ -33,7 +33,7 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf rpm
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -72,6 +72,11 @@ jobs:
             See the assets below to download and install.
 
             **Note:** This is an alpha release. Binaries are not code-signed and may show security warnings on macOS and Windows.
+
+            ### Downloads
+            - **macOS**: `.dmg` (both Apple Silicon and Intel)
+            - **Windows**: `.exe` (NSIS installer)
+            - **Linux**: `.deb` (Debian/Ubuntu), `.rpm` (Fedora/RHEL), `.AppImage` (universal)
           releaseDraft: true
           prerelease: true
           args: ${{ matrix.args }}
