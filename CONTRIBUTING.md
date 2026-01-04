@@ -95,7 +95,7 @@ Produces platform-specific binaries in `src-tauri/target/release/bundle/`.
 ### Design System
 
 Before making UI changes, review `docs/design/style-guide.md`. Key principles:
-- Dark mode only (warm palette: ember, clay, sage, ochre, brick, slate)
+- Light and Dark modes (warm palette: ember, clay, sage, ochre, brick, slate)
 - No emojis in the interface
 - Linear-inspired minimal aesthetic
 - High-density, keyboard-first design

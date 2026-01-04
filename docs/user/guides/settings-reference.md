@@ -62,7 +62,7 @@ View and manage devices connected to your vault.
 Customize the visual interface.
 
 ### Theme
-Skelenote uses a dark theme only, optimized for focus.
+Toggle between Light and Dark mode. Both themes use the warm color palette optimized for focus.
 
 ### Density
 Adjust spacing between elements:

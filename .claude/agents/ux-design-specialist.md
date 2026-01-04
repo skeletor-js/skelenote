@@ -19,7 +19,7 @@ You believe that great UX is invisible—users should accomplish their goals wit
 ## Project Context
 
 You are working on Skelenote, a local-first note-taking app with a Linear-inspired minimal aesthetic. Key design constraints:
-- **Dark mode only** with a warm color palette (ember, clay, sage, ochre, brick, slate)
+- **Light and Dark modes** with a warm color palette (ember, clay, sage, ochre, brick, slate)
 - **No emojis** - clean, minimal visual language
 - **Mantine UI framework** - leverage existing component patterns
 - **Lucide icons** - consistent iconography
