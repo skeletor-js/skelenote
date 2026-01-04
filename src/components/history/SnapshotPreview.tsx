@@ -19,7 +19,7 @@ import {
 } from '@mantine/core';
 import { useTypeRegistry } from '@/contexts';
 import { Icon } from '@/components/ui/Icon';
-import { getIconFromEmoji } from '@/lib/icons';
+import { getIconFromEmoji, type IconName } from '@/lib/icons';
 import type { SkelenoteObject } from '@/lib/types';
 import type { SnapshotPreviewProps } from './types';
 import classes from './SnapshotPreview.module.css';
@@ -40,9 +40,7 @@ function getObjectTitle(obj: SkelenoteObject): string {
 
 export function SnapshotPreview({
   timestamp,
-  frontier: _frontier,
   objects,
-  onObjectSelect: _onObjectSelect,
   onRestore,
   onRestoreObject,
   onCompareWithCurrent,
@@ -166,7 +164,7 @@ export function SnapshotPreview({
             sortedObjects.map((obj, index) => {
               const typeDef = typeRegistry.get(obj.typeId);
               const rawIcon = typeDef?.icon ?? '📄';
-              const iconName = rawIcon.length <= 2 ? getIconFromEmoji(rawIcon) : rawIcon;
+              const iconName: IconName = rawIcon.length <= 2 ? getIconFromEmoji(rawIcon) : (rawIcon as IconName);
               const title = getObjectTitle(obj);
               const isFocused = focusedIndex >= 0 && focusedIndex === index;
               const existsInCurrent = objectExistsInCurrent(obj.id);
@@ -196,7 +194,7 @@ export function SnapshotPreview({
                   >
                     <Group gap="sm" style={{ flex: 1, minWidth: 0 }}>
                       <Icon
-                        name={iconName as any}
+                        name={iconName}
                         size={16}
                         style={{
                           flexShrink: 0,

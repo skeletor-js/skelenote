@@ -488,6 +488,7 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useLocalSync(): LocalSyncContextValue {
   const context = useContext(LocalSyncContext);
   if (!context) {
@@ -499,6 +500,7 @@ export function useLocalSync(): LocalSyncContextValue {
 /**
  * Safe hook that returns null if LocalSyncProvider is not available.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useLocalSyncSafe(): LocalSyncContextValue | null {
   return useContext(LocalSyncContext);
 }

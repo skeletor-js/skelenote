@@ -144,6 +144,7 @@ export function UndoProvider({ children }: UndoProviderProps) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useUndo(): UndoContextValue {
   const context = useContext(UndoContext);
   if (!context) {
@@ -155,6 +156,7 @@ export function useUndo(): UndoContextValue {
 /**
  * Safe version that returns null if not in provider
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useUndoSafe(): UndoContextValue | null {
   return useContext(UndoContext);
 }

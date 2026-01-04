@@ -17,6 +17,7 @@ import { HistoryWeekStrip } from './HistoryWeekStrip';
 import { HorizontalTimeline } from './HorizontalTimeline';
 import { SnapshotPreview } from './SnapshotPreview';
 import { RestoreDialog, type RestoreScope } from './RestoreDialog';
+import type { Frontiers } from 'loro-crdt';
 import type { DayChanges, ChangePoint, ObjectVersionHistory } from '@/lib/loro/versions';
 import type { SkelenoteObject } from '@/lib/types';
 
@@ -122,7 +123,7 @@ export function TimeMachine() {
 
     if (cumulativeFrontier.length === 0) return [];
 
-    const allObjects = docStore.getObjectsAtVersion(cumulativeFrontier as any) as SkelenoteObject[];
+    const allObjects = docStore.getObjectsAtVersion(cumulativeFrontier as Frontiers) as SkelenoteObject[];
 
     if (isFiltered && timeMachineObjectFilter) {
       const filteredObj = allObjects.find((obj) => obj.id === timeMachineObjectFilter);
@@ -138,7 +139,7 @@ export function TimeMachine() {
     const latestFrontier = fullHistory.changePoints.slice(-1)[0]?.frontier;
     if (!latestFrontier) return new Set();
 
-    const currentObjects = docStore.getObjectsAtVersion(latestFrontier as any) as SkelenoteObject[];
+    const currentObjects = docStore.getObjectsAtVersion(latestFrontier) as SkelenoteObject[];
     return new Set(currentObjects.map((obj) => obj.id));
   }, [docStore]);
 

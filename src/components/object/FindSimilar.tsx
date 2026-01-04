@@ -134,16 +134,8 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
     }
   }, [isExpanded, similarItems.length, isLoading, isSemanticEnabled, findSimilarObjects]);
 
-  // Don't render if semantic search is not enabled
-  if (!isSemanticEnabled) {
-    return null;
-  }
-
-  const handleItemClick = (itemId: string) => {
-    navigateToObject(itemId);
-  };
-
   // Copy mention to clipboard (can be pasted as actual mention in editor)
+  // Must be defined before early return to satisfy rules of hooks
   const handleCopyMention = useCallback(async (item: SimilarItem, e: React.MouseEvent) => {
     e.stopPropagation(); // Don't trigger item click
 
@@ -158,6 +150,15 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
       setTimeout(() => setCopiedId(null), 2000);
     }
   }, []);
+
+  // Don't render if semantic search is not enabled
+  if (!isSemanticEnabled) {
+    return null;
+  }
+
+  const handleItemClick = (itemId: string) => {
+    navigateToObject(itemId);
+  };
 
   // Display count - use similarItems.length if loaded, otherwise similarCount
   const displayCount = similarItems.length > 0 ? similarItems.length : similarCount;

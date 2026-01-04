@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 import { Stack, Group, Text, Button, Box, ActionIcon, Badge, ScrollArea, SimpleGrid } from '@mantine/core';
 import { useTypeRegistry, useObjects } from '@/contexts';
 import { Icon } from '@/components/ui/Icon';
-import { getIconFromEmoji } from '@/lib/icons';
+import { getIconFromEmoji, type IconName } from '@/lib/icons';
 import { extractPlainTextFromContent } from '@/lib/search';
 import type { ObjectPreviewProps } from './types';
 import classes from './ObjectPreview.module.css';
@@ -77,7 +77,7 @@ export function ObjectPreview({
   const rawIcon = typeDef?.icon ?? '📄';
   // If it's a short string (1-2 chars), it's likely an emoji, so convert it
   // Otherwise it's already an icon name
-  const icon = rawIcon.length <= 2 ? getIconFromEmoji(rawIcon) : rawIcon;
+  const icon: IconName = rawIcon.length <= 2 ? getIconFromEmoji(rawIcon) : (rawIcon as IconName);
 
   // Get content - it's stored as a property in the historical object (BlockNote JSON)
   const content = useMemo(() => {
@@ -155,7 +155,7 @@ export function ObjectPreview({
             <Icon name="chevron-left" size={16} />
           </ActionIcon>
 
-          <Icon name={icon as any} size={18} style={{ color: 'var(--mantine-color-gray-6)' }} />
+          <Icon name={icon} size={18} style={{ color: 'var(--mantine-color-gray-6)' }} />
 
           <Group gap="xs" wrap="nowrap">
             <Text size="sm" fw={600}>{title}</Text>

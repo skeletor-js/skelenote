@@ -200,6 +200,7 @@ export function SyncProvider({ children }: SyncProviderProps) {
   return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSyncContext(): SyncContextValue {
   const context = useContext(SyncContext);
   if (!context) {
@@ -212,6 +213,7 @@ export function useSyncContext(): SyncContextValue {
  * Safe hook that returns null if SyncProvider is not available.
  * Use this when the component may render outside of SyncProvider.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSyncContextSafe(): SyncContextValue | null {
   return useContext(SyncContext);
 }

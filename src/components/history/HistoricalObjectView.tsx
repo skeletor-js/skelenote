@@ -227,23 +227,13 @@ export function HistoricalObjectView() {
     setRestoreDialogOpen(false);
   }, []);
 
-  if (!historicalObject) {
-    return (
-      <Box p="lg" ta="center">
-        <Text c="dimmed" mb="sm">Unable to load historical version</Text>
-        <Button variant="subtle" onClick={handleClose}>Close</Button>
-      </Box>
-    );
-  }
-
-  const typeDef = typeRegistry.get(historicalObject.typeId);
-  const iconEmoji = typeDef?.icon ?? '📄';
-  const iconName = getIconFromEmoji(iconEmoji);
-  const typeName = typeDef?.name ?? historicalObject.typeId;
-  const title = getObjectTitle(historicalObject);
+  // Get type definition - needed before early return for useMemo
+  const typeDef = historicalObject ? typeRegistry.get(historicalObject.typeId) : null;
 
   // Get property definitions from type schema for proper labels, filtering out empty values
+  // Must be called before early return to satisfy rules of hooks
   const visibleProperties = useMemo(() => {
+    if (!historicalObject) return [];
     const properties: Array<{ id: string; label: string; value: string }> = [];
 
     if (!typeDef) {
@@ -275,7 +265,21 @@ export function HistoricalObjectView() {
     }
 
     return properties;
-  }, [typeDef, historicalObject.properties, store]);
+  }, [typeDef, historicalObject, store]);
+
+  if (!historicalObject) {
+    return (
+      <Box p="lg" ta="center">
+        <Text c="dimmed" mb="sm">Unable to load historical version</Text>
+        <Button variant="subtle" onClick={handleClose}>Close</Button>
+      </Box>
+    );
+  }
+
+  const iconEmoji = typeDef?.icon ?? '📄';
+  const iconName = getIconFromEmoji(iconEmoji);
+  const typeName = typeDef?.name ?? historicalObject.typeId;
+  const title = getObjectTitle(historicalObject);
 
   return (
     <Box

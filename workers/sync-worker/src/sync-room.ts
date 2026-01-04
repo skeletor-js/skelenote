@@ -6,7 +6,6 @@ import {
   encodeJsonPayload,
   decodeJsonPayload,
   isValidMessageType,
-  isDeviceManagementMessage,
   type HelloPayload,
   type AckPayload,
   type CatchUpPayload,
@@ -741,7 +740,8 @@ export class SyncRoom extends DurableObject {
     ws: WebSocket,
     code: number,
     reason: string,
-    wasClean: boolean
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _wasClean: boolean
   ): Promise<void> {
     // Try to get session data for logging
     let deviceId = 'unknown';

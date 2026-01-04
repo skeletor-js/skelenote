@@ -209,6 +209,7 @@ export function SkeletonKeyProvider({ children }: SkeletonKeyProviderProps) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSkeletonKey(): SkeletonKeyContextValue {
   const context = useContext(SkeletonKeyContext);
   if (!context) {
@@ -221,6 +222,7 @@ export function useSkeletonKey(): SkeletonKeyContextValue {
  * Safe hook that returns null if SkeletonKeyProvider is not available.
  * Use this when the component may render outside of SkeletonKeyProvider.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSkeletonKeySafe(): SkeletonKeyContextValue | null {
   return useContext(SkeletonKeyContext);
 }

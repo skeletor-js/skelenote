@@ -20,9 +20,11 @@ export function SplitPane({
   children,
   secondaryContent,
   splitWidth,
-  onWidthChange: _onWidthChange,
+  // onWidthChange is accepted but not currently used - could be wired to Split.Pane resize callback
+  onWidthChange: _,
   onClose,
 }: SplitPaneProps) {
+  void _; // Acknowledge unused prop to satisfy lint
   // Auto-close split on narrow viewports
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 768px)');

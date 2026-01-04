@@ -129,6 +129,7 @@ export function KeyboardShortcutsProvider({ children }: KeyboardShortcutsProvide
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useKeyboardShortcuts(): KeyboardShortcutsContextValue {
   const context = useContext(KeyboardShortcutsContext);
   if (!context) {
@@ -140,6 +141,7 @@ export function useKeyboardShortcuts(): KeyboardShortcutsContextValue {
 /**
  * Safe version that returns null if outside provider
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useKeyboardShortcutsSafe(): KeyboardShortcutsContextValue | null {
   return useContext(KeyboardShortcutsContext);
 }

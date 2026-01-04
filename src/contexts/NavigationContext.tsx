@@ -415,7 +415,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       savedViewId: null,
       browseTypeId: null,
     });
-  }, [splitPane.timeMachineContext, history]);
+  }, [history]);
 
   return (
     <NavigationContext.Provider
@@ -455,6 +455,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useNavigation(): NavigationContextValue {
   const context = useContext(NavigationContext);
   if (!context) {

@@ -432,6 +432,7 @@ export function DeviceRegistryProvider({ children }: DeviceRegistryProviderProps
 /**
  * Hook to access device registry context
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useDeviceRegistry(): DeviceRegistryContextValue {
   const context = useContext(DeviceRegistryContext);
   if (!context) {
@@ -443,6 +444,7 @@ export function useDeviceRegistry(): DeviceRegistryContextValue {
 /**
  * Safe hook that returns null if not in provider
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useDeviceRegistrySafe(): DeviceRegistryContextValue | null {
   return useContext(DeviceRegistryContext);
 }

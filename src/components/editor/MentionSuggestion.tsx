@@ -21,6 +21,7 @@ export interface MentionItem {
 /**
  * Hook to get mention suggestions based on query
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useMentionSuggestions(query: string): MentionItem[] {
   const { store } = useObjects();
   const typeRegistry = useTypeRegistry();
@@ -61,6 +62,7 @@ export function useMentionSuggestions(query: string): MentionItem[] {
  * Get mention items for the suggestion menu
  * @param excludeObjectId - Object ID to exclude (prevents self-mentions)
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function getMentionMenuItems(
   store: ReturnType<typeof useObjects>['store'],
   typeRegistry: ReturnType<typeof useTypeRegistry>,
