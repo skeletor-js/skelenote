@@ -138,7 +138,7 @@ function renderBlock(block: Block, key: string): React.ReactNode {
         </p>
       );
 
-    case 'heading':
+    case 'heading': {
       const level = (block.props?.level as number) || 1;
       const HeadingTag = `h${Math.min(level, 6)}` as keyof JSX.IntrinsicElements;
       return (
@@ -146,6 +146,7 @@ function renderBlock(block: Block, key: string): React.ReactNode {
           {content}
         </HeadingTag>
       );
+    }
 
     case 'bulletListItem':
       return (
@@ -171,7 +172,7 @@ function renderBlock(block: Block, key: string): React.ReactNode {
         </li>
       );
 
-    case 'checkListItem':
+    case 'checkListItem': {
       const checked = (block.props?.checked as boolean) || false;
       return (
         <li key={key} className={classes.checkItem} data-checked={checked}>
@@ -179,6 +180,7 @@ function renderBlock(block: Block, key: string): React.ReactNode {
           <span className={checked ? classes.checkedText : undefined}>{content}</span>
         </li>
       );
+    }
 
     case 'quote':
       return (
@@ -187,7 +189,7 @@ function renderBlock(block: Block, key: string): React.ReactNode {
         </blockquote>
       );
 
-    case 'codeBlock':
+    case 'codeBlock': {
       const code = (block.props?.code as string) || '';
       const language = (block.props?.language as string) || '';
       return (
@@ -195,6 +197,7 @@ function renderBlock(block: Block, key: string): React.ReactNode {
           <code>{code}</code>
         </pre>
       );
+    }
 
     case 'table':
       // Tables are complex, render simplified version
@@ -204,7 +207,7 @@ function renderBlock(block: Block, key: string): React.ReactNode {
         </div>
       );
 
-    case 'image':
+    case 'image': {
       const url = (block.props?.url as string) || '';
       const caption = (block.props?.caption as string) || '';
       return (
@@ -213,6 +216,7 @@ function renderBlock(block: Block, key: string): React.ReactNode {
           {caption && <figcaption>{caption}</figcaption>}
         </figure>
       );
+    }
 
     default:
       // Unknown block type - skip

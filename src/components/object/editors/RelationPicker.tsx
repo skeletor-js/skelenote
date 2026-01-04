@@ -3,7 +3,7 @@
  * Displays relations as chips and allows adding/removing
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Group, Button, Tooltip } from '@mantine/core';
 import { RelationChip } from './RelationChip';
 import { ObjectSearchModal } from './ObjectSearchModal';
@@ -36,12 +36,11 @@ export function RelationPicker({
 }: RelationPickerProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Normalize value to array
-  const valueArray: string[] = Array.isArray(value)
-    ? value
-    : value
-      ? [value]
-      : [];
+  // Normalize value to array - memoize to prevent callback instability
+  const valueArray = useMemo(
+    () => (Array.isArray(value) ? value : value ? [value] : []),
+    [value]
+  );
 
   const handleAdd = useCallback(
     (objectId: string) => {
