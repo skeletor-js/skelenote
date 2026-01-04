@@ -1,0 +1,214 @@
+# Troubleshooting Guide
+
+Try these fixes before reporting a bug. If the issue persists, [open a bug report](https://github.com/jordanstella/skelenote/issues/new?template=bug_report.yml).
+
+---
+
+## App Won't Launch
+
+### macOS: "App is damaged" or "unidentified developer"
+
+The app is unsigned during alpha. To bypass Gatekeeper:
+
+1. Right-click (or Control-click) the app in Finder
+2. Select **Open** from the context menu
+3. Click **Open** in the confirmation dialog
+
+You only need to do this once. macOS will remember your choice.
+
+If that doesn't work:
+```bash
+xattr -cr /Applications/Skelenote.app
+```
+
+### Windows: SmartScreen blocks the app
+
+1. Click **More info** on the SmartScreen warning
+2. Click **Run anyway**
+
+### Linux: AppImage won't run
+
+Make it executable:
+```bash
+chmod +x Skelenote_*.AppImage
+./Skelenote_*.AppImage
+```
+
+If you see library errors, install dependencies:
+```bash
+# Ubuntu/Debian
+sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0
+
+# Fedora
+sudo dnf install webkit2gtk4.1 gtk3
+```
+
+---
+
+## Skeleton Key Issues
+
+### "Invalid mnemonic" when entering my words
+
+- Check for typos - words must match the BIP39 word list exactly
+- Ensure you have exactly 24 words
+- Words are case-sensitive (use lowercase)
+- Check for extra spaces or line breaks
+
+### Forgot my Skeleton Key
+
+There is no recovery. The Skeleton Key encrypts your data locally. Without it, your data cannot be decrypted.
+
+If you never synced to another device, your data is unrecoverable. This is by design for security.
+
+**Prevention**: Always write down your 24 words when first setting up.
+
+### Skeleton Key won't save
+
+Check that the app has permission to access the system keychain:
+- **macOS**: System Preferences > Security & Privacy > Privacy > Keychain Access
+- **Windows**: Run as Administrator if needed
+- **Linux**: Ensure `libsecret` is installed
+
+---
+
+## Sync Not Working
+
+### Campfire: Devices not discovering each other
+
+1. **Same network?** Both devices must be on the same local network (same WiFi, same subnet)
+2. **Firewall?** Allow Skelenote through your firewall
+3. **VPN?** Disable VPN - it may block local mDNS traffic
+4. **Skeleton Key fingerprints match?** Check Settings > Sync on both devices
+
+Still not working? Try:
+```bash
+# macOS - verify mDNS is working
+dns-sd -B _skelenote._tcp
+
+# Should show your device if Campfire is enabled
+```
+
+### Campfire: Connected but not syncing
+
+- Check that both devices have the same Skeleton Key
+- Wait a few seconds - initial sync can take time
+- Try toggling Campfire off and on in Settings
+
+### Cloud Relay: Connection failed
+
+1. Check your relay server URL in Settings > Sync > Cloud
+2. Verify the server is running and accessible
+3. Check for firewall or proxy issues
+4. If self-hosting, verify TLS certificates are valid
+
+---
+
+## Editor Issues
+
+### Can't type in the editor
+
+- Click inside the editor area to focus it
+- Try pressing Escape then clicking again
+- Check if a modal or menu is open (press Escape to close)
+
+### @mentions not working
+
+- Type `@` followed by text to search
+- Wait for the suggestion popup
+- Use arrow keys to navigate, Enter to select
+- If no results appear, the object may not exist yet
+
+### Content not saving
+
+Skelenote auto-saves with a 300ms debounce. If content seems lost:
+
+1. Wait a few seconds after editing
+2. Check if the app froze (try clicking elsewhere)
+3. Look at the console for errors (Cmd+Option+I on macOS)
+
+---
+
+## Search Issues
+
+### Search returns no results
+
+- **Title search**: Only searches object titles
+- **Content search**: Searches inside object content
+- **Semantic search**: Must be enabled in Settings (uses local AI)
+
+Try broader search terms. Exact matches work better than partial words.
+
+### Semantic search is slow
+
+The first time you enable semantic search, it generates embeddings for all content. This is a one-time process. Subsequent searches are faster.
+
+---
+
+## Performance Issues
+
+### App is slow or laggy
+
+- **Large vault?** Performance degrades with 1000+ objects. We're optimizing.
+- **Close other apps** to free up memory
+- **Restart the app** to clear any memory leaks
+
+### High CPU usage
+
+Check if semantic search is indexing. This is temporary and will complete.
+
+If CPU stays high:
+1. Check console for error loops (Cmd+Option+I)
+2. Try disabling Campfire/Cloud sync temporarily
+3. Report the issue with console logs
+
+---
+
+## Data Recovery
+
+### Restore from backup
+
+If you exported a backup previously:
+
+1. Import is coming soon - watch for updates
+2. For now, you can manually recreate objects from exported Markdown files
+
+### Find your data files
+
+| Platform | Location |
+|----------|----------|
+| macOS | `~/Library/Application Support/com.skelenote.app/data/` |
+| Windows | `%APPDATA%\com.skelenote.app\data\` |
+| Linux | `~/.local/share/com.skelenote.app/data/` |
+
+The main data file is `store.loro`. **Do not edit this file directly.**
+
+---
+
+## Collecting Logs for Bug Reports
+
+### Log file locations
+
+| Platform | Location |
+|----------|----------|
+| macOS | `~/Library/Logs/com.skelenote.app/` |
+| Windows | `%APPDATA%\com.skelenote.app\logs\` |
+| Linux | `~/.local/share/com.skelenote.app/logs/` |
+
+### Browser console (frontend errors)
+
+1. Press `Cmd+Option+I` (macOS) or `Ctrl+Shift+I` (Windows/Linux)
+2. Select the **Console** tab
+3. Look for red error messages
+4. Copy/paste relevant errors into your bug report
+
+---
+
+## Still Stuck?
+
+1. Check [Known Issues](./KNOWN_ISSUES.md)
+2. Search [existing GitHub issues](https://github.com/jordanstella/skelenote/issues)
+3. Ask on [Discord](https://discord.gg/4apsgSRB7D)
+4. [Open a bug report](https://github.com/jordanstella/skelenote/issues/new?template=bug_report.yml) with:
+   - Steps to reproduce
+   - Console logs
+   - Your OS and app version

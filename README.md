@@ -24,6 +24,24 @@ For a deeper dive into our vision and how we handle ownership, see:
 
 ---
 
+## Alpha Testing
+
+Skelenote is currently in **alpha**. We're looking for testers to help shape the app.
+
+**Want to help test?**
+
+1. Download from [Releases](https://github.com/jordanstella/skelenote/releases)
+2. Read the [Alpha Tester Guide](docs/user/alpha/README.md)
+3. Join our [Discord](https://discord.gg/4apsgSRB7D) for discussion
+4. Report bugs via [GitHub Issues](https://github.com/jordanstella/skelenote/issues/new?template=bug_report.yml)
+
+See also:
+- [Known Issues](docs/user/alpha/KNOWN_ISSUES.md)
+- [Troubleshooting](docs/user/alpha/TROUBLESHOOTING.md)
+- [Testing Checklist](docs/user/alpha/TEST_PLAN.md)
+
+---
+
 ## Core Features
 
 - **Object Graph**: Everything is an object (tasks, notes, projects) with typed relations.
