@@ -10,22 +10,24 @@
         "mantine": {
             "command": "npx",
             "args": [
-                "-y",
-                "@mantine/mcp-server"
+                "@hakxel/mantine-ui-server"
+            ],
+            "env": {
+                "MANTINE_VERSION": "8.3.10"
+            }
+        },
+        "cloudflare-workers-bindings": {
+            "command": "npx",
+            "args": [
+                "mcp-remote",
+                "https://bindings.mcp.cloudflare.com/sse"
             ]
         },
         "cloudflare-workers-builds": {
             "command": "npx",
             "args": [
-                "-y",
-                "@nicholasoxford/mcp-server-cloudflare-workers-builds"
-            ]
-        },
-        "cloudflare-workers-bindings": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "@nicholasoxford/mcp-server-cloudflare-workers-bindings"
+                "mcp-remote",
+                "https://builds.mcp.cloudflare.com/sse"
             ]
         }
     }
