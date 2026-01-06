@@ -43,7 +43,7 @@ export interface UseArchiveResult {
  * ```
  */
 export function useArchive(): UseArchiveResult {
-  const { store, isLoading, refreshData } = useObjects();
+  const { store, isLoading, refreshData, dataVersion } = useObjects();
 
   // Get all archived items sorted by updatedAt descending (most recently archived first)
   const items = useMemo(() => {
@@ -52,7 +52,8 @@ export function useArchive(): UseArchiveResult {
     const archived = store.getArchived();
     // Sort by updatedAt descending (most recently archived first)
     return archived.sort((a, b) => b.updatedAt - a.updatedAt);
-  }, [store]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store, dataVersion]);
 
   // Unarchive an item (restore to normal views)
   const unarchiveItem = useCallback(

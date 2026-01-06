@@ -42,13 +42,14 @@ export interface UsePinnedObjectsResult {
  * ```
  */
 export function usePinnedObjects(): UsePinnedObjectsResult {
-  const { store, isLoading, refreshData } = useObjects();
+  const { store, isLoading, refreshData, dataVersion } = useObjects();
 
   // Get all pinned objects in order
   const pinnedObjects = useMemo(() => {
     if (!store) return [];
     return store.getPinnedObjects();
-  }, [store]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store, dataVersion]);
 
   // Pin an object
   const pin = useCallback(

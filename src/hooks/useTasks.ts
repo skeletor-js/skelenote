@@ -61,7 +61,7 @@ export interface UseTasksResult {
  * ```
  */
 export function useTasks(options: UseTasksOptions = {}): UseTasksResult {
-  const { store, isLoading, refreshData } = useObjects();
+  const { store, isLoading, refreshData, dataVersion } = useObjects();
 
   // Get all tasks and filter/sort them
   const tasks = useMemo(() => {
@@ -86,7 +86,8 @@ export function useTasks(options: UseTasksOptions = {}): UseTasksResult {
 
     // No filter specified - return all tasks
     return allTasks;
-  }, [store, options.filter, options.date]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store, options.filter, options.date, dataVersion]);
 
   // Toggle task completion
   const toggleComplete = useCallback(

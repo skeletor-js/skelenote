@@ -44,7 +44,7 @@ export interface UseInboxResult {
  * ```
  */
 export function useInbox(): UseInboxResult {
-  const { store, isLoading, refreshData } = useObjects();
+  const { store, isLoading, refreshData, dataVersion } = useObjects();
 
   // Get all inboxed items, excluding tags and projects, sorted by createdAt descending
   const items = useMemo(() => {
@@ -55,7 +55,8 @@ export function useInbox(): UseInboxResult {
     return inboxed
       .filter((item) => !(EXCLUDED_INBOX_TYPES as readonly string[]).includes(item.typeId))
       .sort((a, b) => b.createdAt - a.createdAt);
-  }, [store]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store, dataVersion]);
 
   // Mark an item as processed (removes from inbox)
   const processItem = useCallback(
