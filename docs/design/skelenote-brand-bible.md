@@ -41,7 +41,7 @@ Skelenote establishes a new rhythm for creative work: **Solitude by default, sha
 While competitors force you into "Always-On Cloud Collaboration" (the digital equivalent of a noisy open-plan office), we introduce **"Campfire Mode."**
 
 ### The Concept: The Privacy Air-Gap
-Deep work happens in the **Digital Study**—alone, focused, and private. But when the work is ready to be shared, you step out to the **Campfire**.
+Deep work happens in the **Digital Study**—alone, focused, and private. When you need to sync between your own devices, you gather them around the **Campfire**.
 
 * **The Principle:** Physical proximity is the ultimate encryption. The only way to share data that nobody can intercept is to never send it over the internet at all.
 * **The Mechanic:** Devices discover each other over your local network (mDNS/Bonjour). Data syncs directly between machines, encrypted end-to-end, without ever touching an external server. No cloud. No relay. No exposure.
