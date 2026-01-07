@@ -154,11 +154,92 @@ interface SkelenoteExportJSON {
 
 ---
 
-## Open Questions
+## Resolved Decisions
 
-- [ ] **Images**: How to handle images in BlockNote content? Embed as base64?
-- [ ] **PDF library**: Confirm @react-pdf/renderer works in Tauri WebView
-- [ ] **Bundle size**: Lazy-load PDF library to avoid bloating main bundle?
+### 1. Images: Base64 Embedding ✓
+
+**Decision**: Embed images as base64 data URIs in all export formats.
+
+**Implementation**:
+- BlockNote stores images as file paths or data URLs
+- During export, convert all image references to data URIs
+- Use `<img src="data:image/png;base64,..." />` format for HTML/PDF
+- Markdown: Use inline HTML data URIs (no external file references)
+
+```typescript
+// src/lib/export/images.ts
+export async function resolveImageToDataUri(src: string): Promise<string> {
+  if (src.startsWith('data:')) return src; // Already embedded
+  
+  // Read from filesystem (Tauri) and convert to base64
+  const bytes = await invoke<number[]>('read_file_bytes', { path: src });
+  const base64 = btoa(String.fromCharCode(...bytes));
+  const mimeType = getMimeType(src);
+  return `data:${mimeType};base64,${base64}`;
+}
+```
+
+**Rationale**: Self-contained exports that work anywhere without broken image links.
+
+---
+
+### 2. PDF Library: @react-pdf/renderer ✓
+
+**Decision**: Use `@react-pdf/renderer` with validation in Tauri WebView.
+
+**Validation Task**: Before implementation, run a minimal PDF generation test:
+
+```typescript
+// Test file: src/lib/export/pdf-test.ts
+import { Document, Page, Text, pdf } from '@react-pdf/renderer';
+
+export async function testPdfGeneration(): Promise<Blob> {
+  const TestDoc = () => (
+    <Document>
+      <Page><Text>Test</Text></Page>
+    </Document>
+  );
+  return await pdf(<TestDoc />).toBlob();
+}
+```
+
+**Concerns to validate**:
+- Font loading in Tauri WebView (may need bundled fonts)
+- Memory usage for large documents
+- Image embedding performance
+
+**Fallback**: If @react-pdf/renderer fails, consider `jspdf` + `html2canvas` approach.
+
+---
+
+### 3. Bundle Optimization: Lazy Loading ✓
+
+**Decision**: Lazy-load the PDF library and audit main bundle for other optimization opportunities.
+
+**PDF Lazy Loading**:
+```typescript
+// src/lib/export/pdf.ts
+export async function generatePDF(/* ... */): Promise<Blob> {
+  // Dynamic import - only loads when user exports to PDF
+  const { Document, Page, Text, pdf } = await import('@react-pdf/renderer');
+  // ... render PDF
+}
+```
+
+**Bundle Audit Candidates** (identified for review):
+| Module | Current State | Recommendation |
+|--------|---------------|----------------|
+| `@react-pdf/renderer` | New | Lazy-load via dynamic import |
+| `TimeMachine` | Eagerly imported | Lazy-load route |
+| `TemplateEditor` | Eagerly imported | Lazy-load modal |
+| `SearchResultsView` | Eagerly imported | Lazy-load route |
+| `@mantine/dates` | Eagerly imported | Already chunked? Verify |
+| Semantic search | Imports in SemanticSearchProvider | Defer until first use |
+
+**Implementation**:
+1. Use `React.lazy()` for route-level components
+2. Use dynamic `import()` for utility libraries
+3. Measure with `vite-plugin-visualizer` before/after
 
 ---
 

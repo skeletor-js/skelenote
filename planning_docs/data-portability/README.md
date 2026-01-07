@@ -20,8 +20,10 @@ This release adds comprehensive data portability to Skelenote:
 | [01-export-formats.md](./01-export-formats.md) | PDF, HTML, JSON, Plain Text export | 6-7 days |
 | [02-import-sources.md](./02-import-sources.md) | Notion, Obsidian, Markdown, JSON, Apple Notes | 13-17 days |
 | [03-skeleton-key-docs.md](./03-skeleton-key-docs.md) | User guides and UX improvements | 2-3 days |
+| [04-bundle-optimization.md](./04-bundle-optimization.md) | Lazy loading, bundle analysis | 2 days |
+| [05-secure-device-linking.md](./05-secure-device-linking.md) | Future: secure QR-based device pairing | — (mobile app) |
 
-**Total: ~5 weeks**
+**Total: ~5.5 weeks** (excludes future mobile work)
 
 ---
 
