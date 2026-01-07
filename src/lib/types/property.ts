@@ -99,33 +99,51 @@ export function validatePropertyValue(
     case 'phone':
     case 'file':
       if (typeof value !== 'string') {
-        return { valid: false, error: `Property "${definition.name}" must be a string` };
+        return {
+          valid: false,
+          error: `Property "${definition.name}" must be a string`,
+        };
       }
       break;
 
     case 'number':
       if (typeof value !== 'number') {
-        return { valid: false, error: `Property "${definition.name}" must be a number` };
+        return {
+          valid: false,
+          error: `Property "${definition.name}" must be a number`,
+        };
       }
       break;
 
     case 'date':
       if (typeof value !== 'number') {
-        return { valid: false, error: `Property "${definition.name}" must be a timestamp (number)` };
+        return {
+          valid: false,
+          error: `Property "${definition.name}" must be a timestamp (number)`,
+        };
       }
       break;
 
     case 'checkbox':
       if (typeof value !== 'boolean') {
-        return { valid: false, error: `Property "${definition.name}" must be a boolean` };
+        return {
+          valid: false,
+          error: `Property "${definition.name}" must be a boolean`,
+        };
       }
       break;
 
     case 'select':
       if (typeof value !== 'string') {
-        return { valid: false, error: `Property "${definition.name}" must be a string` };
+        return {
+          valid: false,
+          error: `Property "${definition.name}" must be a string`,
+        };
       }
-      if (definition.config?.options && !definition.config.options.includes(value)) {
+      if (
+        definition.config?.options &&
+        !definition.config.options.includes(value)
+      ) {
         return {
           valid: false,
           error: `Property "${definition.name}" must be one of: ${definition.config.options.join(', ')}`,
@@ -135,20 +153,32 @@ export function validatePropertyValue(
 
     case 'relation':
       if (!Array.isArray(value)) {
-        return { valid: false, error: `Property "${definition.name}" must be an array of IDs` };
+        return {
+          valid: false,
+          error: `Property "${definition.name}" must be an array of IDs`,
+        };
       }
       if (!definition.multiple && value.length > 1) {
-        return { valid: false, error: `Property "${definition.name}" can only have one relation` };
+        return {
+          valid: false,
+          error: `Property "${definition.name}" can only have one relation`,
+        };
       }
       if (!value.every((v) => typeof v === 'string')) {
-        return { valid: false, error: `Property "${definition.name}" must contain only string IDs` };
+        return {
+          valid: false,
+          error: `Property "${definition.name}" must contain only string IDs`,
+        };
       }
       break;
 
     case 'recurrence':
       // Recurrence is stored as a JSON string or null
       if (typeof value !== 'string') {
-        return { valid: false, error: `Property "${definition.name}" must be a string` };
+        return {
+          valid: false,
+          error: `Property "${definition.name}" must be a string`,
+        };
       }
       break;
   }

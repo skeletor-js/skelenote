@@ -18,7 +18,9 @@ import classes from './InboxRow.module.css';
 type DateGroup = 'Today' | 'Yesterday' | 'This Week' | 'Older';
 
 /** Group items by update date (when they were archived) */
-function groupItemsByDate(items: SkelenoteObject[]): Record<DateGroup, SkelenoteObject[]> {
+function groupItemsByDate(
+  items: SkelenoteObject[]
+): Record<DateGroup, SkelenoteObject[]> {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterday = new Date(today);
@@ -27,15 +29,19 @@ function groupItemsByDate(items: SkelenoteObject[]): Record<DateGroup, Skelenote
   weekAgo.setDate(weekAgo.getDate() - 7);
 
   const groups: Record<DateGroup, SkelenoteObject[]> = {
-    'Today': [],
-    'Yesterday': [],
+    Today: [],
+    Yesterday: [],
     'This Week': [],
-    'Older': [],
+    Older: [],
   };
 
   for (const item of items) {
     const updatedAt = new Date(item.updatedAt);
-    const itemDate = new Date(updatedAt.getFullYear(), updatedAt.getMonth(), updatedAt.getDate());
+    const itemDate = new Date(
+      updatedAt.getFullYear(),
+      updatedAt.getMonth(),
+      updatedAt.getDate()
+    );
 
     if (itemDate >= today) {
       groups['Today'].push(item);
@@ -67,7 +73,9 @@ export function ArchiveView() {
 
   // Get non-empty groups in order
   const dateGroups: DateGroup[] = ['Today', 'Yesterday', 'This Week', 'Older'];
-  const nonEmptyGroups = dateGroups.filter((group) => groupedItems[group].length > 0);
+  const nonEmptyGroups = dateGroups.filter(
+    (group) => groupedItems[group].length > 0
+  );
 
   // Handle selection change (toggle or range)
   const handleSelectionChange = useCallback(
@@ -109,7 +117,9 @@ export function ArchiveView() {
     return (
       <Center p="xl">
         <Loader size="sm" />
-        <Text ml="sm" c="dimmed">Loading...</Text>
+        <Text ml="sm" c="dimmed">
+          Loading...
+        </Text>
       </Center>
     );
   }

@@ -19,8 +19,8 @@
 .topNavBar button,
 .topNavBar input,
 .topNavBar [data-mantine-popover],
-.topNavBar [role="menu"],
-.topNavBar [role="menuitem"] {
+.topNavBar [role='menu'],
+.topNavBar [role='menuitem'] {
   -webkit-app-region: no-drag;
 }
 

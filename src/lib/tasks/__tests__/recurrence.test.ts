@@ -9,15 +9,17 @@ import {
 } from '../recurrence';
 
 // Helper to create mock task objects
-function createMockTask(overrides: Partial<{
-  id: string;
-  status: string;
-  dueDate: number | null;
-  priority: string | null;
-  project: string | null;
-  tags: string[];
-  recurrence: string | null;
-}>): SkelenoteObject {
+function createMockTask(
+  overrides: Partial<{
+    id: string;
+    status: string;
+    dueDate: number | null;
+    priority: string | null;
+    project: string | null;
+    tags: string[];
+    recurrence: string | null;
+  }>
+): SkelenoteObject {
   return {
     id: overrides.id ?? 'task-1',
     typeId: 'task',
@@ -62,12 +64,21 @@ describe('Recurrence Logic', () => {
     });
 
     it('should be case-insensitive', () => {
-      expect(parseRecurrence('DAILY')).toEqual({ pattern: 'daily', interval: 1 });
-      expect(parseRecurrence('Weekly')).toEqual({ pattern: 'weekly', interval: 1 });
+      expect(parseRecurrence('DAILY')).toEqual({
+        pattern: 'daily',
+        interval: 1,
+      });
+      expect(parseRecurrence('Weekly')).toEqual({
+        pattern: 'weekly',
+        interval: 1,
+      });
     });
 
     it('should trim whitespace', () => {
-      expect(parseRecurrence('  daily  ')).toEqual({ pattern: 'daily', interval: 1 });
+      expect(parseRecurrence('  daily  ')).toEqual({
+        pattern: 'daily',
+        interval: 1,
+      });
     });
 
     it('should return null for invalid patterns', () => {
@@ -82,7 +93,10 @@ describe('Recurrence Logic', () => {
     const baseDateMs = new Date('2024-12-25T12:00:00Z').getTime();
 
     it('should add 1 day for daily recurrence', () => {
-      const nextDate = calculateNextDueDate(baseDateMs, { pattern: 'daily', interval: 1 });
+      const nextDate = calculateNextDueDate(baseDateMs, {
+        pattern: 'daily',
+        interval: 1,
+      });
       const result = new Date(nextDate);
 
       expect(result.getUTCDate()).toBe(26);
@@ -90,7 +104,10 @@ describe('Recurrence Logic', () => {
     });
 
     it('should add 7 days for weekly recurrence', () => {
-      const nextDate = calculateNextDueDate(baseDateMs, { pattern: 'weekly', interval: 1 });
+      const nextDate = calculateNextDueDate(baseDateMs, {
+        pattern: 'weekly',
+        interval: 1,
+      });
       const result = new Date(nextDate);
 
       expect(result.getUTCDate()).toBe(1);
@@ -99,7 +116,10 @@ describe('Recurrence Logic', () => {
     });
 
     it('should add 1 month for monthly recurrence', () => {
-      const nextDate = calculateNextDueDate(baseDateMs, { pattern: 'monthly', interval: 1 });
+      const nextDate = calculateNextDueDate(baseDateMs, {
+        pattern: 'monthly',
+        interval: 1,
+      });
       const result = new Date(nextDate);
 
       expect(result.getUTCDate()).toBe(25);
@@ -108,7 +128,10 @@ describe('Recurrence Logic', () => {
     });
 
     it('should add 1 year for yearly recurrence', () => {
-      const nextDate = calculateNextDueDate(baseDateMs, { pattern: 'yearly', interval: 1 });
+      const nextDate = calculateNextDueDate(baseDateMs, {
+        pattern: 'yearly',
+        interval: 1,
+      });
       const result = new Date(nextDate);
 
       expect(result.getUTCDate()).toBe(25);
@@ -118,7 +141,10 @@ describe('Recurrence Logic', () => {
 
     it('should handle month end edge case (Jan 31 + 1 month)', () => {
       const jan31 = new Date('2024-01-31T12:00:00Z').getTime();
-      const nextDate = calculateNextDueDate(jan31, { pattern: 'monthly', interval: 1 });
+      const nextDate = calculateNextDueDate(jan31, {
+        pattern: 'monthly',
+        interval: 1,
+      });
       const result = new Date(nextDate);
 
       // Should be last day of February (leap year 2024 = Feb 29)
@@ -163,8 +189,12 @@ describe('Recurrence Logic', () => {
 
   describe('isRecurringTask', () => {
     it('should return true for tasks with valid recurrence', () => {
-      expect(isRecurringTask(createMockTask({ recurrence: 'daily' }))).toBe(true);
-      expect(isRecurringTask(createMockTask({ recurrence: 'weekly' }))).toBe(true);
+      expect(isRecurringTask(createMockTask({ recurrence: 'daily' }))).toBe(
+        true
+      );
+      expect(isRecurringTask(createMockTask({ recurrence: 'weekly' }))).toBe(
+        true
+      );
     });
 
     it('should return false for tasks without recurrence', () => {
@@ -172,7 +202,9 @@ describe('Recurrence Logic', () => {
     });
 
     it('should return false for tasks with invalid recurrence', () => {
-      expect(isRecurringTask(createMockTask({ recurrence: 'invalid' }))).toBe(false);
+      expect(isRecurringTask(createMockTask({ recurrence: 'invalid' }))).toBe(
+        false
+      );
     });
   });
 

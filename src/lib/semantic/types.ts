@@ -177,7 +177,9 @@ export interface SemanticQueryOptions {
 /**
  * Default query options.
  */
-export const DEFAULT_QUERY_OPTIONS: Required<Omit<SemanticQueryOptions, 'excludeIds'>> = {
+export const DEFAULT_QUERY_OPTIONS: Required<
+  Omit<SemanticQueryOptions, 'excludeIds'>
+> = {
   limit: 10,
   threshold: 0.2, // Lower threshold to capture conceptual relationships
 };

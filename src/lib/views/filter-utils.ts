@@ -55,17 +55,57 @@ export const BUILT_IN_FIELDS: FieldInfo[] = [
 ];
 
 /** Operators appropriate for different field types */
-export const TEXT_OPERATORS: FilterOperator[] = ['eq', 'neq', 'contains', 'startsWith', 'endsWith', 'isNull', 'isNotNull'];
-export const NUMBER_OPERATORS: FilterOperator[] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'isNull', 'isNotNull'];
-export const DATE_OPERATORS: FilterOperator[] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'isNull', 'isNotNull'];
-export const SELECT_OPERATORS: FilterOperator[] = ['eq', 'neq', 'isNull', 'isNotNull'];
+export const TEXT_OPERATORS: FilterOperator[] = [
+  'eq',
+  'neq',
+  'contains',
+  'startsWith',
+  'endsWith',
+  'isNull',
+  'isNotNull',
+];
+export const NUMBER_OPERATORS: FilterOperator[] = [
+  'eq',
+  'neq',
+  'gt',
+  'gte',
+  'lt',
+  'lte',
+  'isNull',
+  'isNotNull',
+];
+export const DATE_OPERATORS: FilterOperator[] = [
+  'eq',
+  'neq',
+  'gt',
+  'gte',
+  'lt',
+  'lte',
+  'isNull',
+  'isNotNull',
+];
+export const SELECT_OPERATORS: FilterOperator[] = [
+  'eq',
+  'neq',
+  'isNull',
+  'isNotNull',
+];
 export const BOOLEAN_OPERATORS: FilterOperator[] = ['eq', 'neq'];
 
 /** Recurrence frequency options for filtering */
-export const RECURRENCE_OPTIONS = ['none', 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'];
+export const RECURRENCE_OPTIONS = [
+  'none',
+  'daily',
+  'weekly',
+  'monthly',
+  'quarterly',
+  'yearly',
+];
 
 /** Get operators appropriate for a field type */
-export function getOperatorsForType(type: PropertyType | 'boolean'): FilterOperator[] {
+export function getOperatorsForType(
+  type: PropertyType | 'boolean'
+): FilterOperator[] {
   switch (type) {
     case 'text':
     case 'url':

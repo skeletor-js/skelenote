@@ -9,7 +9,11 @@ import { BuiltInTypeIds, type SkelenoteObject } from '@/lib/types';
 import { removeMentionsFromContent } from '@/lib/editor';
 
 /** Types to exclude from inbox (they appear in sidebar and don't need decisioning) */
-const EXCLUDED_INBOX_TYPES = [BuiltInTypeIds.TAG, BuiltInTypeIds.PROJECT, BuiltInTypeIds.AREA];
+const EXCLUDED_INBOX_TYPES = [
+  BuiltInTypeIds.TAG,
+  BuiltInTypeIds.PROJECT,
+  BuiltInTypeIds.AREA,
+];
 
 export interface UseInboxResult {
   /** All inboxed items sorted by createdAt (newest first) */
@@ -53,7 +57,10 @@ export function useInbox(): UseInboxResult {
     const inboxed = store.getInboxed();
     // Filter out excluded types (tags, projects) and sort by createdAt descending (newest first)
     return inboxed
-      .filter((item) => !(EXCLUDED_INBOX_TYPES as readonly string[]).includes(item.typeId))
+      .filter(
+        (item) =>
+          !(EXCLUDED_INBOX_TYPES as readonly string[]).includes(item.typeId)
+      )
       .sort((a, b) => b.createdAt - a.createdAt);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, dataVersion]);

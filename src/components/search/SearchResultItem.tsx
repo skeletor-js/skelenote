@@ -7,7 +7,11 @@ import { UnstyledButton, Group, Text, Badge, Box } from '@mantine/core';
 import { useTypeRegistry } from '@/contexts';
 import { Icon } from '@/components/ui/Icon';
 import { getIconFromEmoji } from '@/lib/icons';
-import { getBestSnippet, type SearchResult, type TextSegment } from '@/lib/search';
+import {
+  getBestSnippet,
+  type SearchResult,
+  type TextSegment,
+} from '@/lib/search';
 
 interface SearchResultItemProps {
   /** The search result to display */
@@ -68,7 +72,8 @@ export function SearchResultItem({
   }, [result.matches]);
 
   // Check if this is a semantic match
-  const isSemanticMatch = result.matchType === 'semantic' || result.matchType === 'hybrid';
+  const isSemanticMatch =
+    result.matchType === 'semantic' || result.matchType === 'hybrid';
   const semanticPercent = result.semanticScore
     ? Math.round(result.semanticScore * 100)
     : null;
@@ -86,7 +91,9 @@ export function SearchResultItem({
         gap: 'var(--mantine-spacing-sm)',
         borderRadius: 'var(--mantine-radius-sm)',
         width: '100%',
-        backgroundColor: isSelected ? 'var(--mantine-color-slate-light)' : undefined,
+        backgroundColor: isSelected
+          ? 'var(--mantine-color-slate-light)'
+          : undefined,
       }}
     >
       <Icon name={getIconFromEmoji(icon)} size={20} />
@@ -101,7 +108,11 @@ export function SearchResultItem({
               size="xs"
               variant="light"
               color="clay"
-              title={semanticPercent ? `${semanticPercent}% similar` : 'Semantic match'}
+              title={
+                semanticPercent
+                  ? `${semanticPercent}% similar`
+                  : 'Semantic match'
+              }
             >
               ~{semanticPercent ? `${semanticPercent}%` : ''}
             </Badge>

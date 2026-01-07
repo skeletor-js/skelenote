@@ -96,7 +96,15 @@ export function SearchSettings() {
     return null;
   }
 
-  const { isEnabled, status, indexedCount, progress, error, threshold, setThreshold } = semanticContext;
+  const {
+    isEnabled,
+    status,
+    indexedCount,
+    progress,
+    error,
+    threshold,
+    setThreshold,
+  } = semanticContext;
 
   // Format last indexed time
   const formatLastIndexed = () => {
@@ -139,7 +147,9 @@ export function SearchSettings() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">Search</Text>
+        <Text size="lg" fw={600} mb="xs">
+          Search
+        </Text>
         <Text size="sm" c="dimmed">
           Configure semantic search for finding conceptually similar content.
         </Text>
@@ -154,8 +164,8 @@ export function SearchSettings() {
           />
 
           <Text size="sm" c="dimmed">
-            Find conceptually similar content, not just keyword matches.
-            All processing happens locally on your device.
+            Find conceptually similar content, not just keyword matches. All
+            processing happens locally on your device.
           </Text>
 
           <Alert variant="light" color="slate" title="Requirements">
@@ -169,36 +179,54 @@ export function SearchSettings() {
       ) : (
         <Stack gap="lg">
           <Group justify="space-between">
-            <Checkbox
-              label="Enable semantic search"
-              checked={true}
-              readOnly
-            />
+            <Checkbox label="Enable semantic search" checked={true} readOnly />
             <Text
               size="sm"
-              c={status === 'ready' ? 'sage' : status === 'indexing' ? 'ochre' : 'gray'}
+              c={
+                status === 'ready'
+                  ? 'sage'
+                  : status === 'indexing'
+                    ? 'ochre'
+                    : 'gray'
+              }
             >
-              {status === 'ready' ? 'Active' : status === 'indexing' ? 'Indexing...' : status}
+              {status === 'ready'
+                ? 'Active'
+                : status === 'indexing'
+                  ? 'Indexing...'
+                  : status}
             </Text>
           </Group>
 
           <Box>
-            <Text size="sm" fw={500} mb="xs">Index Status</Text>
+            <Text size="sm" fw={500} mb="xs">
+              Index Status
+            </Text>
             <Group gap="lg">
               <Box ta="center">
-                <Text size="xl" fw={700}>{indexedCount}</Text>
-                <Text size="xs" c="dimmed">objects indexed</Text>
+                <Text size="xl" fw={700}>
+                  {indexedCount}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  objects indexed
+                </Text>
               </Box>
               <Box ta="center">
-                <Text size="xl" fw={700}>{formatLastIndexed()}</Text>
-                <Text size="xs" c="dimmed">last updated</Text>
+                <Text size="xl" fw={700}>
+                  {formatLastIndexed()}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  last updated
+                </Text>
               </Box>
             </Group>
 
             {progress && (
               <Box mt="sm">
                 <Progress value={progress.percent} mb="xs" />
-                <Text size="sm" c="dimmed">{progress.message}</Text>
+                <Text size="sm" c="dimmed">
+                  {progress.message}
+                </Text>
               </Box>
             )}
 
@@ -218,10 +246,12 @@ export function SearchSettings() {
           </Box>
 
           <Box>
-            <Text size="sm" fw={500} mb="xs">Similarity Threshold</Text>
+            <Text size="sm" fw={500} mb="xs">
+              Similarity Threshold
+            </Text>
             <Text size="xs" c="dimmed" mb="sm">
-              Controls how closely related results must be.
-              Lower = more results, Higher = stricter matching.
+              Controls how closely related results must be. Lower = more
+              results, Higher = stricter matching.
             </Text>
             <SegmentedControl
               value={getThresholdPreset()}

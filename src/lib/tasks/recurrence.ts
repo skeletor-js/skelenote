@@ -29,7 +29,12 @@ export interface RecurrenceValue {
 /**
  * Supported recurrence patterns (for backwards compatibility)
  */
-export type RecurrencePattern = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+export type RecurrencePattern =
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'quarterly'
+  | 'yearly';
 
 /**
  * Parsed recurrence configuration
@@ -54,7 +59,9 @@ export interface RecurrenceConfig {
  * @param recurrence - The recurrence string to parse
  * @returns Parsed configuration or null if invalid
  */
-export function parseRecurrence(recurrence: string | null | undefined): RecurrenceConfig | null {
+export function parseRecurrence(
+  recurrence: string | null | undefined
+): RecurrenceConfig | null {
   if (!recurrence) return null;
 
   // Try to parse as JSON first
@@ -298,7 +305,14 @@ export function calculateNextDueDate(
 /**
  * Properties to copy from the original task to the new recurring instance
  */
-const COPIED_PROPERTIES = ['title', 'priority', 'project', 'area', 'tags', 'recurrence'] as const;
+const COPIED_PROPERTIES = [
+  'title',
+  'priority',
+  'project',
+  'area',
+  'tags',
+  'recurrence',
+] as const;
 
 /**
  * Create the properties for a new recurring task instance

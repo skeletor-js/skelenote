@@ -61,7 +61,10 @@ export function SkeletonKeyProvider({ children }: SkeletonKeyProviderProps) {
         setHasSkeletonKey(keyExists);
         setIsInitialized(true);
       } catch (err) {
-        console.error('[SkeletonKeyProvider] Failed to initialize crypto:', err);
+        console.error(
+          '[SkeletonKeyProvider] Failed to initialize crypto:',
+          err
+        );
         setError(
           err instanceof Error
             ? err.message

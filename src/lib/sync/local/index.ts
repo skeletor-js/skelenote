@@ -4,8 +4,8 @@
  * TypeScript bindings for the Rust local network sync backend.
  */
 
-import { invoke } from "@tauri-apps/api/core";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { invoke } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 
 // Types
 
@@ -82,35 +82,35 @@ export interface DiscoveryErrorEvent {
  * @returns The port number the server is listening on.
  */
 export async function startServer(): Promise<number> {
-  return invoke<number>("network_start_server");
+  return invoke<number>('network_start_server');
 }
 
 /**
  * Stop the local sync TCP server.
  */
 export async function stopServer(): Promise<void> {
-  return invoke("network_stop_server");
+  return invoke('network_stop_server');
 }
 
 /**
  * Get server info (running status and port).
  */
 export async function getServerInfo(): Promise<ServerInfo> {
-  return invoke<ServerInfo>("network_get_server_info");
+  return invoke<ServerInfo>('network_get_server_info');
 }
 
 /**
  * Get list of connected peers.
  */
 export async function getConnectedPeers(): Promise<ConnectedPeer[]> {
-  return invoke<ConnectedPeer[]>("network_get_connected_peers");
+  return invoke<ConnectedPeer[]>('network_get_connected_peers');
 }
 
 /**
  * Get this device's info.
  */
 export async function getDeviceInfo(): Promise<DeviceInfo> {
-  return invoke<DeviceInfo>("network_get_device_info");
+  return invoke<DeviceInfo>('network_get_device_info');
 }
 
 // Discovery commands
@@ -121,28 +121,28 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
  * Requires the server to be running first.
  */
 export async function startDiscovery(): Promise<void> {
-  return invoke("network_start_discovery");
+  return invoke('network_start_discovery');
 }
 
 /**
  * Stop mDNS discovery and advertising.
  */
 export async function stopDiscovery(): Promise<void> {
-  return invoke("network_stop_discovery");
+  return invoke('network_stop_discovery');
 }
 
 /**
  * Get list of discovered peers on the local network.
  */
 export async function getDiscoveredPeers(): Promise<DiscoveredPeer[]> {
-  return invoke<DiscoveredPeer[]>("network_get_discovered_peers");
+  return invoke<DiscoveredPeer[]>('network_get_discovered_peers');
 }
 
 /**
  * Check if mDNS discovery is running.
  */
 export async function isDiscoveryRunning(): Promise<boolean> {
-  return invoke<boolean>("network_is_discovery_running");
+  return invoke<boolean>('network_is_discovery_running');
 }
 
 // Peer connection commands
@@ -152,7 +152,7 @@ export async function isDiscoveryRunning(): Promise<boolean> {
  * @param deviceId The device ID of the peer to connect to.
  */
 export async function connectToPeer(deviceId: string): Promise<void> {
-  return invoke("network_connect_to_peer", { deviceId });
+  return invoke('network_connect_to_peer', { deviceId });
 }
 
 // Event listeners
@@ -163,7 +163,7 @@ export async function connectToPeer(deviceId: string): Promise<void> {
 export function onPeerConnected(
   callback: (event: PeerConnectedEvent) => void
 ): Promise<UnlistenFn> {
-  return listen<PeerConnectedEvent>("local-peer-connected", (event) => {
+  return listen<PeerConnectedEvent>('local-peer-connected', (event) => {
     callback(event.payload);
   });
 }
@@ -174,7 +174,7 @@ export function onPeerConnected(
 export function onPeerDisconnected(
   callback: (event: PeerDisconnectedEvent) => void
 ): Promise<UnlistenFn> {
-  return listen<PeerDisconnectedEvent>("local-peer-disconnected", (event) => {
+  return listen<PeerDisconnectedEvent>('local-peer-disconnected', (event) => {
     callback(event.payload);
   });
 }
@@ -185,7 +185,7 @@ export function onPeerDisconnected(
 export function onSyncMessage(
   callback: (event: SyncMessageEvent) => void
 ): Promise<UnlistenFn> {
-  return listen<SyncMessageEvent>("local-sync-message", (event) => {
+  return listen<SyncMessageEvent>('local-sync-message', (event) => {
     callback(event.payload);
   });
 }
@@ -196,7 +196,7 @@ export function onSyncMessage(
 export function onSyncError(
   callback: (event: SyncErrorEvent) => void
 ): Promise<UnlistenFn> {
-  return listen<SyncErrorEvent>("local-sync-error", (event) => {
+  return listen<SyncErrorEvent>('local-sync-error', (event) => {
     callback(event.payload);
   });
 }
@@ -209,7 +209,7 @@ export function onSyncError(
 export function onPeerDiscovered(
   callback: (event: PeerDiscoveredEvent) => void
 ): Promise<UnlistenFn> {
-  return listen<PeerDiscoveredEvent>("local-peer-discovered", (event) => {
+  return listen<PeerDiscoveredEvent>('local-peer-discovered', (event) => {
     callback(event.payload);
   });
 }
@@ -220,7 +220,7 @@ export function onPeerDiscovered(
 export function onPeerLost(
   callback: (event: PeerLostEvent) => void
 ): Promise<UnlistenFn> {
-  return listen<PeerLostEvent>("local-peer-lost", (event) => {
+  return listen<PeerLostEvent>('local-peer-lost', (event) => {
     callback(event.payload);
   });
 }
@@ -231,7 +231,7 @@ export function onPeerLost(
 export function onDiscoveryError(
   callback: (event: DiscoveryErrorEvent) => void
 ): Promise<UnlistenFn> {
-  return listen<DiscoveryErrorEvent>("local-discovery-error", (event) => {
+  return listen<DiscoveryErrorEvent>('local-discovery-error', (event) => {
     callback(event.payload);
   });
 }
@@ -245,7 +245,7 @@ export function onDiscoveryError(
  */
 export async function broadcastSync(data: Uint8Array): Promise<number> {
   // Convert Uint8Array to number[] for Tauri
-  return invoke<number>("network_broadcast_sync", {
+  return invoke<number>('network_broadcast_sync', {
     data: Array.from(data),
   });
 }
@@ -254,7 +254,7 @@ export async function broadcastSync(data: Uint8Array): Promise<number> {
  * Get the number of connected peers for sync.
  */
 export async function getPeerCount(): Promise<number> {
-  return invoke<number>("network_peer_count");
+  return invoke<number>('network_peer_count');
 }
 
 // Device registry sync commands
@@ -264,8 +264,10 @@ export async function getPeerCount(): Promise<number> {
  * @param data The Loro snapshot bytes of the device registry.
  * @returns The number of peers the data was sent to.
  */
-export async function broadcastDeviceRegistry(data: Uint8Array): Promise<number> {
-  return invoke<number>("network_broadcast_device_registry", {
+export async function broadcastDeviceRegistry(
+  data: Uint8Array
+): Promise<number> {
+  return invoke<number>('network_broadcast_device_registry', {
     data: Array.from(data),
   });
 }
@@ -276,7 +278,7 @@ export async function broadcastDeviceRegistry(data: Uint8Array): Promise<number>
  * @returns The number of peers the message was sent to.
  */
 export async function broadcastDeviceRevoke(payload: string): Promise<number> {
-  return invoke<number>("network_broadcast_device_revoke", {
+  return invoke<number>('network_broadcast_device_revoke', {
     payload,
   });
 }
@@ -287,7 +289,7 @@ export async function broadcastDeviceRevoke(payload: string): Promise<number> {
  * @returns The number of peers the message was sent to.
  */
 export async function broadcastDeviceRename(payload: string): Promise<number> {
-  return invoke<number>("network_broadcast_device_rename", {
+  return invoke<number>('network_broadcast_device_rename', {
     payload,
   });
 }

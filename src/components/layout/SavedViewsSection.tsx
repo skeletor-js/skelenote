@@ -3,7 +3,16 @@
  */
 
 import { useCallback, useState } from 'react';
-import { NavLink, Badge, Box, Group, ActionIcon, Menu, Text, Stack } from '@mantine/core';
+import {
+  NavLink,
+  Badge,
+  Box,
+  Group,
+  ActionIcon,
+  Menu,
+  Text,
+  Stack,
+} from '@mantine/core';
 import { ChevronRight, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useSidebar } from '@/contexts';
 import { useSavedViews, useConfirmDialog } from '@/hooks';
@@ -12,6 +21,7 @@ import { ConfirmDialog } from '@/components/ui';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import type { SavedView } from '@/lib/types';
 import styles from './SavedViewsSection.module.css';
+import sidebarStyles from './SidebarItem.module.css';
 
 interface SavedViewsSectionProps {
   /** Callback when a view is selected */
@@ -26,9 +36,12 @@ export function SavedViewsSection({
 }: SavedViewsSectionProps) {
   const { isSectionCollapsed, toggleSection } = useSidebar();
   const { views, deleteView } = useSavedViews();
-  const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
+  const { confirm, dialogState, handleConfirm, handleCancel } =
+    useConfirmDialog();
 
-  const [contextMenuView, setContextMenuView] = useState<SavedView | null>(null);
+  const [contextMenuView, setContextMenuView] = useState<SavedView | null>(
+    null
+  );
 
   // Editor modal state
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -59,21 +72,24 @@ export function SavedViewsSection({
     setEditingView(null);
   }, []);
 
-  const handleDelete = useCallback(async (view: SavedView) => {
-    setContextMenuView(null);
+  const handleDelete = useCallback(
+    async (view: SavedView) => {
+      setContextMenuView(null);
 
-    const confirmed = await confirm({
-      title: 'Delete View',
-      message: `Are you sure you want to delete "${view.name}"? This action cannot be undone.`,
-      confirmLabel: 'Delete',
-      cancelLabel: 'Cancel',
-      variant: 'danger',
-    });
+      const confirmed = await confirm({
+        title: 'Delete View',
+        message: `Are you sure you want to delete "${view.name}"? This action cannot be undone.`,
+        confirmLabel: 'Delete',
+        cancelLabel: 'Cancel',
+        variant: 'danger',
+      });
 
-    if (confirmed) {
-      deleteView(view.id);
-    }
-  }, [confirm, deleteView]);
+      if (confirmed) {
+        deleteView(view.id);
+      }
+    },
+    [confirm, deleteView]
+  );
 
   const handleViewClick = useCallback(
     (view: SavedView) => {
@@ -127,6 +143,7 @@ export function SavedViewsSection({
         opened={!isCollapsed}
         disableRightSectionRotation
         variant="subtle"
+        className={sidebarStyles.navLink}
         styles={{
           label: {
             fontWeight: 600,
@@ -163,6 +180,7 @@ export function SavedViewsSection({
                       active={activeViewId === view.id}
                       onClick={() => handleViewClick(view)}
                       variant="subtle"
+                      className={sidebarStyles.navLink}
                     />
                   </Box>
                 </Menu.Target>

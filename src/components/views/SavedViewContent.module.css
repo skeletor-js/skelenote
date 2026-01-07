@@ -12,7 +12,7 @@
 }
 
 /* Dark mode adjustments */
-:global([data-mantine-color-scheme="dark"]) .row:hover {
+:global([data-mantine-color-scheme='dark']) .row:hover {
   background-color: var(--surface-raised);
 }
 

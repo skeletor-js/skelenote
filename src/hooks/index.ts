@@ -1,11 +1,23 @@
 export { useTheme } from './useTheme';
-export { useTasks, type UseTasksOptions, type UseTasksResult } from './useTasks';
+export {
+  useTasks,
+  type UseTasksOptions,
+  type UseTasksResult,
+} from './useTasks';
 export { useInbox, type UseInboxResult } from './useInbox';
 export { useArchive, type UseArchiveResult } from './useArchive';
-export { useDailyNote, useTodaysDailyNote, type UseDailyNoteResult } from './useDailyNote';
+export {
+  useDailyNote,
+  useTodaysDailyNote,
+  type UseDailyNoteResult,
+} from './useDailyNote';
 export { useCalendar, type UseCalendarResult } from './useCalendar';
 export { useLinkToDaily } from './useLinkToDaily';
-export { useSearch, type UseSearchOptions, type UseSearchResult } from './useSearch';
+export {
+  useSearch,
+  type UseSearchOptions,
+  type UseSearchResult,
+} from './useSearch';
 export {
   useSearchResults,
   type UseSearchResultsOptions,
@@ -25,7 +37,10 @@ export {
   type ContextMenuPosition,
   type UseContextMenuResult,
 } from './useContextMenu';
-export { usePinnedObjects, type UsePinnedObjectsResult } from './usePinnedObjects';
+export {
+  usePinnedObjects,
+  type UsePinnedObjectsResult,
+} from './usePinnedObjects';
 export { useSavedViews, type UseSavedViewsResult } from './useSavedViews';
 export {
   useSelection,

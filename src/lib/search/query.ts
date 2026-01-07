@@ -3,7 +3,12 @@
  */
 
 import Fuse, { type IFuseOptions, type FuseResult } from 'fuse.js';
-import type { SearchableItem, SearchResult, SearchMatch, SearchOptions } from './types';
+import type {
+  SearchableItem,
+  SearchResult,
+  SearchMatch,
+  SearchOptions,
+} from './types';
 
 /**
  * Default Fuse.js configuration
@@ -11,16 +16,16 @@ import type { SearchableItem, SearchResult, SearchMatch, SearchOptions } from '.
  */
 const DEFAULT_FUSE_OPTIONS: IFuseOptions<SearchableItem> = {
   keys: [
-    { name: 'title', weight: 3 },      // Title is most important
+    { name: 'title', weight: 3 }, // Title is most important
     { name: 'properties', weight: 2 }, // Properties second
-    { name: 'content', weight: 1 },    // Content lower priority
+    { name: 'content', weight: 1 }, // Content lower priority
   ],
-  threshold: 0.3,           // Fuzzy matching tolerance (0 = exact, 1 = match anything)
-  includeMatches: true,     // Include match indices for highlighting
-  includeScore: true,       // Include relevance score
-  ignoreLocation: true,     // Search entire text, not just beginning
-  minMatchCharLength: 2,    // Minimum chars to match
-  findAllMatches: true,     // Find all matches in long text
+  threshold: 0.3, // Fuzzy matching tolerance (0 = exact, 1 = match anything)
+  includeMatches: true, // Include match indices for highlighting
+  includeScore: true, // Include relevance score
+  ignoreLocation: true, // Search entire text, not just beginning
+  minMatchCharLength: 2, // Minimum chars to match
+  findAllMatches: true, // Find all matches in long text
 };
 
 /**

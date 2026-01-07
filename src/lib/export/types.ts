@@ -2,7 +2,11 @@
  * Types for Markdown export functionality
  */
 
-import type { SkelenoteObject, TypeDefinition, PropertyDefinition } from '../types';
+import type {
+  SkelenoteObject,
+  TypeDefinition,
+  PropertyDefinition,
+} from '../types';
 
 /**
  * Options for exporting an object to Markdown

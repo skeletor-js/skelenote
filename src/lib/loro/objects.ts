@@ -153,7 +153,10 @@ export class ObjectStore {
    * Get all objects of a specific type
    * @param options.includeArchived - Include archived objects (default: false)
    */
-  getByType(typeId: string, options?: { includeArchived?: boolean }): SkelenoteObject[] {
+  getByType(
+    typeId: string,
+    options?: { includeArchived?: boolean }
+  ): SkelenoteObject[] {
     return this.getAll(options).filter((obj) => obj.typeId === typeId);
   }
 
@@ -192,7 +195,11 @@ export class ObjectStore {
   /**
    * Set a single property value
    */
-  setProperty(id: string, propertyId: string, value: PropertyValue): SkelenoteObject {
+  setProperty(
+    id: string,
+    propertyId: string,
+    value: PropertyValue
+  ): SkelenoteObject {
     return this.update(id, {
       properties: { [propertyId]: value },
     });
@@ -509,16 +516,26 @@ export class ObjectStore {
     const original = this.getOrThrow(id);
 
     // Block daily note duplication
-    if (original.typeId === 'note' && original.properties.isDailyNote === true) {
+    if (
+      original.typeId === 'note' &&
+      original.properties.isDailyNote === true
+    ) {
       throw new ValidationError('Daily notes cannot be duplicated');
     }
 
     // Determine which property holds the name
-    const namePropertyId = original.properties.title !== undefined ? 'title' : 'name';
-    const originalName = String(original.properties[namePropertyId] ?? 'Untitled');
+    const namePropertyId =
+      original.properties.title !== undefined ? 'title' : 'name';
+    const originalName = String(
+      original.properties[namePropertyId] ?? 'Untitled'
+    );
 
     // Generate unique name
-    const newName = this.generateDuplicateName(originalName, original.typeId, namePropertyId);
+    const newName = this.generateDuplicateName(
+      originalName,
+      original.typeId,
+      namePropertyId
+    );
 
     // Copy and transform properties
     const newProperties: Record<string, PropertyValue> = {
@@ -576,7 +593,10 @@ export class ObjectStore {
   /**
    * Duplicate multiple objects
    */
-  duplicateMany(ids: string[]): { duplicated: SkelenoteObject[]; errors: string[] } {
+  duplicateMany(ids: string[]): {
+    duplicated: SkelenoteObject[];
+    errors: string[];
+  } {
     const duplicated: SkelenoteObject[] = [];
     const errors: string[] = [];
 
@@ -684,7 +704,10 @@ export class ObjectStore {
   /**
    * Add a tag to multiple objects (skips if already tagged)
    */
-  addTagToMany(ids: string[], tagId: string): { updated: number; errors: string[] } {
+  addTagToMany(
+    ids: string[],
+    tagId: string
+  ): { updated: number; errors: string[] } {
     let updated = 0;
     const errors: string[] = [];
 
@@ -707,7 +730,10 @@ export class ObjectStore {
   /**
    * Remove a tag from multiple objects
    */
-  removeTagFromMany(ids: string[], tagId: string): { updated: number; errors: string[] } {
+  removeTagFromMany(
+    ids: string[],
+    tagId: string
+  ): { updated: number; errors: string[] } {
     let updated = 0;
     const errors: string[] = [];
 
@@ -716,7 +742,9 @@ export class ObjectStore {
         const obj = this.getOrThrow(id);
         const currentTags = (obj.properties.tags as string[]) ?? [];
         if (currentTags.includes(tagId)) {
-          this.update(id, { properties: { tags: currentTags.filter((t) => t !== tagId) } });
+          this.update(id, {
+            properties: { tags: currentTags.filter((t) => t !== tagId) },
+          });
           updated++;
         }
       } catch {
@@ -750,7 +778,10 @@ export class ObjectStore {
    * Change the type of multiple objects
    * Note: Properties that don't exist on the new type will become invisible but data is preserved
    */
-  changeTypeMany(ids: string[], newTypeId: string): { updated: number; errors: string[] } {
+  changeTypeMany(
+    ids: string[],
+    newTypeId: string
+  ): { updated: number; errors: string[] } {
     const typeDef = this.typeRegistry.get(newTypeId);
     if (!typeDef) {
       return { updated: 0, errors: ids };
@@ -812,7 +843,10 @@ export class ObjectStore {
   /**
    * Set status for multiple tasks (e.g., mark complete/incomplete)
    */
-  setStatusMany(ids: string[], status: string): { updated: number; errors: string[] } {
+  setStatusMany(
+    ids: string[],
+    status: string
+  ): { updated: number; errors: string[] } {
     let updated = 0;
     const errors: string[] = [];
 
@@ -967,6 +1001,9 @@ export class ObjectStore {
 /**
  * Create a new ObjectStore
  */
-export function createObjectStore(doc: LoroDoc, typeRegistry: TypeRegistry): ObjectStore {
+export function createObjectStore(
+  doc: LoroDoc,
+  typeRegistry: TypeRegistry
+): ObjectStore {
   return new ObjectStore(doc, typeRegistry);
 }

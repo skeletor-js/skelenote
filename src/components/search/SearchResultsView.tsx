@@ -4,7 +4,15 @@
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { Stack, Text, Loader, Center, Button, Box, Collapse } from '@mantine/core';
+import {
+  Stack,
+  Text,
+  Loader,
+  Center,
+  Button,
+  Box,
+  Collapse,
+} from '@mantine/core';
 import { useNavigation, useSemanticSearchSafe, useObjects } from '@/contexts';
 import { useSearchResults, useSelection } from '@/hooks';
 import { EmptyState, ViewHeader } from '@/components/ui';
@@ -148,8 +156,17 @@ export function SearchResultsView() {
   }, []);
 
   return (
-    <Stack gap={0} h="100%" style={{ overflow: 'hidden' }} onKeyDown={handleKeyDown} data-search-view>
-      <ViewHeader title="Search" count={results.length > 0 ? results.length : undefined} />
+    <Stack
+      gap={0}
+      h="100%"
+      style={{ overflow: 'hidden' }}
+      onKeyDown={handleKeyDown}
+      data-search-view
+    >
+      <ViewHeader
+        title="Search"
+        count={results.length > 0 ? results.length : undefined}
+      />
       <Box p="md" style={{ flex: 1, overflow: 'auto' }}>
         <Stack gap="md">
           {/* Search controls */}
@@ -189,7 +206,9 @@ export function SearchResultsView() {
               <Center py="xl">
                 <Stack align="center" gap="sm">
                   <Loader size="md" />
-                  <Text size="sm" c="dimmed">Searching...</Text>
+                  <Text size="sm" c="dimmed">
+                    Searching...
+                  </Text>
                 </Stack>
               </Center>
             ) : results.length === 0 ? (
@@ -204,11 +223,7 @@ export function SearchResultsView() {
                   {hasActiveFilters ? (
                     <>
                       No results match your filters.{' '}
-                      <Button
-                        variant="subtle"
-                        size="xs"
-                        onClick={clearFilters}
-                      >
+                      <Button variant="subtle" size="xs" onClick={clearFilters}>
                         Clear filters
                       </Button>
                     </>

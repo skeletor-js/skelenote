@@ -18,7 +18,9 @@ export function AboutSettings() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">About</Text>
+        <Text size="lg" fw={600} mb="xs">
+          About
+        </Text>
         <Text size="sm" c="dimmed">
           Information about Skelenote.
         </Text>
@@ -26,7 +28,9 @@ export function AboutSettings() {
 
       {/* Version */}
       <Box>
-        <Text size="sm" fw={500} mb="xs">Version</Text>
+        <Text size="sm" fw={500} mb="xs">
+          Version
+        </Text>
         <Group gap="xs">
           <Code>{APP_VERSION}</Code>
         </Group>
@@ -34,9 +38,12 @@ export function AboutSettings() {
 
       {/* Keyboard Shortcuts */}
       <Box>
-        <Text size="sm" fw={500} mb="xs">Keyboard Shortcuts</Text>
+        <Text size="sm" fw={500} mb="xs">
+          Keyboard Shortcuts
+        </Text>
         <Text size="xs" c="dimmed" mb="sm">
-          View all available keyboard shortcuts for quick navigation and actions.
+          View all available keyboard shortcuts for quick navigation and
+          actions.
         </Text>
         <Button
           variant="light"
@@ -50,7 +57,9 @@ export function AboutSettings() {
 
       {/* Links */}
       <Box>
-        <Text size="sm" fw={500} mb="xs">Links</Text>
+        <Text size="sm" fw={500} mb="xs">
+          Links
+        </Text>
         <Stack gap="xs">
           <Group gap="xs">
             <Icon name="book-open" size={14} />
@@ -60,13 +69,21 @@ export function AboutSettings() {
           </Group>
           <Group gap="xs">
             <Icon name="github" size={14} />
-            <Anchor href="https://github.com/skelenote/skelenote" target="_blank" size="sm">
+            <Anchor
+              href="https://github.com/skelenote/skelenote"
+              target="_blank"
+              size="sm"
+            >
               GitHub Repository
             </Anchor>
           </Group>
           <Group gap="xs">
             <Icon name="message-circle" size={14} />
-            <Anchor href="https://skelenote.app/feedback" target="_blank" size="sm">
+            <Anchor
+              href="https://skelenote.app/feedback"
+              target="_blank"
+              size="sm"
+            >
               Send Feedback
             </Anchor>
           </Group>

@@ -78,7 +78,12 @@ export function RelationPicker({
 
     if (disableClear && disableClearMessage) {
       return (
-        <Tooltip key={objectId} label={disableClearMessage} position="top" withArrow>
+        <Tooltip
+          key={objectId}
+          label={disableClearMessage}
+          position="top"
+          withArrow
+        >
           <span>{chip}</span>
         </Tooltip>
       );

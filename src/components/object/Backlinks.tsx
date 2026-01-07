@@ -36,7 +36,10 @@ export function Backlinks({ objectId }: BacklinksProps) {
   const groupedBacklinks = useMemo(() => {
     if (!store) return [];
 
-    const grouped = new Map<string, { sourceId: string; propertyNames: string[] }>();
+    const grouped = new Map<
+      string,
+      { sourceId: string; propertyNames: string[] }
+    >();
 
     for (const backlink of backlinks) {
       // Skip if source object was deleted
@@ -64,7 +67,9 @@ export function Backlinks({ objectId }: BacklinksProps) {
   // Smart default expansion: expanded if 1-3 backlinks, collapsed if more
   useEffect(() => {
     if (isExpanded === null) {
-      setIsExpanded(backlinkCount > 0 && backlinkCount <= SMART_EXPAND_THRESHOLD);
+      setIsExpanded(
+        backlinkCount > 0 && backlinkCount <= SMART_EXPAND_THRESHOLD
+      );
     }
   }, [backlinkCount, isExpanded]);
 
@@ -104,7 +109,9 @@ export function Backlinks({ objectId }: BacklinksProps) {
       <Collapse in={expanded}>
         <Stack gap={2} className={styles.backlinksList}>
           {groupedBacklinks.length === 0 ? (
-            <Text className={styles.emptyState}>No objects link to this one</Text>
+            <Text className={styles.emptyState}>
+              No objects link to this one
+            </Text>
           ) : (
             groupedBacklinks.map(({ sourceId, propertyNames }) => (
               <BacklinkItem

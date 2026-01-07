@@ -48,14 +48,49 @@ export interface PlaceholderDefinition {
  * All available placeholders with their metadata
  */
 export const PLACEHOLDERS: PlaceholderDefinition[] = [
-  { type: 'date', label: '{{date}}', description: 'Today', example: 'December 27, 2025' },
-  { type: 'date_short', label: '{{date_short}}', description: 'ISO', example: '2025-12-27' },
-  { type: 'title', label: '{{title}}', description: 'Title', example: 'Meeting: Q1 Planning' },
+  {
+    type: 'date',
+    label: '{{date}}',
+    description: 'Today',
+    example: 'December 27, 2025',
+  },
+  {
+    type: 'date_short',
+    label: '{{date_short}}',
+    description: 'ISO',
+    example: '2025-12-27',
+  },
+  {
+    type: 'title',
+    label: '{{title}}',
+    description: 'Title',
+    example: 'Meeting: Q1 Planning',
+  },
   { type: 'time', label: '{{time}}', description: 'Time', example: '3:45 PM' },
-  { type: 'tomorrow', label: '{{tomorrow}}', description: '+1 day', example: 'December 28, 2025' },
-  { type: 'yesterday', label: '{{yesterday}}', description: '-1 day', example: 'December 26, 2025' },
-  { type: 'week', label: '{{week}}', description: 'Week #', example: 'Week 52' },
-  { type: 'month', label: '{{month}}', description: 'Month', example: 'December' },
+  {
+    type: 'tomorrow',
+    label: '{{tomorrow}}',
+    description: '+1 day',
+    example: 'December 28, 2025',
+  },
+  {
+    type: 'yesterday',
+    label: '{{yesterday}}',
+    description: '-1 day',
+    example: 'December 26, 2025',
+  },
+  {
+    type: 'week',
+    label: '{{week}}',
+    description: 'Week #',
+    example: 'Week 52',
+  },
+  {
+    type: 'month',
+    label: '{{month}}',
+    description: 'Month',
+    example: 'December',
+  },
   { type: 'year', label: '{{year}}', description: 'Year', example: '2025' },
 ];
 

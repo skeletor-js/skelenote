@@ -22,7 +22,8 @@ import {
 } from './panels';
 
 export function SettingsView() {
-  const [activeSection, setActiveSection] = useState<SettingsSection>('account');
+  const [activeSection, setActiveSection] =
+    useState<SettingsSection>('account');
 
   const renderActivePanel = () => {
     switch (activeSection) {
@@ -70,9 +71,7 @@ export function SettingsView() {
       {/* Content Panel */}
       <Box flex={1} h="100%" style={{ overflow: 'hidden' }}>
         <ScrollArea h="100%" p="lg">
-          <Box>
-            {renderActivePanel()}
-          </Box>
+          <Box>{renderActivePanel()}</Box>
         </ScrollArea>
       </Box>
     </Group>

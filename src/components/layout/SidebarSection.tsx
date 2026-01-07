@@ -2,6 +2,7 @@ import { type ReactNode, type MouseEvent } from 'react';
 import { NavLink, Box } from '@mantine/core';
 import { ChevronRight } from 'lucide-react';
 import { useSidebar } from '@/contexts';
+import styles from './SidebarItem.module.css';
 
 interface SidebarSectionProps {
   id: string;
@@ -49,12 +50,11 @@ export function SidebarSection({
         onClick={handleToggle}
         opened={!isCollapsed}
         rightSection={
-          action ? (
-            <span onClick={handleActionClick}>{action}</span>
-          ) : null
+          action ? <span onClick={handleActionClick}>{action}</span> : null
         }
         disableRightSectionRotation
         variant="subtle"
+        className={styles.navLink}
         styles={{
           label: {
             fontWeight: 600,

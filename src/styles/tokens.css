@@ -3,7 +3,9 @@
 :root {
   /* ===== TYPOGRAPHY ===== */
   --font-ui: 'Fragment Mono', ui-monospace, monospace;
-  --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body:
+    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
   --font-size-base: 14px;
   --font-size-sm: 12px;
   --font-size-xs: 11px;
@@ -44,23 +46,23 @@
 
   /* ===== LIGHT MODE COLORS (Cozy Palette) ===== */
   /* Surface colors - warm paper-like feel */
-  --bg-base: #FAFAFA;
+  --bg-base: #fafafa;
   /* Canvas - main background */
-  --bg-raised: #F4F4F5;
+  --bg-raised: #f4f4f5;
   /* Sidebar - slightly darker warm tone */
-  --bg-sunken: #F4F4F5;
+  --bg-sunken: #f4f4f5;
   /* Sunken areas */
 
   /* Border colors - Vellum (#E4E4E7) for paper-edge aesthetic */
-  --border-subtle: #E4E4E7;
-  --border-strong: #D4D4D8;
+  --border-subtle: #e4e4e7;
+  --border-strong: #d4d4d8;
 
   /* Text colors - warm ink hierarchy (never use pure black) */
-  --text-primary: #18181B;
+  --text-primary: #18181b;
   /* Carbon */
-  --text-secondary: #52525B;
+  --text-secondary: #52525b;
   /* Graphite */
-  --text-muted: #A1A1AA;
+  --text-muted: #a1a1aa;
   /* Stone */
 
   /* Surface interaction states */
@@ -72,7 +74,7 @@
   /* Light mode shadows - Carbon-tinted */
   --shadow-sm: 0 1px 2px rgba(24, 24, 27, 0.05);
   --shadow-md: 0 4px 6px rgba(24, 24, 27, 0.08);
-  --shadow-lg: 0 10px 15px rgba(24, 24, 27, 0.10);
+  --shadow-lg: 0 10px 15px rgba(24, 24, 27, 0.1);
 
   /* ===== TAG COLORS (Light Mode) ===== */
   --tag-gray: #737373;
@@ -102,31 +104,31 @@
    ============================================================================= */
 [data-theme='dark'] {
   /* Background colors - aligned with style guide zinc values */
-  --bg-base: #0A0A0A;
+  --bg-base: #0a0a0a;
   /* Canvas */
-  --bg-raised: #18181B;
+  --bg-raised: #18181b;
   /* Paper (zinc-900) */
-  --bg-sunken: #09090B;
+  --bg-sunken: #09090b;
   /* Below canvas */
 
   /* Border colors - more visible in dark mode */
-  --border-subtle: #27272A;
+  --border-subtle: #27272a;
   /* Vellum (zinc-800) */
-  --border-strong: #3F3F46;
+  --border-strong: #3f3f46;
   /* zinc-700 for better visibility */
 
   /* Text colors - zinc-based for consistency */
-  --text-primary: #FAFAFA;
+  --text-primary: #fafafa;
   /* zinc-50 */
-  --text-secondary: #A1A1AA;
+  --text-secondary: #a1a1aa;
   /* zinc-400 / Stone */
-  --text-muted: #52525B;
+  --text-muted: #52525b;
   /* zinc-600 / Graphite */
 
   /* Surface states - warm ember tones for cozy feel */
   --surface-hover: rgba(184, 92, 80, 0.15);
   /* Ember at 15% */
-  --surface-active: #3D2422;
+  --surface-active: #3d2422;
   /* Dark ember glow */
 
   /* Dark mode shadows - increased opacity */
@@ -135,7 +137,7 @@
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
 
   /* Tag colors (Dark Mode - brighter variants for visibility) */
-  --tag-gray: #A1A1AA;
+  --tag-gray: #a1a1aa;
   --tag-red: #ef4444;
   --tag-orange: #f97316;
   --tag-yellow: #eab308;

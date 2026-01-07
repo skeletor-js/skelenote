@@ -20,7 +20,10 @@ export interface UseDuplicateResult {
   /**
    * Duplicate multiple objects
    */
-  duplicateMany: (objectIds: string[]) => { duplicated: SkelenoteObject[]; errors: string[] };
+  duplicateMany: (objectIds: string[]) => {
+    duplicated: SkelenoteObject[];
+    errors: string[];
+  };
 
   /**
    * Check if an object can be duplicated
@@ -95,8 +98,11 @@ export function useDuplicate(): UseDuplicateResult {
         };
 
         // Get title for display
-        const title = String(duplicated.properties.title ?? duplicated.properties.name ?? 'object');
-        const truncatedTitle = title.length > 30 ? title.substring(0, 30) + '...' : title;
+        const title = String(
+          duplicated.properties.title ?? duplicated.properties.name ?? 'object'
+        );
+        const truncatedTitle =
+          title.length > 30 ? title.substring(0, 30) + '...' : title;
 
         // Show toast with View and Undo actions
         addToast({
@@ -121,7 +127,10 @@ export function useDuplicate(): UseDuplicateResult {
       } catch (error) {
         addToast({
           type: 'error',
-          message: error instanceof Error ? error.message : 'Failed to duplicate object',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to duplicate object',
         });
         return null;
       }
@@ -130,7 +139,9 @@ export function useDuplicate(): UseDuplicateResult {
   );
 
   const duplicateMany = useCallback(
-    (objectIds: string[]): { duplicated: SkelenoteObject[]; errors: string[] } => {
+    (
+      objectIds: string[]
+    ): { duplicated: SkelenoteObject[]; errors: string[] } => {
       if (!store) {
         return { duplicated: [], errors: objectIds };
       }

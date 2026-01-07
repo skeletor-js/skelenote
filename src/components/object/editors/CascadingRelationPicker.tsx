@@ -74,7 +74,10 @@ export function CascadingRelationPicker({
 
       // This shouldn't happen if UI is correct (disableClear prevents it),
       // but double-check: don't allow clearing area if project is set
-      if ((newAreaIds === null || newAreaIds.length === 0) && currentProjectId !== null) {
+      if (
+        (newAreaIds === null || newAreaIds.length === 0) &&
+        currentProjectId !== null
+      ) {
         return;
       }
 

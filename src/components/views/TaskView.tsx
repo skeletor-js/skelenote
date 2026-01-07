@@ -30,7 +30,9 @@ const EMPTY_MESSAGES: Record<TaskFilter, string> = {
 };
 
 export function TaskView({ filter, title }: TaskViewProps) {
-  const { tasks, isLoading, toggleComplete, archiveTask } = useTasks({ filter });
+  const { tasks, isLoading, toggleComplete, archiveTask } = useTasks({
+    filter,
+  });
   const { refreshData } = useObjects();
 
   // Get task IDs for selection hook
@@ -79,14 +81,20 @@ export function TaskView({ filter, title }: TaskViewProps) {
     return (
       <Center p="xl">
         <Loader size="sm" />
-        <Text ml="sm" c="dimmed">Loading...</Text>
+        <Text ml="sm" c="dimmed">
+          Loading...
+        </Text>
       </Center>
     );
   }
 
   return (
     <Stack gap={0} h="100%" style={{ overflow: 'hidden' }} data-task-view>
-      <ViewHeader title={title} icon="list-checks" count={tasks.length > 0 ? tasks.length : undefined} />
+      <ViewHeader
+        title={title}
+        icon="list-checks"
+        count={tasks.length > 0 ? tasks.length : undefined}
+      />
       <Box p="md" style={{ flex: 1, overflow: 'auto' }}>
         <TaskList
           tasks={tasks}

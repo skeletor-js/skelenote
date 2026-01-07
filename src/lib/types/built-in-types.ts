@@ -8,7 +8,12 @@ import { BuiltInTypeIds } from './type-definition';
 /**
  * Task status options
  */
-export const TaskStatusOptions = ['todo', 'in-progress', 'waiting', 'done'] as const;
+export const TaskStatusOptions = [
+  'todo',
+  'in-progress',
+  'waiting',
+  'done',
+] as const;
 export type TaskStatus = (typeof TaskStatusOptions)[number];
 
 /**
@@ -20,7 +25,12 @@ export type TaskPriority = (typeof TaskPriorityOptions)[number];
 /**
  * Project status options
  */
-export const ProjectStatusOptions = ['active', 'on-hold', 'completed', 'archived'] as const;
+export const ProjectStatusOptions = [
+  'active',
+  'on-hold',
+  'completed',
+  'archived',
+] as const;
 export type ProjectStatus = (typeof ProjectStatusOptions)[number];
 
 /**
@@ -32,13 +42,29 @@ export type ProjectStatus = (typeof ProjectStatusOptions)[number];
  * - brick: Dark red/danger
  * - slate: Blue-gray/info
  */
-export const TagColorOptions = ['ember', 'clay', 'sage', 'ochre', 'brick', 'slate'] as const;
+export const TagColorOptions = [
+  'ember',
+  'clay',
+  'sage',
+  'ochre',
+  'brick',
+  'slate',
+] as const;
 export type TagColor = (typeof TagColorOptions)[number];
 
 /**
  * Meeting duration options (in minutes)
  */
-export const MeetingDurationOptions = ['15', '30', '45', '60', '90', '120', '180', '240'] as const;
+export const MeetingDurationOptions = [
+  '15',
+  '30',
+  '45',
+  '60',
+  '90',
+  '120',
+  '180',
+  '240',
+] as const;
 export type MeetingDuration = (typeof MeetingDurationOptions)[number];
 
 /**

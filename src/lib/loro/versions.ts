@@ -121,7 +121,9 @@ export function extractChangePoints(doc: LoroDoc): ChangePoint[] {
   }
 
   if (skippedCount > 0) {
-    console.log(`[versions] Skipped ${skippedCount} changes without timestamps (historical data)`);
+    console.log(
+      `[versions] Skipped ${skippedCount} changes without timestamps (historical data)`
+    );
   }
 
   // Sort by timestamp ascending
@@ -145,7 +147,9 @@ export function findFrontierAt(
   if (changePoints.length === 0) return null;
 
   // Find all changes up to and including the timestamp
-  const relevantChanges = changePoints.filter((cp) => cp.timestamp <= timestamp);
+  const relevantChanges = changePoints.filter(
+    (cp) => cp.timestamp <= timestamp
+  );
   if (relevantChanges.length === 0) return null;
 
   // For each peer, find the highest counter up to this timestamp
@@ -304,7 +308,9 @@ export function resolveDeviceInfo(_peerId: string): {
  * @param changePoints - Array of change points
  * @returns Change points with device info added
  */
-export function enrichWithDeviceInfo(changePoints: ChangePoint[]): ChangePoint[] {
+export function enrichWithDeviceInfo(
+  changePoints: ChangePoint[]
+): ChangePoint[] {
   return changePoints.map((cp) => {
     const deviceInfo = resolveDeviceInfo(cp.peerId);
     return {
@@ -410,7 +416,9 @@ export function getAffectedObjectIds(
     const currDoc = doc.forkAt(currFrontier);
 
     // Extract objects from both states
-    const prevObjects = prevDoc ? extractAllObjects(prevDoc) : new Map<string, ObjectState>();
+    const prevObjects = prevDoc
+      ? extractAllObjects(prevDoc)
+      : new Map<string, ObjectState>();
     const currObjects = extractAllObjects(currDoc);
 
     const affectedIds: string[] = [];
@@ -518,13 +526,19 @@ export function filterChangePointsByObject(
 
     // Skip if the frontier is identical to the previous one
     const currFrontierKey = JSON.stringify(currCumulativeFrontier);
-    const prevFrontierKey = prevCumulativeFrontier ? JSON.stringify(prevCumulativeFrontier) : 'null';
+    const prevFrontierKey = prevCumulativeFrontier
+      ? JSON.stringify(prevCumulativeFrontier)
+      : 'null';
     if (currFrontierKey === prevFrontierKey) {
       lastTimestamp = cp.timestamp;
       continue;
     }
 
-    const affectedIds = getAffectedObjectIdsCached(doc, prevCumulativeFrontier, currCumulativeFrontier);
+    const affectedIds = getAffectedObjectIdsCached(
+      doc,
+      prevCumulativeFrontier,
+      currCumulativeFrontier
+    );
 
     if (affectedIds.includes(objectId)) {
       filtered.push(cp);
@@ -551,9 +565,11 @@ function getObjectTitle(doc: LoroDoc, objectId: string): string {
 
     if (data) {
       const parsed = JSON.parse(data);
-      return (parsed.properties?.title as string) ||
+      return (
+        (parsed.properties?.title as string) ||
         (parsed.properties?.name as string) ||
-        'Untitled';
+        'Untitled'
+      );
     }
   } catch {
     // Ignore errors
@@ -574,7 +590,11 @@ export function getVersionHistoryForObject(
   objectId: string
 ): ObjectVersionHistory {
   const allChangePoints = extractChangePoints(doc);
-  const filteredChangePoints = filterChangePointsByObject(doc, allChangePoints, objectId);
+  const filteredChangePoints = filterChangePointsByObject(
+    doc,
+    allChangePoints,
+    objectId
+  );
   const byDate = aggregateByDate(filteredChangePoints);
   const objectTitle = getObjectTitle(doc, objectId);
 
@@ -583,7 +603,10 @@ export function getVersionHistoryForObject(
     objectTitle,
     changePoints: filteredChangePoints,
     byDate,
-    earliest: filteredChangePoints.length > 0 ? filteredChangePoints[0].timestamp : null,
+    earliest:
+      filteredChangePoints.length > 0
+        ? filteredChangePoints[0].timestamp
+        : null,
     latest:
       filteredChangePoints.length > 0
         ? filteredChangePoints[filteredChangePoints.length - 1].timestamp

@@ -25,7 +25,10 @@ const DEFAULT_FILTERS: SearchFilters = {
   objectTypes: [],
 };
 
-export interface UseSearchResultsOptions extends Omit<UseSearchOptions, 'limit'> {
+export interface UseSearchResultsOptions extends Omit<
+  UseSearchOptions,
+  'limit'
+> {
   /** Maximum number of results (default: 50) */
   limit?: number;
   /** Initial query */
@@ -119,7 +122,10 @@ export function useSearchResults(
         if (filters.matchTypes.includes(matchType)) return true;
         // Hybrid passes through text and semantic filters
         if (matchType === 'hybrid') {
-          return filters.matchTypes.includes('text') || filters.matchTypes.includes('semantic');
+          return (
+            filters.matchTypes.includes('text') ||
+            filters.matchTypes.includes('semantic')
+          );
         }
         return false;
       });

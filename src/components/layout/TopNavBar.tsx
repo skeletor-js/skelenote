@@ -43,8 +43,15 @@ export function TopNavBar({
   isZenMode = false,
   onToggleZenMode,
 }: TopNavBarProps) {
-  const { canGoBack, canGoForward, navigateBack, navigateForward } = useNavigation();
-  const { windowControlsHeight, windowControlsWidth, isMacOS, isWindows, isLinux } = usePlatform();
+  const { canGoBack, canGoForward, navigateBack, navigateForward } =
+    useNavigation();
+  const {
+    windowControlsHeight,
+    windowControlsWidth,
+    isMacOS,
+    isWindows,
+    isLinux,
+  } = usePlatform();
   const omnibarRef = useRef<OmnibarRef>(null);
 
   // Register omnibar focus functions for Cmd+K and Cmd+N shortcuts
@@ -72,7 +79,7 @@ export function TopNavBar({
   const paddingLeft = isMacOS
     ? Math.max(windowControlsWidth + 8, minLeftPosition)
     : minLeftPosition;
-  const paddingRight = (isWindows || isLinux) ? 16 : 16;
+  const paddingRight = isWindows || isLinux ? 16 : 16;
 
   return (
     <Box
@@ -109,7 +116,10 @@ export function TopNavBar({
 
       {/* System controls (far right) */}
       <Group gap="xs" className={classes.rightControls}>
-        <SystemControls isZenMode={isZenMode} onToggleZenMode={onToggleZenMode} />
+        <SystemControls
+          isZenMode={isZenMode}
+          onToggleZenMode={onToggleZenMode}
+        />
       </Group>
     </Box>
   );

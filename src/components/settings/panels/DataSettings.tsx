@@ -6,7 +6,15 @@
  */
 
 import { useState, useCallback } from 'react';
-import { Stack, Group, Text, Button, Checkbox, Progress, Box } from '@mantine/core';
+import {
+  Stack,
+  Group,
+  Text,
+  Button,
+  Checkbox,
+  Progress,
+  Box,
+} from '@mantine/core';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
 import { exportAllToZip, type BulkExportProgress } from '@/lib/export';
 import { BuiltInTypeIds } from '@/lib/types';
@@ -23,7 +31,11 @@ export function DataSettings() {
 
   // Get object counts for display - grouped by type
   const objectCounts = useCallback(() => {
-    if (!store || !typeRegistry) return { total: 0, byType: [] as { typeId: string; name: string; count: number }[] };
+    if (!store || !typeRegistry)
+      return {
+        total: 0,
+        byType: [] as { typeId: string; name: string; count: number }[],
+      };
 
     const all = store.getAll({ includeArchived });
 
@@ -40,15 +52,14 @@ export function DataSettings() {
     }
 
     // Convert to array with type names, sorted by count descending
-    const byType = Array.from(typeCountMap.entries())
-      .map(([typeId, count]) => {
-        const typeDef = typeRegistry.get(typeId);
-        return {
-          typeId,
-          name: typeDef?.name || typeId,
-          count,
-        };
-      });
+    const byType = Array.from(typeCountMap.entries()).map(([typeId, count]) => {
+      const typeDef = typeRegistry.get(typeId);
+      return {
+        typeId,
+        name: typeDef?.name || typeId,
+        count,
+      };
+    });
 
     // Add daily notes if there are any
     if (dailyNoteCount > 0) {
@@ -113,13 +124,24 @@ export function DataSettings() {
       console.error('Bulk export failed:', error);
       addToast({
         type: 'error',
-        message: error instanceof Error ? error.message : 'Export failed. Please try again.',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Export failed. Please try again.',
       });
     } finally {
       setIsExporting(false);
       setProgress(null);
     }
-  }, [store, typeRegistry, organizeByType, includeArchived, addToast, progress?.total, objectCounts]);
+  }, [
+    store,
+    typeRegistry,
+    organizeByType,
+    includeArchived,
+    addToast,
+    progress?.total,
+    objectCounts,
+  ]);
 
   const counts = objectCounts();
 
@@ -147,7 +169,9 @@ export function DataSettings() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">Data</Text>
+        <Text size="lg" fw={600} mb="xs">
+          Data
+        </Text>
         <Text size="sm" c="dimmed">
           Export and manage your data.
         </Text>
@@ -155,10 +179,12 @@ export function DataSettings() {
 
       {/* Export Section */}
       <Box>
-        <Text size="md" fw={600} mb="xs">Export</Text>
+        <Text size="md" fw={600} mb="xs">
+          Export
+        </Text>
         <Text size="sm" c="dimmed" mb="md">
-          Export all your objects as Markdown files in a ZIP archive.
-          Perfect for backups or migrating to other tools like Obsidian.
+          Export all your objects as Markdown files in a ZIP archive. Perfect
+          for backups or migrating to other tools like Obsidian.
         </Text>
 
         <Box
@@ -173,17 +199,27 @@ export function DataSettings() {
         >
           <Group gap="md" wrap="wrap">
             <Box style={{ whiteSpace: 'nowrap' }}>
-              <Text span fw={700} size="sm">{counts.total}</Text>
-              <Text span size="xs" c="dimmed" ml={4}>total objects</Text>
+              <Text span fw={700} size="sm">
+                {counts.total}
+              </Text>
+              <Text span size="xs" c="dimmed" ml={4}>
+                total objects
+              </Text>
             </Box>
 
             {counts.byType.map((typeCount) => (
               <Group key={typeCount.typeId} gap="md" wrap="nowrap">
-                <Text c="dimmed" size="xs">·</Text>
+                <Text c="dimmed" size="xs">
+                  ·
+                </Text>
                 <Box style={{ whiteSpace: 'nowrap' }}>
-                  <Text span fw={600} size="sm">{typeCount.count}</Text>
+                  <Text span fw={600} size="sm">
+                    {typeCount.count}
+                  </Text>
                   <Text span size="xs" c="dimmed" ml={4}>
-                    {typeCount.count === 1 ? typeCount.name.toLowerCase() : `${typeCount.name.toLowerCase()}s`}
+                    {typeCount.count === 1
+                      ? typeCount.name.toLowerCase()
+                      : `${typeCount.name.toLowerCase()}s`}
                   </Text>
                 </Box>
               </Group>
@@ -192,7 +228,9 @@ export function DataSettings() {
         </Box>
 
         <Box mb="md">
-          <Text size="sm" fw={500} mb="xs">Options</Text>
+          <Text size="sm" fw={500} mb="xs">
+            Options
+          </Text>
           <Stack gap="xs">
             <Checkbox
               label="Organize files into folders by type"
@@ -223,12 +261,14 @@ export function DataSettings() {
           disabled={isExporting || counts.total === 0}
           loading={isExporting}
         >
-          {isExporting ? 'Exporting...' : `Export All (${counts.total} objects)`}
+          {isExporting
+            ? 'Exporting...'
+            : `Export All (${counts.total} objects)`}
         </Button>
 
         <Text size="xs" c="dimmed" mt="sm">
-          Each object becomes a Markdown file with YAML frontmatter.
-          Mentions are converted to [[wiki-links]].
+          Each object becomes a Markdown file with YAML frontmatter. Mentions
+          are converted to [[wiki-links]].
         </Text>
       </Box>
     </Stack>

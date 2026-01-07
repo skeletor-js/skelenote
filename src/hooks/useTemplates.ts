@@ -6,7 +6,12 @@ import { useMemo, useCallback, useState } from 'react';
 import { useObjects } from '@/contexts';
 import { useNavigation } from '@/contexts/NavigationContext';
 import type { PropertyValue } from '@/lib/types';
-import type { Template, CreateTemplateInput, UpdateTemplateInput, PlaceholderContext } from '@/lib/templates';
+import type {
+  Template,
+  CreateTemplateInput,
+  UpdateTemplateInput,
+  PlaceholderContext,
+} from '@/lib/templates';
 import {
   getTemplates,
   getTemplatesForType,
@@ -214,18 +219,15 @@ export function useTemplates(): UseTemplatesResult {
   );
 
   // Set the daily note template
-  const setDailyNoteTemplateFn = useCallback(
-    (templateId: string | null) => {
-      if (templateId) {
-        setDailyNoteTemplate(templateId);
-      } else {
-        clearDailyNoteTemplate();
-      }
-      // Force re-render to update dailyNoteTemplate
-      setForceUpdate((n) => n + 1);
-    },
-    []
-  );
+  const setDailyNoteTemplateFn = useCallback((templateId: string | null) => {
+    if (templateId) {
+      setDailyNoteTemplate(templateId);
+    } else {
+      clearDailyNoteTemplate();
+    }
+    // Force re-render to update dailyNoteTemplate
+    setForceUpdate((n) => n + 1);
+  }, []);
 
   return {
     templates,

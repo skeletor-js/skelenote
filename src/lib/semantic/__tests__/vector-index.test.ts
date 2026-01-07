@@ -196,8 +196,14 @@ describe('VectorIndex', () => {
 
       // Add vectors with different similarities
       index.add('similar', normalizeVector(createEmbedding([0.9, 0.1, 0])));
-      index.add('less_similar', normalizeVector(createEmbedding([0.5, 0.5, 0])));
-      index.add('least_similar', normalizeVector(createEmbedding([0.1, 0.9, 0])));
+      index.add(
+        'less_similar',
+        normalizeVector(createEmbedding([0.5, 0.5, 0]))
+      );
+      index.add(
+        'least_similar',
+        normalizeVector(createEmbedding([0.1, 0.9, 0]))
+      );
 
       const results = index.search(query, { threshold: 0 });
 

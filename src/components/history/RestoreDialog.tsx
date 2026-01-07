@@ -58,17 +58,14 @@ export function RestoreDialog({
   ];
 
   return (
-    <Modal
-      opened={isOpen}
-      onClose={onCancel}
-      title={title}
-      centered
-      size="sm"
-    >
+    <Modal opened={isOpen} onClose={onCancel} title={title} centered size="sm">
       <Stack gap="md">
         <Group justify="center">
           <ThemeIcon size="xl" variant="light" color="ember">
-            <Icon name={scope === 'single' ? 'file-text' : 'history'} size={24} />
+            <Icon
+              name={scope === 'single' ? 'file-text' : 'history'}
+              size={24}
+            />
           </ThemeIcon>
         </Group>
 

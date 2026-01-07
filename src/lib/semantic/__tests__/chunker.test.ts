@@ -70,7 +70,8 @@ describe('chunkText', () => {
 
   describe('chunking without sentence preservation', () => {
     it('splits by character count when preserveSentences is false', () => {
-      const text = 'This is a long text without proper sentence boundaries it just keeps going and going';
+      const text =
+        'This is a long text without proper sentence boundaries it just keeps going and going';
       const chunks = chunkText(text, {
         maxChunkSize: 30,
         overlap: 5,

@@ -56,7 +56,9 @@ interface SemanticSearchContextValue {
   flushContentChanges: (objectId?: string) => void;
 }
 
-const SemanticSearchContext = createContext<SemanticSearchContextValue | null>(null);
+const SemanticSearchContext = createContext<SemanticSearchContextValue | null>(
+  null
+);
 
 function getInitialEnabled(): boolean {
   if (typeof window !== 'undefined') {
@@ -83,7 +85,9 @@ interface SemanticSearchProviderProps {
   children: ReactNode;
 }
 
-export function SemanticSearchProvider({ children }: SemanticSearchProviderProps) {
+export function SemanticSearchProvider({
+  children,
+}: SemanticSearchProviderProps) {
   const [engine, setEngine] = useState<SemanticEngine | null>(null);
   const [isEnabled, setIsEnabled] = useState(getInitialEnabled);
   const [status, setStatus] = useState<SemanticEngineStatus>('disabled');
@@ -112,7 +116,8 @@ export function SemanticSearchProvider({ children }: SemanticSearchProviderProps
       });
 
       // Initialize (load model and existing embeddings)
-      eng.initialize((prog) => setProgress(prog))
+      eng
+        .initialize((prog) => setProgress(prog))
         .then(() => {
           setStatus(eng.status);
           setIndexedCount(eng.indexedCount);
@@ -166,33 +171,39 @@ export function SemanticSearchProvider({ children }: SemanticSearchProviderProps
     }
   }, []);
 
-  const disable = useCallback(async (cleanup: boolean = false) => {
-    if (engine) {
-      await engine.disable(cleanup);
-    }
+  const disable = useCallback(
+    async (cleanup: boolean = false) => {
+      if (engine) {
+        await engine.disable(cleanup);
+      }
 
-    localStorage.removeItem(STORAGE_KEY);
-    setIsEnabled(false);
-    setStatus('disabled');
-    setIndexedCount(0);
-    setProgress(null);
-    setError(null);
+      localStorage.removeItem(STORAGE_KEY);
+      setIsEnabled(false);
+      setStatus('disabled');
+      setIndexedCount(0);
+      setProgress(null);
+      setError(null);
 
-    if (cleanup) {
-      setEngine(null);
-    }
-  }, [engine]);
+      if (cleanup) {
+        setEngine(null);
+      }
+    },
+    [engine]
+  );
 
-  const rebuildIndex = useCallback(async (content: IndexableContent[]) => {
-    if (!engine) {
-      throw new Error('Semantic search is not enabled');
-    }
+  const rebuildIndex = useCallback(
+    async (content: IndexableContent[]) => {
+      if (!engine) {
+        throw new Error('Semantic search is not enabled');
+      }
 
-    setError(null);
-    await engine.rebuildIndex(content, (prog) => setProgress(prog));
-    setIndexedCount(engine.indexedCount);
-    setProgress(null);
-  }, [engine]);
+      setError(null);
+      await engine.rebuildIndex(content, (prog) => setProgress(prog));
+      setIndexedCount(engine.indexedCount);
+      setProgress(null);
+    },
+    [engine]
+  );
 
   const getEngine = useCallback(() => engine, [engine]);
 
@@ -230,7 +241,9 @@ export function SemanticSearchProvider({ children }: SemanticSearchProviderProps
 export function useSemanticSearch(): SemanticSearchContextValue {
   const context = useContext(SemanticSearchContext);
   if (!context) {
-    throw new Error('useSemanticSearch must be used within a SemanticSearchProvider');
+    throw new Error(
+      'useSemanticSearch must be used within a SemanticSearchProvider'
+    );
   }
   return context;
 }

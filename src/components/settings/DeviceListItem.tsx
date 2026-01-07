@@ -6,7 +6,11 @@
 
 import { Group, Box, Text, Badge, ActionIcon, ThemeIcon } from '@mantine/core';
 import { Icon } from '@/components/ui';
-import { formatLastSeen, getPlatformDisplayName, type DeviceInfo } from '@/lib/devices';
+import {
+  formatLastSeen,
+  getPlatformDisplayName,
+  type DeviceInfo,
+} from '@/lib/devices';
 import type { IconName } from '@/lib/icons';
 
 interface DeviceListItemProps {
@@ -34,8 +38,8 @@ export function DeviceListItem({
         backgroundColor: device.isRevoked
           ? 'var(--mantine-color-gray-1)'
           : device.isCurrentDevice
-          ? 'var(--mantine-color-slate-0)'
-          : 'transparent',
+            ? 'var(--mantine-color-slate-0)'
+            : 'transparent',
         opacity: device.isRevoked ? 0.6 : 1,
         listStyle: 'none',
       })}
@@ -69,7 +73,9 @@ export function DeviceListItem({
             <Text size="xs" c="dimmed">
               {getPlatformDisplayName(device.platform)}
             </Text>
-            <Text size="xs" c="dimmed">·</Text>
+            <Text size="xs" c="dimmed">
+              ·
+            </Text>
             <Text size="xs" c="dimmed">
               {formatLastSeen(device.lastSeen)}
             </Text>

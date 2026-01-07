@@ -9,7 +9,12 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Stack, Text, Button, Box } from '@mantine/core';
-import { useObjects, useNavigation, useToast, useTypeRegistry } from '@/contexts';
+import {
+  useObjects,
+  useNavigation,
+  useToast,
+  useTypeRegistry,
+} from '@/contexts';
 import { Icon } from '@/components/ui/Icon';
 import { ViewHeader } from '@/components/ui/ViewHeader';
 import { getIconFromEmoji } from '@/lib/icons';
@@ -18,7 +23,11 @@ import { HorizontalTimeline } from './HorizontalTimeline';
 import { SnapshotPreview } from './SnapshotPreview';
 import { RestoreDialog, type RestoreScope } from './RestoreDialog';
 import type { Frontiers } from 'loro-crdt';
-import type { DayChanges, ChangePoint, ObjectVersionHistory } from '@/lib/loro/versions';
+import type {
+  DayChanges,
+  ChangePoint,
+  ObjectVersionHistory,
+} from '@/lib/loro/versions';
 import type { SkelenoteObject } from '@/lib/types';
 
 interface RestoreDialogState {
@@ -29,7 +38,12 @@ interface RestoreDialogState {
 
 export function TimeMachine() {
   const { docStore, refreshData } = useObjects();
-  const { navigateBack, navigateToObject, navigateToTimeMachine, timeMachineObjectFilter } = useNavigation();
+  const {
+    navigateBack,
+    navigateToObject,
+    navigateToTimeMachine,
+    timeMachineObjectFilter,
+  } = useNavigation();
   const { addToast } = useToast();
   const typeRegistry = useTypeRegistry();
   const { openVersionComparison } = useNavigation();
@@ -49,7 +63,9 @@ export function TimeMachine() {
   // Load version history (filtered or full)
   const { byDate, objectTitle, isFiltered } = useMemo(() => {
     if (timeMachineObjectFilter) {
-      const history = docStore.getVersionHistoryForObject(timeMachineObjectFilter) as ObjectVersionHistory;
+      const history = docStore.getVersionHistoryForObject(
+        timeMachineObjectFilter
+      ) as ObjectVersionHistory;
       return {
         byDate: history.byDate,
         objectTitle: history.objectTitle,
@@ -123,10 +139,14 @@ export function TimeMachine() {
 
     if (cumulativeFrontier.length === 0) return [];
 
-    const allObjects = docStore.getObjectsAtVersion(cumulativeFrontier as Frontiers) as SkelenoteObject[];
+    const allObjects = docStore.getObjectsAtVersion(
+      cumulativeFrontier as Frontiers
+    ) as SkelenoteObject[];
 
     if (isFiltered && timeMachineObjectFilter) {
-      const filteredObj = allObjects.find((obj) => obj.id === timeMachineObjectFilter);
+      const filteredObj = allObjects.find(
+        (obj) => obj.id === timeMachineObjectFilter
+      );
       return filteredObj ? [filteredObj] : [];
     }
 
@@ -139,7 +159,9 @@ export function TimeMachine() {
     const latestFrontier = fullHistory.changePoints.slice(-1)[0]?.frontier;
     if (!latestFrontier) return new Set();
 
-    const currentObjects = docStore.getObjectsAtVersion(latestFrontier) as SkelenoteObject[];
+    const currentObjects = docStore.getObjectsAtVersion(
+      latestFrontier
+    ) as SkelenoteObject[];
     return new Set(currentObjects.map((obj) => obj.id));
   }, [docStore]);
 
@@ -162,22 +184,25 @@ export function TimeMachine() {
   }, [selectedChangePoint]);
 
   // Handler for restoring a single object (called from inline expansion)
-  const handleRestoreObject = useCallback((objectId: string) => {
-    if (!selectedChangePoint) return;
+  const handleRestoreObject = useCallback(
+    (objectId: string) => {
+      if (!selectedChangePoint) return;
 
-    const obj = historicalObjects.find((o) => o.id === objectId);
-    const title =
-      (obj?.properties?.title as string) ||
-      (obj?.properties?.name as string) ||
-      'this object';
+      const obj = historicalObjects.find((o) => o.id === objectId);
+      const title =
+        (obj?.properties?.title as string) ||
+        (obj?.properties?.name as string) ||
+        'this object';
 
-    setRestoreObjectId(objectId);
-    setRestoreDialog({
-      isOpen: true,
-      scope: 'single',
-      objectTitle: title,
-    });
-  }, [selectedChangePoint, historicalObjects]);
+      setRestoreObjectId(objectId);
+      setRestoreDialog({
+        isOpen: true,
+        scope: 'single',
+        objectTitle: title,
+      });
+    },
+    [selectedChangePoint, historicalObjects]
+  );
 
   const handleRestoreConfirm = useCallback(() => {
     if (!selectedChangePoint) return;
@@ -203,7 +228,10 @@ export function TimeMachine() {
       refreshData();
       addToast({
         type: 'success',
-        message: scope === 'full' ? 'All objects restored successfully!' : 'Object restored successfully!',
+        message:
+          scope === 'full'
+            ? 'All objects restored successfully!'
+            : 'Object restored successfully!',
       });
     } else {
       addToast({
@@ -211,7 +239,14 @@ export function TimeMachine() {
         message: 'Failed to restore. Check the console for details.',
       });
     }
-  }, [selectedChangePoint, restoreObjectId, restoreDialog, docStore, refreshData, addToast]);
+  }, [
+    selectedChangePoint,
+    restoreObjectId,
+    restoreDialog,
+    docStore,
+    refreshData,
+    addToast,
+  ]);
 
   const handleRestoreCancel = useCallback(() => {
     setRestoreDialog({ isOpen: false, scope: 'single' });
@@ -237,7 +272,12 @@ export function TimeMachine() {
         { selectedDate, changeIndex: selectedChangeIndex }
       );
     },
-    [openVersionComparison, selectedChangePoint, selectedDate, selectedChangeIndex]
+    [
+      openVersionComparison,
+      selectedChangePoint,
+      selectedDate,
+      selectedChangeIndex,
+    ]
   );
 
   // Keyboard navigation (Escape handled by SnapshotPreview for expansion collapse)
@@ -264,7 +304,11 @@ export function TimeMachine() {
       {isFiltered ? (
         <ViewHeader
           title={objectTitle || 'History'}
-          icon={filteredObjectIcon ? getIconFromEmoji(filteredObjectIcon) : 'history'}
+          icon={
+            filteredObjectIcon
+              ? getIconFromEmoji(filteredObjectIcon)
+              : 'history'
+          }
           backButton={{
             label: 'Back',
             onClick: handleBackToObject,
@@ -276,10 +320,7 @@ export function TimeMachine() {
           }
         />
       ) : (
-        <ViewHeader
-          title="History"
-          icon="history"
-        />
+        <ViewHeader title="History" icon="history" />
       )}
 
       {/* Week Strip Navigation */}
@@ -345,7 +386,8 @@ export function TimeMachine() {
           <Stack align="center" justify="center" h="100%" gap="md">
             <Text fw={500}>No recorded history for this object</Text>
             <Text size="sm" c="dimmed" ta="center">
-              Changes made before history tracking was enabled are not available.
+              Changes made before history tracking was enabled are not
+              available.
             </Text>
             <Button variant="subtle" onClick={handleViewAllHistory}>
               View All History
@@ -353,7 +395,11 @@ export function TimeMachine() {
           </Stack>
         ) : (
           <Stack align="center" justify="center" h="100%">
-            <Icon name="history" size={32} style={{ color: 'var(--mantine-color-dimmed)' }} />
+            <Icon
+              name="history"
+              size={32}
+              style={{ color: 'var(--mantine-color-dimmed)' }}
+            />
             <Text c="dimmed" ta="center">
               Select a date and time to view historical state
             </Text>

@@ -104,9 +104,8 @@ export function createSnippet(
 ): { text: string; segments: TextSegment[] } {
   if (!text || indices.length === 0) {
     // Return truncated text if no matches
-    const truncated = text.length > maxLength
-      ? text.slice(0, maxLength - 3) + '...'
-      : text;
+    const truncated =
+      text.length > maxLength ? text.slice(0, maxLength - 3) + '...' : text;
     return {
       text: truncated,
       segments: [{ text: truncated, highlighted: false }],
@@ -153,10 +152,14 @@ export function createSnippet(
   // Adjust indices for the snippet (account for prefix)
   const adjustedIndices: Array<readonly [number, number]> = indices
     .filter(([start, end]) => end >= snippetStart && start < snippetEnd)
-    .map(([start, end]) => [
-      Math.max(0, start - snippetStart) + prefix.length,
-      Math.min(snippetEnd - snippetStart - 1, end - snippetStart) + prefix.length,
-    ] as const);
+    .map(
+      ([start, end]) =>
+        [
+          Math.max(0, start - snippetStart) + prefix.length,
+          Math.min(snippetEnd - snippetStart - 1, end - snippetStart) +
+            prefix.length,
+        ] as const
+    );
 
   return {
     text: snippet,

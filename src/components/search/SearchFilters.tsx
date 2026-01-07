@@ -4,7 +4,15 @@
  */
 
 import { useCallback } from 'react';
-import { Group, UnstyledButton, Text, Button, Popover, Checkbox, Stack } from '@mantine/core';
+import {
+  Group,
+  UnstyledButton,
+  Text,
+  Button,
+  Popover,
+  Checkbox,
+  Stack,
+} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useTypeRegistry } from '@/contexts';
 import { Icon } from '@/components/ui/Icon';
@@ -48,8 +56,12 @@ function FilterChip({
       py={4}
       style={{
         borderRadius: 'var(--mantine-radius-sm)',
-        backgroundColor: isActive ? 'var(--mantine-color-gray-1)' : 'transparent',
-        color: isActive ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-5)',
+        backgroundColor: isActive
+          ? 'var(--mantine-color-gray-1)'
+          : 'transparent',
+        color: isActive
+          ? 'var(--mantine-color-dark-7)'
+          : 'var(--mantine-color-gray-5)',
         transition: 'all 150ms ease',
         fontSize: 12,
         fontWeight: 500,
@@ -68,7 +80,8 @@ export function SearchFilters({
   isSemanticAvailable,
 }: SearchFiltersProps) {
   const typeRegistry = useTypeRegistry();
-  const [typesOpened, { toggle: toggleTypes, close: closeTypes }] = useDisclosure(false);
+  const [typesOpened, { toggle: toggleTypes, close: closeTypes }] =
+    useDisclosure(false);
 
   // Get all available object types
   const objectTypes = Array.from(typeRegistry.getAll()).map((type) => ({
@@ -123,7 +136,10 @@ export function SearchFilters({
   }, [filters, onFiltersChange]);
 
   const clearAllTypes = useCallback(() => {
-    onFiltersChange({ ...filters, objectTypes: objectTypes.map((t) => t.value) });
+    onFiltersChange({
+      ...filters,
+      objectTypes: objectTypes.map((t) => t.value),
+    });
   }, [filters, onFiltersChange, objectTypes]);
 
   return (
@@ -161,8 +177,12 @@ export function SearchFilters({
             styles={{
               root: {
                 fontWeight: 500,
-                color: hasTypeFilters ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-5)',
-                backgroundColor: hasTypeFilters ? 'var(--mantine-color-gray-1)' : 'transparent',
+                color: hasTypeFilters
+                  ? 'var(--mantine-color-dark-7)'
+                  : 'var(--mantine-color-gray-5)',
+                backgroundColor: hasTypeFilters
+                  ? 'var(--mantine-color-gray-1)'
+                  : 'transparent',
               },
             }}
           >
@@ -176,7 +196,10 @@ export function SearchFilters({
                 key={type.value}
                 label={
                   <Group gap="xs" wrap="nowrap">
-                    <Icon name={getIconFromEmoji(type.icon ?? 'file')} size={14} />
+                    <Icon
+                      name={getIconFromEmoji(type.icon ?? 'file')}
+                      size={14}
+                    />
                     <Text size="sm">{type.label}</Text>
                   </Group>
                 }

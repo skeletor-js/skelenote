@@ -97,7 +97,11 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchResult {
 
   // Check if hybrid search is available and enabled
   const isHybridSearch = useMemo(() => {
-    return enableHybrid && semanticContext?.isEnabled && semanticContext?.status === 'ready';
+    return (
+      enableHybrid &&
+      semanticContext?.isEnabled &&
+      semanticContext?.status === 'ready'
+    );
   }, [enableHybrid, semanticContext?.isEnabled, semanticContext?.status]);
 
   // Build/rebuild search index when store changes
@@ -174,15 +178,30 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchResult {
               setResults(fusedResults.slice(0, limit));
             } else {
               // Semantic not ready, use text only with matchType
-              setResults(textResults.slice(0, limit).map(r => ({ ...r, matchType: 'text' as const })));
+              setResults(
+                textResults
+                  .slice(0, limit)
+                  .map((r) => ({ ...r, matchType: 'text' as const }))
+              );
             }
           } catch (error) {
-            console.warn('Semantic search failed, falling back to text:', error);
-            setResults(textResults.slice(0, limit).map(r => ({ ...r, matchType: 'text' as const })));
+            console.warn(
+              'Semantic search failed, falling back to text:',
+              error
+            );
+            setResults(
+              textResults
+                .slice(0, limit)
+                .map((r) => ({ ...r, matchType: 'text' as const }))
+            );
           }
         } else {
           // Text search only
-          setResults(textResults.slice(0, limit).map(r => ({ ...r, matchType: 'text' as const })));
+          setResults(
+            textResults
+              .slice(0, limit)
+              .map((r) => ({ ...r, matchType: 'text' as const }))
+          );
         }
 
         setIsSearching(false);

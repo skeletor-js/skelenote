@@ -22,11 +22,11 @@
 }
 
 /* Dark mode adjustments */
-:global([data-mantine-color-scheme="dark"]) .resultRow:hover {
+:global([data-mantine-color-scheme='dark']) .resultRow:hover {
   background-color: var(--surface-raised);
 }
 
-:global([data-mantine-color-scheme="dark"]) .resultRow[data-selected='true'] {
+:global([data-mantine-color-scheme='dark']) .resultRow[data-selected='true'] {
   background-color: var(--mantine-color-ember-9);
 }
 

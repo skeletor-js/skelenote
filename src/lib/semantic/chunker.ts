@@ -5,11 +5,7 @@
  * Preserves sentence boundaries when possible for better semantic coherence.
  */
 
-import {
-  TextChunk,
-  ChunkingOptions,
-  DEFAULT_CHUNKING_OPTIONS,
-} from './types';
+import { TextChunk, ChunkingOptions, DEFAULT_CHUNKING_OPTIONS } from './types';
 
 /**
  * Sentence boundary regex - matches common sentence endings.
@@ -27,7 +23,9 @@ function splitIntoSentences(text: string): string[] {
   // Find all sentence boundaries
   let match: RegExpExecArray | null;
   while ((match = SENTENCE_BOUNDARY.exec(text)) !== null) {
-    const sentence = text.slice(lastIndex, match.index + match[0].length).trim();
+    const sentence = text
+      .slice(lastIndex, match.index + match[0].length)
+      .trim();
     if (sentence) {
       sentences.push(sentence);
     }
@@ -89,7 +87,10 @@ function chunkWithSentences(
       const sentenceStartInText = text.indexOf(sentence, currentIndex);
 
       for (const word of words) {
-        if (wordLength + word.length + 1 > maxChunkSize && wordChunk.length > 0) {
+        if (
+          wordLength + word.length + 1 > maxChunkSize &&
+          wordChunk.length > 0
+        ) {
           const chunkText = wordChunk.join(' ');
           chunks.push({
             text: chunkText,
@@ -117,7 +118,8 @@ function chunkWithSentences(
     }
 
     // Check if adding this sentence exceeds max
-    const newLength = currentLength + (currentLength > 0 ? 1 : 0) + sentenceLength;
+    const newLength =
+      currentLength + (currentLength > 0 ? 1 : 0) + sentenceLength;
 
     if (newLength > maxChunkSize && currentChunk.length > 0) {
       // Create chunk from current sentences
@@ -133,7 +135,11 @@ function chunkWithSentences(
       let overlapLength = 0;
       const overlapSentences: string[] = [];
 
-      for (let j = currentChunk.length - 1; j >= 0 && overlapLength < overlap; j--) {
+      for (
+        let j = currentChunk.length - 1;
+        j >= 0 && overlapLength < overlap;
+        j--
+      ) {
         overlapSentences.unshift(currentChunk[j]);
         overlapLength += currentChunk[j].length + 1;
       }
@@ -144,7 +150,10 @@ function chunkWithSentences(
       // Find start index for new chunk
       const overlapText = currentChunk.join(' ');
       const newStartIndex = text.indexOf(overlapText, chunkStartIndex);
-      chunkStartIndex = newStartIndex >= 0 ? newStartIndex : chunkStartIndex + chunkText.length - overlapLength;
+      chunkStartIndex =
+        newStartIndex >= 0
+          ? newStartIndex
+          : chunkStartIndex + chunkText.length - overlapLength;
     }
 
     // Add sentence to current chunk

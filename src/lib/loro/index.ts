@@ -36,11 +36,7 @@ export {
 } from './objects';
 
 // Views (CRUD)
-export {
-  ViewStore,
-  ViewNotFoundError,
-  createViewStore,
-} from './views';
+export { ViewStore, ViewNotFoundError, createViewStore } from './views';
 
 // Relations
 export type { Backlink } from './relations';
@@ -63,11 +59,7 @@ export type {
 export { executeQuery, QueryBuilder, query } from './queries';
 
 // Version History (Time Machine)
-export type {
-  ChangePoint,
-  DayChanges,
-  VersionHistory,
-} from './versions';
+export type { ChangePoint, DayChanges, VersionHistory } from './versions';
 export {
   extractChangePoints,
   findFrontierAt,

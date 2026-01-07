@@ -22,11 +22,11 @@
 }
 
 /* Dark mode adjustments */
-:global([data-mantine-color-scheme="dark"]) .objectRow:hover {
+:global([data-mantine-color-scheme='dark']) .objectRow:hover {
   background-color: var(--surface-raised);
 }
 
-:global([data-mantine-color-scheme="dark"]) .objectRow[data-selected='true'] {
+:global([data-mantine-color-scheme='dark']) .objectRow[data-selected='true'] {
   background-color: var(--mantine-color-ember-9);
 }
 
@@ -35,7 +35,9 @@
   max-width: 0;
   overflow: hidden;
   opacity: 0;
-  transition: max-width 150ms ease, opacity 150ms ease;
+  transition:
+    max-width 150ms ease,
+    opacity 150ms ease;
 }
 
 .objectRow:hover .actions,

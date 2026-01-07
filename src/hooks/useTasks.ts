@@ -4,7 +4,11 @@
 
 import { useMemo, useCallback } from 'react';
 import { useObjects } from '@/contexts';
-import { BuiltInTypeIds, type SkelenoteObject, type PropertyValue } from '@/lib/types';
+import {
+  BuiltInTypeIds,
+  type SkelenoteObject,
+  type PropertyValue,
+} from '@/lib/types';
 import {
   type TaskFilter,
   getTaskFilter,
@@ -30,7 +34,10 @@ export interface UseTasksResult {
   /** Toggle a task between todo and done status */
   toggleComplete: (taskId: string) => void;
   /** Update task properties */
-  updateTask: (taskId: string, properties: Record<string, PropertyValue>) => void;
+  updateTask: (
+    taskId: string,
+    properties: Record<string, PropertyValue>
+  ) => void;
   /** Archive a task (hide from default views) */
   archiveTask: (taskId: string) => void;
   /** Delete a task and clean up mentions */

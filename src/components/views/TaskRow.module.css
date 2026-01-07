@@ -22,12 +22,12 @@
 }
 
 /* Dark mode adjustments */
-:global([data-mantine-color-scheme="dark"]) .row:hover {
+:global([data-mantine-color-scheme='dark']) .row:hover {
   background-color: var(--surface-raised);
 }
 
-:global([data-mantine-color-scheme="dark"]) .row[data-selected='true'],
-:global([data-mantine-color-scheme="dark"]) .row[data-selected='true']:hover {
+:global([data-mantine-color-scheme='dark']) .row[data-selected='true'],
+:global([data-mantine-color-scheme='dark']) .row[data-selected='true']:hover {
   background-color: var(--mantine-color-ember-9);
 }
 
@@ -36,7 +36,9 @@
   max-width: 0;
   overflow: hidden;
   opacity: 0;
-  transition: max-width 150ms ease, opacity 150ms ease;
+  transition:
+    max-width 150ms ease,
+    opacity 150ms ease;
 }
 
 .row:hover .actions,

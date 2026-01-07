@@ -94,8 +94,10 @@ export function SnapshotPreview({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Only handle if this component is focused or contains focus
-      if (!containerRef.current?.contains(document.activeElement) &&
-          document.activeElement !== document.body) {
+      if (
+        !containerRef.current?.contains(document.activeElement) &&
+        document.activeElement !== document.body
+      ) {
         return;
       }
 
@@ -164,7 +166,10 @@ export function SnapshotPreview({
             sortedObjects.map((obj, index) => {
               const typeDef = typeRegistry.get(obj.typeId);
               const rawIcon = typeDef?.icon ?? '📄';
-              const iconName: IconName = rawIcon.length <= 2 ? getIconFromEmoji(rawIcon) : (rawIcon as IconName);
+              const iconName: IconName =
+                rawIcon.length <= 2
+                  ? getIconFromEmoji(rawIcon)
+                  : (rawIcon as IconName);
               const title = getObjectTitle(obj);
               const isFocused = focusedIndex >= 0 && focusedIndex === index;
               const existsInCurrent = objectExistsInCurrent(obj.id);
@@ -183,7 +188,8 @@ export function SnapshotPreview({
                     gap: 'var(--mantine-spacing-sm)',
                     width: '100%',
                     borderRadius: 'var(--mantine-radius-sm)',
-                    borderBottom: '1px solid var(--mantine-color-default-border)',
+                    borderBottom:
+                      '1px solid var(--mantine-color-default-border)',
                   }}
                 >
                   <Group

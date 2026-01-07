@@ -38,7 +38,8 @@ export function NumberInput({
       return;
     }
 
-    const numValue = typeof localValue === 'string' ? parseFloat(localValue) : localValue;
+    const numValue =
+      typeof localValue === 'string' ? parseFloat(localValue) : localValue;
     if (!isNaN(numValue) && numValue !== value) {
       // Apply min/max constraints
       let constrainedValue = numValue;

@@ -29,7 +29,11 @@ interface LinkInlineContent {
   href: string;
 }
 
-type InlineContent = TextInlineContent | MentionInlineContent | LinkInlineContent | { type: string };
+type InlineContent =
+  | TextInlineContent
+  | MentionInlineContent
+  | LinkInlineContent
+  | { type: string };
 
 /**
  * BlockNote block structure

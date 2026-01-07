@@ -103,11 +103,12 @@ export function SemanticEnableModal({
                   <Text size="xs" c="dimmed">
                     {progress.message}
                   </Text>
-                  {progress.current !== undefined && progress.total !== undefined && (
-                    <Text size="xs" c="dimmed">
-                      {progress.current} / {progress.total}
-                    </Text>
-                  )}
+                  {progress.current !== undefined &&
+                    progress.total !== undefined && (
+                      <Text size="xs" c="dimmed">
+                        {progress.current} / {progress.total}
+                      </Text>
+                    )}
                 </Group>
               </Stack>
             )}
@@ -117,7 +118,11 @@ export function SemanticEnableModal({
         {/* Error view */}
         {error && (
           <>
-            <Alert color="brick" variant="light" icon={<Icon name="alert-triangle" size={16} />}>
+            <Alert
+              color="brick"
+              variant="light"
+              icon={<Icon name="alert-triangle" size={16} />}
+            >
               {error}
             </Alert>
             <Text size="sm" c="dimmed">
@@ -154,9 +159,15 @@ export function SemanticEnableModal({
                   </ThemeIcon>
                 }
               >
-                <List.Item>Find related notes even with different wording</List.Item>
-                <List.Item>"Find similar" suggestions on every object</List.Item>
-                <List.Item>Conceptual matches alongside keyword results</List.Item>
+                <List.Item>
+                  Find related notes even with different wording
+                </List.Item>
+                <List.Item>
+                  "Find similar" suggestions on every object
+                </List.Item>
+                <List.Item>
+                  Conceptual matches alongside keyword results
+                </List.Item>
               </List>
             </Stack>
 

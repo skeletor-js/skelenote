@@ -27,15 +27,15 @@
   margin-top: 0;
 }
 
-.heading[data-level="1"] {
+.heading[data-level='1'] {
   font-size: var(--mantine-font-size-lg);
 }
 
-.heading[data-level="2"] {
+.heading[data-level='2'] {
   font-size: var(--mantine-font-size-md);
 }
 
-.heading[data-level="3"] {
+.heading[data-level='3'] {
   font-size: var(--mantine-font-size-sm);
 }
 
@@ -75,7 +75,7 @@
   flex-shrink: 0;
 }
 
-.checkItem[data-checked="true"] .checkbox {
+.checkItem[data-checked='true'] .checkbox {
   color: var(--mantine-color-sage-5);
 }
 
@@ -163,16 +163,16 @@
 }
 
 /* Dark mode adjustments */
-[data-mantine-color-scheme="dark"] .contentPreview {
+[data-mantine-color-scheme='dark'] .contentPreview {
   color: var(--mantine-color-gray-1);
 }
 
-[data-mantine-color-scheme="dark"] .inlineCode,
-[data-mantine-color-scheme="dark"] .codeBlock {
+[data-mantine-color-scheme='dark'] .inlineCode,
+[data-mantine-color-scheme='dark'] .codeBlock {
   background-color: var(--mantine-color-gray-8);
 }
 
-[data-mantine-color-scheme="dark"] .quote {
+[data-mantine-color-scheme='dark'] .quote {
   border-left-color: var(--mantine-color-gray-6);
   color: var(--mantine-color-gray-4);
 }

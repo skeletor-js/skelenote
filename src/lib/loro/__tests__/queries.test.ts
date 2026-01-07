@@ -3,7 +3,9 @@ import { query, executeQuery } from '../queries';
 import type { SkelenoteObject } from '../../types';
 
 // Helper to create mock objects
-function createMockObject(overrides: Partial<SkelenoteObject> = {}): SkelenoteObject {
+function createMockObject(
+  overrides: Partial<SkelenoteObject> = {}
+): SkelenoteObject {
   return {
     id: overrides.id ?? `obj-${Math.random().toString(36).slice(2)}`,
     typeId: overrides.typeId ?? 'task',
@@ -32,15 +34,30 @@ describe('Query System', () => {
     const objects = [
       createMockObject({
         id: '1',
-        properties: { title: 'Alpha', status: 'todo', priority: 'high', dueDate: 1000 },
+        properties: {
+          title: 'Alpha',
+          status: 'todo',
+          priority: 'high',
+          dueDate: 1000,
+        },
       }),
       createMockObject({
         id: '2',
-        properties: { title: 'Beta', status: 'done', priority: 'low', dueDate: 2000 },
+        properties: {
+          title: 'Beta',
+          status: 'done',
+          priority: 'low',
+          dueDate: 2000,
+        },
       }),
       createMockObject({
         id: '3',
-        properties: { title: 'Gamma', status: 'todo', priority: null, dueDate: null },
+        properties: {
+          title: 'Gamma',
+          status: 'todo',
+          priority: null,
+          dueDate: null,
+        },
       }),
     ];
 
@@ -155,7 +172,9 @@ describe('Query System', () => {
     describe('in', () => {
       it('should match if value is in array', () => {
         const result = executeQuery(objects, {
-          filters: [{ field: 'priority', operator: 'in', value: ['high', 'urgent'] }],
+          filters: [
+            { field: 'priority', operator: 'in', value: ['high', 'urgent'] },
+          ],
         });
         expect(result).toHaveLength(1);
         expect(result[0].id).toBe('1');
@@ -285,23 +304,43 @@ describe('Query System', () => {
 
   describe('Sorting', () => {
     const objects = [
-      createMockObject({ id: '1', properties: { title: 'Charlie' }, createdAt: 2000 }),
-      createMockObject({ id: '2', properties: { title: 'Alpha' }, createdAt: 3000 }),
-      createMockObject({ id: '3', properties: { title: 'Beta' }, createdAt: 1000 }),
+      createMockObject({
+        id: '1',
+        properties: { title: 'Charlie' },
+        createdAt: 2000,
+      }),
+      createMockObject({
+        id: '2',
+        properties: { title: 'Alpha' },
+        createdAt: 3000,
+      }),
+      createMockObject({
+        id: '3',
+        properties: { title: 'Beta' },
+        createdAt: 1000,
+      }),
     ];
 
     it('should sort ascending by string', () => {
       const result = executeQuery(objects, {
         sort: { field: 'title', direction: 'asc' },
       });
-      expect(result.map((o) => o.properties.title)).toEqual(['Alpha', 'Beta', 'Charlie']);
+      expect(result.map((o) => o.properties.title)).toEqual([
+        'Alpha',
+        'Beta',
+        'Charlie',
+      ]);
     });
 
     it('should sort descending by string', () => {
       const result = executeQuery(objects, {
         sort: { field: 'title', direction: 'desc' },
       });
-      expect(result.map((o) => o.properties.title)).toEqual(['Charlie', 'Beta', 'Alpha']);
+      expect(result.map((o) => o.properties.title)).toEqual([
+        'Charlie',
+        'Beta',
+        'Alpha',
+      ]);
     });
 
     it('should sort ascending by number', () => {
@@ -522,7 +561,9 @@ describe('Query System', () => {
       });
 
       it('should return undefined if no results', () => {
-        const result = query(objects).where('typeId', 'eq', 'nonexistent').first();
+        const result = query(objects)
+          .where('typeId', 'eq', 'nonexistent')
+          .first();
         expect(result).toBeUndefined();
       });
     });

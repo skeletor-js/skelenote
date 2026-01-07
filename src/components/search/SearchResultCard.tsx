@@ -4,13 +4,31 @@
  */
 
 import { useMemo, useState, useCallback } from 'react';
-import { UnstyledButton, Group, Text, Stack, ActionIcon, Tooltip, Checkbox, Box } from '@mantine/core';
+import {
+  UnstyledButton,
+  Group,
+  Text,
+  Stack,
+  ActionIcon,
+  Tooltip,
+  Checkbox,
+  Box,
+} from '@mantine/core';
 import { useTypeRegistry, useObjects, useToast } from '@/contexts';
 import { Icon } from '@/components/ui/Icon';
 import { getIconFromEmoji } from '@/lib/icons';
-import { getBestSnippet, type SearchResult, type TextSegment } from '@/lib/search';
+import {
+  getBestSnippet,
+  type SearchResult,
+  type TextSegment,
+} from '@/lib/search';
 import { MatchTypeBadge } from './MatchTypeBadge';
-import { ContextMenu, Tag, type ContextMenuItem, type TagColor } from '@/components/ui';
+import {
+  ContextMenu,
+  Tag,
+  type ContextMenuItem,
+  type TagColor,
+} from '@/components/ui';
 import { useContextMenu, usePinnedObjects } from '@/hooks';
 import { ObjectSearchModal } from '@/components/object/editors';
 import classes from './SearchResultCard.module.css';
@@ -81,7 +99,8 @@ export function SearchResultCard({
   const typeRegistry = useTypeRegistry();
   const { store } = useObjects();
   const { addToast } = useToast();
-  const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
+  const { isOpen, position, openContextMenu, closeContextMenu } =
+    useContextMenu();
   const { isPinned, pin, unpin } = usePinnedObjects();
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
   const [projectPickerOpen, setProjectPickerOpen] = useState(false);
@@ -322,7 +341,11 @@ export function SearchResultCard({
         )}
 
         {/* Icon */}
-        <Icon name={getIconFromEmoji(icon)} size={16} style={{ color: 'var(--mantine-color-gray-6)', flexShrink: 0 }} />
+        <Icon
+          name={getIconFromEmoji(icon)}
+          size={16}
+          style={{ color: 'var(--mantine-color-gray-6)', flexShrink: 0 }}
+        />
 
         {/* Main content */}
         <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
@@ -338,11 +361,21 @@ export function SearchResultCard({
                 <HighlightedText segments={snippet.segments} />
               </Text>
             )}
-            <Text size="xs" c="dimmed" className={classes.typeName} style={{ flexShrink: 0 }}>
+            <Text
+              size="xs"
+              c="dimmed"
+              className={classes.typeName}
+              style={{ flexShrink: 0 }}
+            >
               {typeName}
             </Text>
             {dateLabel && (
-              <Text size="xs" c="dimmed" className={classes.typeName} style={{ flexShrink: 0 }}>
+              <Text
+                size="xs"
+                c="dimmed"
+                className={classes.typeName}
+                style={{ flexShrink: 0 }}
+              >
                 · {dateLabel}
               </Text>
             )}
@@ -399,12 +432,18 @@ export function SearchResultCard({
                 <Icon name="layers" size={14} />
               </ActionIcon>
             </Tooltip>
-            <Tooltip label={itemIsPinned ? 'Unpin' : 'Pin to sidebar'} position="top" withArrow>
+            <Tooltip
+              label={itemIsPinned ? 'Unpin' : 'Pin to sidebar'}
+              position="top"
+              withArrow
+            >
               <ActionIcon
                 variant="subtle"
                 size="sm"
                 onClick={handlePinClick}
-                aria-label={itemIsPinned ? 'Unpin from sidebar' : 'Pin to sidebar'}
+                aria-label={
+                  itemIsPinned ? 'Unpin from sidebar' : 'Pin to sidebar'
+                }
               >
                 <Icon name="pin" size={14} />
               </ActionIcon>

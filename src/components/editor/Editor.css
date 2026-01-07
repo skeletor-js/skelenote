@@ -4,7 +4,7 @@
 }
 
 /* Remove any BlockNote wrapper styling that creates a box */
-.editor-container [class*="bn-container"],
+.editor-container [class*='bn-container'],
 .editor-container .bn-editor {
   background: transparent !important;
 }
@@ -36,7 +36,9 @@
 }
 
 /* Placeholder styling */
-.editor-container .bn-editor .bn-block-content[data-content-type="paragraph"]::before {
+.editor-container
+  .bn-editor
+  .bn-block-content[data-content-type='paragraph']::before {
   color: var(--mantine-color-dimmed);
 }
 
@@ -95,13 +97,16 @@
 }
 
 /* Checkbox list styling */
-.editor-container .bn-editor [data-content-type="checkListItem"] input[type="checkbox"] {
+.editor-container
+  .bn-editor
+  [data-content-type='checkListItem']
+  input[type='checkbox'] {
   accent-color: var(--mantine-color-text);
 }
 
 /* Saving indicator */
-.editor-container[data-saving="true"]::after {
-  content: "Saving...";
+.editor-container[data-saving='true']::after {
+  content: 'Saving...';
   position: absolute;
   top: var(--mantine-spacing-xs);
   right: var(--mantine-spacing-sm);
@@ -137,13 +142,13 @@
 }
 
 /* Warm hover for suggestion menu items */
-.bn-mantine .bn-suggestion-menu-item[aria-selected="true"],
+.bn-mantine .bn-suggestion-menu-item[aria-selected='true'],
 .bn-mantine .bn-suggestion-menu-item:hover {
   background: var(--hover-warm-strong) !important;
 }
 
 /* Icon container on the left */
-.bn-mantine .bn-mt-suggestion-menu-item-section[data-position="left"] {
+.bn-mantine .bn-mt-suggestion-menu-item-section[data-position='left'] {
   background: var(--mantine-color-gray-1) !important;
   border-radius: var(--mantine-radius-sm) !important;
   padding: 6px !important;
@@ -190,7 +195,7 @@
 }
 
 /* Keyboard shortcut section on right */
-.bn-mantine .bn-mt-suggestion-menu-item-section[data-position="right"] {
+.bn-mantine .bn-mt-suggestion-menu-item-section[data-position='right'] {
   font-size: 11px;
   color: var(--mantine-color-dimmed);
   font-family: var(--mantine-font-family-monospace);
@@ -253,36 +258,55 @@
    Using semantic surface variables for consistency with design system
    ================================================================ */
 
-[data-mantine-color-scheme="dark"] .bn-mantine .bn-suggestion-menu {
+[data-mantine-color-scheme='dark'] .bn-mantine .bn-suggestion-menu {
   background: var(--surface-paper) !important;
   border-color: var(--mantine-color-default-border) !important;
 }
 
-[data-mantine-color-scheme="dark"] .bn-mantine .bn-suggestion-menu-item[aria-selected="true"],
-[data-mantine-color-scheme="dark"] .bn-mantine .bn-suggestion-menu-item:hover {
+[data-mantine-color-scheme='dark']
+  .bn-mantine
+  .bn-suggestion-menu-item[aria-selected='true'],
+[data-mantine-color-scheme='dark'] .bn-mantine .bn-suggestion-menu-item:hover {
   background: var(--surface-raised) !important;
 }
 
-[data-mantine-color-scheme="dark"] .bn-mantine .bn-mt-suggestion-menu-item-section[data-position="left"] {
+[data-mantine-color-scheme='dark']
+  .bn-mantine
+  .bn-mt-suggestion-menu-item-section[data-position='left'] {
   background: var(--surface-raised) !important;
 }
 
-[data-mantine-color-scheme="dark"] .bn-mantine .bn-toolbar {
+[data-mantine-color-scheme='dark'] .bn-mantine .bn-toolbar {
   background: var(--surface-paper) !important;
   border-color: var(--mantine-color-default-border) !important;
 }
 
-[data-mantine-color-scheme="dark"] .bn-mantine .bn-toolbar .mantine-Button-root:hover,
-[data-mantine-color-scheme="dark"] .bn-mantine .bn-toolbar .mantine-ActionIcon-root:hover {
+[data-mantine-color-scheme='dark']
+  .bn-mantine
+  .bn-toolbar
+  .mantine-Button-root:hover,
+[data-mantine-color-scheme='dark']
+  .bn-mantine
+  .bn-toolbar
+  .mantine-ActionIcon-root:hover {
   background: var(--surface-raised) !important;
 }
 
-[data-mantine-color-scheme="dark"] .bn-mantine .bn-toolbar .mantine-Button-root[data-selected],
-[data-mantine-color-scheme="dark"] .bn-mantine .bn-toolbar .mantine-ActionIcon-root[data-selected] {
+[data-mantine-color-scheme='dark']
+  .bn-mantine
+  .bn-toolbar
+  .mantine-Button-root[data-selected],
+[data-mantine-color-scheme='dark']
+  .bn-mantine
+  .bn-toolbar
+  .mantine-ActionIcon-root[data-selected] {
   background: var(--mantine-color-default-border) !important;
 }
 
-[data-mantine-color-scheme="dark"] .bn-mantine .bn-toolbar .mantine-Menu-dropdown {
+[data-mantine-color-scheme='dark']
+  .bn-mantine
+  .bn-toolbar
+  .mantine-Menu-dropdown {
   background: var(--surface-paper) !important;
   border-color: var(--mantine-color-default-border) !important;
 }

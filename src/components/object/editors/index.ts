@@ -12,4 +12,9 @@ export { RelationPicker } from './RelationPicker';
 export { RelationChip } from './RelationChip';
 export { ObjectSearchModal } from './ObjectSearchModal';
 export { CascadingRelationPicker } from './CascadingRelationPicker';
-export { RecurrenceEditor, parseRecurrenceValue, formatRecurrenceDisplay, type RecurrenceValue } from './RecurrenceEditor';
+export {
+  RecurrenceEditor,
+  parseRecurrenceValue,
+  formatRecurrenceDisplay,
+  type RecurrenceValue,
+} from './RecurrenceEditor';

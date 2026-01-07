@@ -91,7 +91,9 @@ function convertPropertyValue(
 /**
  * Generate frontmatter properties from an object
  */
-export function generateFrontmatterProperties(context: ExportContext): FrontmatterProperty[] {
+export function generateFrontmatterProperties(
+  context: ExportContext
+): FrontmatterProperty[] {
   const { object, typeDef, resolveObjectName } = context;
   const properties: FrontmatterProperty[] = [];
 
@@ -162,7 +164,11 @@ export function generateFrontmatterProperties(context: ExportContext): Frontmatt
     }
 
     const value = object.properties[propDef.id];
-    const convertedValue = convertPropertyValue(value, propDef, resolveObjectName);
+    const convertedValue = convertPropertyValue(
+      value,
+      propDef,
+      resolveObjectName
+    );
 
     if (convertedValue !== null) {
       properties.push({

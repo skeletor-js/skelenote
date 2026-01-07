@@ -37,6 +37,6 @@
 }
 
 /* Dark mode */
-:global([data-mantine-color-scheme="dark"]) .container {
+:global([data-mantine-color-scheme='dark']) .container {
   background-color: var(--mantine-color-dark-7);
 }

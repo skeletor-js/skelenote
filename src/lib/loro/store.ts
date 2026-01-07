@@ -21,7 +21,8 @@ export class LoroDocStore {
   private onRemoteChangeCallback: (() => void) | null = null;
   private isImporting = false; // Flag to prevent sync loops
   private syncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-  private localSyncBroadcast: ((data: Uint8Array) => Promise<number>) | null = null;
+  private localSyncBroadcast: ((data: Uint8Array) => Promise<number>) | null =
+    null;
   private localSyncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   /**
@@ -97,10 +98,7 @@ export class LoroDocStore {
     // Encode the map as JSON with base64-encoded snapshots
     const jsonData = JSON.stringify(
       Object.fromEntries(
-        Object.entries(exportData).map(([id, bytes]) => [
-          id,
-          Array.from(bytes),
-        ])
+        Object.entries(exportData).map(([id, bytes]) => [id, Array.from(bytes)])
       )
     );
 
@@ -197,7 +195,10 @@ export class LoroDocStore {
     }
 
     // Local network sync (debounced separately, faster)
-    console.log('[LoroDocStore] sync() called, localSyncBroadcast =', !!this.localSyncBroadcast);
+    console.log(
+      '[LoroDocStore] sync() called, localSyncBroadcast =',
+      !!this.localSyncBroadcast
+    );
     if (this.localSyncBroadcast) {
       if (this.localSyncDebounceTimer) {
         clearTimeout(this.localSyncDebounceTimer);
@@ -207,12 +208,17 @@ export class LoroDocStore {
         this.localSyncDebounceTimer = null;
         if (this.localSyncBroadcast && !this.isImporting) {
           const data = this.exportAll();
-          console.log('[LoroDocStore] Broadcasting local sync, data size:', data.length);
-          this.localSyncBroadcast(data).then((count) => {
-            console.log('[LoroDocStore] Broadcast sent to', count, 'peers');
-          }).catch((err) => {
-            console.warn('[LoroDocStore] Local sync broadcast failed:', err);
-          });
+          console.log(
+            '[LoroDocStore] Broadcasting local sync, data size:',
+            data.length
+          );
+          this.localSyncBroadcast(data)
+            .then((count) => {
+              console.log('[LoroDocStore] Broadcast sent to', count, 'peers');
+            })
+            .catch((err) => {
+              console.warn('[LoroDocStore] Local sync broadcast failed:', err);
+            });
         }
       }, 50); // Faster debounce for local network (lower latency)
     }
@@ -290,7 +296,9 @@ export class LoroDocStore {
    * Set the local network sync broadcast function
    * This is called by LocalSyncContext to wire up local peer broadcasting
    */
-  setLocalSyncBroadcast(broadcast: ((data: Uint8Array) => Promise<number>) | null): void {
+  setLocalSyncBroadcast(
+    broadcast: ((data: Uint8Array) => Promise<number>) | null
+  ): void {
     this.localSyncBroadcast = broadcast;
   }
 
@@ -299,7 +307,10 @@ export class LoroDocStore {
    * Uses the same CRDT merge logic as cloud sync
    */
   handleLocalSyncUpdate(data: Uint8Array): void {
-    console.log('[LoroDocStore] Received local sync update, size:', data.length);
+    console.log(
+      '[LoroDocStore] Received local sync update, size:',
+      data.length
+    );
     this.isImporting = true;
     try {
       // Try to import as a full snapshot (JSON-wrapped)
@@ -344,7 +355,10 @@ export class LoroDocStore {
             this.importRaw(update);
           }
         } catch (err) {
-          console.warn('[LoroDocStore] Failed to import historical update:', err);
+          console.warn(
+            '[LoroDocStore] Failed to import historical update:',
+            err
+          );
         }
       }
 
@@ -368,7 +382,9 @@ export class LoroDocStore {
 
     const snapshot = this.exportAll();
     await this.syncClient.requestCompaction(upToSequence, snapshot);
-    console.log(`[LoroDocStore] Requested compaction up to sequence ${upToSequence}`);
+    console.log(
+      `[LoroDocStore] Requested compaction up to sequence ${upToSequence}`
+    );
   }
 
   /**

@@ -1,7 +1,12 @@
 import { useMemo, useCallback, useState } from 'react';
 import { Box, Badge, NavLink, Stack, ActionIcon, Menu } from '@mantine/core';
 import { ChevronRight, Plus } from 'lucide-react';
-import { useSidebar, useNavigation, useObjects, useTypeRegistry } from '@/contexts';
+import {
+  useSidebar,
+  useNavigation,
+  useObjects,
+  useTypeRegistry,
+} from '@/contexts';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { BuiltInTypeIds } from '@/lib/types';
 import styles from './SidebarItem.module.css';
@@ -29,7 +34,10 @@ interface ObjectsSectionProps {
   onCreateObject: (typeId: string) => void;
 }
 
-export function ObjectsSection({ availableTypes, onCreateObject }: ObjectsSectionProps) {
+export function ObjectsSection({
+  availableTypes,
+  onCreateObject,
+}: ObjectsSectionProps) {
   const { isSectionCollapsed, toggleSection, setSelectedItem } = useSidebar();
   const { navigateToTypeBrowse, browseTypeId, currentView } = useNavigation();
   const { store } = useObjects();
@@ -58,7 +66,7 @@ export function ObjectsSection({ availableTypes, onCreateObject }: ObjectsSectio
 
       // Filter out daily notes from the 'note' count
       if (typeId === BuiltInTypeIds.NOTE) {
-        objects = objects.filter(obj => !obj.properties.isDailyNote);
+        objects = objects.filter((obj) => !obj.properties.isDailyNote);
       }
 
       const count = objects.length;
@@ -95,7 +103,12 @@ export function ObjectsSection({ availableTypes, onCreateObject }: ObjectsSectio
         onClick={handleToggle}
         opened={!isCollapsed}
         rightSection={
-          <Menu opened={menuOpened} onChange={setMenuOpened} position="bottom-start" width={180}>
+          <Menu
+            opened={menuOpened}
+            onChange={setMenuOpened}
+            position="bottom-start"
+            width={180}
+          >
             <Menu.Target>
               <ActionIcon
                 variant="subtle"

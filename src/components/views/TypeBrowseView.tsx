@@ -17,7 +17,9 @@ import classes from './InboxRow.module.css';
 type DateGroup = 'Today' | 'Yesterday' | 'This Week' | 'Older';
 
 /** Group items by creation date */
-function groupItemsByDate(items: SkelenoteObject[]): Record<DateGroup, SkelenoteObject[]> {
+function groupItemsByDate(
+  items: SkelenoteObject[]
+): Record<DateGroup, SkelenoteObject[]> {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterday = new Date(today);
@@ -26,15 +28,19 @@ function groupItemsByDate(items: SkelenoteObject[]): Record<DateGroup, Skelenote
   weekAgo.setDate(weekAgo.getDate() - 7);
 
   const groups: Record<DateGroup, SkelenoteObject[]> = {
-    'Today': [],
-    'Yesterday': [],
+    Today: [],
+    Yesterday: [],
     'This Week': [],
-    'Older': [],
+    Older: [],
   };
 
   for (const item of items) {
     const createdAt = new Date(item.createdAt);
-    const itemDate = new Date(createdAt.getFullYear(), createdAt.getMonth(), createdAt.getDate());
+    const itemDate = new Date(
+      createdAt.getFullYear(),
+      createdAt.getMonth(),
+      createdAt.getDate()
+    );
 
     if (itemDate >= today) {
       groups['Today'].push(item);
@@ -71,7 +77,7 @@ export function TypeBrowseView({ typeId }: TypeBrowseViewProps) {
 
     // Filter out daily notes from the general 'note' view
     if (typeId === 'note') {
-      result = result.filter(obj => !obj.properties.isDailyNote);
+      result = result.filter((obj) => !obj.properties.isDailyNote);
     }
 
     return result.sort((a, b) => b.createdAt - a.createdAt);
@@ -88,7 +94,9 @@ export function TypeBrowseView({ typeId }: TypeBrowseViewProps) {
 
   // Get non-empty groups in order
   const dateGroups: DateGroup[] = ['Today', 'Yesterday', 'This Week', 'Older'];
-  const nonEmptyGroups = dateGroups.filter((group) => groupedItems[group].length > 0);
+  const nonEmptyGroups = dateGroups.filter(
+    (group) => groupedItems[group].length > 0
+  );
 
   // Handle selection change (toggle or range)
   const handleSelectionChange = useCallback(
@@ -138,13 +146,20 @@ export function TypeBrowseView({ typeId }: TypeBrowseViewProps) {
     return (
       <Center p="xl">
         <Loader size="sm" />
-        <Text ml="sm" c="dimmed">Loading...</Text>
+        <Text ml="sm" c="dimmed">
+          Loading...
+        </Text>
       </Center>
     );
   }
 
   return (
-    <Stack gap={0} h="100%" style={{ overflow: 'hidden' }} data-type-browse-view>
+    <Stack
+      gap={0}
+      h="100%"
+      style={{ overflow: 'hidden' }}
+      data-type-browse-view
+    >
       <ViewHeader
         title={typeName}
         icon={typeIcon}

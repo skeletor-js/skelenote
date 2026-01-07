@@ -76,7 +76,11 @@ function extractInlineText(content: unknown[] | undefined): string {
       if (obj.type === 'text' && typeof obj.text === 'string') {
         return obj.text;
       }
-      if (obj.type === 'mention' && typeof obj.props === 'object' && obj.props) {
+      if (
+        obj.type === 'mention' &&
+        typeof obj.props === 'object' &&
+        obj.props
+      ) {
         const props = obj.props as Record<string, unknown>;
         return `@${props.objectName || 'mention'}`;
       }
@@ -137,10 +141,10 @@ export function computeContentDiff(
   currentContent: string | null
 ): ContentDiff {
   const historicalBlocks = historicalContent
-    ? (deserializeBlockNoteDocument(historicalContent) as Block[] || [])
+    ? (deserializeBlockNoteDocument(historicalContent) as Block[]) || []
     : [];
   const currentBlocks = currentContent
-    ? (deserializeBlockNoteDocument(currentContent) as Block[] || [])
+    ? (deserializeBlockNoteDocument(currentContent) as Block[]) || []
     : [];
 
   // Flatten nested blocks for comparison
@@ -172,7 +176,12 @@ export function computeContentDiff(
 
   const historicalDiff: BlockDiff[] = [];
   const currentDiff: BlockDiff[] = [];
-  const summary: DiffSummary = { added: 0, removed: 0, modified: 0, unchanged: 0 };
+  const summary: DiffSummary = {
+    added: 0,
+    removed: 0,
+    modified: 0,
+    unchanged: 0,
+  };
 
   // First pass: Find exact content matches
   flatHistorical.forEach((block, hIndex) => {
@@ -181,7 +190,9 @@ export function computeContentDiff(
 
     if (currentIndices && currentIndices.length > 0) {
       // Find the closest unmatched current index
-      const unmatchedCurrent = currentIndices.find(i => !matchedCurrentIndices.has(i));
+      const unmatchedCurrent = currentIndices.find(
+        (i) => !matchedCurrentIndices.has(i)
+      );
       if (unmatchedCurrent !== undefined) {
         matchedHistoricalIndices.add(hIndex);
         matchedCurrentIndices.add(unmatchedCurrent);
@@ -230,10 +241,12 @@ export function computeContentDiff(
 
     if (matchedCurrentIndices.has(index)) {
       // Check if it was an exact match or a modification
-      const historicalIndex = Array.from(matchedHistoricalIndices).find(hIndex => {
-        const hBlock = flatHistorical[hIndex];
-        return blocksAreEqual(block, hBlock);
-      });
+      const historicalIndex = Array.from(matchedHistoricalIndices).find(
+        (hIndex) => {
+          const hBlock = flatHistorical[hIndex];
+          return blocksAreEqual(block, hBlock);
+        }
+      );
 
       if (historicalIndex !== undefined) {
         status = 'unchanged';
@@ -264,7 +277,10 @@ export function computePropertyDiff(
   currentProps: Record<string, unknown>
 ): PropertyDiff[] {
   const diffs: PropertyDiff[] = [];
-  const allKeys = new Set([...Object.keys(historicalProps), ...Object.keys(currentProps)]);
+  const allKeys = new Set([
+    ...Object.keys(historicalProps),
+    ...Object.keys(currentProps),
+  ]);
 
   for (const key of allKeys) {
     // Skip internal/computed properties
@@ -274,8 +290,10 @@ export function computePropertyDiff(
     const newValue = currentProps[key];
 
     // Check if values are both empty/null/undefined
-    const oldIsEmpty = oldValue === null || oldValue === undefined || oldValue === '';
-    const newIsEmpty = newValue === null || newValue === undefined || newValue === '';
+    const oldIsEmpty =
+      oldValue === null || oldValue === undefined || oldValue === '';
+    const newIsEmpty =
+      newValue === null || newValue === undefined || newValue === '';
 
     if (oldIsEmpty && newIsEmpty) {
       // Both empty, skip
@@ -310,7 +328,9 @@ export function hasContentChanges(
   currentContent: string | null
 ): boolean {
   const diff = computeContentDiff(historicalContent, currentContent);
-  return diff.summary.added > 0 ||
-         diff.summary.removed > 0 ||
-         diff.summary.modified > 0;
+  return (
+    diff.summary.added > 0 ||
+    diff.summary.removed > 0 ||
+    diff.summary.modified > 0
+  );
 }

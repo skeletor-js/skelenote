@@ -47,9 +47,12 @@ export function useLinkToDaily(): UseLinkToDailyResult {
     [store, refreshData]
   );
 
-  const checkIsLinkedToToday = useCallback((object: SkelenoteObject): boolean => {
-    return isLinkedToToday(object);
-  }, []);
+  const checkIsLinkedToToday = useCallback(
+    (object: SkelenoteObject): boolean => {
+      return isLinkedToToday(object);
+    },
+    []
+  );
 
   return {
     linkToDaily,

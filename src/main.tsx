@@ -40,7 +40,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
       {({ colorScheme }) => (
-        <MantineProvider theme={theme} defaultColorScheme={colorScheme} forceColorScheme={colorScheme}>
+        <MantineProvider
+          theme={theme}
+          defaultColorScheme={colorScheme}
+          forceColorScheme={colorScheme}
+        >
           <Notifications position="top-right" />
           <ToastProvider>
             <SkeletonKeyProvider>

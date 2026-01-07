@@ -55,7 +55,9 @@ export function TitleBarSpacer({ variant = 'full' }: TitleBarSpacerProps) {
         width: '100%',
         flexShrink: 0,
         backgroundColor:
-          variant === 'sidebar' ? 'var(--surface-canvas)' : 'var(--surface-paper)',
+          variant === 'sidebar'
+            ? 'var(--surface-canvas)'
+            : 'var(--surface-paper)',
         borderBottom: '1px solid var(--border-default)',
       }}
       aria-hidden="true"

@@ -2,7 +2,14 @@
  * Calendar - Month grid component for browsing daily notes
  */
 
-import { Box, Group, Button, Text, SimpleGrid, ActionIcon } from '@mantine/core';
+import {
+  Box,
+  Group,
+  Button,
+  Text,
+  SimpleGrid,
+  ActionIcon,
+} from '@mantine/core';
 import { useCalendar } from '@/hooks';
 import { useNavigation } from '@/contexts';
 import { getOrCreateDailyNote } from '@/lib/daily';

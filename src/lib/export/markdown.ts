@@ -26,7 +26,10 @@ interface ConversionContext {
 /**
  * Convert inline content styles to Markdown
  */
-function applyStyles(text: string, styles?: Record<string, boolean | string>): string {
+function applyStyles(
+  text: string,
+  styles?: Record<string, boolean | string>
+): string {
   if (!styles || !text) return text;
 
   let result = text;
@@ -64,9 +67,10 @@ function convertInlineContent(
       return applyStyles(inline.text || '', inline.styles);
 
     case 'link': {
-      const linkText = inline.content
-        ?.map((c) => convertInlineContent(c, context))
-        .join('') || inline.text || '';
+      const linkText =
+        inline.content?.map((c) => convertInlineContent(c, context)).join('') ||
+        inline.text ||
+        '';
       const url = inline.props?.href || inline.props?.url || '';
       return `[${linkText}](${url})`;
     }
@@ -78,7 +82,8 @@ function convertInlineContent(
       if (objectId) {
         context.mentionedObjectIds.add(objectId);
         // Try to resolve current name, fall back to stored name
-        const resolvedName = context.resolveObjectName(objectId) || objectName || 'Unknown';
+        const resolvedName =
+          context.resolveObjectName(objectId) || objectName || 'Unknown';
         return `[[${resolvedName}]]`;
       }
       return `[[${objectName || 'Unknown'}]]`;
@@ -88,7 +93,9 @@ function convertInlineContent(
       // For unknown inline types, try to extract text
       if (inline.text) return inline.text;
       if (inline.content) {
-        return inline.content.map((c) => convertInlineContent(c, context)).join('');
+        return inline.content
+          .map((c) => convertInlineContent(c, context))
+          .join('');
       }
       return '';
   }
@@ -108,17 +115,26 @@ function convertInlineArray(
 /**
  * Convert a heading block to Markdown
  */
-function convertHeading(block: BlockNoteBlock, context: ConversionContext): string {
+function convertHeading(
+  block: BlockNoteBlock,
+  context: ConversionContext
+): string {
   const level = (block.props?.level as number) || 1;
   const prefix = '#'.repeat(Math.min(level, 6));
-  const content = convertInlineArray(block.content as BlockNoteInlineContent[], context);
+  const content = convertInlineArray(
+    block.content as BlockNoteInlineContent[],
+    context
+  );
   return `${prefix} ${content}`;
 }
 
 /**
  * Convert a paragraph block to Markdown
  */
-function convertParagraph(block: BlockNoteBlock, context: ConversionContext): string {
+function convertParagraph(
+  block: BlockNoteBlock,
+  context: ConversionContext
+): string {
   return convertInlineArray(block.content as BlockNoteInlineContent[], context);
 }
 
@@ -131,7 +147,10 @@ function convertBulletListItem(
   depth: number
 ): string {
   const indent = '  '.repeat(depth);
-  const content = convertInlineArray(block.content as BlockNoteInlineContent[], context);
+  const content = convertInlineArray(
+    block.content as BlockNoteInlineContent[],
+    context
+  );
   const lines = [`${indent}- ${content}`];
 
   // Process nested children
@@ -153,7 +172,10 @@ function convertNumberedListItem(
   depth: number
 ): string {
   const indent = '  '.repeat(depth);
-  const content = convertInlineArray(block.content as BlockNoteInlineContent[], context);
+  const content = convertInlineArray(
+    block.content as BlockNoteInlineContent[],
+    context
+  );
 
   // Use 1. for all items (Markdown renderers will auto-number)
   const lines = [`${indent}1. ${content}`];
@@ -178,7 +200,10 @@ function convertCheckListItem(
 ): string {
   const indent = '  '.repeat(depth);
   const checked = block.props?.checked ? 'x' : ' ';
-  const content = convertInlineArray(block.content as BlockNoteInlineContent[], context);
+  const content = convertInlineArray(
+    block.content as BlockNoteInlineContent[],
+    context
+  );
   const lines = [`${indent}- [${checked}] ${content}`];
 
   // Process nested children
@@ -194,9 +219,15 @@ function convertCheckListItem(
 /**
  * Convert a code block to Markdown
  */
-function convertCodeBlock(block: BlockNoteBlock, context: ConversionContext): string {
+function convertCodeBlock(
+  block: BlockNoteBlock,
+  context: ConversionContext
+): string {
   const language = (block.props?.language as string) || '';
-  const content = convertInlineArray(block.content as BlockNoteInlineContent[], context);
+  const content = convertInlineArray(
+    block.content as BlockNoteInlineContent[],
+    context
+  );
   return `\`\`\`${language}\n${content}\n\`\`\``;
 }
 
@@ -208,7 +239,10 @@ function convertBlockquote(
   context: ConversionContext,
   depth: number
 ): string {
-  const content = convertInlineArray(block.content as BlockNoteInlineContent[], context);
+  const content = convertInlineArray(
+    block.content as BlockNoteInlineContent[],
+    context
+  );
   const lines = [`> ${content}`];
 
   // Process nested children (also quoted)
@@ -231,7 +265,10 @@ function convertBlockquote(
 /**
  * Convert a table to GitHub Flavored Markdown
  */
-function convertTable(block: BlockNoteBlock, context: ConversionContext): string {
+function convertTable(
+  block: BlockNoteBlock,
+  context: ConversionContext
+): string {
   const content = block.content as BlockNoteBlock[];
   if (!content || content.length === 0) return '';
 
@@ -243,7 +280,12 @@ function convertTable(block: BlockNoteBlock, context: ConversionContext): string
       const cells: string[] = [];
       for (const cell of row.content as BlockNoteBlock[]) {
         if (cell.type === 'tableCell' && cell.content) {
-          cells.push(convertInlineArray(cell.content as BlockNoteInlineContent[], context));
+          cells.push(
+            convertInlineArray(
+              cell.content as BlockNoteInlineContent[],
+              context
+            )
+          );
         }
       }
       rows.push(cells);
@@ -274,7 +316,8 @@ function convertTable(block: BlockNoteBlock, context: ConversionContext): string
  */
 function convertImage(block: BlockNoteBlock): string {
   const url = (block.props?.url as string) || '';
-  const alt = (block.props?.caption as string) || (block.props?.name as string) || '';
+  const alt =
+    (block.props?.caption as string) || (block.props?.name as string) || '';
   return `![${alt}](${url})`;
 }
 
@@ -317,7 +360,10 @@ function convertBlock(
     default:
       // For unknown block types, try to extract content
       if (block.content && Array.isArray(block.content)) {
-        return convertInlineArray(block.content as BlockNoteInlineContent[], context);
+        return convertInlineArray(
+          block.content as BlockNoteInlineContent[],
+          context
+        );
       }
       return '';
   }
@@ -343,7 +389,8 @@ export function convertBlockNoteToMarkdown(
   // Parse JSON if string
   let blocks: BlockNoteBlock[];
   try {
-    blocks = typeof contentJson === 'string' ? JSON.parse(contentJson) : contentJson;
+    blocks =
+      typeof contentJson === 'string' ? JSON.parse(contentJson) : contentJson;
   } catch {
     return {
       markdown: '',

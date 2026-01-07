@@ -8,7 +8,11 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useObjects } from '@/contexts';
-import { getIndexableContentForObject, hashContent, SemanticEngine } from '@/lib/semantic';
+import {
+  getIndexableContentForObject,
+  hashContent,
+  SemanticEngine,
+} from '@/lib/semantic';
 
 interface PendingChange {
   objectId: string;
@@ -28,7 +32,11 @@ interface UseSemanticIndexSyncOptions {
  * Hook that syncs object changes to the semantic search index.
  * Returns handlers for content change notifications.
  */
-export function useSemanticIndexSync({ getEngine, isEnabled, engineStatus }: UseSemanticIndexSyncOptions) {
+export function useSemanticIndexSync({
+  getEngine,
+  isEnabled,
+  engineStatus,
+}: UseSemanticIndexSyncOptions) {
   const { store, typeRegistry, dataVersion } = useObjects();
 
   // Track content hashes to detect changes
@@ -127,7 +135,11 @@ export function useSemanticIndexSync({ getEngine, isEnabled, engineStatus }: Use
 
     // Detect creates and property updates
     for (const obj of currentObjects) {
-      const indexable = getIndexableContentForObject(obj.id, store, typeRegistry);
+      const indexable = getIndexableContentForObject(
+        obj.id,
+        store,
+        typeRegistry
+      );
       if (!indexable) continue;
 
       const currentHash = hashContent(indexable.title + indexable.content);
@@ -161,7 +173,11 @@ export function useSemanticIndexSync({ getEngine, isEnabled, engineStatus }: Use
     // Build initial hash map from current objects
     const objects = store.getAll({ includeArchived: true });
     for (const obj of objects) {
-      const indexable = getIndexableContentForObject(obj.id, store, typeRegistry);
+      const indexable = getIndexableContentForObject(
+        obj.id,
+        store,
+        typeRegistry
+      );
       if (indexable) {
         const hash = hashContent(indexable.title + indexable.content);
         objectHashesRef.current.set(obj.id, hash);

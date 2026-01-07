@@ -6,16 +6,13 @@
  */
 
 import { useState, useCallback } from 'react';
-import {
-  Stack,
-  Group,
-  Text,
-  Box,
-  Button,
-  Alert,
-} from '@mantine/core';
+import { Stack, Group, Text, Box, Button, Alert } from '@mantine/core';
 import { Icon } from '@/components/ui';
-import { useSyncContextSafe, useSkeletonKeySafe, useSemanticSearchSafe } from '@/contexts';
+import {
+  useSyncContextSafe,
+  useSkeletonKeySafe,
+  useSemanticSearchSafe,
+} from '@/contexts';
 
 export function DangerZoneSettings() {
   const syncContext = useSyncContextSafe();
@@ -24,7 +21,8 @@ export function DangerZoneSettings() {
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  const [showRemoveSemanticConfirm, setShowRemoveSemanticConfirm] = useState(false);
+  const [showRemoveSemanticConfirm, setShowRemoveSemanticConfirm] =
+    useState(false);
   const [isRemovingSemantic, setIsRemovingSemantic] = useState(false);
 
   const isSemanticEnabled = semanticContext?.isEnabled ?? false;
@@ -67,8 +65,14 @@ export function DangerZoneSettings() {
     <Stack gap="lg">
       <Box>
         <Group gap="xs" mb="xs">
-          <Icon name="alert-triangle" size={18} color="var(--mantine-color-brick-5)" />
-          <Text size="lg" fw={600} c="brick">Danger Zone</Text>
+          <Icon
+            name="alert-triangle"
+            size={18}
+            color="var(--mantine-color-brick-5)"
+          />
+          <Text size="lg" fw={600} c="brick">
+            Danger Zone
+          </Text>
         </Group>
         <Text size="sm" c="dimmed">
           These actions are destructive and cannot be easily undone.
@@ -87,11 +91,14 @@ export function DangerZoneSettings() {
         <Stack gap="lg">
           {/* Reset Vault */}
           <Box>
-            <Text size="sm" fw={500} mb="xs">Reset Vault</Text>
+            <Text size="sm" fw={500} mb="xs">
+              Reset Vault
+            </Text>
             <Text size="xs" c="dimmed" mb="sm">
-              Reset your vault to use a different Skeleton Key. This will disconnect
-              sync and clear your encryption key from this device. Your data will remain
-              but you'll need to re-enter your Skeleton Key.
+              Reset your vault to use a different Skeleton Key. This will
+              disconnect sync and clear your encryption key from this device.
+              Your data will remain but you'll need to re-enter your Skeleton
+              Key.
             </Text>
 
             {showResetConfirm ? (
@@ -130,10 +137,12 @@ export function DangerZoneSettings() {
           {/* Remove Semantic Search - only show if enabled */}
           {isSemanticEnabled && (
             <Box>
-              <Text size="sm" fw={500} mb="xs">Remove Semantic Search</Text>
+              <Text size="sm" fw={500} mb="xs">
+                Remove Semantic Search
+              </Text>
               <Text size="xs" c="dimmed" mb="sm">
-                Disables the feature and deletes the model and index to free ~50MB storage.
-                You can re-enable it later if needed.
+                Disables the feature and deletes the model and index to free
+                ~50MB storage. You can re-enable it later if needed.
               </Text>
 
               {showRemoveSemanticConfirm ? (

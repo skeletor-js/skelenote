@@ -4,7 +4,16 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import { Portal, Group, ActionIcon, Text, Divider, Box, Tooltip, Menu } from '@mantine/core';
+import {
+  Portal,
+  Group,
+  ActionIcon,
+  Text,
+  Divider,
+  Box,
+  Tooltip,
+  Menu,
+} from '@mantine/core';
 import { useObjects, useTypeRegistry, useToast, useUndo } from '@/contexts';
 import { useConfirmDialog, useDuplicate } from '@/hooks';
 import { ConfirmDialog } from '@/components/ui';
@@ -33,7 +42,8 @@ export function BulkActions({
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
   const { groupStart, groupEnd } = useUndo();
-  const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
+  const { confirm, dialogState, handleConfirm, handleCancel } =
+    useConfirmDialog();
   const { duplicateMany } = useDuplicate();
 
   // Modal states
@@ -45,7 +55,12 @@ export function BulkActions({
   // Analyze selected items
   const selectedInfo = useMemo(() => {
     if (!store || count === 0) {
-      return { hasTasks: false, allPinned: false, nonePinned: true, taskCount: 0 };
+      return {
+        hasTasks: false,
+        allPinned: false,
+        nonePinned: true,
+        taskCount: 0,
+      };
     }
 
     let taskCount = 0;
@@ -102,7 +117,18 @@ export function BulkActions({
         groupEnd();
       }
     }
-  }, [store, selectedIds, count, confirm, refreshData, onClearSelection, onActionComplete, addToast, groupStart, groupEnd]);
+  }, [
+    store,
+    selectedIds,
+    count,
+    confirm,
+    refreshData,
+    onClearSelection,
+    onActionComplete,
+    addToast,
+    groupStart,
+    groupEnd,
+  ]);
 
   // Handle process action (mark as processed - inbox only)
   const handleProcess = useCallback(() => {
@@ -124,7 +150,15 @@ export function BulkActions({
         message: `Processed ${result.processed} item${result.processed === 1 ? '' : 's'}`,
       });
     }
-  }, [store, selectedIds, count, refreshData, onClearSelection, onActionComplete, addToast]);
+  }, [
+    store,
+    selectedIds,
+    count,
+    refreshData,
+    onClearSelection,
+    onActionComplete,
+    addToast,
+  ]);
 
   // Handle type change action
   const handleChangeType = useCallback(
@@ -151,7 +185,16 @@ export function BulkActions({
         });
       }
     },
-    [store, typeRegistry, selectedIds, count, refreshData, onClearSelection, onActionComplete, addToast]
+    [
+      store,
+      typeRegistry,
+      selectedIds,
+      count,
+      refreshData,
+      onClearSelection,
+      onActionComplete,
+      addToast,
+    ]
   );
 
   // Handle add tag
@@ -186,11 +229,14 @@ export function BulkActions({
     (priority: string | null) => {
       if (!store) return;
 
-      const result = store.setPriorityMany(selectedIds, priority === 'none' ? null : priority);
+      const result = store.setPriorityMany(
+        selectedIds,
+        priority === 'none' ? null : priority
+      );
       refreshData();
       onActionComplete?.();
 
-      const label = priority === 'none' ? 'none' : priority ?? 'none';
+      const label = priority === 'none' ? 'none' : (priority ?? 'none');
       if (result.errors.length > 0) {
         addToast({
           type: 'warning',
@@ -203,7 +249,14 @@ export function BulkActions({
         });
       }
     },
-    [store, selectedIds, selectedInfo.taskCount, refreshData, onActionComplete, addToast]
+    [
+      store,
+      selectedIds,
+      selectedInfo.taskCount,
+      refreshData,
+      onActionComplete,
+      addToast,
+    ]
   );
 
   // Handle mark complete
@@ -225,7 +278,14 @@ export function BulkActions({
         message: `Completed ${result.updated} task${result.updated === 1 ? '' : 's'}`,
       });
     }
-  }, [store, selectedIds, selectedInfo.taskCount, refreshData, onActionComplete, addToast]);
+  }, [
+    store,
+    selectedIds,
+    selectedInfo.taskCount,
+    refreshData,
+    onActionComplete,
+    addToast,
+  ]);
 
   // Handle pin
   const handlePin = useCallback(() => {
@@ -274,7 +334,16 @@ export function BulkActions({
     } finally {
       groupEnd();
     }
-  }, [store, selectedIds, refreshData, onClearSelection, onActionComplete, addToast, groupStart, groupEnd]);
+  }, [
+    store,
+    selectedIds,
+    refreshData,
+    onClearSelection,
+    onActionComplete,
+    addToast,
+    groupStart,
+    groupEnd,
+  ]);
 
   // Handle unarchive (restore)
   const handleUnarchive = useCallback(() => {
@@ -295,7 +364,16 @@ export function BulkActions({
     } finally {
       groupEnd();
     }
-  }, [store, selectedIds, refreshData, onClearSelection, onActionComplete, addToast, groupStart, groupEnd]);
+  }, [
+    store,
+    selectedIds,
+    refreshData,
+    onClearSelection,
+    onActionComplete,
+    addToast,
+    groupStart,
+    groupEnd,
+  ]);
 
   // Handle assign to project
   const handleAssignProject = useCallback(
@@ -335,9 +413,9 @@ export function BulkActions({
   if (count === 0) return null;
 
   // Get available types for type change dropdown (excluding internal types)
-  const types = typeRegistry.getAll().filter(
-    (typeDef) => !['tag', 'project', 'type'].includes(typeDef.id)
-  );
+  const types = typeRegistry
+    .getAll()
+    .filter((typeDef) => !['tag', 'project', 'type'].includes(typeDef.id));
 
   const typeOptions = types.map((typeDef) => ({
     value: typeDef.id,
@@ -372,7 +450,12 @@ export function BulkActions({
       >
         <Group gap="sm" wrap="nowrap">
           {/* Selection count */}
-          <Text size="sm" c="dimmed" aria-live="polite" style={{ whiteSpace: 'nowrap' }}>
+          <Text
+            size="sm"
+            c="dimmed"
+            aria-live="polite"
+            style={{ whiteSpace: 'nowrap' }}
+          >
             {count} selected
           </Text>
 
@@ -413,14 +496,21 @@ export function BulkActions({
                 <Menu position="top" withArrow>
                   <Menu.Target>
                     <Tooltip label="Set priority" position="top" withArrow>
-                      <ActionIcon variant="subtle" size="sm" aria-label="Set priority">
+                      <ActionIcon
+                        variant="subtle"
+                        size="sm"
+                        aria-label="Set priority"
+                      >
                         <Icon name="flag" size={14} />
                       </ActionIcon>
                     </Tooltip>
                   </Menu.Target>
                   <Menu.Dropdown>
                     {priorityOptions.map((option) => (
-                      <Menu.Item key={option.value} onClick={() => handleSetPriority(option.value)}>
+                      <Menu.Item
+                        key={option.value}
+                        onClick={() => handleSetPriority(option.value)}
+                      >
                         {option.label}
                       </Menu.Item>
                     ))}
@@ -483,14 +573,21 @@ export function BulkActions({
             <Menu position="top" withArrow>
               <Menu.Target>
                 <Tooltip label="Change type" position="top" withArrow>
-                  <ActionIcon variant="subtle" size="sm" aria-label="Change type">
+                  <ActionIcon
+                    variant="subtle"
+                    size="sm"
+                    aria-label="Change type"
+                  >
                     <Icon name="shapes" size={14} />
                   </ActionIcon>
                 </Tooltip>
               </Menu.Target>
               <Menu.Dropdown>
                 {typeOptions.map((option) => (
-                  <Menu.Item key={option.value} onClick={() => handleChangeType(option.value)}>
+                  <Menu.Item
+                    key={option.value}
+                    onClick={() => handleChangeType(option.value)}
+                  >
                     {option.label}
                   </Menu.Item>
                 ))}

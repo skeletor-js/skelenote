@@ -37,7 +37,8 @@ export const BuiltInTypeIds = {
   TEMPLATE: 'template',
 } as const;
 
-export type BuiltInTypeId = (typeof BuiltInTypeIds)[keyof typeof BuiltInTypeIds];
+export type BuiltInTypeId =
+  (typeof BuiltInTypeIds)[keyof typeof BuiltInTypeIds];
 
 /**
  * Registry for type definitions
@@ -56,7 +57,9 @@ export interface TypeRegistry {
 /**
  * Creates a new type registry
  */
-export function createTypeRegistry(initialTypes: TypeDefinition[] = []): TypeRegistry {
+export function createTypeRegistry(
+  initialTypes: TypeDefinition[] = []
+): TypeRegistry {
   const types = new Map<string, TypeDefinition>();
 
   for (const type of initialTypes) {

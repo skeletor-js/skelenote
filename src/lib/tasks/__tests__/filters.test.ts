@@ -15,14 +15,16 @@ import {
 } from '../filters';
 
 // Helper to create mock task objects
-function createMockTask(overrides: Partial<{
-  id: string;
-  status: string;
-  dueDate: number | null;
-  priority: string | null;
-  project: string | null;
-  updatedAt: number;
-}>): SkelenoteObject {
+function createMockTask(
+  overrides: Partial<{
+    id: string;
+    status: string;
+    dueDate: number | null;
+    priority: string | null;
+    project: string | null;
+    updatedAt: number;
+  }>
+): SkelenoteObject {
   return {
     id: overrides.id ?? 'task-1',
     typeId: 'task',

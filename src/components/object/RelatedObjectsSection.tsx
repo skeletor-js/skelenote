@@ -65,12 +65,11 @@ export function RelatedObjectsSection({
     }
 
     // Convert to array and sort by priority
-    return Array.from(groups.entries())
-      .sort((a, b) => {
-        const priorityA = TYPE_PRIORITY[a[0]] ?? 99;
-        const priorityB = TYPE_PRIORITY[b[0]] ?? 99;
-        return priorityA - priorityB;
-      });
+    return Array.from(groups.entries()).sort((a, b) => {
+      const priorityA = TYPE_PRIORITY[a[0]] ?? 99;
+      const priorityB = TYPE_PRIORITY[b[0]] ?? 99;
+      return priorityA - priorityB;
+    });
   }, [relatedObjects]);
 
   // Get section label based on object type

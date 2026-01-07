@@ -29,7 +29,8 @@ const initialState: ConfirmDialogState = {
 };
 
 export function useConfirmDialog(): UseConfirmDialogResult {
-  const [dialogState, setDialogState] = useState<ConfirmDialogState>(initialState);
+  const [dialogState, setDialogState] =
+    useState<ConfirmDialogState>(initialState);
 
   const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
     return new Promise((resolve) => {

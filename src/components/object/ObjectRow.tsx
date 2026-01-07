@@ -4,7 +4,13 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { UnstyledButton, Text, Group, ActionIcon, Tooltip } from '@mantine/core';
+import {
+  UnstyledButton,
+  Text,
+  Group,
+  ActionIcon,
+  Tooltip,
+} from '@mantine/core';
 import { type SkelenoteObject, BuiltInTypeIds } from '@/lib/types';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
 import { Tag, type TagColor } from '@/components/ui';
@@ -51,7 +57,9 @@ export function ObjectRow({
   };
 
   // Get title or name
-  const title = (object.properties.title ?? object.properties.name ?? 'Untitled') as string;
+  const title = (object.properties.title ??
+    object.properties.name ??
+    'Untitled') as string;
 
   // Get first tag for preview
   const tagIds = object.properties.tags as string[] | null;
@@ -152,45 +160,51 @@ export function ObjectRow({
   );
 
   return (
-      <UnstyledButton
-        onClick={onClick}
-        px="sm"
-        py="xs"
-        className={classes.objectRow}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--mantine-spacing-sm)',
-          borderRadius: 'var(--mantine-radius-sm)',
-          borderBottom: '1px solid var(--border-subtle)',
-        }}
-      >
-        {/* Type icon */}
-        <Icon name={getTypeIcon()} size={16} style={{ color: 'var(--mantine-color-gray-6)', flexShrink: 0 }} />
+    <UnstyledButton
+      onClick={onClick}
+      px="sm"
+      py="xs"
+      className={classes.objectRow}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--mantine-spacing-sm)',
+        borderRadius: 'var(--mantine-radius-sm)',
+        borderBottom: '1px solid var(--border-subtle)',
+      }}
+    >
+      {/* Type icon */}
+      <Icon
+        name={getTypeIcon()}
+        size={16}
+        style={{ color: 'var(--mantine-color-gray-6)', flexShrink: 0 }}
+      />
 
-        {/* Title and inline metadata */}
-        <Group gap="xs" style={{ flex: 1, minWidth: 0 }} wrap="nowrap">
-          <Text size="sm" style={{ flexShrink: 1, minWidth: 0 }} truncate>
-            {title}
+      {/* Title and inline metadata */}
+      <Group gap="xs" style={{ flex: 1, minWidth: 0 }} wrap="nowrap">
+        <Text size="sm" style={{ flexShrink: 1, minWidth: 0 }} truncate>
+          {title}
+        </Text>
+
+        {/* Date label */}
+        {dateLabel && (
+          <Text
+            size="xs"
+            c={dateLabel.isOverdue ? 'brick' : 'dimmed'}
+            style={{ flexShrink: 0 }}
+          >
+            {dateLabel.text}
           </Text>
+        )}
+      </Group>
 
-          {/* Date label */}
-          {dateLabel && (
-            <Text size="xs" c={dateLabel.isOverdue ? 'brick' : 'dimmed'} style={{ flexShrink: 0 }}>
-              {dateLabel.text}
-            </Text>
-          )}
-        </Group>
+      {/* Right section: tags + hover-reveal actions */}
+      <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
+        {/* Preview - first tag */}
+        {tagInfo && <Tag name={tagInfo.name} color={tagInfo.color} size="sm" />}
 
-        {/* Right section: tags + hover-reveal actions */}
-        <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
-          {/* Preview - first tag */}
-          {tagInfo && (
-            <Tag name={tagInfo.name} color={tagInfo.color} size="sm" />
-          )}
-
-          {/* Hover-reveal action icons - appear to the right of tags */}
-          <Group gap={4} className={classes.actions} wrap="nowrap">
+        {/* Hover-reveal action icons - appear to the right of tags */}
+        <Group gap={4} className={classes.actions} wrap="nowrap">
           <Tooltip label="Open in split pane" position="top" withArrow>
             <ActionIcon
               variant="subtle"
@@ -201,12 +215,18 @@ export function ObjectRow({
               <Icon name="columns-2" size={14} />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label={itemIsPinned ? 'Unpin' : 'Pin to sidebar'} position="top" withArrow>
+          <Tooltip
+            label={itemIsPinned ? 'Unpin' : 'Pin to sidebar'}
+            position="top"
+            withArrow
+          >
             <ActionIcon
               variant="subtle"
               size="sm"
               onClick={handlePinClick}
-              aria-label={itemIsPinned ? 'Unpin from sidebar' : 'Pin to sidebar'}
+              aria-label={
+                itemIsPinned ? 'Unpin from sidebar' : 'Pin to sidebar'
+              }
             >
               <Icon name="pin" size={14} />
             </ActionIcon>
@@ -236,7 +256,7 @@ export function ObjectRow({
             </Tooltip>
           )}
         </Group>
-        </Group>
-      </UnstyledButton>
+      </Group>
+    </UnstyledButton>
   );
 }

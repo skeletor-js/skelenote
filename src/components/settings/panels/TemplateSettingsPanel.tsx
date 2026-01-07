@@ -6,7 +6,16 @@
  */
 
 import { useState, useCallback } from 'react';
-import { Stack, Group, Text, Box, Select, Badge, Button, Divider } from '@mantine/core';
+import {
+  Stack,
+  Group,
+  Text,
+  Box,
+  Select,
+  Badge,
+  Button,
+  Divider,
+} from '@mantine/core';
 import { Plus } from 'lucide-react';
 import { Icon } from '@/components/ui';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -17,7 +26,8 @@ import { getIconFromEmoji, type IconName } from '@/lib/icons';
 import type { Template } from '@/lib/templates';
 
 export function TemplateSettingsPanel() {
-  const { templates, remove, setDailyNoteTemplate, dailyNoteTemplate } = useTemplates();
+  const { templates, remove, setDailyNoteTemplate, dailyNoteTemplate } =
+    useTemplates();
   const typeRegistry = useTypeRegistry();
   const { navigateToObject } = useNavigation();
   const { addToast } = useToast();
@@ -98,16 +108,20 @@ export function TemplateSettingsPanel() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">Templates</Text>
+        <Text size="lg" fw={600} mb="xs">
+          Templates
+        </Text>
         <Text size="sm" c="dimmed">
-          Templates are reusable blueprints for creating objects with pre-filled content.
-          Use placeholders like {'{{date}}'} for dynamic content.
+          Templates are reusable blueprints for creating objects with pre-filled
+          content. Use placeholders like {'{{date}}'} for dynamic content.
         </Text>
       </Box>
 
       {/* Daily Note Template - Promoted to top */}
       <Box>
-        <Text size="sm" fw={500} mb="xs">Daily Note Template</Text>
+        <Text size="sm" fw={500} mb="xs">
+          Daily Note Template
+        </Text>
         <Text size="xs" c="dimmed" mb="sm">
           Automatically apply this template when creating new daily notes.
         </Text>
@@ -134,7 +148,9 @@ export function TemplateSettingsPanel() {
       {/* Template List */}
       <Box>
         <Group justify="space-between" align="center" mb="md">
-          <Text size="sm" fw={500}>All Templates</Text>
+          <Text size="sm" fw={500}>
+            All Templates
+          </Text>
           <Button
             variant="light"
             size="xs"
@@ -147,7 +163,9 @@ export function TemplateSettingsPanel() {
 
         {templates.length === 0 ? (
           <Box ta="center" py="xl">
-            <Text size="sm" c="dimmed">No templates yet.</Text>
+            <Text size="sm" c="dimmed">
+              No templates yet.
+            </Text>
           </Box>
         ) : (
           <Stack gap="xs">
@@ -170,7 +188,12 @@ export function TemplateSettingsPanel() {
                         {template.name}
                       </Text>
                       {template.isDailyNoteTemplate && (
-                        <Badge size="xs" variant="light" color="slate" radius="sm">
+                        <Badge
+                          size="xs"
+                          variant="light"
+                          color="slate"
+                          radius="sm"
+                        >
                           Daily Note
                         </Badge>
                       )}
@@ -184,7 +207,9 @@ export function TemplateSettingsPanel() {
                       </Group>
                       {template.description && (
                         <>
-                          <Text size="xs" c="dimmed">·</Text>
+                          <Text size="xs" c="dimmed">
+                            ·
+                          </Text>
                           <Text size="xs" c="dimmed" truncate>
                             {template.description}
                           </Text>

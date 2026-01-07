@@ -38,16 +38,24 @@ interface TooltipContentProps {
   isFromRevokedDevice?: boolean;
 }
 
-function TooltipContent({ timestamp, changeCount, deviceName, isFromRevokedDevice }: TooltipContentProps) {
+function TooltipContent({
+  timestamp,
+  changeCount,
+  deviceName,
+  isFromRevokedDevice,
+}: TooltipContentProps) {
   return (
     <Stack gap={2}>
-      <Text size="sm" fw={500}>{formatTime(timestamp)}</Text>
+      <Text size="sm" fw={500}>
+        {formatTime(timestamp)}
+      </Text>
       <Text size="xs" c="dimmed">
         {changeCount} operation{changeCount !== 1 ? 's' : ''}
       </Text>
       {deviceName && (
         <Text size="xs" c={isFromRevokedDevice ? 'red' : 'dimmed'}>
-          {deviceName}{isFromRevokedDevice && ' (revoked)'}
+          {deviceName}
+          {isFromRevokedDevice && ' (revoked)'}
         </Text>
       )}
     </Stack>
@@ -73,7 +81,9 @@ export function HorizontalTimeline({
     (sortedIndex: number) => {
       const sortedPoint = sortedChangePoints[sortedIndex];
       return changePoints.findIndex(
-        (cp) => cp.timestamp === sortedPoint.timestamp && cp.peerId === sortedPoint.peerId
+        (cp) =>
+          cp.timestamp === sortedPoint.timestamp &&
+          cp.peerId === sortedPoint.peerId
       );
     },
     [changePoints, sortedChangePoints]
@@ -84,7 +94,9 @@ export function HorizontalTimeline({
     if (selectedIndex < 0 || selectedIndex >= changePoints.length) return -1;
     const selectedPoint = changePoints[selectedIndex];
     return sortedChangePoints.findIndex(
-      (cp) => cp.timestamp === selectedPoint.timestamp && cp.peerId === selectedPoint.peerId
+      (cp) =>
+        cp.timestamp === selectedPoint.timestamp &&
+        cp.peerId === selectedPoint.peerId
     );
   }, [changePoints, sortedChangePoints, selectedIndex]);
 
@@ -96,7 +108,9 @@ export function HorizontalTimeline({
 
     const earliest = sortedChangePoints[0].timestamp;
     const latest = sortedChangePoints[sortedChangePoints.length - 1].timestamp;
-    const maxChangeCount = Math.max(...sortedChangePoints.map((cp) => cp.changeCount));
+    const maxChangeCount = Math.max(
+      ...sortedChangePoints.map((cp) => cp.changeCount)
+    );
 
     const markers = sortedChangePoints.map((point, sortedIndex) => {
       // Position: 0-100% based on timestamp
@@ -149,7 +163,12 @@ export function HorizontalTimeline({
           break;
       }
     },
-    [selectedSortedIndex, sortedChangePoints.length, onIndexChange, getOriginalIndex]
+    [
+      selectedSortedIndex,
+      sortedChangePoints.length,
+      onIndexChange,
+      getOriginalIndex,
+    ]
   );
 
   // Click on track to select nearest marker
@@ -232,7 +251,11 @@ export function HorizontalTimeline({
           aria-valuemin={0}
           aria-valuemax={changePoints.length - 1}
           aria-valuenow={selectedIndex}
-          aria-valuetext={selectedPoint ? `Change at ${formatTime(selectedPoint.timestamp)}, ${selectedPoint.changeCount} operations` : undefined}
+          aria-valuetext={
+            selectedPoint
+              ? `Change at ${formatTime(selectedPoint.timestamp)}, ${selectedPoint.changeCount} operations`
+              : undefined
+          }
         >
           {/* Track line */}
           <Box
@@ -285,16 +308,21 @@ export function HorizontalTimeline({
                       : isRevoked
                         ? 'var(--mantine-color-red-5)'
                         : 'var(--mantine-color-gray-5)',
-                    border: isSelected ? '2px solid var(--mantine-color-ember-3)' : 'none',
+                    border: isSelected
+                      ? '2px solid var(--mantine-color-ember-3)'
+                      : 'none',
                     cursor: 'pointer',
-                    transition: 'transform 150ms ease, background-color 150ms ease',
+                    transition:
+                      'transform 150ms ease, background-color 150ms ease',
                     zIndex: isSelected ? 2 : 1,
                   }}
                   onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.transform = 'translate(-50%, -50%) scale(1.2)';
+                    (e.currentTarget as HTMLElement).style.transform =
+                      'translate(-50%, -50%) scale(1.2)';
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.transform = 'translate(-50%, -50%)';
+                    (e.currentTarget as HTMLElement).style.transform =
+                      'translate(-50%, -50%)';
                   }}
                 />
               </Tooltip>
@@ -351,12 +379,18 @@ export function HorizontalTimeline({
       {/* Selected change details */}
       {selectedPoint && (
         <Group gap="xs" justify="center">
-          <Text size="sm" fw={500}>{formatTime(selectedPoint.timestamp)}</Text>
+          <Text size="sm" fw={500}>
+            {formatTime(selectedPoint.timestamp)}
+          </Text>
           <Text size="xs" c="dimmed">
-            {selectedPoint.changeCount} operation{selectedPoint.changeCount !== 1 ? 's' : ''}
+            {selectedPoint.changeCount} operation
+            {selectedPoint.changeCount !== 1 ? 's' : ''}
             {selectedPoint.deviceName && ` · ${selectedPoint.deviceName}`}
             {selectedPoint.isFromRevokedDevice && (
-              <Text span c="red"> (revoked)</Text>
+              <Text span c="red">
+                {' '}
+                (revoked)
+              </Text>
             )}
           </Text>
         </Group>

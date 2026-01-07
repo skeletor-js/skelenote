@@ -1,14 +1,33 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Layout, SplitPane, type OmnibarFocusFunctions } from '@/components/layout';
+import {
+  Layout,
+  SplitPane,
+  type OmnibarFocusFunctions,
+} from '@/components/layout';
 import { ObjectDetailView } from '@/components/object';
-import { TaskView, TasksView, InboxView, DailyNotesView, SavedViewContent, TypeBrowseView, ArchiveView } from '@/components/views';
+import {
+  TaskView,
+  TasksView,
+  InboxView,
+  DailyNotesView,
+  SavedViewContent,
+  TypeBrowseView,
+  ArchiveView,
+} from '@/components/views';
 import { SettingsView } from '@/components/settings';
 import { SkeletonKeySetup } from '@/components/setup';
 import { TimeMachine, HistoricalObjectView } from '@/components/history';
 import { SearchResultsView } from '@/components/search';
 import { KeyboardShortcutsModal } from '@/components/help';
 import { TemplatePicker, TemplateEditor } from '@/components/templates';
-import { useNavigation, useObjects, useSkeletonKey, useKeyboardShortcuts, useUndo, type ViewType } from '@/contexts';
+import {
+  useNavigation,
+  useObjects,
+  useSkeletonKey,
+  useKeyboardShortcuts,
+  useUndo,
+  type ViewType,
+} from '@/contexts';
 import { useTodaysDailyNote, useTemplates } from '@/hooks';
 import type { Template } from '@/lib/templates';
 import { runFirstRunSetup } from '@/lib/first-run';
@@ -59,7 +78,6 @@ function PlaceholderView({ view }: { view: ViewType }) {
     </div>
   );
 }
-
 
 /**
  * Router for type browse view that gets typeId from navigation context
@@ -118,14 +136,15 @@ function PrimaryContent() {
   }
 
   // Legacy task views (DEPRECATED - kept for backwards compatibility)
-  const taskViewConfig: Record<string, { filter: TaskFilter; title: string }> = {
-    today: { filter: 'today', title: 'Today' },
-    'this-week': { filter: 'this-week', title: 'This Week' },
-    overdue: { filter: 'overdue', title: 'Overdue' },
-    waiting: { filter: 'waiting', title: 'Waiting' },
-    eventually: { filter: 'eventually', title: 'Eventually' },
-    completed: { filter: 'completed', title: 'Completed' },
-  };
+  const taskViewConfig: Record<string, { filter: TaskFilter; title: string }> =
+    {
+      today: { filter: 'today', title: 'Today' },
+      'this-week': { filter: 'this-week', title: 'This Week' },
+      overdue: { filter: 'overdue', title: 'Overdue' },
+      waiting: { filter: 'waiting', title: 'Waiting' },
+      eventually: { filter: 'eventually', title: 'Eventually' },
+      completed: { filter: 'completed', title: 'Completed' },
+    };
 
   if (currentView in taskViewConfig) {
     const config = taskViewConfig[currentView];
@@ -184,11 +203,14 @@ function MainContent() {
   // Expose openInSplit for testing (dev only)
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      (window as unknown as { __openInSplit: typeof openInSplit }).__openInSplit = openInSplit;
+      (
+        window as unknown as { __openInSplit: typeof openInSplit }
+      ).__openInSplit = openInSplit;
     }
     return () => {
       if (process.env.NODE_ENV === 'development') {
-        delete (window as unknown as { __openInSplit?: typeof openInSplit }).__openInSplit;
+        delete (window as unknown as { __openInSplit?: typeof openInSplit })
+          .__openInSplit;
       }
     };
   }, [openInSplit]);
@@ -201,7 +223,9 @@ function MainContent() {
       secondaryContent = <HistoricalObjectView />;
     } else {
       // Normal split mode - editable object detail
-      secondaryContent = <ObjectDetailView objectId={splitPane.objectId} paneType="secondary" />;
+      secondaryContent = (
+        <ObjectDetailView objectId={splitPane.objectId} paneType="secondary" />
+      );
     }
   }
 
@@ -219,17 +243,34 @@ function MainContent() {
 
 function App() {
   const { store, refreshData, saveNow } = useObjects();
-  const { isInitialized: isCryptoInitialized, hasSkeletonKey } = useSkeletonKey();
+  const { isInitialized: isCryptoInitialized, hasSkeletonKey } =
+    useSkeletonKey();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
-  const { splitPane, closeSplit, swapPanes, navigateToView, navigateToSearch, navigateBack, navigateForward, canGoBack, canGoForward, isEditorFocused, currentView, selectedObjectId } = useNavigation();
+  const {
+    splitPane,
+    closeSplit,
+    swapPanes,
+    navigateToView,
+    navigateToSearch,
+    navigateBack,
+    navigateForward,
+    canGoBack,
+    canGoForward,
+    isEditorFocused,
+    currentView,
+    selectedObjectId,
+  } = useNavigation();
   const { undo, redo } = useUndo();
   // Exclude tags, projects, and areas from inbox count (they appear in sidebar)
   const inboxCount =
-    store?.getInboxed().filter((item) =>
-      item.typeId !== BuiltInTypeIds.TAG &&
-      item.typeId !== BuiltInTypeIds.PROJECT &&
-      item.typeId !== BuiltInTypeIds.AREA
-    ).length ?? 0;
+    store
+      ?.getInboxed()
+      .filter(
+        (item) =>
+          item.typeId !== BuiltInTypeIds.TAG &&
+          item.typeId !== BuiltInTypeIds.PROJECT &&
+          item.typeId !== BuiltInTypeIds.AREA
+      ).length ?? 0;
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
   const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false);
@@ -239,9 +280,12 @@ function App() {
   const omnibarFocusRef = useRef<OmnibarFocusFunctions | null>(null);
 
   // Callback to receive the omnibar focus functions from Layout
-  const handleRegisterOmnibarFocus = useCallback((fns: OmnibarFocusFunctions) => {
-    omnibarFocusRef.current = fns;
-  }, []);
+  const handleRegisterOmnibarFocus = useCallback(
+    (fns: OmnibarFocusFunctions) => {
+      omnibarFocusRef.current = fns;
+    },
+    []
+  );
 
   // Auto-create today's daily note and run first-run setup on app launch
   useEffect(() => {
@@ -253,7 +297,11 @@ function App() {
       // Run first-run setup if needed (creates welcome note)
       if (dailyNote) {
         const dailyNoteName = String(dailyNote.properties.title ?? 'Today');
-        const welcomeNoteId = runFirstRunSetup(store, dailyNote.id, dailyNoteName);
+        const welcomeNoteId = runFirstRunSetup(
+          store,
+          dailyNote.id,
+          dailyNoteName
+        );
         refreshData();
 
         // Immediately save if first-run created data
@@ -542,7 +590,9 @@ function App() {
           if (obj && obj.typeId === BuiltInTypeIds.TASK) {
             const currentStatus = obj.properties.status;
             const newStatus = currentStatus === 'done' ? 'todo' : 'done';
-            store.update(selectedObjectId, { properties: { ...obj.properties, status: newStatus } });
+            store.update(selectedObjectId, {
+              properties: { ...obj.properties, status: newStatus },
+            });
             refreshData();
           }
         }
@@ -575,7 +625,27 @@ function App() {
       unregisterShortcut('toggle-pin');
       unregisterShortcut('toggle-task-complete');
     };
-  }, [registerShortcut, unregisterShortcut, splitPane.isOpen, closeSplit, swapPanes, navigateToView, navigateToSearch, navigateBack, navigateForward, canGoBack, canGoForward, toggleShortcutsModal, isEditorFocused, undo, redo, currentView, selectedObjectId, store, refreshData]);
+  }, [
+    registerShortcut,
+    unregisterShortcut,
+    splitPane.isOpen,
+    closeSplit,
+    swapPanes,
+    navigateToView,
+    navigateToSearch,
+    navigateBack,
+    navigateForward,
+    canGoBack,
+    canGoForward,
+    toggleShortcutsModal,
+    isEditorFocused,
+    undo,
+    redo,
+    currentView,
+    selectedObjectId,
+    store,
+    refreshData,
+  ]);
 
   // Show loading only during initial crypto initialization
   // (not during subsequent operations like key generation)
@@ -612,7 +682,10 @@ function App() {
       >
         <MainContent />
       </Layout>
-      <KeyboardShortcutsModal isOpen={isShortcutsModalOpen} onClose={closeShortcutsModal} />
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsModalOpen}
+        onClose={closeShortcutsModal}
+      />
       <TemplatePicker
         isOpen={isTemplatePickerOpen}
         onClose={closeTemplatePicker}

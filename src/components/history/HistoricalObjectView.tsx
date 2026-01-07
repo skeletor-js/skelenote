@@ -18,7 +18,12 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { Icon } from '@/components/ui';
-import { useObjects, useTypeRegistry, useNavigation, useToast } from '@/contexts';
+import {
+  useObjects,
+  useTypeRegistry,
+  useNavigation,
+  useToast,
+} from '@/contexts';
 import type { ChangePoint } from '@/lib/loro/versions';
 import { getIconFromEmoji } from '@/lib/icons';
 import { ContentPreview } from './ContentPreview';
@@ -44,13 +49,18 @@ function getObjectTitle(obj: SkelenoteObject): string {
  * Check if a string looks like a UUID
  */
 function isUUID(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    value
+  );
 }
 
 /**
  * Get display name for an object by ID
  */
-function getObjectDisplayName(store: ObjectStore | null, objectId: string): string | null {
+function getObjectDisplayName(
+  store: ObjectStore | null,
+  objectId: string
+): string | null {
   if (!store) return null;
   const obj = store.get(objectId);
   if (!obj) return null;
@@ -97,7 +107,11 @@ function formatPropertyValue(
     // If it's a relation array, resolve each ID
     if (propDef?.type === 'relation' && store) {
       const names = value
-        .map(id => typeof id === 'string' ? getObjectDisplayName(store, id) ?? id : String(id))
+        .map((id) =>
+          typeof id === 'string'
+            ? (getObjectDisplayName(store, id) ?? id)
+            : String(id)
+        )
         .filter(Boolean);
       return names.join(', ');
     }
@@ -121,7 +135,12 @@ function formatPropertyValue(
 
 export function HistoricalObjectView() {
   const { store, docStore, refreshData } = useObjects();
-  const { splitPane, closeSplit, updateVersionComparison, returnToTimeMachine } = useNavigation();
+  const {
+    splitPane,
+    closeSplit,
+    updateVersionComparison,
+    returnToTimeMachine,
+  } = useNavigation();
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
 
@@ -137,7 +156,8 @@ export function HistoricalObjectView() {
 
   // Find current position in change points
   const currentVersionIndex = useMemo(() => {
-    if (!splitPane.historicalTimestamp || objectChangePoints.length === 0) return -1;
+    if (!splitPane.historicalTimestamp || objectChangePoints.length === 0)
+      return -1;
     return objectChangePoints.findIndex(
       (cp) => cp.timestamp === splitPane.historicalTimestamp
     );
@@ -145,19 +165,31 @@ export function HistoricalObjectView() {
 
   // Version navigation handlers
   const canGoPrev = currentVersionIndex > 0;
-  const canGoNext = currentVersionIndex < objectChangePoints.length - 1 && currentVersionIndex !== -1;
+  const canGoNext =
+    currentVersionIndex < objectChangePoints.length - 1 &&
+    currentVersionIndex !== -1;
 
   const handlePrevVersion = useCallback(() => {
     if (!canGoPrev) return;
     const prevPoint = objectChangePoints[currentVersionIndex - 1];
     updateVersionComparison(prevPoint.frontier, prevPoint.timestamp);
-  }, [canGoPrev, objectChangePoints, currentVersionIndex, updateVersionComparison]);
+  }, [
+    canGoPrev,
+    objectChangePoints,
+    currentVersionIndex,
+    updateVersionComparison,
+  ]);
 
   const handleNextVersion = useCallback(() => {
     if (!canGoNext) return;
     const nextPoint = objectChangePoints[currentVersionIndex + 1];
     updateVersionComparison(nextPoint.frontier, nextPoint.timestamp);
-  }, [canGoNext, objectChangePoints, currentVersionIndex, updateVersionComparison]);
+  }, [
+    canGoNext,
+    objectChangePoints,
+    currentVersionIndex,
+    updateVersionComparison,
+  ]);
 
   // Close handler - return to Time Machine if we came from there, otherwise just close
   const handleClose = useCallback(() => {
@@ -173,7 +205,11 @@ export function HistoricalObjectView() {
     if (!splitPane.historicalFrontier || !splitPane.objectId) return null;
 
     const objects = docStore.getObjectsAtVersion(splitPane.historicalFrontier);
-    return (objects.find((obj) => obj.id === splitPane.objectId) as SkelenoteObject) ?? null;
+    return (
+      (objects.find(
+        (obj) => obj.id === splitPane.objectId
+      ) as SkelenoteObject) ?? null
+    );
   }, [docStore, splitPane.historicalFrontier, splitPane.objectId]);
 
   // Format the timestamp
@@ -221,14 +257,25 @@ export function HistoricalObjectView() {
         message: 'Failed to restore. Check the console for details.',
       });
     }
-  }, [splitPane.historicalFrontier, splitPane.objectId, splitPane.timeMachineContext, docStore, refreshData, addToast, returnToTimeMachine, closeSplit]);
+  }, [
+    splitPane.historicalFrontier,
+    splitPane.objectId,
+    splitPane.timeMachineContext,
+    docStore,
+    refreshData,
+    addToast,
+    returnToTimeMachine,
+    closeSplit,
+  ]);
 
   const handleRestoreCancel = useCallback(() => {
     setRestoreDialogOpen(false);
   }, []);
 
   // Get type definition - needed before early return for useMemo
-  const typeDef = historicalObject ? typeRegistry.get(historicalObject.typeId) : null;
+  const typeDef = historicalObject
+    ? typeRegistry.get(historicalObject.typeId)
+    : null;
 
   // Get property definitions from type schema for proper labels, filtering out empty values
   // Must be called before early return to satisfy rules of hooks
@@ -244,7 +291,9 @@ export function HistoricalObjectView() {
         if (formatted) {
           properties.push({
             id: key,
-            label: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
+            label:
+              key.charAt(0).toUpperCase() +
+              key.slice(1).replace(/([A-Z])/g, ' $1'),
             value: formatted,
           });
         }
@@ -253,7 +302,11 @@ export function HistoricalObjectView() {
       // Use schema to get proper labels, skip hidden properties
       typeDef.schema.forEach((propDef) => {
         if (propDef.hidden) return;
-        const formatted = formatPropertyValue(historicalObject.properties[propDef.id], propDef, store);
+        const formatted = formatPropertyValue(
+          historicalObject.properties[propDef.id],
+          propDef,
+          store
+        );
         if (formatted) {
           properties.push({
             id: propDef.id,
@@ -270,8 +323,12 @@ export function HistoricalObjectView() {
   if (!historicalObject) {
     return (
       <Box p="lg" ta="center">
-        <Text c="dimmed" mb="sm">Unable to load historical version</Text>
-        <Button variant="subtle" onClick={handleClose}>Close</Button>
+        <Text c="dimmed" mb="sm">
+          Unable to load historical version
+        </Text>
+        <Button variant="subtle" onClick={handleClose}>
+          Close
+        </Button>
       </Box>
     );
   }
@@ -300,7 +357,9 @@ export function HistoricalObjectView() {
         }}
       >
         <Group gap="xs">
-          <Text size="sm" fw={600}>Historical Version</Text>
+          <Text size="sm" fw={600}>
+            Historical Version
+          </Text>
           {objectChangePoints.length > 1 && (
             <Text size="xs" c="dimmed">
               ({currentVersionIndex + 1} of {objectChangePoints.length})
@@ -356,8 +415,12 @@ export function HistoricalObjectView() {
               style={{ color: 'var(--mantine-color-gray-6)', marginTop: 2 }}
             />
             <Box>
-              <Text size="lg" fw={600} lh={1.3}>{title}</Text>
-              <Text size="xs" c="dimmed">{typeName} • {formattedTimestamp}</Text>
+              <Text size="lg" fw={600} lh={1.3}>
+                {title}
+              </Text>
+              <Text size="xs" c="dimmed">
+                {typeName} • {formattedTimestamp}
+              </Text>
             </Box>
           </Group>
 
@@ -368,10 +431,16 @@ export function HistoricalObjectView() {
               <Stack gap="xs">
                 {visibleProperties.map(({ id, label, value }) => (
                   <Group key={id} gap="xs" wrap="nowrap">
-                    <Text size="xs" c="dimmed" style={{ minWidth: 100, flexShrink: 0 }}>
+                    <Text
+                      size="xs"
+                      c="dimmed"
+                      style={{ minWidth: 100, flexShrink: 0 }}
+                    >
                       {label}:
                     </Text>
-                    <Text size="sm" style={{ wordBreak: 'break-word' }}>{value}</Text>
+                    <Text size="sm" style={{ wordBreak: 'break-word' }}>
+                      {value}
+                    </Text>
                   </Group>
                 ))}
               </Stack>

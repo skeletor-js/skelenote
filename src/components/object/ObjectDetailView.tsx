@@ -31,12 +31,23 @@ interface ObjectDetailViewProps {
   paneType?: 'primary' | 'secondary';
 }
 
-export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetailViewProps) {
+export function ObjectDetailView({
+  objectId,
+  paneType = 'primary',
+}: ObjectDetailViewProps) {
   const { store, isLoading, refreshData, scheduleSave } = useObjects();
-  const { navigateBack, canGoBack, closeSplit, splitPane, navigateToView, navigateToTimeMachine } = useNavigation();
+  const {
+    navigateBack,
+    canGoBack,
+    closeSplit,
+    splitPane,
+    navigateToView,
+    navigateToTimeMachine,
+  } = useNavigation();
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
-  const { dialogState, confirm, handleConfirm, handleCancel } = useConfirmDialog();
+  const { dialogState, confirm, handleConfirm, handleCancel } =
+    useConfirmDialog();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
   const { duplicate, canDuplicate } = useDuplicate();
   const semanticContext = useSemanticSearchSafe();
@@ -139,7 +150,17 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
         unregisterShortcut('duplicate-object');
       };
     }
-  }, [paneType, isVersionComparison, handleViewHistory, handleExport, handleDuplicate, canDuplicate, objectId, registerShortcut, unregisterShortcut]);
+  }, [
+    paneType,
+    isVersionComparison,
+    handleViewHistory,
+    handleExport,
+    handleDuplicate,
+    canDuplicate,
+    objectId,
+    registerShortcut,
+    unregisterShortcut,
+  ]);
 
   // Handler to archive object
   const handleArchive = useCallback(() => {
@@ -148,7 +169,8 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
     const object = store.get(objectId);
     if (!object) return;
 
-    const titleProp = object.properties.title ?? object.properties.name ?? 'Untitled';
+    const titleProp =
+      object.properties.title ?? object.properties.name ?? 'Untitled';
     const title = String(titleProp);
 
     store.archive(objectId);
@@ -164,7 +186,16 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
     } else if (canGoBack) {
       navigateBack();
     }
-  }, [store, objectId, refreshData, addToast, paneType, closeSplit, canGoBack, navigateBack]);
+  }, [
+    store,
+    objectId,
+    refreshData,
+    addToast,
+    paneType,
+    closeSplit,
+    canGoBack,
+    navigateBack,
+  ]);
 
   const handleDelete = useCallback(async () => {
     if (!store) return;
@@ -173,7 +204,8 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
     if (!object) return;
 
     const typeDef = typeRegistry.get(object.typeId);
-    const titleProp = object.properties.title ?? object.properties.name ?? 'Untitled';
+    const titleProp =
+      object.properties.title ?? object.properties.name ?? 'Untitled';
     const title = String(titleProp);
 
     const confirmed = await confirm({
@@ -216,7 +248,18 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
         navigateBack();
       }
     }
-  }, [store, objectId, typeRegistry, confirm, refreshData, addToast, canGoBack, navigateBack, paneType, closeSplit]);
+  }, [
+    store,
+    objectId,
+    typeRegistry,
+    confirm,
+    refreshData,
+    addToast,
+    canGoBack,
+    navigateBack,
+    paneType,
+    closeSplit,
+  ]);
 
   const handleTitleChange = useCallback(
     (newTitle: string) => {
@@ -225,7 +268,8 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
       if (!object) return;
 
       // Determine which property holds the title
-      const titlePropertyId = object.properties.title !== undefined ? 'title' : 'name';
+      const titlePropertyId =
+        object.properties.title !== undefined ? 'title' : 'name';
       store.setProperty(objectId, titlePropertyId, newTitle);
       refreshData();
     },
@@ -275,7 +319,9 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
     return (
       <Center className={styles.loadingContainer}>
         <Loader size="sm" />
-        <Text ml="sm" c="dimmed">Loading...</Text>
+        <Text ml="sm" c="dimmed">
+          Loading...
+        </Text>
       </Center>
     );
   }
@@ -285,14 +331,24 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
   if (!object) {
     return (
       <Box className={styles.errorContainer}>
-        <Text c="red" mb="sm">Object not found: {objectId}</Text>
+        <Text c="red" mb="sm">
+          Object not found: {objectId}
+        </Text>
         {paneType === 'secondary' ? (
-          <Button variant="subtle" onClick={closeSplit} leftSection={<Icon name="x" size={14} />}>
+          <Button
+            variant="subtle"
+            onClick={closeSplit}
+            leftSection={<Icon name="x" size={14} />}
+          >
             Close
           </Button>
         ) : (
           canGoBack && (
-            <Button variant="subtle" onClick={navigateBack} leftSection={<Icon name="chevron-left" size={14} />}>
+            <Button
+              variant="subtle"
+              onClick={navigateBack}
+              leftSection={<Icon name="chevron-left" size={14} />}
+            >
               Go Back
             </Button>
           )
@@ -306,14 +362,24 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
   if (!typeDef) {
     return (
       <Box className={styles.errorContainer}>
-        <Text c="red" mb="sm">Unknown object type: {object.typeId}</Text>
+        <Text c="red" mb="sm">
+          Unknown object type: {object.typeId}
+        </Text>
         {paneType === 'secondary' ? (
-          <Button variant="subtle" onClick={closeSplit} leftSection={<Icon name="x" size={14} />}>
+          <Button
+            variant="subtle"
+            onClick={closeSplit}
+            leftSection={<Icon name="x" size={14} />}
+          >
             Close
           </Button>
         ) : (
           canGoBack && (
-            <Button variant="subtle" onClick={navigateBack} leftSection={<Icon name="chevron-left" size={14} />}>
+            <Button
+              variant="subtle"
+              onClick={navigateBack}
+              leftSection={<Icon name="chevron-left" size={14} />}
+            >
               Go Back
             </Button>
           )
@@ -369,7 +435,9 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
           )}
 
           {/* Related Objects Section (for Projects, Areas, Tags) */}
-          {(object.typeId === 'project' || object.typeId === 'area' || object.typeId === 'tag') && (
+          {(object.typeId === 'project' ||
+            object.typeId === 'area' ||
+            object.typeId === 'tag') && (
             <RelatedObjectsSection
               objectId={objectId}
               objectTypeId={object.typeId as 'project' | 'area' | 'tag'}
@@ -377,9 +445,9 @@ export function ObjectDetailView({ objectId, paneType = 'primary' }: ObjectDetai
           )}
 
           {/* Backlinks Section - hidden for project/area/tag which have RelatedObjectsSection */}
-          {object.typeId !== 'project' && object.typeId !== 'area' && object.typeId !== 'tag' && (
-            <Backlinks objectId={objectId} />
-          )}
+          {object.typeId !== 'project' &&
+            object.typeId !== 'area' &&
+            object.typeId !== 'tag' && <Backlinks objectId={objectId} />}
         </Stack>
       </Box>
 

@@ -2,7 +2,15 @@
  * Omnibar - Unified command palette and search bar in the top nav
  */
 
-import { useState, useEffect, useCallback, useRef, useMemo, forwardRef, useImperativeHandle } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
 import { TextInput, Popover, Loader, Box } from '@mantine/core';
 import { Search } from 'lucide-react';
 import { useNavigation, useObjects, useTypeRegistry } from '@/contexts';
@@ -49,8 +57,14 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const { navigateToView, navigateToObject, navigateToSearch, openInSplit, selectedObjectId, currentView } =
-    useNavigation();
+  const {
+    navigateToView,
+    navigateToObject,
+    navigateToSearch,
+    openInSplit,
+    selectedObjectId,
+    currentView,
+  } = useNavigation();
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { linkToDaily } = useLinkToDaily();
@@ -136,7 +150,12 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
         });
       } else {
         // Fall back to basic search for immediate results
-        objectResults = searchObjects(allObjects, searchQueryText, typeRegistry, 10);
+        objectResults = searchObjects(
+          allObjects,
+          searchQueryText,
+          typeRegistry,
+          10
+        );
       }
 
       return objectResults;
@@ -144,7 +163,14 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
 
     // No query: show nothing (user needs to type to see results)
     return [];
-  }, [staticActions, allObjects, typeRegistry, searchQueryText, searchResults, isCommandMode]);
+  }, [
+    staticActions,
+    allObjects,
+    typeRegistry,
+    searchQueryText,
+    searchResults,
+    isCommandMode,
+  ]);
 
   // Reset selection when results change
   useEffect(() => {
@@ -176,7 +202,11 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
 
       // Duplicate Object
       if (action.id === DUPLICATE_OBJECT_ACTION_ID) {
-        if (currentView === 'object' && selectedObjectId && canDuplicate(selectedObjectId)) {
+        if (
+          currentView === 'object' &&
+          selectedObjectId &&
+          canDuplicate(selectedObjectId)
+        ) {
           duplicate(selectedObjectId);
         }
         setQuery('');
@@ -229,7 +259,10 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
         navigateToObject(action.objectId);
       } else if (action.typeId && store) {
         // Create action - set default properties based on type
-        let properties: Record<string, string | number | boolean | string[] | null> = {};
+        let properties: Record<
+          string,
+          string | number | boolean | string[] | null
+        > = {};
         switch (action.typeId) {
           case 'task':
             properties = { title: 'New Task', status: 'todo' };
@@ -294,7 +327,9 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setSelectedIndex((prev) => Math.min(prev + 1, combinedResults.length - 1));
+          setSelectedIndex((prev) =>
+            Math.min(prev + 1, combinedResults.length - 1)
+          );
           break;
         case 'ArrowUp':
           e.preventDefault();
@@ -320,7 +355,14 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
           break;
       }
     },
-    [combinedResults, selectedIndex, executeAction, isCommandMode, searchQueryText, navigateToSearch]
+    [
+      combinedResults,
+      selectedIndex,
+      executeAction,
+      isCommandMode,
+      searchQueryText,
+      navigateToSearch,
+    ]
   );
 
   // Handle focus

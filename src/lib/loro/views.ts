@@ -108,7 +108,8 @@ export class ViewStore {
       name: input.name ?? view.name,
       filters: input.filters ?? view.filters,
       sort: input.sort !== undefined ? input.sort : view.sort,
-      typeFilter: input.typeFilter !== undefined ? input.typeFilter : view.typeFilter,
+      typeFilter:
+        input.typeFilter !== undefined ? input.typeFilter : view.typeFilter,
       icon: input.icon !== undefined ? input.icon : view.icon,
       updatedAt: Date.now(),
     };

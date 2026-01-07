@@ -38,11 +38,12 @@ export function BacklinkItem({ sourceId, propertyName }: BacklinkItemProps) {
   };
 
   return (
-    <UnstyledButton
-      onClick={handleClick}
-      className={styles.backlinkRow}
-    >
-      <Icon name={getIconFromEmoji(icon)} size={16} className={styles.backlinkIcon} />
+    <UnstyledButton onClick={handleClick} className={styles.backlinkRow}>
+      <Icon
+        name={getIconFromEmoji(icon)}
+        size={16}
+        className={styles.backlinkIcon}
+      />
       <span className={styles.backlinkContent}>
         <Text component="span" className={styles.backlinkName} truncate>
           {name}

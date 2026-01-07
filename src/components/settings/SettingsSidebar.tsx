@@ -34,7 +34,12 @@ const SECONDARY_NAV_ITEMS: Array<{
   color?: 'brick';
 }> = [
   { id: 'about', icon: 'info', label: 'About' },
-  { id: 'danger', icon: 'alert-triangle', label: 'Danger Zone', color: 'brick' },
+  {
+    id: 'danger',
+    icon: 'alert-triangle',
+    label: 'Danger Zone',
+    color: 'brick',
+  },
 ];
 
 export function SettingsSidebar({

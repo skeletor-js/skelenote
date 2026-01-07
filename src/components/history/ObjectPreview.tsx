@@ -4,7 +4,17 @@
  */
 
 import { useMemo } from 'react';
-import { Stack, Group, Text, Button, Box, ActionIcon, Badge, ScrollArea, SimpleGrid } from '@mantine/core';
+import {
+  Stack,
+  Group,
+  Text,
+  Button,
+  Box,
+  ActionIcon,
+  Badge,
+  ScrollArea,
+  SimpleGrid,
+} from '@mantine/core';
 import { useTypeRegistry, useObjects } from '@/contexts';
 import { Icon } from '@/components/ui/Icon';
 import { getIconFromEmoji, type IconName } from '@/lib/icons';
@@ -77,7 +87,8 @@ export function ObjectPreview({
   const rawIcon = typeDef?.icon ?? '📄';
   // If it's a short string (1-2 chars), it's likely an emoji, so convert it
   // Otherwise it's already an icon name
-  const icon: IconName = rawIcon.length <= 2 ? getIconFromEmoji(rawIcon) : (rawIcon as IconName);
+  const icon: IconName =
+    rawIcon.length <= 2 ? getIconFromEmoji(rawIcon) : (rawIcon as IconName);
 
   // Get content - it's stored as a property in the historical object (BlockNote JSON)
   const content = useMemo(() => {
@@ -103,7 +114,9 @@ export function ObjectPreview({
         if (formatted) {
           properties.push({
             id: key,
-            label: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
+            label:
+              key.charAt(0).toUpperCase() +
+              key.slice(1).replace(/([A-Z])/g, ' $1'),
             value: formatted,
           });
         }
@@ -143,7 +156,13 @@ export function ObjectPreview({
   return (
     <Stack gap={0} h="100%" className={classes.previewContainer}>
       {/* Header */}
-      <Group justify="space-between" wrap="nowrap" px="sm" py="xs" className={classes.header}>
+      <Group
+        justify="space-between"
+        wrap="nowrap"
+        px="sm"
+        py="xs"
+        className={classes.header}
+      >
         <Group gap="xs">
           <ActionIcon
             variant="subtle"
@@ -155,10 +174,16 @@ export function ObjectPreview({
             <Icon name="chevron-left" size={16} />
           </ActionIcon>
 
-          <Icon name={icon} size={18} style={{ color: 'var(--mantine-color-gray-6)' }} />
+          <Icon
+            name={icon}
+            size={18}
+            style={{ color: 'var(--mantine-color-gray-6)' }}
+          />
 
           <Group gap="xs" wrap="nowrap">
-            <Text size="sm" fw={600}>{title}</Text>
+            <Text size="sm" fw={600}>
+              {title}
+            </Text>
             <Badge size="xs" variant="light" color="ember" radius="sm">
               {formattedTimestamp}
             </Badge>
@@ -200,8 +225,15 @@ export function ObjectPreview({
               </Text>
               <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs">
                 {visibleProperties.map(({ id, label, value }) => (
-                  <Group key={id} gap="xs" wrap="nowrap" className={classes.propertyRow}>
-                    <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>{label}</Text>
+                  <Group
+                    key={id}
+                    gap="xs"
+                    wrap="nowrap"
+                    className={classes.propertyRow}
+                  >
+                    <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>
+                      {label}
+                    </Text>
                     <Text size="sm">{value}</Text>
                   </Group>
                 ))}
@@ -236,7 +268,9 @@ export function ObjectPreview({
             </Text>
             <Stack gap={4}>
               <Group gap="xs" wrap="nowrap" className={classes.propertyRow}>
-                <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>Created</Text>
+                <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>
+                  Created
+                </Text>
                 <Text size="sm">
                   {new Date(object.createdAt).toLocaleString(undefined, {
                     month: 'short',
@@ -247,7 +281,9 @@ export function ObjectPreview({
                 </Text>
               </Group>
               <Group gap="xs" wrap="nowrap" className={classes.propertyRow}>
-                <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>Modified</Text>
+                <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>
+                  Modified
+                </Text>
                 <Text size="sm">
                   {new Date(object.updatedAt).toLocaleString(undefined, {
                     month: 'short',
@@ -259,13 +295,22 @@ export function ObjectPreview({
               </Group>
               {object.inboxed && (
                 <Group gap="xs" wrap="nowrap" className={classes.propertyRow}>
-                  <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>Status</Text>
+                  <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>
+                    Status
+                  </Text>
                   <Text size="sm">In Inbox</Text>
                 </Group>
               )}
               <Group gap="xs" wrap="nowrap" className={classes.propertyRow}>
-                <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>ID</Text>
-                <Text size="xs" c="dimmed" ff="monospace" className={classes.objectId}>
+                <Text size="xs" c="dimmed" style={{ minWidth: 80 }}>
+                  ID
+                </Text>
+                <Text
+                  size="xs"
+                  c="dimmed"
+                  ff="monospace"
+                  className={classes.objectId}
+                >
                   {object.id}
                 </Text>
               </Group>

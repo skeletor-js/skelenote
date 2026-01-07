@@ -54,7 +54,9 @@ export function TemplatePicker({
   const typeRegistry = useTypeRegistry();
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [typeFilter, setTypeFilter] = useState<string | null>(targetTypeId ?? null);
+  const [typeFilter, setTypeFilter] = useState<string | null>(
+    targetTypeId ?? null
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -82,7 +84,9 @@ export function TemplatePicker({
         const typeDef = typeRegistry.get(id);
         return typeDef ? { id, name: typeDef.name, icon: typeDef.icon } : null;
       })
-      .filter((t): t is { id: string; name: string; icon: string } => t !== null)
+      .filter(
+        (t): t is { id: string; name: string; icon: string } => t !== null
+      )
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [templates, typeRegistry]);
 
@@ -116,7 +120,9 @@ export function TemplatePicker({
   // Scroll selected item into view
   useEffect(() => {
     if (!listRef.current) return;
-    const selectedItem = listRef.current.querySelector('[data-selected="true"]');
+    const selectedItem = listRef.current.querySelector(
+      '[data-selected="true"]'
+    );
     selectedItem?.scrollIntoView({ block: 'nearest' });
   }, [selectedIndex]);
 
@@ -126,7 +132,9 @@ export function TemplatePicker({
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setSelectedIndex((prev) => Math.min(prev + 1, filteredTemplates.length - 1));
+          setSelectedIndex((prev) =>
+            Math.min(prev + 1, filteredTemplates.length - 1)
+          );
           break;
         case 'ArrowUp':
           e.preventDefault();
@@ -172,13 +180,7 @@ export function TemplatePicker({
   };
 
   return (
-    <Modal
-      opened={isOpen}
-      onClose={onClose}
-      title={title}
-      centered
-      size="md"
-    >
+    <Modal opened={isOpen} onClose={onClose} title={title} centered size="md">
       <Stack gap="sm" onKeyDown={handleKeyDown}>
         {/* Search and filter */}
         <Group gap="sm">
@@ -236,7 +238,12 @@ export function TemplatePicker({
                           {template.name}
                         </Text>
                         {template.isDailyNoteTemplate && (
-                          <Badge size="xs" variant="light" color="ember" radius="sm">
+                          <Badge
+                            size="xs"
+                            variant="light"
+                            color="ember"
+                            radius="sm"
+                          >
                             Daily
                           </Badge>
                         )}
@@ -271,15 +278,21 @@ export function TemplatePicker({
             <Group gap={4}>
               <Kbd size="xs">↑</Kbd>
               <Kbd size="xs">↓</Kbd>
-              <Text size="xs" c="dimmed">Navigate</Text>
+              <Text size="xs" c="dimmed">
+                Navigate
+              </Text>
             </Group>
             <Group gap={4}>
               <Kbd size="xs">↵</Kbd>
-              <Text size="xs" c="dimmed">Select</Text>
+              <Text size="xs" c="dimmed">
+                Select
+              </Text>
             </Group>
             <Group gap={4}>
               <Kbd size="xs">Esc</Kbd>
-              <Text size="xs" c="dimmed">Cancel</Text>
+              <Text size="xs" c="dimmed">
+                Cancel
+              </Text>
             </Group>
           </Group>
         </Box>

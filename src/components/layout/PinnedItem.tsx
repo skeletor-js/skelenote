@@ -9,6 +9,7 @@ import { useSidebar, useTypeRegistry, useNavigation } from '@/contexts';
 import { useContextMenu, usePinnedObjects } from '@/hooks';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import type { SkelenoteObject } from '@/lib/types';
+import styles from './SidebarItem.module.css';
 
 interface PinnedItemProps {
   object: SkelenoteObject;
@@ -33,7 +34,8 @@ export function PinnedItem({
   const { navigateToObject } = useNavigation();
   const typeRegistry = useTypeRegistry();
   const { unpin } = usePinnedObjects();
-  const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
+  const { isOpen, position, openContextMenu, closeContextMenu } =
+    useContextMenu();
 
   // Get type info for icon
   const typeDef = typeRegistry.get(object.typeId);
@@ -97,7 +99,9 @@ export function PinnedItem({
           onContextMenu={openContextMenu}
           style={{
             opacity: isDragging ? 0.5 : 1,
-            borderTop: isDragOver ? '2px solid var(--mantine-color-ember-5)' : undefined,
+            borderTop: isDragOver
+              ? '2px solid var(--mantine-color-ember-5)'
+              : undefined,
           }}
         >
           <NavLink
@@ -106,6 +110,7 @@ export function PinnedItem({
             active={isSelected}
             onClick={handleClick}
             variant="subtle"
+            className={styles.navLink}
           />
         </Box>
       </Menu.Target>
