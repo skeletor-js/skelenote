@@ -149,7 +149,38 @@ docs: update contributing guide
 refactor: simplify object context provider
 ```
 
-### Pull Request Process
+## GitHub Projects Workflow
+
+We use GitHub Projects to track all roadmap work. Every feature in `ROADMAP.md` has a corresponding GitHub issue.
+
+### Finding Work
+
+1. View the [Skelenote Roadmap](https://github.com/users/skeletor-js/projects/1) project board
+2. Look at "Todo" column for unassigned items
+3. Or filter by milestone: `gh issue list --milestone "v0.2 - Exodus" --state open`
+
+### Claiming an Issue
+
+1. Assign yourself to the issue
+2. Move it to "In Progress" on the project board
+3. Create a feature branch: `git checkout -b feature/<issue-number>-<short-name>`
+
+### Linking PRs to Issues
+
+Include in your PR description:
+- `Closes #<issue-number>` - Auto-closes issue when PR merges
+- `Relates to #<issue-number>` - Links without auto-close
+
+### Labels
+
+| Label | Meaning |
+|-------|---------|
+| `roadmap` | Tracked in product roadmap |
+| `phase-1`, `phase-2`, etc. | Phase within release |
+| `competitive-gap` | Feature identified from competitor analysis |
+| `package` | Open source package extraction |
+
+## Pull Request Process
 
 1. Fork the repository
 2. Create a feature branch from `main`
