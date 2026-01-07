@@ -44,6 +44,7 @@
 * **Native Mobile App:** Full-featured Tauri-based iOS and Android app.
 * **Local Whisper:** Built-in, unlimited offline voice transcription (user downloads local model).
 * **Local AI Copilot:** On-device LLM integration for auto-tagging, summarization, and content generation (user downloads local model).
+* **Enhanced Export:** PDF, HTML, JSON, and Plain Text formats.
 * **The Exodus Wizards:** Import tools for:
     * **Notion:** Databases → Object Types.
     * **Obsidian:** Frontmatter → Properties.
@@ -55,7 +56,5 @@
 ## Part III: In Development / Future
 *Features currently in the lab.*
 
-* **Sovereign Publish:** Render objects/projects as public web pages via shareable links (Self-hosted or Cloud Relay).
-* **Campfire Collaboration:** Real-time, multi-user collaboration via P2P (LAN) or Cloud Relay.
 * **Canvas View:** Spatial thinking board powered by React Flow.
 * **Auto-Lock:** Inactivity tracking with password or biometric unlock.

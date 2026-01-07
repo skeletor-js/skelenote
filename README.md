@@ -148,10 +148,10 @@ skelenote/
 ## Roadmap
 
 ### The Exodus (Next)
+- **Enhanced Export** — PDF, HTML, JSON, and Plain Text formats
 - **Import Wizards** — One-click migration from Notion, Obsidian, and Roam
 - **Native Mobile** — iOS and Android apps (same vault, same encryption)
 - **Local Whisper** — Unlimited offline voice transcription (bring your own model)
-- **Skelenote Publish** — One-click web publishing from your vault
 - **Graph View** — Visualize the neural network of your knowledge
 
 ---

@@ -351,7 +351,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 | Mobile apps | In development | Native Tauri iOS/Android coming |
 | Graph visualization | Planned | Visual map of connections |
 | Web clipper | Not planned | Use export/import instead |
-| Real-time collaboration | Future | Campfire is sync, not live co-editing |
+| Real-time collaboration | Not planned | Unapologetically single-player |
 | Plugin ecosystem | Not planned | We build features natively |
 | API/integrations | Future | Focus on local-first integrity first |
 | Security audit | Planned | Will complete post-beta |
@@ -374,7 +374,7 @@ We believe in building fewer features well rather than everything poorly. If a f
 
 ### Not Ideal (Yet)
 
-- **Teams needing real-time collaboration** (Notion, Den, or Craft are better today)
+- **Teams needing real-time collaboration** (Skelenote is single-player by design)
 - **Heavy mobile users** (until our mobile apps ship)
 - **Plugin tinkerers** (Obsidian's ecosystem is unmatched)
 - **Visual/spatial thinkers** (Heptabase or Kosmik may suit you better)
