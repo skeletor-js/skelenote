@@ -22,6 +22,14 @@ export {
 } from './frontmatter';
 export { convertBlockNoteToMarkdown } from './markdown';
 
+// PDF exports - lazy loaded
+export { exportObjectToPDF, exportAllToPDFZip } from './pdf';
+export type {
+  PDFExportOptions as PDFModuleOptions,
+  PDFBulkExportOptions,
+} from './pdf';
+export * from './pdf-theme';
+
 /**
  * Sanitize a title for use as a filename
  * Removes/replaces characters that are invalid in filenames

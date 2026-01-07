@@ -100,3 +100,105 @@ export type SupportedBlockType =
  * Supported inline content types
  */
 export type SupportedInlineType = 'text' | 'link' | 'mention';
+
+/**
+ * Export format type
+ * Extensible for future formats: html, json, plaintext
+ */
+export type ExportFormat = 'markdown' | 'pdf' | 'html' | 'json' | 'plaintext';
+
+/**
+ * Currently implemented export formats
+ */
+export const IMPLEMENTED_FORMATS: ExportFormat[] = ['markdown', 'pdf'];
+
+/**
+ * Export format metadata
+ */
+export interface ExportFormatInfo {
+  value: ExportFormat;
+  label: string;
+  icon: string;
+  description: string;
+  implemented: boolean;
+}
+
+/**
+ * All export formats with metadata
+ */
+export const EXPORT_FORMATS: ExportFormatInfo[] = [
+  {
+    value: 'markdown',
+    label: 'Markdown',
+    icon: 'file-text',
+    description: 'Standard .md format with wiki-links',
+    implemented: true,
+  },
+  {
+    value: 'pdf',
+    label: 'PDF',
+    icon: 'file',
+    description: 'Styled document with Skelenote typography',
+    implemented: true,
+  },
+  {
+    value: 'html',
+    label: 'HTML',
+    icon: 'code',
+    description: 'Web-ready HTML document',
+    implemented: false,
+  },
+  {
+    value: 'json',
+    label: 'JSON',
+    icon: 'braces',
+    description: 'Raw BlockNote JSON structure',
+    implemented: false,
+  },
+  {
+    value: 'plaintext',
+    label: 'Plain Text',
+    icon: 'file-type',
+    description: 'Simple text without formatting',
+    implemented: false,
+  },
+];
+
+/**
+ * PDF-specific export options
+ */
+export interface PDFExportOptions {
+  /** Theme for PDF styling */
+  theme: 'light' | 'dark';
+  /** Include the title at the top of the PDF */
+  includeTitle: boolean;
+  /** Include metadata (dates, type) in PDF */
+  includeMetadata: boolean;
+  /** Page size */
+  pageSize?: 'A4' | 'LETTER';
+}
+
+/**
+ * Default PDF export options
+ */
+export const DEFAULT_PDF_EXPORT_OPTIONS: PDFExportOptions = {
+  theme: 'light',
+  includeTitle: true,
+  includeMetadata: false,
+  pageSize: 'A4',
+};
+
+/**
+ * Combined export options for the export modal
+ */
+export interface CombinedExportOptions {
+  format: ExportFormat;
+  /** Markdown-specific: include YAML frontmatter */
+  includeFrontmatter: boolean;
+  /** Include title in export */
+  includeTitle: boolean;
+  /** PDF-specific: theme */
+  pdfTheme: 'light' | 'dark';
+  /** PDF-specific: page size */
+  pageSize: 'A4' | 'LETTER';
+}

@@ -14,9 +14,17 @@ import {
   Checkbox,
   Progress,
   Box,
+  SegmentedControl,
 } from '@mantine/core';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
-import { exportAllToZip, type BulkExportProgress } from '@/lib/export';
+import {
+  exportAllToZip,
+  exportAllToPDFZip,
+  type BulkExportProgress,
+  type ExportFormat,
+  EXPORT_FORMATS,
+} from '@/lib/export';
 import { BuiltInTypeIds } from '@/lib/types';
 
 export function DataSettings() {
@@ -28,6 +36,11 @@ export function DataSettings() {
   const [progress, setProgress] = useState<BulkExportProgress | null>(null);
   const [organizeByType, setOrganizeByType] = useState(true);
   const [includeArchived, setIncludeArchived] = useState(false);
+  const [exportFormat, setExportFormat] = useState<ExportFormat>('markdown');
+  const [pdfTheme, setPdfTheme] = useState<'light' | 'dark'>('light');
+
+  // Get implemented formats for the selector
+  const implementedFormats = EXPORT_FORMATS.filter((f) => f.implemented);
 
   // Get object counts for display - grouped by type
   const objectCounts = useCallback(() => {
@@ -104,14 +117,27 @@ export function DataSettings() {
         }
       };
 
-      const filePath = await exportAllToZip(
-        objects,
-        typeRegistry,
-        getContent,
-        resolveObjectName,
-        { organizeByType },
-        setProgress
-      );
+      let filePath: string | null = null;
+
+      if (exportFormat === 'pdf') {
+        filePath = await exportAllToPDFZip(
+          objects,
+          typeRegistry,
+          getContent,
+          resolveObjectName,
+          { organizeByType, pdfTheme },
+          setProgress
+        );
+      } else {
+        filePath = await exportAllToZip(
+          objects,
+          typeRegistry,
+          getContent,
+          resolveObjectName,
+          { organizeByType },
+          setProgress
+        );
+      }
 
       if (filePath) {
         const filename = filePath.split('/').pop() || filePath;
@@ -138,6 +164,8 @@ export function DataSettings() {
     typeRegistry,
     organizeByType,
     includeArchived,
+    exportFormat,
+    pdfTheme,
     addToast,
     progress?.total,
     objectCounts,
@@ -183,9 +211,65 @@ export function DataSettings() {
           Export
         </Text>
         <Text size="sm" c="dimmed" mb="md">
-          Export all your objects as Markdown files in a ZIP archive. Perfect
-          for backups or migrating to other tools like Obsidian.
+          {exportFormat === 'pdf'
+            ? 'Export all your objects as styled PDF files in a ZIP archive.'
+            : 'Export all your objects as Markdown files in a ZIP archive. Perfect for backups or migrating to other tools like Obsidian.'}
         </Text>
+
+        {/* Format Selector */}
+        <Box mb="md">
+          <Text size="sm" fw={500} mb="xs">
+            Format
+          </Text>
+          <SegmentedControl
+            value={exportFormat}
+            onChange={(value) => setExportFormat(value as ExportFormat)}
+            disabled={isExporting}
+            data={implementedFormats.map((f) => ({
+              value: f.value,
+              label: (
+                <Group gap="xs" justify="center">
+                  <Icon name={f.icon as IconName} size={14} />
+                  <Text size="sm">{f.label}</Text>
+                </Group>
+              ),
+            }))}
+          />
+        </Box>
+
+        {/* PDF Theme (only when PDF selected) */}
+        {exportFormat === 'pdf' && (
+          <Box mb="md">
+            <Text size="sm" fw={500} mb="xs">
+              Theme
+            </Text>
+            <SegmentedControl
+              value={pdfTheme}
+              onChange={(value) => setPdfTheme(value as 'light' | 'dark')}
+              disabled={isExporting}
+              data={[
+                {
+                  value: 'light',
+                  label: (
+                    <Group gap="xs" justify="center">
+                      <Icon name="sun" size={14} />
+                      <Text size="sm">Light</Text>
+                    </Group>
+                  ),
+                },
+                {
+                  value: 'dark',
+                  label: (
+                    <Group gap="xs" justify="center">
+                      <Icon name="moon" size={14} />
+                      <Text size="sm">Dark</Text>
+                    </Group>
+                  ),
+                },
+              ]}
+            />
+          </Box>
+        )}
 
         <Box
           mb="md"
@@ -267,8 +351,9 @@ export function DataSettings() {
         </Button>
 
         <Text size="xs" c="dimmed" mt="sm">
-          Each object becomes a Markdown file with YAML frontmatter. Mentions
-          are converted to [[wiki-links]].
+          {exportFormat === 'pdf'
+            ? 'Each object becomes a styled PDF with Skelenote typography. Images are embedded for self-contained documents.'
+            : 'Each object becomes a Markdown file with YAML frontmatter. Mentions are converted to [[wiki-links]].'}
         </Text>
       </Box>
     </Stack>
