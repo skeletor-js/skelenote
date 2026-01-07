@@ -5,7 +5,12 @@ description: Create a commit with [skip ci] to skip CI pipeline
 
 # Commit Skip Skill
 
-Creates a commit that skips CI, useful for documentation, typos, or WIP saves.
+Creates a commit that skips CI entirely, useful for documentation-only changes pushed to main.
+
+**Note:** Since CI only runs on push to main (not on feature branches or PRs), this skill is primarily useful for:
+- Documentation changes pushed directly to main
+- Typo fixes on main
+- Changes that don't affect code behavior
 
 ## Steps
 
@@ -39,18 +44,19 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ## When to Use
 
-- Documentation-only changes
-- Typo fixes
+- Documentation-only changes **pushed directly to main**
+- Typo fixes on main
 - README updates
 - Comment improvements
-- WIP saves that don't need testing
+- Config changes that don't affect build/test (e.g., `.gitignore`)
 
 ## When NOT to Use
 
-- Any code changes that affect functionality
+- Any code changes that affect functionality (use `/check` + `/ship` instead)
 - Changes to test files
 - Changes to build configuration
-- Anything that should be validated by CI
+- Feature branch work (CI doesn't run there anyway)
+- PRs (CI doesn't run on PRs, so `[skip ci]` has no effect)
 
 ## Example
 

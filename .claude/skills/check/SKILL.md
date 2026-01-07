@@ -5,7 +5,9 @@ description: Run all pre-commit validation (lint, typecheck, tests)
 
 # Check Skill
 
-Runs all validation that CI will run, catching failures locally before pushing.
+**Primary validation for Skelenote development.** Since CI does NOT run on feature branches or PRs, this skill is REQUIRED before merging to main.
+
+Runs all validation that CI will run after merge, catching failures locally.
 
 ## Steps
 
@@ -44,8 +46,8 @@ cd src-tauri && cargo test
 
 ## When to Use
 
-- Before committing (especially to main)
-- Before creating a PR
+- **ALWAYS before merging a PR** (CI won't catch issues on PRs)
+- Before creating a PR (to avoid post-merge failures)
 - After making significant changes
 - When you want to validate everything is working
 
@@ -89,3 +91,5 @@ This runs the same checks as `.github/workflows/test.yml`:
 - `pnpm exec tsc --noEmit`
 - `pnpm test:run`
 - `cargo test`
+
+**Important:** CI only runs after merge to main. Running `/check` locally is your primary gate for code quality.

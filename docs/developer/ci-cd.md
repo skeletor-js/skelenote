@@ -8,9 +8,24 @@ The CI/CD pipeline consists of three main workflows:
 
 | Workflow | Trigger | Purpose | Duration |
 |----------|---------|---------|----------|
-| **Test** | Every push, every PR | Linting, frontend tests, Rust tests | ~3-5 min |
-| **Build** | Push to `main`, PRs to `main` | Cross-platform builds (macOS, Windows, Linux) | ~15-25 min |
+| **Test** | Push to `main` | Linting, frontend tests, Rust tests | ~3-5 min |
+| **Build** | Push to `main` | Cross-platform builds (macOS, Windows, Linux) | ~15-25 min |
 | **Release** | Version tags (`v*`) | Publish GitHub releases with binaries | ~20-30 min |
+
+### Local-First Development Philosophy
+
+**CI does NOT run on feature branches or pull requests.** This is intentional:
+
+- Skelenote is a local-first app with extensive local testing capabilities
+- Running CI on every push wastes GitHub Actions minutes
+- Developers must validate locally before merging using `/check`
+
+**Workflow:**
+1. Work on feature branch locally
+2. Run `/check` before committing (lint, types, tests)
+3. Push and create PR (no CI runs)
+4. Merge to main → CI validates and builds
+5. If CI fails after merge, fix immediately on main or revert
 
 ## Workflow Details
 
@@ -26,7 +41,7 @@ The CI/CD pipeline consists of three main workflows:
 5. Run frontend tests with Vitest (`pnpm test:run`)
 6. Run Rust tests (`cargo test`)
 
-**Purpose:** Fast feedback loop for code quality and correctness. This runs on every push to any branch and on all PRs.
+**Purpose:** Final validation after merge to main. Ensures code quality and correctness before builds run.
 
 **How to replicate locally:**
 ```bash

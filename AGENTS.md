@@ -37,12 +37,14 @@ git checkout -b feature/descriptive-name
 
 Skelenote uses GitHub Actions for continuous integration and cross-platform builds. See `docs/developer/ci-cd.md` for complete details.
 
+**Local-First Development:** CI does NOT run on feature branches or PRs. You must validate locally before merging. This reduces GitHub Actions usage significantly.
+
 ### Workflows
 
 | Workflow | Trigger | What it does |
 |----------|---------|--------------|
-| `test.yml` | All pushes, PRs | Lint (`pnpm lint`), frontend tests (`pnpm test:run`), Rust tests (`cargo test`) on Ubuntu |
-| `build.yml` | Push/PR to main | Build for macOS (ARM + Intel), Windows, Linux; upload artifacts |
+| `test.yml` | Push to main | Lint (`pnpm lint`), frontend tests (`pnpm test:run`), Rust tests (`cargo test`) on Ubuntu |
+| `build.yml` | Push to main | Build for macOS (ARM + Intel), Windows, Linux; upload artifacts |
 | `release.yml` | Version tags (`v*`) | Create draft GitHub release with all platform binaries |
 
 ### Platform Support
@@ -52,15 +54,17 @@ All platforms are fully tested and built in CI:
 - **Windows**: x86_64 - `.exe` NSIS installer
 - **Linux**: `.deb` (Debian/Ubuntu), `.rpm` (Fedora/RHEL), `.AppImage` (universal)
 
-### Before Pushing
+### Before Merging (REQUIRED)
 
-Run the same checks CI runs to catch issues early:
+Since CI doesn't run on PRs, you MUST validate locally before merging:
 ```bash
 pnpm lint                  # ESLint
 pnpm exec tsc --noEmit     # TypeScript
 pnpm test:run              # Frontend tests
 cd src-tauri && cargo test # Rust tests
 ```
+
+Or use the `/check` skill to run all validations at once.
 
 ### Creating a Release
 
