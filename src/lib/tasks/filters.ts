@@ -3,12 +3,25 @@
  */
 
 import type { SkelenoteObject } from '../types';
-import { isToday, isOverdue, isThisWeek, isBeyondThisWeek, startOfDay, endOfDay } from '../utils/date';
+import {
+  isToday,
+  isOverdue,
+  isThisWeek,
+  isBeyondThisWeek,
+  startOfDay,
+  endOfDay,
+} from '../utils/date';
 
 /**
  * Task filter types matching sidebar navigation
  */
-export type TaskFilter = 'today' | 'this-week' | 'overdue' | 'waiting' | 'eventually' | 'completed';
+export type TaskFilter =
+  | 'today'
+  | 'this-week'
+  | 'overdue'
+  | 'waiting'
+  | 'eventually'
+  | 'completed';
 
 /**
  * Priority order for sorting (higher number = higher priority)
@@ -106,7 +119,10 @@ export function filterCompleted(task: SkelenoteObject): boolean {
  * Filter tasks by a specific date
  * Returns all tasks (including completed) with dueDate on the given day
  */
-export function filterTasksByDate(tasks: SkelenoteObject[], date: Date): SkelenoteObject[] {
+export function filterTasksByDate(
+  tasks: SkelenoteObject[],
+  date: Date
+): SkelenoteObject[] {
   const dayStart = startOfDay(date).getTime();
   const dayEnd = endOfDay(date).getTime();
 
@@ -120,7 +136,9 @@ export function filterTasksByDate(tasks: SkelenoteObject[], date: Date): Skeleno
 /**
  * Get the appropriate filter function for a task filter type
  */
-export function getTaskFilter(filter: TaskFilter): (task: SkelenoteObject) => boolean {
+export function getTaskFilter(
+  filter: TaskFilter
+): (task: SkelenoteObject) => boolean {
   switch (filter) {
     case 'today':
       return filterToday;
@@ -168,7 +186,10 @@ export function getDefaultSort(filter: TaskFilter): SortConfig {
 /**
  * Sort tasks by the specified configuration
  */
-export function sortTasks(tasks: SkelenoteObject[], config: SortConfig): SkelenoteObject[] {
+export function sortTasks(
+  tasks: SkelenoteObject[],
+  config: SortConfig
+): SkelenoteObject[] {
   const sorted = [...tasks];
 
   sorted.sort((a, b) => {
@@ -181,8 +202,10 @@ export function sortTasks(tasks: SkelenoteObject[], config: SortConfig): Skeleno
         bValue = getPriorityValue(b.properties.priority as string | null);
         break;
       case 'dueDate':
-        aValue = (a.properties.dueDate as number | null) ?? Number.MAX_SAFE_INTEGER;
-        bValue = (b.properties.dueDate as number | null) ?? Number.MAX_SAFE_INTEGER;
+        aValue =
+          (a.properties.dueDate as number | null) ?? Number.MAX_SAFE_INTEGER;
+        bValue =
+          (b.properties.dueDate as number | null) ?? Number.MAX_SAFE_INTEGER;
         break;
       case 'updatedAt':
         aValue = a.updatedAt;

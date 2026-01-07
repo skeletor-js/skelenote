@@ -3,7 +3,9 @@
  */
 
 .day {
-  transition: background-color 150ms ease, border-color 150ms ease;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
 }
 
 /* Warm hover - "Fireplace Glow" effect */
@@ -17,10 +19,10 @@
 }
 
 /* Dark mode */
-:global([data-mantine-color-scheme="dark"]) .day:hover {
+:global([data-mantine-color-scheme='dark']) .day:hover {
   background-color: var(--surface-raised);
 }
 
-:global([data-mantine-color-scheme="dark"]) .day[data-today='true']:hover {
+:global([data-mantine-color-scheme='dark']) .day[data-today='true']:hover {
   background-color: var(--mantine-color-ember-9);
 }

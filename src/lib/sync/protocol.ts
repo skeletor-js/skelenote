@@ -123,5 +123,7 @@ export function isValidMessageType(type: number): type is MessageTypeValue {
  * Check if a message type is a device management message
  */
 export function isDeviceManagementMessage(type: MessageTypeValue): boolean {
-  return type >= MessageType.DEVICE_REGISTRY && type <= MessageType.DEVICE_RENAME;
+  return (
+    type >= MessageType.DEVICE_REGISTRY && type <= MessageType.DEVICE_RENAME
+  );
 }

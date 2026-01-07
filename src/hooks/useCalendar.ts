@@ -65,11 +65,15 @@ export function useCalendar(): UseCalendarResult {
 
   // Month navigation
   const goToPreviousMonth = useCallback(() => {
-    setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+    setCurrentMonth(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
+    );
   }, []);
 
   const goToNextMonth = useCallback(() => {
-    setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+    setCurrentMonth(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
+    );
   }, []);
 
   const goToToday = useCallback(() => {
@@ -81,9 +85,15 @@ export function useCalendar(): UseCalendarResult {
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
 
-  const monthLabel = useMemo(() => formatMonthYear(currentMonth), [currentMonth]);
+  const monthLabel = useMemo(
+    () => formatMonthYear(currentMonth),
+    [currentMonth]
+  );
   const daysInMonth = useMemo(() => getDaysInMonth(year, month), [year, month]);
-  const firstDayOffset = useMemo(() => getFirstDayOfWeek(year, month), [year, month]);
+  const firstDayOffset = useMemo(
+    () => getFirstDayOfWeek(year, month),
+    [year, month]
+  );
 
   // Get daily notes for the current month
   const dailyNotesInMonth = useMemo(() => {

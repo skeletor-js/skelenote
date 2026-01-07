@@ -71,10 +71,10 @@
 }
 
 /* Dark mode */
-:global([data-mantine-color-scheme="dark"]) .chip {
+:global([data-mantine-color-scheme='dark']) .chip {
   background-color: var(--mantine-color-dark-6);
 }
 
-:global([data-mantine-color-scheme="dark"]) .chip:hover {
+:global([data-mantine-color-scheme='dark']) .chip:hover {
   background-color: var(--mantine-color-dark-5);
 }

@@ -1,4 +1,8 @@
-import type { PropertyDefinition, PropertyValue, SkelenoteObject } from '@/lib/types';
+import type {
+  PropertyDefinition,
+  PropertyValue,
+  SkelenoteObject,
+} from '@/lib/types';
 import {
   TextInput,
   NumberInput,
@@ -188,7 +192,8 @@ export function PropertyEditor({
     case 'file':
       return (
         <div style={placeholderStyle} id={id}>
-          {formatValue(value)} <span style={{ opacity: 0.6 }}>(file picker - deferred)</span>
+          {formatValue(value)}{' '}
+          <span style={{ opacity: 0.6 }}>(file picker - deferred)</span>
         </div>
       );
 
@@ -204,7 +209,8 @@ export function PropertyEditor({
     default:
       return (
         <div style={placeholderStyle} id={id}>
-          {formatValue(value)} <span style={{ opacity: 0.6 }}>(unknown type: {type})</span>
+          {formatValue(value)}{' '}
+          <span style={{ opacity: 0.6 }}>(unknown type: {type})</span>
         </div>
       );
   }

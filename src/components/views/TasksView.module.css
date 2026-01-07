@@ -84,7 +84,7 @@
 }
 
 /* Dark mode adjustments */
-[data-mantine-color-scheme="dark"] {
+[data-mantine-color-scheme='dark'] {
   .tabsContainer {
     background-color: var(--surface-canvas);
   }

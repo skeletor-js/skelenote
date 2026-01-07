@@ -1,5 +1,18 @@
 import { useState } from 'react';
-import { Stack, Group, Title, Text, Box, Switch, Badge, Alert, Button, ThemeIcon, Loader, Code } from '@mantine/core';
+import {
+  Stack,
+  Group,
+  Title,
+  Text,
+  Box,
+  Switch,
+  Badge,
+  Alert,
+  Button,
+  ThemeIcon,
+  Loader,
+  Code,
+} from '@mantine/core';
 import { Icon } from '@/components/ui';
 import { useLocalSyncSafe } from '@/contexts/LocalSyncContext';
 import { connectToPeer, getConnectedPeers } from '@/lib/sync/local';
@@ -7,7 +20,9 @@ import { connectToPeer, getConnectedPeers } from '@/lib/sync/local';
 export function LocalSyncSettings() {
   const localSync = useLocalSyncSafe();
   const [connectingTo, setConnectingTo] = useState<string | null>(null);
-  const [connectedPeerIds, setConnectedPeerIds] = useState<Set<string>>(new Set());
+  const [connectedPeerIds, setConnectedPeerIds] = useState<Set<string>>(
+    new Set()
+  );
 
   // Show nothing if context not available (not in Tauri environment)
   if (!localSync) {
@@ -31,10 +46,12 @@ export function LocalSyncSettings() {
     setConnectingTo(deviceId);
     try {
       await connectToPeer(deviceId);
-      console.log('[LocalSyncSettings] Connection successful, refreshing peer count...');
+      console.log(
+        '[LocalSyncSettings] Connection successful, refreshing peer count...'
+      );
       // Refresh connected peers (local UI state)
       const peers = await getConnectedPeers();
-      setConnectedPeerIds(new Set(peers.map(p => p.deviceId)));
+      setConnectedPeerIds(new Set(peers.map((p) => p.deviceId)));
       // Refresh context's connected peer count (triggers docStore wiring)
       await refreshConnectedCount();
     } catch (err) {
@@ -172,7 +189,9 @@ export function LocalSyncSettings() {
           {status === 'discovering' && discoveredPeers.length === 0 && (
             <Group gap="sm" c="dimmed">
               <Loader size="xs" />
-              <Text size="sm">Looking for devices with the same Skeleton Key...</Text>
+              <Text size="sm">
+                Looking for devices with the same Skeleton Key...
+              </Text>
             </Group>
           )}
 
@@ -186,18 +205,26 @@ export function LocalSyncSettings() {
             >
               <Stack gap="xs">
                 <Group justify="space-between">
-                  <Text size="xs" c="dimmed">This device:</Text>
-                  <Text size="sm" fw={500}>{deviceInfo.deviceName}</Text>
+                  <Text size="xs" c="dimmed">
+                    This device:
+                  </Text>
+                  <Text size="sm" fw={500}>
+                    {deviceInfo.deviceName}
+                  </Text>
                 </Group>
                 {serverPort && (
                   <Group justify="space-between">
-                    <Text size="xs" c="dimmed">Port:</Text>
+                    <Text size="xs" c="dimmed">
+                      Port:
+                    </Text>
                     <Text size="sm">{serverPort}</Text>
                   </Group>
                 )}
                 {deviceInfo.fingerprint && (
                   <Group justify="space-between">
-                    <Text size="xs" c="dimmed">Fingerprint:</Text>
+                    <Text size="xs" c="dimmed">
+                      Fingerprint:
+                    </Text>
                     <Code fz="xs">{deviceInfo.fingerprint}</Code>
                   </Group>
                 )}

@@ -3,7 +3,6 @@
  * Backlinks section with smart defaults and inline layout
  */
 
-
 .sectionHeader {
   display: flex;
   align-items: center;
@@ -13,8 +12,6 @@
   user-select: none;
   border-radius: var(--mantine-radius-sm);
 }
-
-
 
 .backlinksList {
   padding-left: var(--mantine-spacing-md);
@@ -32,7 +29,7 @@
 }
 
 .backlinkRow:hover {
-  background-color: var(--mantine-color-gray-0);
+  background-color: var(--hover-warm);
 }
 
 .backlinkIcon {
@@ -69,8 +66,4 @@
   font-size: var(--mantine-font-size-sm);
 }
 
-/* Dark mode */
-
-:global([data-mantine-color-scheme="dark"]) .backlinkRow:hover {
-  background-color: var(--mantine-color-dark-6);
-}
+/* Dark mode handled by --hover-warm CSS variable */

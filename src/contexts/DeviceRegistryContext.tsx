@@ -28,7 +28,10 @@ import {
   blockDevice,
 } from '@/lib/devices';
 import { getDeviceId } from '@/lib/sync';
-import { broadcastDeviceRegistry, broadcastDeviceRevoke } from '@/lib/sync/local';
+import {
+  broadcastDeviceRegistry,
+  broadcastDeviceRevoke,
+} from '@/lib/sync/local';
 import { useSyncContextSafe } from './SyncContext';
 import { useToast } from './ToastContext';
 
@@ -56,13 +59,17 @@ interface DeviceRegistryContextValue {
   refresh: () => Promise<void>;
 }
 
-const DeviceRegistryContext = createContext<DeviceRegistryContextValue | null>(null);
+const DeviceRegistryContext = createContext<DeviceRegistryContextValue | null>(
+  null
+);
 
 interface DeviceRegistryProviderProps {
   children: ReactNode;
 }
 
-export function DeviceRegistryProvider({ children }: DeviceRegistryProviderProps) {
+export function DeviceRegistryProvider({
+  children,
+}: DeviceRegistryProviderProps) {
   const [devices, setDevices] = useState<DeviceInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,7 +101,11 @@ export function DeviceRegistryProvider({ children }: DeviceRegistryProviderProps
         }
       } catch (err) {
         if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to initialize device registry');
+          setError(
+            err instanceof Error
+              ? err.message
+              : 'Failed to initialize device registry'
+          );
           setIsLoading(false);
         }
       }
@@ -175,12 +186,18 @@ export function DeviceRegistryProvider({ children }: DeviceRegistryProviderProps
 
     // Handle revocation from another device
     syncClient.onDeviceRevokeReceived(async (payload: DeviceRevokePayload) => {
-      console.log('[DeviceRegistry] Received revocation for:', payload.deviceId);
+      console.log(
+        '[DeviceRegistry] Received revocation for:',
+        payload.deviceId
+      );
 
       // Get the revoking device to verify signature
       const revokingDevice = store.getDevice(payload.revokedBy);
       if (!revokingDevice) {
-        console.warn('[DeviceRegistry] Revocation from unknown device:', payload.revokedBy);
+        console.warn(
+          '[DeviceRegistry] Revocation from unknown device:',
+          payload.revokedBy
+        );
         return;
       }
 
@@ -210,25 +227,43 @@ export function DeviceRegistryProvider({ children }: DeviceRegistryProviderProps
 
         // Block locally for P2P
         await blockDevice(payload.deviceId);
-        console.log('[DeviceRegistry] Applied revocation for:', payload.deviceId);
+        console.log(
+          '[DeviceRegistry] Applied revocation for:',
+          payload.deviceId
+        );
       } catch (err) {
-        console.error('[DeviceRegistry] Failed to verify/apply revocation:', err);
+        console.error(
+          '[DeviceRegistry] Failed to verify/apply revocation:',
+          err
+        );
       }
     });
 
     // Handle device rename
     syncClient.onDeviceRenameReceived((payload: DeviceRenamePayload) => {
-      console.log('[DeviceRegistry] Received rename for:', payload.deviceId, '->', payload.newName);
+      console.log(
+        '[DeviceRegistry] Received rename for:',
+        payload.deviceId,
+        '->',
+        payload.newName
+      );
       store.renameDevice(payload.deviceId, payload.newName);
     });
 
     // Handle this device being revoked
     syncClient.onDeviceRevoked((deviceId: string, reason?: string) => {
-      console.log('[DeviceRegistry] This device has been revoked!', deviceId, reason);
+      console.log(
+        '[DeviceRegistry] This device has been revoked!',
+        deviceId,
+        reason
+      );
 
       // Verify it's actually this device
       if (deviceId !== currentDeviceId) {
-        console.warn('[DeviceRegistry] Revocation callback for different device:', deviceId);
+        console.warn(
+          '[DeviceRegistry] Revocation callback for different device:',
+          deviceId
+        );
         return;
       }
 
@@ -310,99 +345,131 @@ export function DeviceRegistryProvider({ children }: DeviceRegistryProviderProps
 
       await loadDevices();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to register device');
+      setError(
+        err instanceof Error ? err.message : 'Failed to register device'
+      );
       throw err;
     }
   }, [store, loadDevices]);
 
   // Rename device
-  const renameDevice = useCallback(async (deviceId: string, newName: string) => {
-    if (!store) {
-      throw new Error('Device registry not initialized');
-    }
-
-    const device = store.getDevice(deviceId);
-    if (!device) {
-      throw new Error('Device not found');
-    }
-
-    store.renameDevice(deviceId, newName);
-
-    // Broadcast rename to cloud relay
-    if (syncClient) {
-      syncClient.sendDeviceRename({
-        deviceId,
-        newName,
-        renamedAt: Date.now(),
-      });
-      console.log('[DeviceRegistry] Broadcast rename via relay for:', deviceId);
-    }
-
-    await loadDevices();
-  }, [store, loadDevices, syncClient]);
-
-  // Revoke device
-  const revokeDevice = useCallback(async (deviceId: string, reason?: string): Promise<boolean> => {
-    if (!store) {
-      throw new Error('Device registry not initialized');
-    }
-
-    if (deviceId === currentDeviceId) {
-      throw new Error('Cannot revoke current device');
-    }
-
-    try {
-      // Create signed revocation via Tauri
-      const revocation = await createSignedRevocation(deviceId, currentDeviceId, reason);
-
-      // Add to store
-      store.revokeDevice(revocation);
-
-      // Block locally for P2P
-      await blockDevice(deviceId);
-
-      // Broadcast revocation to cloud relay
-      if (syncClient) {
-        syncClient.sendDeviceRevoke({
-          deviceId: revocation.deviceId,
-          revokedAt: revocation.revokedAt,
-          revokedBy: revocation.revokedBy,
-          reason: revocation.reason,
-          signature: revocation.signature,
-        });
-        console.log('[DeviceRegistry] Broadcast revocation via relay for:', deviceId);
+  const renameDevice = useCallback(
+    async (deviceId: string, newName: string) => {
+      if (!store) {
+        throw new Error('Device registry not initialized');
       }
 
-      // Broadcast revocation to P2P peers
-      try {
-        const payload: DeviceRevokePayload = {
-          deviceId: revocation.deviceId,
-          revokedAt: revocation.revokedAt,
-          revokedBy: revocation.revokedBy,
-          reason: revocation.reason,
-          signature: revocation.signature,
-        };
-        const peerCount = await broadcastDeviceRevoke(JSON.stringify(payload));
-        if (peerCount > 0) {
-          console.log('[DeviceRegistry] Broadcast revocation to', peerCount, 'P2P peers');
-        }
-      } catch (err) {
-        // P2P might not be enabled, that's ok
-        console.debug('[DeviceRegistry] P2P revocation broadcast failed:', err);
+      const device = store.getDevice(deviceId);
+      if (!device) {
+        throw new Error('Device not found');
+      }
+
+      store.renameDevice(deviceId, newName);
+
+      // Broadcast rename to cloud relay
+      if (syncClient) {
+        syncClient.sendDeviceRename({
+          deviceId,
+          newName,
+          renamedAt: Date.now(),
+        });
+        console.log(
+          '[DeviceRegistry] Broadcast rename via relay for:',
+          deviceId
+        );
       }
 
       await loadDevices();
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to revoke device');
-      return false;
-    }
-  }, [store, currentDeviceId, loadDevices, syncClient]);
+    },
+    [store, loadDevices, syncClient]
+  );
+
+  // Revoke device
+  const revokeDevice = useCallback(
+    async (deviceId: string, reason?: string): Promise<boolean> => {
+      if (!store) {
+        throw new Error('Device registry not initialized');
+      }
+
+      if (deviceId === currentDeviceId) {
+        throw new Error('Cannot revoke current device');
+      }
+
+      try {
+        // Create signed revocation via Tauri
+        const revocation = await createSignedRevocation(
+          deviceId,
+          currentDeviceId,
+          reason
+        );
+
+        // Add to store
+        store.revokeDevice(revocation);
+
+        // Block locally for P2P
+        await blockDevice(deviceId);
+
+        // Broadcast revocation to cloud relay
+        if (syncClient) {
+          syncClient.sendDeviceRevoke({
+            deviceId: revocation.deviceId,
+            revokedAt: revocation.revokedAt,
+            revokedBy: revocation.revokedBy,
+            reason: revocation.reason,
+            signature: revocation.signature,
+          });
+          console.log(
+            '[DeviceRegistry] Broadcast revocation via relay for:',
+            deviceId
+          );
+        }
+
+        // Broadcast revocation to P2P peers
+        try {
+          const payload: DeviceRevokePayload = {
+            deviceId: revocation.deviceId,
+            revokedAt: revocation.revokedAt,
+            revokedBy: revocation.revokedBy,
+            reason: revocation.reason,
+            signature: revocation.signature,
+          };
+          const peerCount = await broadcastDeviceRevoke(
+            JSON.stringify(payload)
+          );
+          if (peerCount > 0) {
+            console.log(
+              '[DeviceRegistry] Broadcast revocation to',
+              peerCount,
+              'P2P peers'
+            );
+          }
+        } catch (err) {
+          // P2P might not be enabled, that's ok
+          console.debug(
+            '[DeviceRegistry] P2P revocation broadcast failed:',
+            err
+          );
+        }
+
+        await loadDevices();
+        return true;
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to revoke device'
+        );
+        return false;
+      }
+    },
+    [store, currentDeviceId, loadDevices, syncClient]
+  );
 
   // Get device by ID
-  const getDevice = useCallback((deviceId: string): DeviceInfo | undefined => {
-    return devices.find(d => d.deviceId === deviceId);
-  }, [devices]);
+  const getDevice = useCallback(
+    (deviceId: string): DeviceInfo | undefined => {
+      return devices.find((d) => d.deviceId === deviceId);
+    },
+    [devices]
+  );
 
   // Refresh devices
   const refresh = useCallback(async () => {
@@ -436,7 +503,9 @@ export function DeviceRegistryProvider({ children }: DeviceRegistryProviderProps
 export function useDeviceRegistry(): DeviceRegistryContextValue {
   const context = useContext(DeviceRegistryContext);
   if (!context) {
-    throw new Error('useDeviceRegistry must be used within a DeviceRegistryProvider');
+    throw new Error(
+      'useDeviceRegistry must be used within a DeviceRegistryProvider'
+    );
   }
   return context;
 }

@@ -13,7 +13,11 @@ export {
   useTypeRegistry,
   useRelationHelper,
 } from './ObjectContext';
-export { SyncProvider, useSyncContext, useSyncContextSafe } from './SyncContext';
+export {
+  SyncProvider,
+  useSyncContext,
+  useSyncContextSafe,
+} from './SyncContext';
 export {
   ToastProvider,
   useToast,
@@ -47,8 +51,4 @@ export {
   useSemanticSearch,
   useSemanticSearchSafe,
 } from './SemanticSearchContext';
-export {
-  UndoProvider,
-  useUndo,
-  useUndoSafe,
-} from './UndoContext';
+export { UndoProvider, useUndo, useUndoSafe } from './UndoContext';

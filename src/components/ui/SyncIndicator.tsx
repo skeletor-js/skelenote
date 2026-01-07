@@ -1,4 +1,12 @@
-import { UnstyledButton, Group, Text, Box, Tooltip, MantineColor, Loader } from '@mantine/core';
+import {
+  UnstyledButton,
+  Group,
+  Text,
+  Box,
+  Tooltip,
+  MantineColor,
+  Loader,
+} from '@mantine/core';
 import { Icon } from './Icon';
 import { useSyncContextSafe, useLocalSyncSafe } from '@/contexts';
 
@@ -22,7 +30,8 @@ export function SyncIndicator() {
   const hasSyncProvider = syncContext !== null;
 
   // Local network sync status
-  const isLocalSyncConnected = localSyncContext?.isEnabled && localSyncContext?.connectedPeerCount > 0;
+  const isLocalSyncConnected =
+    localSyncContext?.isEnabled && localSyncContext?.connectedPeerCount > 0;
   const localPeerCount = localSyncContext?.connectedPeerCount ?? 0;
 
   const getStatusConfig = (): StatusConfig => {
@@ -119,7 +128,11 @@ export function SyncIndicator() {
       {config.showLocalIcon && (
         <Tooltip label="Local network sync active" withArrow>
           <Box component="span" style={{ display: 'flex' }}>
-            <Icon name="wifi" size={12} color={`var(--mantine-color-${config.color}-6)`} />
+            <Icon
+              name="wifi"
+              size={12}
+              color={`var(--mantine-color-${config.color}-6)`}
+            />
           </Box>
         </Tooltip>
       )}
@@ -150,9 +163,7 @@ export function SyncIndicator() {
   if (config.clickable) {
     return (
       <Tooltip label="Click to reconnect" withArrow>
-        <UnstyledButton onClick={handleClick}>
-          {buttonContent}
-        </UnstyledButton>
+        <UnstyledButton onClick={handleClick}>{buttonContent}</UnstyledButton>
       </Tooltip>
     );
   }

@@ -58,11 +58,7 @@ export function RenameDialog({
         />
 
         <Group justify="flex-end" gap="sm">
-          <Button
-            variant="default"
-            onClick={onCancel}
-            disabled={isProcessing}
-          >
+          <Button variant="default" onClick={onCancel} disabled={isProcessing}>
             Cancel
           </Button>
           <Button

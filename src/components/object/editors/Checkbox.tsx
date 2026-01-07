@@ -10,12 +10,7 @@ interface CheckboxProps {
 /**
  * Checkbox using Mantine Checkbox
  */
-export function Checkbox({
-  id,
-  value,
-  onChange,
-  label,
-}: CheckboxProps) {
+export function Checkbox({ id, value, onChange, label }: CheckboxProps) {
   const isChecked = value === true;
 
   return (

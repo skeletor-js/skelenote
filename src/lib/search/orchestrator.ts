@@ -89,7 +89,11 @@ export function fuseSearchResults(
   });
 
   // Calculate RRF scores
-  const scoredResults: Array<{ objectId: string; rrfScore: number; ranked: RankedResult }> = [];
+  const scoredResults: Array<{
+    objectId: string;
+    rrfScore: number;
+    ranked: RankedResult;
+  }> = [];
 
   for (const ranked of rankedMap.values()) {
     let rrfScore = 0;

@@ -16,9 +16,19 @@ import {
   Embedding,
 } from './types';
 import { chunkText, needsChunking } from './chunker';
-import { embedText, embedBatch, getEmbeddingPipeline, unloadModel, getModelInfo } from './model';
+import {
+  embedText,
+  embedBatch,
+  getEmbeddingPipeline,
+  unloadModel,
+  getModelInfo,
+} from './model';
 import { VectorIndex, createVectorIndex } from './vector-index';
-import { EmbeddingStorage, createEmbeddingStorage, hashContent } from './storage';
+import {
+  EmbeddingStorage,
+  createEmbeddingStorage,
+  hashContent,
+} from './storage';
 
 /**
  * Content to be indexed.
@@ -49,7 +59,8 @@ export class SemanticEngine {
   private vectorIndex: VectorIndex;
   private storage: EmbeddingStorage;
   private state: EngineState;
-  private statusListeners: Set<(status: SemanticEngineStatus) => void> = new Set();
+  private statusListeners: Set<(status: SemanticEngineStatus) => void> =
+    new Set();
 
   constructor(config: Partial<SemanticSearchConfig> = {}) {
     this.vectorIndex = createVectorIndex();
@@ -145,7 +156,8 @@ export class SemanticEngine {
       }
 
       this.state.indexedCount = records.length;
-      this.state.lastIndexedAt = await this.storage.getMetadata<number>('lastIndexedAt');
+      this.state.lastIndexedAt =
+        await this.storage.getMetadata<number>('lastIndexedAt');
 
       onProgress?.({
         operation: 'load',
@@ -199,7 +211,11 @@ export class SemanticEngine {
         const existing = await this.storage.get(item.objectId);
         const currentHash = hashContent(item.title + item.content);
 
-        if (!existing || existing.contentHash !== currentHash || existing.modelVersion !== modelVersion) {
+        if (
+          !existing ||
+          existing.contentHash !== currentHash ||
+          existing.modelVersion !== modelVersion
+        ) {
           itemsToIndex.push(item);
         }
       }

@@ -39,7 +39,12 @@ interface TemplateEditorProps {
   onSave?: (template: Template) => void;
 }
 
-export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEditorProps) {
+export function TemplateEditor({
+  template,
+  isOpen,
+  onClose,
+  onSave,
+}: TemplateEditorProps) {
   const typeRegistry = useTypeRegistry();
   const { create, update } = useTemplates();
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -52,11 +57,15 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
   const [targetTypeId, setTargetTypeId] = useState<string>(BuiltInTypeIds.NOTE);
   const [isDailyNoteTemplate, setIsDailyNoteTemplate] = useState(false);
   const [content, setContent] = useState('');
-  const [defaultProperties, setDefaultProperties] = useState<Record<string, PropertyValue>>({});
+  const [defaultProperties, setDefaultProperties] = useState<
+    Record<string, PropertyValue>
+  >({});
 
   // Get available types (exclude template type itself)
   const availableTypes = useMemo(() => {
-    return typeRegistry.getAll().filter((t) => t.id !== BuiltInTypeIds.TEMPLATE);
+    return typeRegistry
+      .getAll()
+      .filter((t) => t.id !== BuiltInTypeIds.TEMPLATE);
   }, [typeRegistry]);
 
   // Convert to select data format
@@ -122,16 +131,19 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
   }, []);
 
   // Update a single default property
-  const handlePropertyChange = useCallback((propertyId: string, value: PropertyValue) => {
-    setDefaultProperties((prev) => {
-      if (value === null || value === undefined || value === '') {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { [propertyId]: _removed, ...rest } = prev;
-        return rest;
-      }
-      return { ...prev, [propertyId]: value };
-    });
-  }, []);
+  const handlePropertyChange = useCallback(
+    (propertyId: string, value: PropertyValue) => {
+      setDefaultProperties((prev) => {
+        if (value === null || value === undefined || value === '') {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { [propertyId]: _removed, ...rest } = prev;
+          return rest;
+        }
+        return { ...prev, [propertyId]: value };
+      });
+    },
+    []
+  );
 
   // Build the final defaultProperties (filter out empty values)
   const getCleanDefaultProperties = useCallback(() => {
@@ -177,7 +189,20 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
         onClose();
       }
     }
-  }, [name, description, targetTypeId, isDailyNoteTemplate, content, getCleanDefaultProperties, isEditMode, template, create, update, onSave, onClose]);
+  }, [
+    name,
+    description,
+    targetTypeId,
+    isDailyNoteTemplate,
+    content,
+    getCleanDefaultProperties,
+    isEditMode,
+    template,
+    create,
+    update,
+    onSave,
+    onClose,
+  ]);
 
   // Handle form submission via Enter in name field
   const handleKeyPress = useCallback(
@@ -222,7 +247,8 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
               onChange={handleTargetTypeChange}
             />
             <Text size="xs" c="dimmed" mt={4}>
-              Objects created from this template will be {selectedType?.name ?? 'this type'}
+              Objects created from this template will be{' '}
+              {selectedType?.name ?? 'this type'}
             </Text>
           </Box>
 
@@ -244,7 +270,8 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
                   Default {selectedType?.name} Properties
                 </Text>
                 <Text size="xs" c="dimmed" mb="sm">
-                  Set default values for properties. Text fields support placeholders like {'{{date}}'}.
+                  Set default values for properties. Text fields support
+                  placeholders like {'{{date}}'}.
                 </Text>
                 <Stack gap="sm">
                   {targetTypeProperties.map((propDef) => (
@@ -252,14 +279,18 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
                       <Text size="sm" mb={4}>
                         {propDef.name}
                         {propDef.required && (
-                          <Text component="span" c="brick" ml={4}>*</Text>
+                          <Text component="span" c="brick" ml={4}>
+                            *
+                          </Text>
                         )}
                       </Text>
                       <PropertyEditor
                         id={`prop-${propDef.id}`}
                         definition={propDef}
                         value={defaultProperties[propDef.id] ?? null}
-                        onChange={(value) => handlePropertyChange(propDef.id, value)}
+                        onChange={(value) =>
+                          handlePropertyChange(propDef.id, value)
+                        }
                       />
                     </Box>
                   ))}
@@ -288,11 +319,17 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
               <Group justify="space-between" mb="xs">
                 <Text size="sm" fw={500}>
                   Template Content
-                  <Text component="span" c="dimmed" fw={400} ml={4}>(optional)</Text>
+                  <Text component="span" c="dimmed" fw={400} ml={4}>
+                    (optional)
+                  </Text>
                 </Text>
                 <Menu shadow="md" width={250}>
                   <Menu.Target>
-                    <Button variant="subtle" size="xs" leftSection={<Icon name="plus" size={14} />}>
+                    <Button
+                      variant="subtle"
+                      size="xs"
+                      leftSection={<Icon name="plus" size={14} />}
+                    >
                       Insert Placeholder
                     </Button>
                   </Menu.Target>
@@ -304,7 +341,9 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
                       >
                         <Group justify="space-between">
                           <Code>{p.label}</Code>
-                          <Text size="xs" c="dimmed">{p.example}</Text>
+                          <Text size="xs" c="dimmed">
+                            {p.example}
+                          </Text>
                         </Group>
                       </Menu.Item>
                     ))}
@@ -328,7 +367,9 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
                     <Group key={p.type} gap={4}>
                       <Code fz="xs">{p.label}</Code>
                       <Icon name="chevron-right" size={12} />
-                      <Text size="xs" c="dimmed">{p.example}</Text>
+                      <Text size="xs" c="dimmed">
+                        {p.example}
+                      </Text>
                     </Group>
                   ))}
                 </Group>
@@ -338,7 +379,8 @@ export function TemplateEditor({ template, isOpen, onClose, onSave }: TemplateEd
 
           {isEditMode && (
             <Text size="sm" c="dimmed" fs="italic">
-              To edit template content, open the template object and edit it directly.
+              To edit template content, open the template object and edit it
+              directly.
             </Text>
           )}
         </Stack>

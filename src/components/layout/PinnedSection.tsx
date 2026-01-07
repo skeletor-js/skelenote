@@ -8,6 +8,7 @@ import { ChevronRight } from 'lucide-react';
 import { useSidebar } from '@/contexts';
 import { usePinnedObjects } from '@/hooks';
 import { PinnedItem } from './PinnedItem';
+import styles from './SidebarItem.module.css';
 
 export function PinnedSection() {
   const { isSectionCollapsed, toggleSection } = useSidebar();
@@ -31,7 +32,11 @@ export function PinnedSection() {
   }, []);
 
   const handleDragEnd = useCallback(() => {
-    if (draggedIndex !== null && dragOverIndex !== null && draggedIndex !== dragOverIndex) {
+    if (
+      draggedIndex !== null &&
+      dragOverIndex !== null &&
+      draggedIndex !== dragOverIndex
+    ) {
       // Reorder the array
       const newOrder = [...pinnedObjects];
       const [removed] = newOrder.splice(draggedIndex, 1);
@@ -81,6 +86,7 @@ export function PinnedSection() {
         opened={!isCollapsed}
         disableRightSectionRotation
         variant="subtle"
+        className={styles.navLink}
         styles={{
           label: {
             fontWeight: 600,

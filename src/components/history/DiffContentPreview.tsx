@@ -54,7 +54,10 @@ export interface DiffContentPreviewProps {
 /**
  * Render inline content to React elements
  */
-function renderInlineContent(content: InlineContent[] | undefined, key: string): React.ReactNode {
+function renderInlineContent(
+  content: InlineContent[] | undefined,
+  key: string
+): React.ReactNode {
   if (!content || !Array.isArray(content)) {
     return null;
   }
@@ -79,7 +82,11 @@ function renderInlineContent(content: InlineContent[] | undefined, key: string):
         text = <s key={`${itemKey}-strike`}>{text}</s>;
       }
       if (textItem.styles?.code) {
-        text = <code key={`${itemKey}-code`} className={classes.inlineCode}>{text}</code>;
+        text = (
+          <code key={`${itemKey}-code`} className={classes.inlineCode}>
+            {text}
+          </code>
+        );
       }
 
       return <span key={itemKey}>{text}</span>;
@@ -119,14 +126,22 @@ function renderInlineContent(content: InlineContent[] | undefined, key: string):
  */
 function renderDiffBlock(blockDiff: BlockDiff, key: string): React.ReactNode {
   const { block, status } = blockDiff;
-  const content = renderInlineContent(block.content as InlineContent[] | undefined, key);
+  const content = renderInlineContent(
+    block.content as InlineContent[] | undefined,
+    key
+  );
 
   // Determine the CSS class based on diff status
-  const statusClass = classes[`diff${status.charAt(0).toUpperCase() + status.slice(1)}`];
+  const statusClass =
+    classes[`diff${status.charAt(0).toUpperCase() + status.slice(1)}`];
 
   // Wrap in diff container
   const renderWithDiff = (children: React.ReactNode) => (
-    <div key={key} className={`${classes.diffBlock} ${statusClass || ''}`} data-status={status}>
+    <div
+      key={key}
+      className={`${classes.diffBlock} ${statusClass || ''}`}
+      data-status={status}
+    >
       {children}
     </div>
   );
@@ -139,7 +154,8 @@ function renderDiffBlock(blockDiff: BlockDiff, key: string): React.ReactNode {
 
     case 'heading': {
       const level = (block.props?.level as number) || 1;
-      const HeadingTag = `h${Math.min(level, 6)}` as keyof JSX.IntrinsicElements;
+      const HeadingTag =
+        `h${Math.min(level, 6)}` as keyof JSX.IntrinsicElements;
       return renderWithDiff(
         <HeadingTag className={classes.heading} data-level={level}>
           {content}
@@ -168,7 +184,9 @@ function renderDiffBlock(blockDiff: BlockDiff, key: string): React.ReactNode {
       return renderWithDiff(
         <div className={classes.listItem}>
           <span className={classes.checkbox}>{checked ? '☑' : '☐'}</span>
-          <span className={checked ? classes.checkedText : undefined}>{content}</span>
+          <span className={checked ? classes.checkedText : undefined}>
+            {content}
+          </span>
         </div>
       );
     }
@@ -228,7 +246,9 @@ export function DiffContentPreview({
         )}
 
         {/* Diff summary */}
-        {(diff.summary.added > 0 || diff.summary.removed > 0 || diff.summary.modified > 0) && (
+        {(diff.summary.added > 0 ||
+          diff.summary.removed > 0 ||
+          diff.summary.modified > 0) && (
           <Box className={classes.diffSummary}>
             {diff.summary.added > 0 && (
               <Text component="span" size="xs" className={classes.summaryAdded}>
@@ -236,12 +256,20 @@ export function DiffContentPreview({
               </Text>
             )}
             {diff.summary.removed > 0 && (
-              <Text component="span" size="xs" className={classes.summaryRemoved}>
+              <Text
+                component="span"
+                size="xs"
+                className={classes.summaryRemoved}
+              >
                 -{diff.summary.removed} removed
               </Text>
             )}
             {diff.summary.modified > 0 && (
-              <Text component="span" size="xs" className={classes.summaryModified}>
+              <Text
+                component="span"
+                size="xs"
+                className={classes.summaryModified}
+              >
                 ~{diff.summary.modified} modified
               </Text>
             )}

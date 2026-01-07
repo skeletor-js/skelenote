@@ -5,13 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import {
-  Stack,
-  Text,
-  Box,
-  SegmentedControl,
-  Select,
-} from '@mantine/core';
+import { Stack, Text, Box, SegmentedControl, Select } from '@mantine/core';
 import { useTheme } from '@/contexts';
 
 type ThemePreference = 'light' | 'dark' | 'system';
@@ -22,12 +16,15 @@ const STORAGE_KEY_DEFAULT_VIEW = 'skelenote-default-view';
 
 export function AppearanceSettings() {
   const { theme, setTheme } = useTheme();
-  const [themePreference, setThemePreference] = useState<ThemePreference>('light');
+  const [themePreference, setThemePreference] =
+    useState<ThemePreference>('light');
   const [defaultView, setDefaultView] = useState<DefaultView>('inbox');
 
   // Initialize from localStorage
   useEffect(() => {
-    const storedPref = localStorage.getItem(STORAGE_KEY_THEME_PREF) as ThemePreference | null;
+    const storedPref = localStorage.getItem(
+      STORAGE_KEY_THEME_PREF
+    ) as ThemePreference | null;
     if (storedPref && ['light', 'dark', 'system'].includes(storedPref)) {
       setThemePreference(storedPref);
     } else {
@@ -35,7 +32,9 @@ export function AppearanceSettings() {
       setThemePreference(theme);
     }
 
-    const storedView = localStorage.getItem(STORAGE_KEY_DEFAULT_VIEW) as DefaultView | null;
+    const storedView = localStorage.getItem(
+      STORAGE_KEY_DEFAULT_VIEW
+    ) as DefaultView | null;
     if (storedView) {
       setDefaultView(storedView);
     }
@@ -49,7 +48,9 @@ export function AppearanceSettings() {
 
     if (pref === 'system') {
       // Apply system preference
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const systemDark = window.matchMedia(
+        '(prefers-color-scheme: dark)'
+      ).matches;
       setTheme(systemDark ? 'dark' : 'light');
     } else {
       setTheme(pref);
@@ -80,7 +81,9 @@ export function AppearanceSettings() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">Appearance</Text>
+        <Text size="lg" fw={600} mb="xs">
+          Appearance
+        </Text>
         <Text size="sm" c="dimmed">
           Customize how Skelenote looks and feels.
         </Text>
@@ -88,7 +91,9 @@ export function AppearanceSettings() {
 
       {/* Theme Selection */}
       <Box>
-        <Text size="sm" fw={500} mb="xs">Theme</Text>
+        <Text size="sm" fw={500} mb="xs">
+          Theme
+        </Text>
         <Text size="xs" c="dimmed" mb="sm">
           Choose your preferred color scheme.
         </Text>
@@ -106,7 +111,9 @@ export function AppearanceSettings() {
 
       {/* Default View */}
       <Box>
-        <Text size="sm" fw={500} mb="xs">Default View</Text>
+        <Text size="sm" fw={500} mb="xs">
+          Default View
+        </Text>
         <Text size="xs" c="dimmed" mb="sm">
           Choose which view opens when you launch the app.
         </Text>

@@ -3,17 +3,17 @@
  */
 
 .navLink {
-    border-radius: 4px;
-    transition: background-color 150ms ease;
+  border-radius: 4px;
+  transition: background-color 150ms ease;
 }
 
 /* Warm hover effect - ember glow */
 .navLink:hover {
-    background-color: var(--selection-glow) !important;
+  background-color: var(--selection-glow) !important;
 }
 
 /* Active/selected state */
 .navLink[data-active='true'] {
-    background-color: var(--selection-glow) !important;
-    color: var(--mantine-color-ember-6) !important;
+  background-color: var(--selection-glow) !important;
+  color: var(--mantine-color-ember-6) !important;
 }

@@ -13,7 +13,12 @@ import type {
   PlaceholderContext,
 } from './types';
 import { TemplatePropertyIds } from './types';
-import { expandPlaceholders, expandPlaceholdersInContent, createDefaultContext, ensureBlockNoteFormat } from './placeholders';
+import {
+  expandPlaceholders,
+  expandPlaceholdersInContent,
+  createDefaultContext,
+  ensureBlockNoteFormat,
+} from './placeholders';
 
 /**
  * Template type ID - added to BuiltInTypeIds
@@ -45,10 +50,14 @@ export function parseTemplate(obj: SkelenoteObject): Template {
   return {
     id: obj.id,
     name: (props[TemplatePropertyIds.TITLE] as string) ?? 'Untitled Template',
-    description: (props[TemplatePropertyIds.DESCRIPTION] as string) ?? undefined,
-    targetTypeId: (props[TemplatePropertyIds.TARGET_TYPE_ID] as string) ?? BuiltInTypeIds.NOTE,
+    description:
+      (props[TemplatePropertyIds.DESCRIPTION] as string) ?? undefined,
+    targetTypeId:
+      (props[TemplatePropertyIds.TARGET_TYPE_ID] as string) ??
+      BuiltInTypeIds.NOTE,
     defaultProperties,
-    isDailyNoteTemplate: props[TemplatePropertyIds.IS_DAILY_NOTE_TEMPLATE] === true,
+    isDailyNoteTemplate:
+      props[TemplatePropertyIds.IS_DAILY_NOTE_TEMPLATE] === true,
     hasContent: obj.hasContent,
     createdAt: obj.createdAt,
     updatedAt: obj.updatedAt,
@@ -75,14 +84,20 @@ export function getTemplates(store: ObjectStore): Template[] {
 /**
  * Get templates filtered by target type
  */
-export function getTemplatesForType(store: ObjectStore, targetTypeId: string): Template[] {
+export function getTemplatesForType(
+  store: ObjectStore,
+  targetTypeId: string
+): Template[] {
   return getTemplates(store).filter((t) => t.targetTypeId === targetTypeId);
 }
 
 /**
  * Get a single template by ID
  */
-export function getTemplate(store: ObjectStore, templateId: string): Template | undefined {
+export function getTemplate(
+  store: ObjectStore,
+  templateId: string
+): Template | undefined {
   const obj = store.get(templateId);
   if (!obj || !isTemplate(obj)) {
     return undefined;
@@ -93,12 +108,18 @@ export function getTemplate(store: ObjectStore, templateId: string): Template | 
 /**
  * Create a new template
  */
-export function createTemplate(store: ObjectStore, input: CreateTemplateInput): Template {
+export function createTemplate(
+  store: ObjectStore,
+  input: CreateTemplateInput
+): Template {
   const templateProps: Record<string, PropertyValue> = {
     [TemplatePropertyIds.TITLE]: input.name,
     [TemplatePropertyIds.TARGET_TYPE_ID]: input.targetTypeId,
-    [TemplatePropertyIds.IS_DAILY_NOTE_TEMPLATE]: input.isDailyNoteTemplate ?? false,
-    [TemplatePropertyIds.TEMPLATE_PROPERTIES]: JSON.stringify(input.defaultProperties ?? {}),
+    [TemplatePropertyIds.IS_DAILY_NOTE_TEMPLATE]:
+      input.isDailyNoteTemplate ?? false,
+    [TemplatePropertyIds.TEMPLATE_PROPERTIES]: JSON.stringify(
+      input.defaultProperties ?? {}
+    ),
   };
 
   if (input.description) {
@@ -146,10 +167,13 @@ export function updateTemplate(
     updates[TemplatePropertyIds.TARGET_TYPE_ID] = input.targetTypeId;
   }
   if (input.isDailyNoteTemplate !== undefined) {
-    updates[TemplatePropertyIds.IS_DAILY_NOTE_TEMPLATE] = input.isDailyNoteTemplate;
+    updates[TemplatePropertyIds.IS_DAILY_NOTE_TEMPLATE] =
+      input.isDailyNoteTemplate;
   }
   if (input.defaultProperties !== undefined) {
-    updates[TemplatePropertyIds.TEMPLATE_PROPERTIES] = JSON.stringify(input.defaultProperties);
+    updates[TemplatePropertyIds.TEMPLATE_PROPERTIES] = JSON.stringify(
+      input.defaultProperties
+    );
   }
 
   const updated = store.update(templateId, { properties: updates });
@@ -159,7 +183,10 @@ export function updateTemplate(
 /**
  * Delete a template
  */
-export function deleteTemplate(store: ObjectStore, templateId: string): boolean {
+export function deleteTemplate(
+  store: ObjectStore,
+  templateId: string
+): boolean {
   const obj = store.get(templateId);
   if (!obj || !isTemplate(obj)) {
     return false;
@@ -177,7 +204,10 @@ export function deleteTemplate(store: ObjectStore, templateId: string): boolean 
 /**
  * Duplicate a template
  */
-export function duplicateTemplate(store: ObjectStore, templateId: string): Template {
+export function duplicateTemplate(
+  store: ObjectStore,
+  templateId: string
+): Template {
   const template = getTemplate(store, templateId);
   if (!template) {
     throw new Error(`Template not found: ${templateId}`);
@@ -215,7 +245,8 @@ export function createFromTemplate(
   }
 
   // Build the placeholder context
-  const context: PlaceholderContext = overrides?.context ?? createDefaultContext(overrides?.title);
+  const context: PlaceholderContext =
+    overrides?.context ?? createDefaultContext(overrides?.title);
   if (overrides?.title) {
     context.title = overrides.title;
   }
@@ -262,7 +293,10 @@ export function createFromTemplate(
       const templateContent = store.getContent(templateObj.id);
       if (templateContent) {
         // Expand placeholders in content
-        const expandedContent = expandPlaceholdersInContent(templateContent, context);
+        const expandedContent = expandPlaceholdersInContent(
+          templateContent,
+          context
+        );
         store.setContent(obj.id, expandedContent);
         contentApplied = true;
       }

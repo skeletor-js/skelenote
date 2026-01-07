@@ -60,7 +60,9 @@ export function DailyNoteNavHeader({ dateTimestamp }: DailyNoteNavHeaderProps) {
         >
           Prev
         </Button>
-        <Text fw={500} size="sm">{dateLabel}</Text>
+        <Text fw={500} size="sm">
+          {dateLabel}
+        </Text>
         <Button
           variant="subtle"
           size="xs"

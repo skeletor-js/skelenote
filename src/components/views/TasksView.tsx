@@ -73,27 +73,40 @@ const EMPTY_STATES: Record<TaskFilter, EmptyStateConfig> = {
 };
 
 /** Tabs that should show count badges */
-const TABS_WITH_COUNTS: Set<TaskFilter> = new Set(['today', 'this-week', 'overdue', 'waiting']);
+const TABS_WITH_COUNTS: Set<TaskFilter> = new Set([
+  'today',
+  'this-week',
+  'overdue',
+  'waiting',
+]);
 
 export function TasksView() {
   const [activeTab, setActiveTab] = useState<TaskFilter>('today');
-  const { tasks, isLoading, toggleComplete, archiveTask } = useTasks({ filter: activeTab });
+  const { tasks, isLoading, toggleComplete, archiveTask } = useTasks({
+    filter: activeTab,
+  });
   const { refreshData, store } = useObjects();
 
   // Get counts for badge display
-  const { countToday, countThisWeek, countOverdue, countWaiting } = useMemo(() => {
-    if (!store) {
-      return { countToday: 0, countThisWeek: 0, countOverdue: 0, countWaiting: 0 };
-    }
-    const allTasks = store.getByType('built-in:task');
+  const { countToday, countThisWeek, countOverdue, countWaiting } =
+    useMemo(() => {
+      if (!store) {
+        return {
+          countToday: 0,
+          countThisWeek: 0,
+          countOverdue: 0,
+          countWaiting: 0,
+        };
+      }
+      const allTasks = store.getByType('built-in:task');
 
-    return {
-      countToday: allTasks.filter(getTaskFilter('today')).length,
-      countThisWeek: allTasks.filter(getTaskFilter('this-week')).length,
-      countOverdue: allTasks.filter(getTaskFilter('overdue')).length,
-      countWaiting: allTasks.filter(getTaskFilter('waiting')).length,
-    };
-  }, [store]);
+      return {
+        countToday: allTasks.filter(getTaskFilter('today')).length,
+        countThisWeek: allTasks.filter(getTaskFilter('this-week')).length,
+        countOverdue: allTasks.filter(getTaskFilter('overdue')).length,
+        countWaiting: allTasks.filter(getTaskFilter('waiting')).length,
+      };
+    }, [store]);
 
   const getCountForTab = (tab: TaskFilter): number | undefined => {
     if (!TABS_WITH_COUNTS.has(tab)) return undefined;

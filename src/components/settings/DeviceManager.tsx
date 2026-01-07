@@ -5,7 +5,17 @@
  */
 
 import { useState } from 'react';
-import { Stack, Group, Title, Text, Box, ActionIcon, Alert, Loader, Center } from '@mantine/core';
+import {
+  Stack,
+  Group,
+  Title,
+  Text,
+  Box,
+  ActionIcon,
+  Alert,
+  Loader,
+  Center,
+} from '@mantine/core';
 import { Icon } from '@/components/ui';
 import { useDeviceRegistrySafe } from '@/contexts/DeviceRegistryContext';
 import { DeviceListItem } from './DeviceListItem';
@@ -24,11 +34,12 @@ export function DeviceManager() {
     return null;
   }
 
-  const { devices, isLoading, error, revokeDevice, renameDevice, refresh } = registry;
+  const { devices, isLoading, error, revokeDevice, renameDevice, refresh } =
+    registry;
 
   // Separate active and revoked devices
-  const activeDevices = devices.filter(d => !d.isRevoked);
-  const revokedDevices = devices.filter(d => d.isRevoked);
+  const activeDevices = devices.filter((d) => !d.isRevoked);
+  const revokedDevices = devices.filter((d) => d.isRevoked);
 
   const handleRevoke = async (reason?: string) => {
     if (!revokeTarget) return;
@@ -104,12 +115,7 @@ export function DeviceManager() {
           <Text size="xs" fw={600} c="dimmed" tt="uppercase" mb="xs">
             Active Devices
           </Text>
-          <Box
-            component="ul"
-            m={0}
-            p={0}
-            style={{ listStyle: 'none' }}
-          >
+          <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
             {activeDevices.map((device) => (
               <DeviceListItem
                 key={device.deviceId}
@@ -127,18 +133,9 @@ export function DeviceManager() {
           <Text size="xs" fw={600} c="dimmed" tt="uppercase" mb="xs">
             Revoked Devices
           </Text>
-          <Box
-            component="ul"
-            m={0}
-            p={0}
-            style={{ listStyle: 'none' }}
-          >
+          <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
             {revokedDevices.map((device) => (
-              <DeviceListItem
-                key={device.deviceId}
-                device={device}
-                disabled
-              />
+              <DeviceListItem key={device.deviceId} device={device} disabled />
             ))}
           </Box>
         </Stack>

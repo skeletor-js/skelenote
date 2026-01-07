@@ -50,12 +50,20 @@ export class SyncClient {
   private onHistoryCallback: ((updates: Uint8Array[]) => void) | null = null;
 
   // Device management callbacks
-  private onDeviceRevokedCallback: ((deviceId: string, reason?: string) => void) | null = null;
+  private onDeviceRevokedCallback:
+    | ((deviceId: string, reason?: string) => void)
+    | null = null;
   private onDeviceRegistryCallback: ((data: Uint8Array) => void) | null = null;
   private onDeviceUpdateCallback: ((data: Uint8Array) => void) | null = null;
-  private onDeviceRevokeCallback: ((payload: DeviceRevokePayload) => void) | null = null;
-  private onDeviceRevokeAckCallback: ((payload: DeviceRevokeAckPayload) => void) | null = null;
-  private onDeviceRenameCallback: ((payload: DeviceRenamePayload) => void) | null = null;
+  private onDeviceRevokeCallback:
+    | ((payload: DeviceRevokePayload) => void)
+    | null = null;
+  private onDeviceRevokeAckCallback:
+    | ((payload: DeviceRevokeAckPayload) => void)
+    | null = null;
+  private onDeviceRenameCallback:
+    | ((payload: DeviceRenamePayload) => void)
+    | null = null;
 
   // E2E encryption state
   private encryptionEnabled = false;
@@ -121,7 +129,10 @@ export class SyncClient {
       this.ws.onerror = () => this.handleError();
     } catch {
       this.setStatus('disconnected');
-      this.emit({ type: 'error', error: new Error('Failed to create WebSocket') });
+      this.emit({
+        type: 'error',
+        error: new Error('Failed to create WebSocket'),
+      });
       this.scheduleReconnect();
     }
   }
@@ -175,7 +186,10 @@ export class SyncClient {
    */
   requestSnapshot(): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      const message = encodeMessage(MessageType.SNAPSHOT_REQUEST, new Uint8Array(0));
+      const message = encodeMessage(
+        MessageType.SNAPSHOT_REQUEST,
+        new Uint8Array(0)
+      );
       this.ws.send(message);
     }
   }
@@ -211,7 +225,10 @@ export class SyncClient {
     if (this.ws?.readyState !== WebSocket.OPEN) return;
 
     const payload: CatchUpPayload = { fromSequence };
-    const message = encodeMessage(MessageType.CATCH_UP, encodeJsonPayload(payload));
+    const message = encodeMessage(
+      MessageType.CATCH_UP,
+      encodeJsonPayload(payload)
+    );
     this.ws.send(message);
   }
 
@@ -220,7 +237,10 @@ export class SyncClient {
    *
    * Sends an encrypted snapshot to replace historical updates.
    */
-  async requestCompaction(upToSequence: number, snapshot: Uint8Array): Promise<void> {
+  async requestCompaction(
+    upToSequence: number,
+    snapshot: Uint8Array
+  ): Promise<void> {
     if (this.ws?.readyState !== WebSocket.OPEN) return;
 
     let encryptedSnapshot = snapshot;
@@ -228,14 +248,19 @@ export class SyncClient {
       try {
         encryptedSnapshot = await encrypt(snapshot);
       } catch (err) {
-        console.error('[SyncClient] Compaction snapshot encryption failed:', err);
+        console.error(
+          '[SyncClient] Compaction snapshot encryption failed:',
+          err
+        );
         return;
       }
     }
 
     // Build COMPACT message: [headerLen: 4][header JSON][snapshot bytes]
     const header = encodeJsonPayload({ upToSequence });
-    const payload = new Uint8Array(4 + header.length + encryptedSnapshot.length);
+    const payload = new Uint8Array(
+      4 + header.length + encryptedSnapshot.length
+    );
     new DataView(payload.buffer).setUint32(0, header.length, true);
     payload.set(header, 4);
     payload.set(encryptedSnapshot, 4 + header.length);
@@ -385,7 +410,9 @@ export class SyncClient {
    */
   private handleAck(payload: Uint8Array): void {
     try {
-      const ack = decodeJsonPayload<AckPayload & { rejected?: boolean; reason?: string }>(payload);
+      const ack = decodeJsonPayload<
+        AckPayload & { rejected?: boolean; reason?: string }
+      >(payload);
 
       // Check if connection was rejected (device revoked)
       if (ack.rejected) {
@@ -397,7 +424,10 @@ export class SyncClient {
         }
 
         // Emit error event
-        this.emit({ type: 'error', error: new Error(`Connection rejected: ${ack.reason}`) });
+        this.emit({
+          type: 'error',
+          error: new Error(`Connection rejected: ${ack.reason}`),
+        });
 
         // Don't attempt to reconnect - device is revoked
         this.connectionManager.cancelReconnect();
@@ -484,7 +514,10 @@ export class SyncClient {
   private async handleHistory(payload: Uint8Array): Promise<void> {
     try {
       // Parse header
-      const headerLen = new DataView(payload.buffer, payload.byteOffset).getUint32(0, true);
+      const headerLen = new DataView(
+        payload.buffer,
+        payload.byteOffset
+      ).getUint32(0, true);
       const headerBytes = payload.slice(4, 4 + headerLen);
       const header = decodeJsonPayload<HistoryHeaderPayload>(headerBytes);
 
@@ -493,7 +526,10 @@ export class SyncClient {
       let offset = 4 + headerLen;
 
       for (let i = 0; i < header.count; i++) {
-        const updateLen = new DataView(payload.buffer, payload.byteOffset + offset).getUint32(0, true);
+        const updateLen = new DataView(
+          payload.buffer,
+          payload.byteOffset + offset
+        ).getUint32(0, true);
         offset += 4;
         const updateData = payload.slice(offset, offset + updateLen);
         offset += updateLen;
@@ -503,7 +539,10 @@ export class SyncClient {
             const decrypted = await decrypt(updateData);
             updates.push(decrypted);
           } catch (err) {
-            console.error(`[SyncClient] Failed to decrypt historical update ${i}:`, err);
+            console.error(
+              `[SyncClient] Failed to decrypt historical update ${i}:`,
+              err
+            );
             // Continue with other updates
           }
         } else {
@@ -654,21 +693,27 @@ export class SyncClient {
   /**
    * Set callback for when a device revocation is received from another device
    */
-  onDeviceRevokeReceived(callback: (payload: DeviceRevokePayload) => void): void {
+  onDeviceRevokeReceived(
+    callback: (payload: DeviceRevokePayload) => void
+  ): void {
     this.onDeviceRevokeCallback = callback;
   }
 
   /**
    * Set callback for revocation acknowledgment
    */
-  onDeviceRevokeAckReceived(callback: (payload: DeviceRevokeAckPayload) => void): void {
+  onDeviceRevokeAckReceived(
+    callback: (payload: DeviceRevokeAckPayload) => void
+  ): void {
     this.onDeviceRevokeAckCallback = callback;
   }
 
   /**
    * Set callback for device rename
    */
-  onDeviceRenameReceived(callback: (payload: DeviceRenamePayload) => void): void {
+  onDeviceRenameReceived(
+    callback: (payload: DeviceRenamePayload) => void
+  ): void {
     this.onDeviceRenameCallback = callback;
   }
 
@@ -697,7 +742,10 @@ export class SyncClient {
    */
   sendDeviceRevoke(payload: DeviceRevokePayload): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      const message = encodeMessage(MessageType.DEVICE_REVOKE, encodeJsonPayload(payload));
+      const message = encodeMessage(
+        MessageType.DEVICE_REVOKE,
+        encodeJsonPayload(payload)
+      );
       this.ws.send(message);
     }
   }
@@ -707,7 +755,10 @@ export class SyncClient {
    */
   sendDeviceRename(payload: DeviceRenamePayload): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      const message = encodeMessage(MessageType.DEVICE_RENAME, encodeJsonPayload(payload));
+      const message = encodeMessage(
+        MessageType.DEVICE_RENAME,
+        encodeJsonPayload(payload)
+      );
       this.ws.send(message);
     }
   }

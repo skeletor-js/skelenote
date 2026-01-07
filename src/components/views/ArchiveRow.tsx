@@ -5,10 +5,22 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { UnstyledButton, Checkbox, Text, Box, Group, ActionIcon, Tooltip } from '@mantine/core';
+import {
+  UnstyledButton,
+  Checkbox,
+  Text,
+  Box,
+  Group,
+  ActionIcon,
+  Tooltip,
+} from '@mantine/core';
 import { BuiltInTypeIds, type SkelenoteObject } from '@/lib/types';
 import { useTypeRegistry, useToast } from '@/contexts';
-import { ContextMenu, ConfirmDialog, type ContextMenuItem } from '@/components/ui';
+import {
+  ContextMenu,
+  ConfirmDialog,
+  type ContextMenuItem,
+} from '@/components/ui';
 import { Icon } from '@/components/ui/Icon';
 import { getIconFromEmoji } from '@/lib/icons';
 import { useContextMenu, useConfirmDialog } from '@/hooks';
@@ -47,8 +59,10 @@ export function ArchiveRow({
 }: ArchiveRowProps) {
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
-  const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
-  const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
+  const { confirm, dialogState, handleConfirm, handleCancel } =
+    useConfirmDialog();
+  const { isOpen, position, openContextMenu, closeContextMenu } =
+    useContextMenu();
 
   // Get type info
   const typeDef = typeRegistry.get(item.typeId);
@@ -64,7 +78,9 @@ export function ArchiveRow({
   };
 
   // Get title or name
-  const title = (item.properties.title ?? item.properties.name ?? 'Untitled') as string;
+  const title = (item.properties.title ??
+    item.properties.name ??
+    'Untitled') as string;
 
   // Compute date label: only show for tasks with due dates
   const dateLabel = useMemo(() => {
@@ -221,7 +237,11 @@ export function ArchiveRow({
         )}
 
         {/* Type icon */}
-        <Icon name={getTypeIcon()} size={16} style={{ color: 'var(--mantine-color-gray-6)', flexShrink: 0 }} />
+        <Icon
+          name={getTypeIcon()}
+          size={16}
+          style={{ color: 'var(--mantine-color-gray-6)', flexShrink: 0 }}
+        />
 
         {/* Title and inline metadata */}
         <Group gap="xs" style={{ flex: 1, minWidth: 0 }} wrap="nowrap">
@@ -231,7 +251,11 @@ export function ArchiveRow({
 
           {/* Date label - only shows for tasks with due dates */}
           {dateLabel && (
-            <Text size="xs" c={dateLabel.isOverdue ? 'brick' : 'dimmed'} style={{ flexShrink: 0 }}>
+            <Text
+              size="xs"
+              c={dateLabel.isOverdue ? 'brick' : 'dimmed'}
+              style={{ flexShrink: 0 }}
+            >
               {dateLabel.text}
             </Text>
           )}

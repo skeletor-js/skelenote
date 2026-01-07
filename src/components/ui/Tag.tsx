@@ -1,4 +1,10 @@
-import { Badge, Box, MantineColor, useMantineTheme, useMantineColorScheme } from '@mantine/core';
+import {
+  Badge,
+  Box,
+  MantineColor,
+  useMantineTheme,
+  useMantineColorScheme,
+} from '@mantine/core';
 
 /**
  * Tag colors using our warm palette from the style guide
@@ -85,9 +91,11 @@ export function Tag({ name, color = 'gray', size = 'md', onClick }: TagProps) {
           fontWeight: 500,
           paddingLeft: 6,
           paddingRight: 8,
-          '&:hover': isClickable ? {
-            backgroundColor: 'var(--hover-warm)',
-          } : undefined,
+          '&:hover': isClickable
+            ? {
+                backgroundColor: 'var(--hover-warm)',
+              }
+            : undefined,
         },
         label: {
           // Light mode: dark gray text

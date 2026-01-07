@@ -6,7 +6,12 @@ import { useMemo, useState } from 'react';
 import { Group, Menu, Button, Tooltip } from '@mantine/core';
 import { PropertyChip } from './PropertyChip';
 import { Icon } from '@/components/ui/Icon';
-import type { SkelenoteObject, TypeDefinition, PropertyValue, PropertyDefinition } from '@/lib/types';
+import type {
+  SkelenoteObject,
+  TypeDefinition,
+  PropertyValue,
+  PropertyDefinition,
+} from '@/lib/types';
 
 interface PropertyListProps {
   object: SkelenoteObject;
@@ -21,7 +26,9 @@ export function PropertyList({
 }: PropertyListProps) {
   // Track which properties were explicitly added via the + menu
   // These should be shown even if they have empty values
-  const [addedPropertyIds, setAddedPropertyIds] = useState<Set<string>>(new Set());
+  const [addedPropertyIds, setAddedPropertyIds] = useState<Set<string>>(
+    new Set()
+  );
 
   // Filter out title/name properties (handled by ObjectHeader) and hidden properties
   const editableProperties = typeDef.schema.filter(
@@ -103,10 +110,7 @@ export function PropertyList({
           </Menu.Target>
           <Menu.Dropdown>
             {emptyOptionalProperties.map((prop) => (
-              <Menu.Item
-                key={prop.id}
-                onClick={() => handleAddProperty(prop)}
-              >
+              <Menu.Item key={prop.id} onClick={() => handleAddProperty(prop)}>
                 {prop.name}
               </Menu.Item>
             ))}

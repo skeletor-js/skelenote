@@ -18,7 +18,9 @@ export function serializeBlockNoteDocument(blocks: BlockArray): string {
  * Deserialize stored JSON string to BlockNote blocks
  * Returns undefined if data is invalid
  */
-export function deserializeBlockNoteDocument(data: string | null): BlockArray | undefined {
+export function deserializeBlockNoteDocument(
+  data: string | null
+): BlockArray | undefined {
   if (!data) return undefined;
 
   try {

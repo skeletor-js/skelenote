@@ -2,18 +2,30 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { LoroDoc } from 'loro-crdt';
 import { ObjectStore, ObjectNotFoundError, ValidationError } from '../objects';
 import { createTypeRegistry, BuiltInTypeIds } from '../../types';
-import { TaskType, NoteType, ProjectType, TagType } from '../../types/built-in-types';
+import {
+  TaskType,
+  NoteType,
+  ProjectType,
+  TagType,
+} from '../../types/built-in-types';
 import type { CreateObjectInput } from '../../types';
 
 // Helper to create test store with built-in types
 function createTestStore(): ObjectStore {
   const doc = new LoroDoc();
-  const registry = createTypeRegistry([TaskType, NoteType, ProjectType, TagType]);
+  const registry = createTypeRegistry([
+    TaskType,
+    NoteType,
+    ProjectType,
+    TagType,
+  ]);
   return new ObjectStore(doc, registry);
 }
 
 // Helper to create mock object input with sensible defaults
-function createMockInput(overrides: Partial<CreateObjectInput> = {}): CreateObjectInput {
+function createMockInput(
+  overrides: Partial<CreateObjectInput> = {}
+): CreateObjectInput {
   return {
     typeId: BuiltInTypeIds.TASK,
     properties: {
@@ -49,7 +61,9 @@ describe('ObjectStore', () => {
     });
 
     it('should set typeId correctly', () => {
-      const obj = store.create(createMockInput({ typeId: BuiltInTypeIds.NOTE }));
+      const obj = store.create(
+        createMockInput({ typeId: BuiltInTypeIds.NOTE })
+      );
       expect(obj.typeId).toBe(BuiltInTypeIds.NOTE);
     });
 
@@ -94,9 +108,9 @@ describe('ObjectStore', () => {
     });
 
     it('should throw ValidationError for unknown type', () => {
-      expect(() => store.create({ typeId: 'unknown-type', properties: {} })).toThrow(
-        ValidationError
-      );
+      expect(() =>
+        store.create({ typeId: 'unknown-type', properties: {} })
+      ).toThrow(ValidationError);
     });
   });
 
@@ -121,16 +135,23 @@ describe('ObjectStore', () => {
     });
 
     it('should throw ObjectNotFoundError for non-existent ID', () => {
-      expect(() => store.getOrThrow('non-existent')).toThrow(ObjectNotFoundError);
+      expect(() => store.getOrThrow('non-existent')).toThrow(
+        ObjectNotFoundError
+      );
     });
   });
 
   describe('update', () => {
     it('should update properties', () => {
       store.create(
-        createMockInput({ id: 'test-1', properties: { title: 'Original', status: 'todo' } })
+        createMockInput({
+          id: 'test-1',
+          properties: { title: 'Original', status: 'todo' },
+        })
       );
-      const updated = store.update('test-1', { properties: { title: 'Updated' } });
+      const updated = store.update('test-1', {
+        properties: { title: 'Updated' },
+      });
       expect(updated.properties.title).toBe('Updated');
       expect(updated.properties.status).toBe('todo'); // Preserved
     });
@@ -139,18 +160,27 @@ describe('ObjectStore', () => {
       const created = store.create(createMockInput({ id: 'test-1' }));
       const originalUpdatedAt = created.updatedAt;
 
-      const updated = store.update('test-1', { properties: { title: 'New Title' } });
+      const updated = store.update('test-1', {
+        properties: { title: 'New Title' },
+      });
       expect(updated.updatedAt).toBeGreaterThanOrEqual(originalUpdatedAt);
     });
 
     it('should throw for non-existent object', () => {
-      expect(() => store.update('non-existent', { properties: {} })).toThrow(ObjectNotFoundError);
+      expect(() => store.update('non-existent', { properties: {} })).toThrow(
+        ObjectNotFoundError
+      );
     });
   });
 
   describe('setProperty', () => {
     it('should set a single property', () => {
-      store.create(createMockInput({ id: 'test-1', properties: { title: 'Task', status: 'todo' } }));
+      store.create(
+        createMockInput({
+          id: 'test-1',
+          properties: { title: 'Task', status: 'todo' },
+        })
+      );
       const updated = store.setProperty('test-1', 'status', 'done');
       expect(updated.properties.status).toBe('done');
     });
@@ -231,7 +261,9 @@ describe('ObjectStore', () => {
 
   describe('getByType', () => {
     it('should return only objects of specified type', () => {
-      store.create(createMockInput({ id: 'task-1', typeId: BuiltInTypeIds.TASK }));
+      store.create(
+        createMockInput({ id: 'task-1', typeId: BuiltInTypeIds.TASK })
+      );
       store.create(
         createMockInput({
           id: 'note-1',
@@ -318,7 +350,9 @@ describe('ObjectStore', () => {
 
     it('should throw for object without content support', () => {
       store.create(createMockInput({ id: 'task-1', withContent: false }));
-      expect(() => store.setContent('task-1', 'content')).toThrow(ValidationError);
+      expect(() => store.setContent('task-1', 'content')).toThrow(
+        ValidationError
+      );
     });
   });
 
@@ -484,7 +518,12 @@ describe('ObjectStore', () => {
 
   describe('duplicate', () => {
     it('should create a copy with new ID', () => {
-      store.create(createMockInput({ id: 'task-1', properties: { title: 'Original', status: 'todo' } }));
+      store.create(
+        createMockInput({
+          id: 'task-1',
+          properties: { title: 'Original', status: 'todo' },
+        })
+      );
       const dup = store.duplicate('task-1');
 
       expect(dup.id).not.toBe('task-1');
@@ -492,7 +531,12 @@ describe('ObjectStore', () => {
     });
 
     it('should reset task status to todo', () => {
-      store.create(createMockInput({ id: 'task-1', properties: { title: 'Done Task', status: 'done' } }));
+      store.create(
+        createMockInput({
+          id: 'task-1',
+          properties: { title: 'Done Task', status: 'done' },
+        })
+      );
       const dup = store.duplicate('task-1');
 
       expect(dup.properties.status).toBe('todo');
@@ -531,10 +575,22 @@ describe('ObjectStore', () => {
 
   describe('updateMany', () => {
     it('should update multiple objects', () => {
-      store.create(createMockInput({ id: 'task-1', properties: { title: 'Task 1', status: 'todo' } }));
-      store.create(createMockInput({ id: 'task-2', properties: { title: 'Task 2', status: 'todo' } }));
+      store.create(
+        createMockInput({
+          id: 'task-1',
+          properties: { title: 'Task 1', status: 'todo' },
+        })
+      );
+      store.create(
+        createMockInput({
+          id: 'task-2',
+          properties: { title: 'Task 2', status: 'todo' },
+        })
+      );
 
-      const result = store.updateMany(['task-1', 'task-2'], { properties: { status: 'done' } });
+      const result = store.updateMany(['task-1', 'task-2'], {
+        properties: { status: 'done' },
+      });
       expect(result.updated).toHaveLength(2);
       expect(result.updated[0].properties.status).toBe('done');
       expect(result.updated[1].properties.status).toBe('done');

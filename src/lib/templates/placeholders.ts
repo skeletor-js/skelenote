@@ -48,7 +48,9 @@ function formatTime(date: Date): string {
  * Get ISO week number
  */
 function getWeekNumber(date: Date): number {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const d = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  );
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
@@ -67,7 +69,10 @@ function addDays(date: Date, days: number): Date {
 /**
  * Get the expanded value for a placeholder type
  */
-export function getPlaceholderValue(type: PlaceholderType, context: PlaceholderContext): string {
+export function getPlaceholderValue(
+  type: PlaceholderType,
+  context: PlaceholderContext
+): string {
   const { date, title, customValues } = context;
 
   switch (type) {
@@ -133,7 +138,10 @@ export function isValidPlaceholder(name: string): name is PlaceholderType {
  * @param context - The context for placeholder expansion
  * @returns The text with all placeholders expanded
  */
-export function expandPlaceholders(text: string, context: PlaceholderContext): string {
+export function expandPlaceholders(
+  text: string,
+  context: PlaceholderContext
+): string {
   return text.replace(PLACEHOLDER_PATTERN, (match, name) => {
     if (isValidPlaceholder(name)) {
       return getPlaceholderValue(name, context);
@@ -189,7 +197,10 @@ export function expandPlaceholdersInContent(
 /**
  * Recursively process a content node, expanding placeholders in text
  */
-function processContentNode(node: unknown, context: PlaceholderContext): unknown {
+function processContentNode(
+  node: unknown,
+  context: PlaceholderContext
+): unknown {
   if (node === null || node === undefined) {
     return node;
   }
@@ -282,10 +293,12 @@ export function textToBlockNoteJson(text: string): string {
 export function isValidBlockNoteJson(content: string): boolean {
   try {
     const parsed = JSON.parse(content);
-    return Array.isArray(parsed) && parsed.every((block) =>
-      typeof block === 'object' &&
-      block !== null &&
-      'type' in block
+    return (
+      Array.isArray(parsed) &&
+      parsed.every(
+        (block) =>
+          typeof block === 'object' && block !== null && 'type' in block
+      )
     );
   } catch {
     return false;

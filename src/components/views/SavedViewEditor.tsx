@@ -25,7 +25,11 @@ import { useTypeRegistry } from '@/contexts';
 import { useSavedViews } from '@/hooks';
 import { Icon } from '@/components/ui/Icon';
 import { getIconFromEmoji } from '@/lib/icons';
-import type { SavedView, CreateSavedViewInput, UpdateSavedViewInput } from '@/lib/types';
+import type {
+  SavedView,
+  CreateSavedViewInput,
+  UpdateSavedViewInput,
+} from '@/lib/types';
 import type { FilterCondition, FilterOperator, SortConfig } from '@/lib/loro';
 import {
   type FieldInfo,
@@ -36,7 +40,20 @@ import {
   getOperatorsForType,
 } from '@/lib/views';
 
-const COMMON_ICONS = ['📋', '📁', '⭐', '🔖', '📝', '✅', '🎯', '📌', '🔍', '📊', '🗂️', '💡'];
+const COMMON_ICONS = [
+  '📋',
+  '📁',
+  '⭐',
+  '🔖',
+  '📝',
+  '✅',
+  '🎯',
+  '📌',
+  '🔍',
+  '📊',
+  '🗂️',
+  '💡',
+];
 
 /** Props for the FilterValueInput component */
 interface FilterValueInputProps {
@@ -51,11 +68,12 @@ function FilterValueInput({ field, value, onChange }: FilterValueInputProps) {
 
   // Date input
   if (field.type === 'date') {
-    const dateValue = value && typeof value === 'number'
-      ? dayjs(value).format('YYYY-MM-DD')
-      : typeof value === 'string' && value
-        ? value
-        : null;
+    const dateValue =
+      value && typeof value === 'number'
+        ? dayjs(value).format('YYYY-MM-DD')
+        : typeof value === 'string' && value
+          ? value
+          : null;
 
     return (
       <DatePickerInput
@@ -158,7 +176,12 @@ interface SavedViewEditorProps {
   onSave?: (view: SavedView) => void;
 }
 
-export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEditorProps) {
+export function SavedViewEditor({
+  view,
+  isOpen,
+  onClose,
+  onSave,
+}: SavedViewEditorProps) {
   const typeRegistry = useTypeRegistry();
   const { createView, updateView } = useSavedViews();
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -177,13 +200,16 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
   const availableTypes = typeRegistry.getAll();
 
   // Type select data
-  const typeSelectData = useMemo(() => [
-    { value: '', label: 'All Types' },
-    ...availableTypes.map((type) => ({
-      value: type.id,
-      label: type.name,
-    })),
-  ], [availableTypes]);
+  const typeSelectData = useMemo(
+    () => [
+      { value: '', label: 'All Types' },
+      ...availableTypes.map((type) => ({
+        value: type.id,
+        label: type.name,
+      })),
+    ],
+    [availableTypes]
+  );
 
   // Get fields for the selected type, including options for select types
   const fields = useMemo((): FieldInfo[] => {
@@ -223,16 +249,19 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
   }, [typeFilter, typeRegistry, availableTypes]);
 
   // Field select data
-  const fieldSelectData = useMemo(() =>
-    fields.map((f) => ({ value: f.id, label: f.name })),
+  const fieldSelectData = useMemo(
+    () => fields.map((f) => ({ value: f.id, label: f.name })),
     [fields]
   );
 
   // Sort field select data (includes "No sorting" option)
-  const sortFieldSelectData = useMemo(() => [
-    { value: '', label: 'No sorting' },
-    ...fields.map((f) => ({ value: f.id, label: f.name })),
-  ], [fields]);
+  const sortFieldSelectData = useMemo(
+    () => [
+      { value: '', label: 'No sorting' },
+      ...fields.map((f) => ({ value: f.id, label: f.name })),
+    ],
+    [fields]
+  );
 
   // Get field info by id
   const getFieldById = useCallback(
@@ -274,10 +303,16 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
   const handleAddFilter = useCallback(() => {
     const defaultField = fields[0]?.id || 'title';
     const fieldInfo = fields[0];
-    const operators = fieldInfo ? getOperatorsForType(fieldInfo.type) : TEXT_OPERATORS;
+    const operators = fieldInfo
+      ? getOperatorsForType(fieldInfo.type)
+      : TEXT_OPERATORS;
     setFilters((prev) => [
       ...prev,
-      { field: defaultField, operator: operators[0] as FilterOperator, value: '' },
+      {
+        field: defaultField,
+        operator: operators[0] as FilterOperator,
+        value: '',
+      },
     ]);
   }, [fields]);
 
@@ -285,7 +320,9 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
   const handleUpdateFilter = useCallback(
     (index: number, updates: Partial<FilterCondition>) => {
       setFilters((prev) =>
-        prev.map((filter, i) => (i === index ? { ...filter, ...updates } : filter))
+        prev.map((filter, i) =>
+          i === index ? { ...filter, ...updates } : filter
+        )
       );
     },
     []
@@ -300,8 +337,9 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
   const handleSave = useCallback(() => {
     if (!name.trim()) return;
 
-    const sort: SortConfig | undefined =
-      sortField ? { field: sortField, direction: sortDirection } : undefined;
+    const sort: SortConfig | undefined = sortField
+      ? { field: sortField, direction: sortDirection }
+      : undefined;
 
     if (isEditMode && view) {
       const updates: UpdateSavedViewInput = {
@@ -359,11 +397,7 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
           <Group gap="sm">
             <Menu shadow="md" width={200}>
               <Menu.Target>
-                <ActionIcon
-                  variant="light"
-                  size="lg"
-                  aria-label="Choose icon"
-                >
+                <ActionIcon variant="light" size="lg" aria-label="Choose icon">
                   <Icon name={getIconFromEmoji(icon)} size={20} />
                 </ActionIcon>
               </Menu.Target>
@@ -413,9 +447,9 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
                   ? getOperatorsForType(fieldInfo.type)
                   : TEXT_OPERATORS;
 
-                const operatorSelectData = ALL_OPERATORS
-                  .filter((op) => availableOperators.includes(op.value))
-                  .map((op) => ({ value: op.value, label: op.label }));
+                const operatorSelectData = ALL_OPERATORS.filter((op) =>
+                  availableOperators.includes(op.value)
+                ).map((op) => ({ value: op.value, label: op.label }));
 
                 return (
                   <Group key={index} gap="xs" wrap="nowrap">
@@ -429,7 +463,9 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
                         const newOperators = newFieldInfo
                           ? getOperatorsForType(newFieldInfo.type)
                           : TEXT_OPERATORS;
-                        const newOperator = newOperators.includes(filter.operator)
+                        const newOperator = newOperators.includes(
+                          filter.operator
+                        )
                           ? filter.operator
                           : newOperators[0];
                         handleUpdateFilter(index, {
@@ -446,7 +482,9 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
                       value={filter.operator}
                       onChange={(val) => {
                         if (val) {
-                          handleUpdateFilter(index, { operator: val as FilterOperator });
+                          handleUpdateFilter(index, {
+                            operator: val as FilterOperator,
+                          });
                         }
                       }}
                       style={{ width: 120 }}
@@ -456,8 +494,12 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
                       fieldInfo && (
                         <FilterValueInput
                           field={fieldInfo}
-                          value={filter.value as string | number | boolean | null}
-                          onChange={(value) => handleUpdateFilter(index, { value })}
+                          value={
+                            filter.value as string | number | boolean | null
+                          }
+                          onChange={(value) =>
+                            handleUpdateFilter(index, { value })
+                          }
                         />
                       )}
                     <ActionIcon
@@ -504,7 +546,9 @@ export function SavedViewEditor({ view, isOpen, onClose, onSave }: SavedViewEdit
                     { value: 'desc', label: 'Descending' },
                   ]}
                   value={sortDirection}
-                  onChange={(val) => setSortDirection((val as 'asc' | 'desc') || 'desc')}
+                  onChange={(val) =>
+                    setSortDirection((val as 'asc' | 'desc') || 'desc')
+                  }
                   style={{ width: 140 }}
                 />
               )}

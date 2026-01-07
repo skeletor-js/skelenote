@@ -73,9 +73,7 @@ export function Layout({
           backgroundColor: 'var(--surface-canvas)',
         }}
       >
-        <Box style={{ flex: 1, overflow: 'auto' }}>
-          {children}
-        </Box>
+        <Box style={{ flex: 1, overflow: 'auto' }}>{children}</Box>
       </AppShell.Main>
     </AppShell>
   );

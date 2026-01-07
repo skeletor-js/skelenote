@@ -149,7 +149,9 @@ export function formatRelativeDate(timestamp: number): string {
 
   // Check if overdue
   if (timestamp < today.getTime()) {
-    const daysAgo = Math.ceil((today.getTime() - timestamp) / (1000 * 60 * 60 * 24));
+    const daysAgo = Math.ceil(
+      (today.getTime() - timestamp) / (1000 * 60 * 60 * 24)
+    );
     return `${daysAgo}d overdue`;
   }
 
@@ -161,7 +163,20 @@ export function formatRelativeDate(timestamp: number): string {
   }
 
   // Format as short date
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   const month = monthNames[date.getMonth()];
   const day = date.getDate();
 

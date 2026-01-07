@@ -5,7 +5,16 @@
  */
 
 import { useState } from 'react';
-import { Modal, TextInput, Stack, Group, Button, Text, Alert, ThemeIcon } from '@mantine/core';
+import {
+  Modal,
+  TextInput,
+  Stack,
+  Group,
+  Button,
+  Text,
+  Alert,
+  ThemeIcon,
+} from '@mantine/core';
 import { Icon } from '@/components/ui';
 import type { DeviceInfo } from '@/lib/devices';
 
@@ -50,9 +59,13 @@ export function RevokeConfirmDialog({
         </Alert>
 
         <Text size="sm">
-          Revoking <Text component="span" fw={600}>{device.name}</Text> will immediately prevent it from
-          syncing with your vault. The device will need to be re-authorized with
-          a new Skeleton Key to regain access.
+          Revoking{' '}
+          <Text component="span" fw={600}>
+            {device.name}
+          </Text>{' '}
+          will immediately prevent it from syncing with your vault. The device
+          will need to be re-authorized with a new Skeleton Key to regain
+          access.
         </Text>
 
         <TextInput
@@ -64,11 +77,7 @@ export function RevokeConfirmDialog({
         />
 
         <Group justify="flex-end" gap="sm">
-          <Button
-            variant="default"
-            onClick={onCancel}
-            disabled={isProcessing}
-          >
+          <Button variant="default" onClick={onCancel} disabled={isProcessing}>
             Cancel
           </Button>
           <Button

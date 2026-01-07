@@ -223,8 +223,10 @@ const slate: MantineColorsTuple = [
  */
 export const theme = createTheme({
   // ===== TYPOGRAPHY =====
-  fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  fontFamilyMonospace: '"Fragment Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+  fontFamily:
+    'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  fontFamilyMonospace:
+    '"Fragment Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
 
   // Font sizes matching existing design tokens
   fontSizes: {

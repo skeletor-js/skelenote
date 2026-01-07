@@ -9,109 +9,109 @@
  */
 export type IconName =
   // Object types
-  | 'circle-check'    // Task
-  | 'file-text'       // Note
-  | 'folder'          // Project
-  | 'layers'          // Area
-  | 'link'            // Link
-  | 'calendar'        // Meeting
-  | 'tag'             // Tag
-  | 'user'            // Person
-  | 'clipboard'       // Template
-  | 'file'            // Default/fallback
+  | 'circle-check' // Task
+  | 'file-text' // Note
+  | 'folder' // Project
+  | 'layers' // Area
+  | 'link' // Link
+  | 'calendar' // Meeting
+  | 'tag' // Tag
+  | 'user' // Person
+  | 'clipboard' // Template
+  | 'file' // Default/fallback
 
   // Navigation
-  | 'inbox'           // Inbox
-  | 'search'          // Search
-  | 'history'         // Time Machine
-  | 'calendar-days'   // Daily Notes
-  | 'settings'        // Settings
-  | 'list-checks'     // Tasks view
+  | 'inbox' // Inbox
+  | 'search' // Search
+  | 'history' // Time Machine
+  | 'calendar-days' // Daily Notes
+  | 'settings' // Settings
+  | 'list-checks' // Tasks view
 
   // Theme
-  | 'moon'            // Dark mode
-  | 'sun'             // Light mode
+  | 'moon' // Dark mode
+  | 'sun' // Light mode
 
   // Actions
-  | 'zap'             // Quick Capture
-  | 'sparkles'        // AI/Similar
-  | 'pin'             // Pin
-  | 'pin-off'         // Unpin
-  | 'archive'         // Archive
+  | 'zap' // Quick Capture
+  | 'sparkles' // AI/Similar
+  | 'pin' // Pin
+  | 'pin-off' // Unpin
+  | 'archive' // Archive
   | 'archive-restore' // Unarchive/Restore
-  | 'trash-2'         // Delete
-  | 'keyboard'        // Keyboard shortcuts
-  | 'columns-2'       // Split view
-  | 'plus'            // Add
-  | 'x'               // Close
-  | 'check'           // Checkmark
-  | 'edit-2'          // Edit
-  | 'arrow-right'     // Arrow right (open action)
+  | 'trash-2' // Delete
+  | 'keyboard' // Keyboard shortcuts
+  | 'columns-2' // Split view
+  | 'plus' // Add
+  | 'x' // Close
+  | 'check' // Checkmark
+  | 'edit-2' // Edit
+  | 'arrow-right' // Arrow right (open action)
   | 'sliders-horizontal' // Filters/settings
-  | 'flag'            // Priority
-  | 'shapes'          // Type/Category
+  | 'flag' // Priority
+  | 'shapes' // Type/Category
 
   // Arrows & Chevrons
-  | 'arrow-left'      // Back/Navigate back
-  | 'chevron-left'    // Back/Collapse
-  | 'chevron-right'   // Forward/Expand
-  | 'chevrons-left'   // Skip back (double)
-  | 'chevrons-right'  // Skip forward (double)
-  | 'chevron-up'      // Up
-  | 'chevron-down'    // Down
+  | 'arrow-left' // Back/Navigate back
+  | 'chevron-left' // Back/Collapse
+  | 'chevron-right' // Forward/Expand
+  | 'chevrons-left' // Skip back (double)
+  | 'chevrons-right' // Skip forward (double)
+  | 'chevron-up' // Up
+  | 'chevron-down' // Down
 
   // Status indicators
-  | 'alert-triangle'  // Overdue/Warning
-  | 'ban'             // Blocked
-  | 'check-circle'    // Completed
-  | 'circle'          // Pending
-  | 'loader'          // Loading
-  | 'calendar-check'  // Tasks completed for day
+  | 'alert-triangle' // Overdue/Warning
+  | 'ban' // Blocked
+  | 'check-circle' // Completed
+  | 'circle' // Pending
+  | 'loader' // Loading
+  | 'calendar-check' // Tasks completed for day
 
   // Content
-  | 'external-link'   // External link
-  | 'copy'            // Copy
-  | 'download'        // Download
-  | 'upload'          // Upload
-  | 'refresh-cw'      // Refresh/Sync
+  | 'external-link' // External link
+  | 'copy' // Copy
+  | 'download' // Download
+  | 'upload' // Upload
+  | 'refresh-cw' // Refresh/Sync
   | 'more-horizontal' // More options
-  | 'grip-vertical'   // Drag handle
-  | 'arrow-up-down'   // Sort
-  | 'filter'          // Filter
-  | 'list'            // List view
-  | 'layout-grid'     // Grid view
+  | 'grip-vertical' // Drag handle
+  | 'arrow-up-down' // Sort
+  | 'filter' // Filter
+  | 'list' // List view
+  | 'layout-grid' // Grid view
 
   // History
-  | 'rotate-ccw'      // Restore/Undo
-  | 'git-compare'     // Compare versions
+  | 'rotate-ccw' // Restore/Undo
+  | 'git-compare' // Compare versions
 
   // Security
-  | 'key'             // Encryption key
+  | 'key' // Encryption key
 
   // Devices
-  | 'monitor'         // Desktop/Web
-  | 'laptop'          // Laptop (macOS/Windows/Linux)
-  | 'smartphone'      // Mobile (iOS/Android)
+  | 'monitor' // Desktop/Web
+  | 'laptop' // Laptop (macOS/Windows/Linux)
+  | 'smartphone' // Mobile (iOS/Android)
 
   // Time
-  | 'clock'           // Clock/Timer
+  | 'clock' // Clock/Timer
 
   // Close/Cancel
-  | 'x-circle'        // Close with circle
+  | 'x-circle' // Close with circle
 
   // Misc
-  | 'info'            // Info
-  | 'lock'            // Locked/Encrypted
-  | 'unlock'          // Unlocked
-  | 'globe'           // Web/Public
-  | 'shield'          // Security
-  | 'wifi'            // Connected
-  | 'wifi-off'        // Disconnected
+  | 'info' // Info
+  | 'lock' // Locked/Encrypted
+  | 'unlock' // Unlocked
+  | 'globe' // Web/Public
+  | 'shield' // Security
+  | 'wifi' // Connected
+  | 'wifi-off' // Disconnected
 
   // Settings & About
-  | 'palette'         // Appearance/Theme settings
-  | 'book-open'       // Documentation
-  | 'github'          // GitHub
+  | 'palette' // Appearance/Theme settings
+  | 'book-open' // Documentation
+  | 'github' // GitHub
   | 'message-circle'; // Feedback/Support
 
 /**
@@ -177,33 +177,97 @@ export const DEFAULT_ICON: IconName = 'file';
  */
 const VALID_ICON_NAMES: Set<string> = new Set([
   // Object types
-  'circle-check', 'file-text', 'folder', 'layers', 'link', 'calendar', 'tag', 'user', 'clipboard', 'file',
+  'circle-check',
+  'file-text',
+  'folder',
+  'layers',
+  'link',
+  'calendar',
+  'tag',
+  'user',
+  'clipboard',
+  'file',
   // Navigation
-  'inbox', 'search', 'history', 'calendar-days', 'settings', 'list-checks',
+  'inbox',
+  'search',
+  'history',
+  'calendar-days',
+  'settings',
+  'list-checks',
   // Theme
-  'moon', 'sun',
+  'moon',
+  'sun',
   // Actions
-  'zap', 'sparkles', 'pin', 'pin-off', 'archive', 'archive-restore', 'trash-2', 'keyboard', 'columns-2', 'plus', 'x', 'check', 'edit-2', 'arrow-right', 'sliders-horizontal', 'flag', 'shapes',
+  'zap',
+  'sparkles',
+  'pin',
+  'pin-off',
+  'archive',
+  'archive-restore',
+  'trash-2',
+  'keyboard',
+  'columns-2',
+  'plus',
+  'x',
+  'check',
+  'edit-2',
+  'arrow-right',
+  'sliders-horizontal',
+  'flag',
+  'shapes',
   // Arrows & Chevrons
-  'arrow-left', 'chevron-left', 'chevron-right', 'chevrons-left', 'chevrons-right', 'chevron-up', 'chevron-down',
+  'arrow-left',
+  'chevron-left',
+  'chevron-right',
+  'chevrons-left',
+  'chevrons-right',
+  'chevron-up',
+  'chevron-down',
   // Status indicators
-  'alert-triangle', 'ban', 'check-circle', 'circle', 'loader', 'calendar-check',
+  'alert-triangle',
+  'ban',
+  'check-circle',
+  'circle',
+  'loader',
+  'calendar-check',
   // Content
-  'external-link', 'copy', 'download', 'upload', 'refresh-cw', 'more-horizontal', 'grip-vertical', 'arrow-up-down', 'filter', 'list', 'layout-grid',
+  'external-link',
+  'copy',
+  'download',
+  'upload',
+  'refresh-cw',
+  'more-horizontal',
+  'grip-vertical',
+  'arrow-up-down',
+  'filter',
+  'list',
+  'layout-grid',
   // History
-  'rotate-ccw', 'git-compare',
+  'rotate-ccw',
+  'git-compare',
   // Security
   'key',
   // Devices
-  'monitor', 'laptop', 'smartphone',
+  'monitor',
+  'laptop',
+  'smartphone',
   // Time
   'clock',
   // Close/Cancel
   'x-circle',
   // Misc
-  'info', 'lock', 'unlock', 'globe', 'shield', 'wifi', 'wifi-off',
+  'info',
+  'lock',
+  'unlock',
+  'globe',
+  'shield',
+  'wifi',
+  'wifi-off',
   // Settings & About
-  'palette', 'book-open', 'github', 'message-circle',
+  'palette',
+  'book-open',
+  'github',
+  'message-circle',
 ]);
 
 /**

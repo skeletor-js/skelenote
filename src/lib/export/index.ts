@@ -15,7 +15,11 @@ import { generateFrontmatter } from './frontmatter';
 import { convertBlockNoteToMarkdown } from './markdown';
 
 export * from './types';
-export { generateFrontmatter, generateFrontmatterProperties, renderFrontmatter } from './frontmatter';
+export {
+  generateFrontmatter,
+  generateFrontmatterProperties,
+  renderFrontmatter,
+} from './frontmatter';
 export { convertBlockNoteToMarkdown } from './markdown';
 
 /**
@@ -246,13 +250,16 @@ export async function exportAllToZip(
     const count = usedFilenames.get(baseFilename) || 0;
     usedFilenames.set(baseFilename, count + 1);
 
-    const filename = count > 0 ? `${baseFilename}-${count}.md` : `${baseFilename}.md`;
+    const filename =
+      count > 0 ? `${baseFilename}-${count}.md` : `${baseFilename}.md`;
 
     // Determine folder path
     let filePath = filename;
     if (mergedOptions.organizeByType) {
       const isDaily = obj.typeId === 'note' && obj.properties.isDailyNote;
-      const folderName = isDaily ? 'daily-notes' : (typeDef.name.toLowerCase() + 's');
+      const folderName = isDaily
+        ? 'daily-notes'
+        : typeDef.name.toLowerCase() + 's';
       filePath = `${folderName}/${filename}`;
     }
 

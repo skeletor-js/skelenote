@@ -102,31 +102,38 @@ function matchesFilter(obj: SkelenoteObject, filter: FilterCondition): boolean {
       return value !== filterValue;
 
     case 'gt':
-      if (typeof value !== 'number' || typeof filterValue !== 'number') return false;
+      if (typeof value !== 'number' || typeof filterValue !== 'number')
+        return false;
       return value > filterValue;
 
     case 'gte':
-      if (typeof value !== 'number' || typeof filterValue !== 'number') return false;
+      if (typeof value !== 'number' || typeof filterValue !== 'number')
+        return false;
       return value >= filterValue;
 
     case 'lt':
-      if (typeof value !== 'number' || typeof filterValue !== 'number') return false;
+      if (typeof value !== 'number' || typeof filterValue !== 'number')
+        return false;
       return value < filterValue;
 
     case 'lte':
-      if (typeof value !== 'number' || typeof filterValue !== 'number') return false;
+      if (typeof value !== 'number' || typeof filterValue !== 'number')
+        return false;
       return value <= filterValue;
 
     case 'contains':
-      if (typeof value !== 'string' || typeof filterValue !== 'string') return false;
+      if (typeof value !== 'string' || typeof filterValue !== 'string')
+        return false;
       return value.toLowerCase().includes(filterValue.toLowerCase());
 
     case 'startsWith':
-      if (typeof value !== 'string' || typeof filterValue !== 'string') return false;
+      if (typeof value !== 'string' || typeof filterValue !== 'string')
+        return false;
       return value.toLowerCase().startsWith(filterValue.toLowerCase());
 
     case 'endsWith':
-      if (typeof value !== 'string' || typeof filterValue !== 'string') return false;
+      if (typeof value !== 'string' || typeof filterValue !== 'string')
+        return false;
       return value.toLowerCase().endsWith(filterValue.toLowerCase());
 
     case 'in':
@@ -151,7 +158,11 @@ function matchesFilter(obj: SkelenoteObject, filter: FilterCondition): boolean {
 /**
  * Compare two values for sorting
  */
-function compareValues(a: PropertyValue, b: PropertyValue, direction: SortDirection): number {
+function compareValues(
+  a: PropertyValue,
+  b: PropertyValue,
+  direction: SortDirection
+): number {
   const multiplier = direction === 'asc' ? 1 : -1;
 
   // Handle nulls
@@ -188,18 +199,25 @@ function compareValues(a: PropertyValue, b: PropertyValue, direction: SortDirect
 /**
  * Execute a query on a list of objects
  */
-export function executeQuery(objects: SkelenoteObject[], config: QueryConfig): SkelenoteObject[] {
+export function executeQuery(
+  objects: SkelenoteObject[],
+  config: QueryConfig
+): SkelenoteObject[] {
   let result = [...objects];
 
   // Apply filters
   if (config.filters && config.filters.length > 0) {
-    result = result.filter((obj) => config.filters!.every((filter) => matchesFilter(obj, filter)));
+    result = result.filter((obj) =>
+      config.filters!.every((filter) => matchesFilter(obj, filter))
+    );
   }
 
   // Apply sort
   if (config.sort) {
     const { field, direction } = config.sort;
-    result.sort((a, b) => compareValues(getFieldValue(a, field), getFieldValue(b, field), direction));
+    result.sort((a, b) =>
+      compareValues(getFieldValue(a, field), getFieldValue(b, field), direction)
+    );
   }
 
   // Apply offset
@@ -230,7 +248,11 @@ export class QueryBuilder {
   /**
    * Add a filter condition
    */
-  where(field: string, operator: FilterOperator, value?: PropertyValue | PropertyValue[]): this {
+  where(
+    field: string,
+    operator: FilterOperator,
+    value?: PropertyValue | PropertyValue[]
+  ): this {
     this.config.filters!.push({ field, operator, value });
     return this;
   }

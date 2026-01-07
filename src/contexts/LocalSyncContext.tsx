@@ -39,7 +39,12 @@ import {
 import { useToast } from './ToastContext';
 import { useObjects } from './ObjectContext';
 
-type LocalSyncStatus = 'off' | 'starting' | 'discovering' | 'connected' | 'error';
+type LocalSyncStatus =
+  | 'off'
+  | 'starting'
+  | 'discovering'
+  | 'connected'
+  | 'error';
 
 interface LocalSyncContextValue {
   /** Whether local sync feature is enabled */
@@ -149,10 +154,17 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
           if (store.isInitialized()) {
             const registryData = store.exportForSync();
             const count = await broadcastDeviceRegistry(registryData);
-            console.log('[LocalSync] Broadcast device registry to', count, 'peers');
+            console.log(
+              '[LocalSync] Broadcast device registry to',
+              count,
+              'peers'
+            );
           }
         } catch (err) {
-          console.error('[LocalSync] Failed to broadcast device registry:', err);
+          console.error(
+            '[LocalSync] Failed to broadcast device registry:',
+            err
+          );
         }
       });
 
@@ -163,7 +175,12 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
 
       // Listen for sync messages from peers
       const unlistenSyncMessage = await onSyncMessage(async (event) => {
-        console.log('[LocalSync] Received sync from:', event.deviceId, 'type:', event.msgType);
+        console.log(
+          '[LocalSync] Received sync from:',
+          event.deviceId,
+          'type:',
+          event.msgType
+        );
         // Convert number[] to Uint8Array
         const data = new Uint8Array(event.payload);
 
@@ -186,7 +203,10 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
                 store.handleSyncUpdate(data);
               }
             } catch (err) {
-              console.error('[LocalSync] Failed to handle device registry:', err);
+              console.error(
+                '[LocalSync] Failed to handle device registry:',
+                err
+              );
             }
             break;
 
@@ -194,14 +214,19 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
             // Device revocation from peer - verify and apply
             console.log('[LocalSync] Received device revocation from peer');
             try {
-              const payload: DeviceRevokePayload = JSON.parse(new TextDecoder().decode(data));
+              const payload: DeviceRevokePayload = JSON.parse(
+                new TextDecoder().decode(data)
+              );
               const store = getDeviceRegistryStore();
               if (!store.isInitialized()) break;
 
               // Get the revoking device to verify signature
               const revokingDevice = store.getDevice(payload.revokedBy);
               if (!revokingDevice) {
-                console.warn('[LocalSync] Revocation from unknown device:', payload.revokedBy);
+                console.warn(
+                  '[LocalSync] Revocation from unknown device:',
+                  payload.revokedBy
+                );
                 break;
               }
 
@@ -230,7 +255,10 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
 
               // Block locally for P2P
               await blockDevice(payload.deviceId);
-              console.log('[LocalSync] Applied P2P revocation for:', payload.deviceId);
+              console.log(
+                '[LocalSync] Applied P2P revocation for:',
+                payload.deviceId
+              );
             } catch (err) {
               console.error('[LocalSync] Failed to handle revocation:', err);
             }
@@ -240,7 +268,9 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
             // Device rename from peer
             console.log('[LocalSync] Received device rename from peer');
             try {
-              const payload: DeviceRenamePayload = JSON.parse(new TextDecoder().decode(data));
+              const payload: DeviceRenamePayload = JSON.parse(
+                new TextDecoder().decode(data)
+              );
               const store = getDeviceRegistryStore();
               if (store.isInitialized()) {
                 store.renameDevice(payload.deviceId, payload.newName);
@@ -378,23 +408,29 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
   }, []);
 
   // Broadcast sync data to all connected peers
-  const broadcastUpdate = useCallback(async (data: Uint8Array): Promise<number> => {
-    if (!isEnabled) {
-      return 0;
-    }
-    try {
-      const count = await broadcastSync(data);
-      return count;
-    } catch (err) {
-      console.error('[LocalSync] Failed to broadcast sync:', err);
-      return 0;
-    }
-  }, [isEnabled]);
+  const broadcastUpdate = useCallback(
+    async (data: Uint8Array): Promise<number> => {
+      if (!isEnabled) {
+        return 0;
+      }
+      try {
+        const count = await broadcastSync(data);
+        return count;
+      } catch (err) {
+        console.error('[LocalSync] Failed to broadcast sync:', err);
+        return 0;
+      }
+    },
+    [isEnabled]
+  );
 
   // Set callback for receiving sync data
-  const setOnSyncReceived = useCallback((callback: ((data: Uint8Array) => void) | null) => {
-    onSyncReceivedRef.current = callback;
-  }, []);
+  const setOnSyncReceived = useCallback(
+    (callback: ((data: Uint8Array) => void) | null) => {
+      onSyncReceivedRef.current = callback;
+    },
+    []
+  );
 
   // Check initial state on mount
   useEffect(() => {

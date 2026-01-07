@@ -51,13 +51,21 @@ function EmptyStateIcon({ icon, size }: { icon: string; size: number }) {
   // Check if it's a known emoji, convert to icon name
   const iconName = EMOJI_TO_ICON[icon];
   if (iconName) {
-    return <Icon name={iconName} size={size} color="var(--mantine-color-gray-5)" />;
+    return (
+      <Icon name={iconName} size={size} color="var(--mantine-color-gray-5)" />
+    );
   }
 
   // Check if it's already a valid icon name (no emoji characters)
   const isIconName = /^[a-z0-9-]+$/.test(icon);
   if (isIconName) {
-    return <Icon name={icon as IconName} size={size} color="var(--mantine-color-gray-5)" />;
+    return (
+      <Icon
+        name={icon as IconName}
+        size={size}
+        color="var(--mantine-color-gray-5)"
+      />
+    );
   }
 
   // Fallback: render as text (legacy emoji)

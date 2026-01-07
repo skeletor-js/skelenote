@@ -19,24 +19,14 @@ export {
 } from './extract';
 
 // Index building
-export {
-  buildSearchIndex,
-  buildSearchableItemForObject,
-} from './indexer';
+export { buildSearchIndex, buildSearchableItemForObject } from './indexer';
 
 // Search engine
-export {
-  SearchEngine,
-  createSearchEngine,
-} from './query';
+export { SearchEngine, createSearchEngine } from './query';
 
 // Highlighting
 export type { TextSegment } from './highlight';
-export {
-  highlightText,
-  createSnippet,
-  getBestSnippet,
-} from './highlight';
+export { highlightText, createSnippet, getBestSnippet } from './highlight';
 
 // Hybrid search orchestration
 export type { OrchestratorConfig } from './orchestrator';

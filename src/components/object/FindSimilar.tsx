@@ -15,7 +15,12 @@ import {
   ActionIcon,
   Loader,
 } from '@mantine/core';
-import { useObjects, useTypeRegistry, useNavigation, useSemanticSearchSafe } from '@/contexts';
+import {
+  useObjects,
+  useTypeRegistry,
+  useNavigation,
+  useSemanticSearchSafe,
+} from '@/contexts';
 import { EmptyState, Icon } from '@/components/ui';
 import { getIconFromEmoji } from '@/lib/icons';
 import { copyMentionToClipboard } from '@/lib/editor';
@@ -47,7 +52,8 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Check if semantic search is available
-  const isSemanticEnabled = semanticContext?.isEnabled && semanticContext?.status === 'ready';
+  const isSemanticEnabled =
+    semanticContext?.isEnabled && semanticContext?.status === 'ready';
   const threshold = semanticContext?.threshold ?? 0.2;
 
   // Find similar objects (full data)
@@ -60,10 +66,13 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
     setIsLoading(true);
 
     try {
-      const results: SemanticSearchResult[] = await engine.findSimilar(objectId, {
-        limit: 5,
-        threshold,
-      });
+      const results: SemanticSearchResult[] = await engine.findSimilar(
+        objectId,
+        {
+          limit: 5,
+          threshold,
+        }
+      );
 
       // Convert to display items
       const items: SimilarItem[] = results
@@ -73,7 +82,9 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
           if (!obj) return null;
 
           const typeDef = typeRegistry.get(obj.typeId);
-          const title = String(obj.properties.title ?? obj.properties.name ?? 'Untitled');
+          const title = String(
+            obj.properties.title ?? obj.properties.name ?? 'Untitled'
+          );
 
           return {
             id: obj.id,
@@ -111,7 +122,8 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
     }
 
     // Fetch count (lightweight query)
-    engine.findSimilar(objectId, { limit: 5, threshold })
+    engine
+      .findSimilar(objectId, { limit: 5, threshold })
       .then((results) => {
         const count = results.filter((r) => r.objectId !== objectId).length;
         setSimilarCount(count);
@@ -129,27 +141,41 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
 
   // Trigger full search when expanded (if not already loaded)
   useEffect(() => {
-    if (isExpanded && similarItems.length === 0 && !isLoading && isSemanticEnabled) {
+    if (
+      isExpanded &&
+      similarItems.length === 0 &&
+      !isLoading &&
+      isSemanticEnabled
+    ) {
       findSimilarObjects();
     }
-  }, [isExpanded, similarItems.length, isLoading, isSemanticEnabled, findSimilarObjects]);
+  }, [
+    isExpanded,
+    similarItems.length,
+    isLoading,
+    isSemanticEnabled,
+    findSimilarObjects,
+  ]);
 
   // Copy mention to clipboard (can be pasted as actual mention in editor)
   // Must be defined before early return to satisfy rules of hooks
-  const handleCopyMention = useCallback(async (item: SimilarItem, e: React.MouseEvent) => {
-    e.stopPropagation(); // Don't trigger item click
+  const handleCopyMention = useCallback(
+    async (item: SimilarItem, e: React.MouseEvent) => {
+      e.stopPropagation(); // Don't trigger item click
 
-    const success = await copyMentionToClipboard({
-      objectId: item.id,
-      objectName: item.title,
-      objectTypeId: item.typeId,
-    });
+      const success = await copyMentionToClipboard({
+        objectId: item.id,
+        objectName: item.title,
+        objectTypeId: item.typeId,
+      });
 
-    if (success) {
-      setCopiedId(item.id);
-      setTimeout(() => setCopiedId(null), 2000);
-    }
-  }, []);
+      if (success) {
+        setCopiedId(item.id);
+        setTimeout(() => setCopiedId(null), 2000);
+      }
+    },
+    []
+  );
 
   // Don't render if semantic search is not enabled
   if (!isSemanticEnabled) {
@@ -161,7 +187,8 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
   };
 
   // Display count - use similarItems.length if loaded, otherwise similarCount
-  const displayCount = similarItems.length > 0 ? similarItems.length : similarCount;
+  const displayCount =
+    similarItems.length > 0 ? similarItems.length : similarCount;
 
   return (
     <Box component="section">
@@ -202,7 +229,9 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
           {isLoading ? (
             <Group gap="xs" p="xs">
               <Loader size="xs" />
-              <Text size="sm" c="dimmed">Finding similar objects...</Text>
+              <Text size="sm" c="dimmed">
+                Finding similar objects...
+              </Text>
             </Group>
           ) : similarItems.length === 0 ? (
             <EmptyState message="No similar objects found" size="small" />
@@ -235,7 +264,10 @@ export function FindSimilar({ objectId }: FindSimilarProps) {
                   onClick={(e) => handleCopyMention(item, e)}
                   title="Copy mention (paste in editor to link)"
                 >
-                  <Icon name={copiedId === item.id ? 'check' : 'copy'} size={14} />
+                  <Icon
+                    name={copiedId === item.id ? 'check' : 'copy'}
+                    size={14}
+                  />
                 </ActionIcon>
               </Group>
             ))

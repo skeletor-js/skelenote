@@ -43,19 +43,25 @@ interface KeyboardShortcutsContextValue {
   getShortcuts: () => Map<string, ShortcutDefinition>;
 }
 
-const KeyboardShortcutsContext = createContext<KeyboardShortcutsContextValue | null>(null);
+const KeyboardShortcutsContext =
+  createContext<KeyboardShortcutsContextValue | null>(null);
 
 interface KeyboardShortcutsProviderProps {
   children: ReactNode;
 }
 
-export function KeyboardShortcutsProvider({ children }: KeyboardShortcutsProviderProps) {
+export function KeyboardShortcutsProvider({
+  children,
+}: KeyboardShortcutsProviderProps) {
   // Use ref to store shortcuts to avoid re-renders when shortcuts change
   const shortcutsRef = useRef<Map<string, ShortcutDefinition>>(new Map());
 
-  const registerShortcut = useCallback((id: string, shortcut: ShortcutDefinition) => {
-    shortcutsRef.current.set(id, { enabled: true, ...shortcut });
-  }, []);
+  const registerShortcut = useCallback(
+    (id: string, shortcut: ShortcutDefinition) => {
+      shortcutsRef.current.set(id, { enabled: true, ...shortcut });
+    },
+    []
+  );
 
   const unregisterShortcut = useCallback((id: string) => {
     shortcutsRef.current.delete(id);
@@ -84,19 +90,26 @@ export function KeyboardShortcutsProvider({ children }: KeyboardShortcutsProvide
         if (!keyMatches) continue;
 
         // Check modifier keys
-        const metaMatches = shortcut.metaKey ? (e.metaKey || e.ctrlKey) : true;
+        const metaMatches = shortcut.metaKey ? e.metaKey || e.ctrlKey : true;
         const ctrlMatches = shortcut.ctrlKey ? e.ctrlKey : true;
         const shiftMatches = shortcut.shiftKey ? e.shiftKey : !e.shiftKey;
         const altMatches = shortcut.altKey ? e.altKey : !e.altKey;
 
         // For shortcuts without modifiers, skip if in input field
         // (allows Escape to work in inputs for example)
-        const hasModifiers = shortcut.metaKey || shortcut.ctrlKey || shortcut.altKey;
+        const hasModifiers =
+          shortcut.metaKey || shortcut.ctrlKey || shortcut.altKey;
         if (!hasModifiers && isInputField && shortcut.key !== 'Escape') {
           continue;
         }
 
-        if (keyMatches && metaMatches && ctrlMatches && shiftMatches && altMatches) {
+        if (
+          keyMatches &&
+          metaMatches &&
+          ctrlMatches &&
+          shiftMatches &&
+          altMatches
+        ) {
           // Execute the action and check return value
           // If action returns false, it indicates the event was not handled
           // and should propagate (allows BlockNote undo/redo when editor focused)
@@ -133,7 +146,9 @@ export function KeyboardShortcutsProvider({ children }: KeyboardShortcutsProvide
 export function useKeyboardShortcuts(): KeyboardShortcutsContextValue {
   const context = useContext(KeyboardShortcutsContext);
   if (!context) {
-    throw new Error('useKeyboardShortcuts must be used within a KeyboardShortcutsProvider');
+    throw new Error(
+      'useKeyboardShortcuts must be used within a KeyboardShortcutsProvider'
+    );
   }
   return context;
 }

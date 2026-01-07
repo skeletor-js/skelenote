@@ -65,7 +65,9 @@ export function ObjectSearchModal({
       if (filterFn && !filterFn(obj)) return false;
 
       // Filter by name/title
-      const name = (obj.properties.title ?? obj.properties.name ?? '') as string;
+      const name = (obj.properties.title ??
+        obj.properties.name ??
+        '') as string;
       return name.toLowerCase().includes(lowerQuery);
     });
   }, [store, query, targetTypeIds, excludeIds, filterFn]);
@@ -90,7 +92,9 @@ export function ObjectSearchModal({
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setSelectedIndex((prev) => Math.min(prev + 1, filteredObjects.length - 1));
+          setSelectedIndex((prev) =>
+            Math.min(prev + 1, filteredObjects.length - 1)
+          );
           break;
         case 'ArrowUp':
           e.preventDefault();
@@ -124,13 +128,7 @@ export function ObjectSearchModal({
   };
 
   return (
-    <Modal
-      opened={isOpen}
-      onClose={onClose}
-      title={title}
-      centered
-      size="md"
-    >
+    <Modal opened={isOpen} onClose={onClose} title={title} centered size="md">
       <Stack gap="sm">
         <TextInput
           ref={inputRef}
@@ -150,7 +148,9 @@ export function ObjectSearchModal({
             <Stack gap={2}>
               {filteredObjects.slice(0, 20).map((obj, index) => {
                 const iconName = getTypeIcon(obj.typeId);
-                const name = (obj.properties.title ?? obj.properties.name ?? 'Untitled') as string;
+                const name = (obj.properties.title ??
+                  obj.properties.name ??
+                  'Untitled') as string;
                 const isSelected = index === selectedIndex;
 
                 return (

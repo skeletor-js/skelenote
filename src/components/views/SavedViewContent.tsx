@@ -3,8 +3,22 @@
  */
 
 import { useMemo, useCallback } from 'react';
-import { Stack, Group, Text, Badge, Box, UnstyledButton, ActionIcon, Tooltip } from '@mantine/core';
-import { useNavigation, useObjects, useTypeRegistry, useToast } from '@/contexts';
+import {
+  Stack,
+  Group,
+  Text,
+  Badge,
+  Box,
+  UnstyledButton,
+  ActionIcon,
+  Tooltip,
+} from '@mantine/core';
+import {
+  useNavigation,
+  useObjects,
+  useTypeRegistry,
+  useToast,
+} from '@/contexts';
 import { useSavedViews, useConfirmDialog, usePinnedObjects } from '@/hooks';
 import { executeQuery, type FilterCondition } from '@/lib/loro';
 import { formatRelativeDate } from '@/lib/utils/date';
@@ -20,7 +34,12 @@ import styles from './SavedViewContent.module.css';
 
 // Row component for saved view items with hover-reveal actions
 interface SavedViewRowProps {
-  obj: { id: string; typeId: string; properties: Record<string, unknown>; updatedAt: number };
+  obj: {
+    id: string;
+    typeId: string;
+    properties: Record<string, unknown>;
+    updatedAt: number;
+  };
   title: string;
   icon: string;
   typeName: string;
@@ -29,43 +48,61 @@ interface SavedViewRowProps {
   onDelete: () => void;
 }
 
-function SavedViewRow({ obj, title, icon, typeName, onClick, onOpenInSplit, onDelete }: SavedViewRowProps) {
+function SavedViewRow({
+  obj,
+  title,
+  icon,
+  typeName,
+  onClick,
+  onOpenInSplit,
+  onDelete,
+}: SavedViewRowProps) {
   const { addToast } = useToast();
   const { isPinned, pin, unpin } = usePinnedObjects();
-  const { confirm, dialogState, handleConfirm, handleCancel } = useConfirmDialog();
+  const { confirm, dialogState, handleConfirm, handleCancel } =
+    useConfirmDialog();
 
   const itemIsPinned = isPinned(obj.id);
 
-  const handleTogglePin = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (itemIsPinned) {
-      unpin(obj.id);
-      addToast({ type: 'success', message: 'Removed from pins' });
-    } else {
-      pin(obj.id);
-      addToast({ type: 'success', message: 'Pinned to sidebar' });
-    }
-  }, [itemIsPinned, pin, unpin, obj.id, addToast]);
+  const handleTogglePin = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (itemIsPinned) {
+        unpin(obj.id);
+        addToast({ type: 'success', message: 'Removed from pins' });
+      } else {
+        pin(obj.id);
+        addToast({ type: 'success', message: 'Pinned to sidebar' });
+      }
+    },
+    [itemIsPinned, pin, unpin, obj.id, addToast]
+  );
 
-  const handleOpenInSplit = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    onOpenInSplit();
-  }, [onOpenInSplit]);
+  const handleOpenInSplit = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onOpenInSplit();
+    },
+    [onOpenInSplit]
+  );
 
-  const handleDeleteClick = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const confirmed = await confirm({
-      title: `Delete ${typeName}?`,
-      message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
-      confirmLabel: 'Delete',
-      variant: 'danger',
-    });
+  const handleDeleteClick = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const confirmed = await confirm({
+        title: `Delete ${typeName}?`,
+        message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
+        confirmLabel: 'Delete',
+        variant: 'danger',
+      });
 
-    if (confirmed) {
-      onDelete();
-      addToast({ type: 'success', message: `"${title}" deleted` });
-    }
-  }, [confirm, typeName, title, onDelete, addToast]);
+      if (confirmed) {
+        onDelete();
+        addToast({ type: 'success', message: `"${title}" deleted` });
+      }
+    },
+    [confirm, typeName, title, onDelete, addToast]
+  );
 
   return (
     <>
@@ -81,7 +118,11 @@ function SavedViewRow({ obj, title, icon, typeName, onClick, onOpenInSplit, onDe
           borderBottom: '1px solid var(--mantine-color-default-border)',
         }}
       >
-        <Icon name={getIconFromEmoji(icon)} size={16} style={{ color: 'var(--mantine-color-gray-6)', flexShrink: 0 }} />
+        <Icon
+          name={getIconFromEmoji(icon)}
+          size={16}
+          style={{ color: 'var(--mantine-color-gray-6)', flexShrink: 0 }}
+        />
         <Text size="sm" style={{ flex: 1 }} truncate>
           {title}
         </Text>
@@ -104,12 +145,18 @@ function SavedViewRow({ obj, title, icon, typeName, onClick, onOpenInSplit, onDe
               <Icon name="columns-2" size={14} />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label={itemIsPinned ? 'Unpin' : 'Pin to sidebar'} position="top" withArrow>
+          <Tooltip
+            label={itemIsPinned ? 'Unpin' : 'Pin to sidebar'}
+            position="top"
+            withArrow
+          >
             <ActionIcon
               variant="subtle"
               size="sm"
               onClick={handleTogglePin}
-              aria-label={itemIsPinned ? 'Unpin from sidebar' : 'Pin to sidebar'}
+              aria-label={
+                itemIsPinned ? 'Unpin from sidebar' : 'Pin to sidebar'
+              }
             >
               <Icon name="pin" size={14} />
             </ActionIcon>
@@ -175,59 +222,67 @@ export function SavedViewContent() {
   }, [view, store]);
 
   // Get type definition for display
-  const getTypeDef = useCallback((typeId: string) => {
-    return typeRegistry.get(typeId);
-  }, [typeRegistry]);
+  const getTypeDef = useCallback(
+    (typeId: string) => {
+      return typeRegistry.get(typeId);
+    },
+    [typeRegistry]
+  );
 
   // Format a filter for display
-  const formatFilter = useCallback((filter: FilterCondition, typeFilter?: string) => {
-    // Get field name - first check built-in fields
-    const builtInField = BUILT_IN_FIELDS.find((f) => f.id === filter.field);
-    let fieldName = builtInField?.name || filter.field;
-    let fieldType = builtInField?.type;
+  const formatFilter = useCallback(
+    (filter: FilterCondition, typeFilter?: string) => {
+      // Get field name - first check built-in fields
+      const builtInField = BUILT_IN_FIELDS.find((f) => f.id === filter.field);
+      let fieldName = builtInField?.name || filter.field;
+      let fieldType = builtInField?.type;
 
-    // Try to get field info from type schema
-    if (typeFilter) {
-      const typeDef = getTypeDef(typeFilter);
-      if (typeDef) {
-        const fieldDef = typeDef.schema.find((f) => f.id === filter.field);
-        if (fieldDef) {
-          fieldName = fieldDef.name;
-          fieldType = fieldDef.type;
+      // Try to get field info from type schema
+      if (typeFilter) {
+        const typeDef = getTypeDef(typeFilter);
+        if (typeDef) {
+          const fieldDef = typeDef.schema.find((f) => f.id === filter.field);
+          if (fieldDef) {
+            fieldName = fieldDef.name;
+            fieldType = fieldDef.type;
+          }
         }
       }
-    }
 
-    // Get operator label
-    const operatorLabel = OPERATOR_LABELS[filter.operator] || filter.operator;
+      // Get operator label
+      const operatorLabel = OPERATOR_LABELS[filter.operator] || filter.operator;
 
-    // Format value based on field type or field name
-    let formattedValue = '';
+      // Format value based on field type or field name
+      let formattedValue = '';
 
-    // Skip value for isNull/isNotNull operators
-    if (filter.operator !== 'isNull' && filter.operator !== 'isNotNull') {
-      const isDateField = fieldType === 'date' ||
-        filter.field === 'createdAt' ||
-        filter.field === 'updatedAt' ||
-        filter.field === 'dueDate' ||
-        filter.field === 'startTime';
+      // Skip value for isNull/isNotNull operators
+      if (filter.operator !== 'isNull' && filter.operator !== 'isNotNull') {
+        const isDateField =
+          fieldType === 'date' ||
+          filter.field === 'createdAt' ||
+          filter.field === 'updatedAt' ||
+          filter.field === 'dueDate' ||
+          filter.field === 'startTime';
 
-      const isBooleanField = fieldType === 'checkbox' ||
-        fieldType === 'boolean' ||
-        filter.field === 'inboxed' ||
-        filter.field === 'isDailyNote';
+        const isBooleanField =
+          fieldType === 'checkbox' ||
+          fieldType === 'boolean' ||
+          filter.field === 'inboxed' ||
+          filter.field === 'isDailyNote';
 
-      if (isDateField) {
-        formattedValue = formatDateValue(filter.value);
-      } else if (isBooleanField) {
-        formattedValue = formatBooleanValue(filter.value);
-      } else {
-        formattedValue = String(filter.value ?? '');
+        if (isDateField) {
+          formattedValue = formatDateValue(filter.value);
+        } else if (isBooleanField) {
+          formattedValue = formatBooleanValue(filter.value);
+        } else {
+          formattedValue = String(filter.value ?? '');
+        }
       }
-    }
 
-    return { fieldName, operatorLabel, formattedValue };
-  }, [getTypeDef]);
+      return { fieldName, operatorLabel, formattedValue };
+    },
+    [getTypeDef]
+  );
 
   if (!view) {
     return (
@@ -247,10 +302,18 @@ export function SavedViewContent() {
           view.filters.length > 0 ? (
             <Group gap="xs" wrap="nowrap">
               {view.filters.map((filter, index) => {
-                const { fieldName, operatorLabel, formattedValue } = formatFilter(filter, view.typeFilter ?? undefined);
+                const { fieldName, operatorLabel, formattedValue } =
+                  formatFilter(filter, view.typeFilter ?? undefined);
                 return (
-                  <Badge key={index} variant="light" color="gray" size="xs" radius="sm">
-                    {fieldName} {operatorLabel}{formattedValue ? ` ${formattedValue}` : ''}
+                  <Badge
+                    key={index}
+                    variant="light"
+                    color="gray"
+                    size="xs"
+                    radius="sm"
+                  >
+                    {fieldName} {operatorLabel}
+                    {formattedValue ? ` ${formattedValue}` : ''}
                   </Badge>
                 );
               })}
@@ -260,12 +323,17 @@ export function SavedViewContent() {
       />
       <Box p="sm" style={{ flex: 1, overflow: 'auto' }}>
         {filteredObjects.length === 0 ? (
-          <EmptyState message="No items match this view's filters" size="large" />
+          <EmptyState
+            message="No items match this view's filters"
+            size="large"
+          />
         ) : (
           <Stack gap={2}>
             {filteredObjects.map((obj) => {
               const typeDef = getTypeDef(obj.typeId);
-              const title = (obj.properties.title ?? obj.properties.name ?? 'Untitled') as string;
+              const title = (obj.properties.title ??
+                obj.properties.name ??
+                'Untitled') as string;
               const icon = typeDef?.icon ?? '📄';
               const typeName = typeDef?.name ?? obj.typeId;
 

@@ -1,0 +1,46 @@
+{
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Edit|Write",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "pnpm lint --quiet 2>/dev/null || true"
+                    }
+                ]
+            }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Edit|Write",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "if [[ \"$CLAUDE_FILE\" == *.ts || \"$CLAUDE_FILE\" == *.tsx ]]; then pnpm exec tsc --noEmit 2>&1 | head -20 || true; fi"
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "pnpm format 2>/dev/null || true"
+                    }
+                ]
+            }
+        ],
+        "SessionStart": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "echo '=== Git Status ===' && git status --short && echo '' && echo '=== Recent Commits ===' && git log --oneline -3"
+                    }
+                ]
+            }
+        ]
+    }
+}

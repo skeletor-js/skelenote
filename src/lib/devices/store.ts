@@ -44,7 +44,8 @@ export class DeviceRegistryStore {
 
   // Sync callbacks
   private onRegistryChangeCallback: (() => void) | null = null;
-  private broadcastCallback: ((data: Uint8Array) => Promise<void>) | null = null;
+  private broadcastCallback: ((data: Uint8Array) => Promise<void>) | null =
+    null;
 
   // Debounce timers
   private saveDebounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -358,7 +359,11 @@ export class DeviceRegistryStore {
     connectionStatus: DeviceConnectionStatus = 'offline'
   ): DeviceInfo | null {
     if (!this.currentDeviceId) return null;
-    return this.registry.getDeviceInfo(deviceId, this.currentDeviceId, connectionStatus);
+    return this.registry.getDeviceInfo(
+      deviceId,
+      this.currentDeviceId,
+      connectionStatus
+    );
   }
 
   /**
@@ -368,7 +373,10 @@ export class DeviceRegistryStore {
     connectionStatuses: Map<string, DeviceConnectionStatus> = new Map()
   ): DeviceInfo[] {
     if (!this.currentDeviceId) return [];
-    return this.registry.getAllDeviceInfo(this.currentDeviceId, connectionStatuses);
+    return this.registry.getAllDeviceInfo(
+      this.currentDeviceId,
+      connectionStatuses
+    );
   }
 
   /**
@@ -420,7 +428,10 @@ export class DeviceRegistryStore {
 
       this.saveBlocklist();
     } catch (error) {
-      console.error('[DeviceRegistryStore] Failed to import sync update:', error);
+      console.error(
+        '[DeviceRegistryStore] Failed to import sync update:',
+        error
+      );
     }
   }
 

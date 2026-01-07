@@ -77,15 +77,15 @@
 }
 
 /* Dark mode */
-:global([data-mantine-color-scheme="dark"]) .header {
+:global([data-mantine-color-scheme='dark']) .header {
   border-bottom-color: var(--border-default);
   background-color: var(--mantine-color-dark-7);
 }
 
-:global([data-mantine-color-scheme="dark"]) .title:hover {
+:global([data-mantine-color-scheme='dark']) .title:hover {
   background-color: var(--mantine-color-dark-6);
 }
 
-:global([data-mantine-color-scheme="dark"]) .quickAction:hover {
+:global([data-mantine-color-scheme='dark']) .quickAction:hover {
   color: var(--mantine-color-gray-3);
 }

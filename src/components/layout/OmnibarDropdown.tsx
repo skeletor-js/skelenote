@@ -2,7 +2,15 @@
  * OmnibarDropdown - Dropdown panel showing search results and actions
  */
 
-import { UnstyledButton, Group, Text, Badge, Stack, Box, ScrollArea } from '@mantine/core';
+import {
+  UnstyledButton,
+  Group,
+  Text,
+  Badge,
+  Stack,
+  Box,
+  ScrollArea,
+} from '@mantine/core';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import type { PaletteAction } from '@/lib/palette/actions';
 import classes from './Omnibar.module.css';
@@ -35,7 +43,8 @@ export function OmnibarDropdown({
 
   const renderItem = (action: PaletteAction, index: number) => {
     const isSelected = index === selectedIndex;
-    const isSemanticMatch = action.matchType === 'semantic' || action.matchType === 'hybrid';
+    const isSemanticMatch =
+      action.matchType === 'semantic' || action.matchType === 'hybrid';
     const semanticPercent = action.semanticScore
       ? Math.round(action.semanticScore * 100)
       : null;
@@ -62,7 +71,11 @@ export function OmnibarDropdown({
               size="xs"
               variant="light"
               color="clay"
-              title={semanticPercent ? `${semanticPercent}% similar` : 'Semantic match'}
+              title={
+                semanticPercent
+                  ? `${semanticPercent}% similar`
+                  : 'Semantic match'
+              }
             >
               ~{semanticPercent ? `${semanticPercent}%` : ''}
             </Badge>

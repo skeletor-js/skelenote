@@ -91,7 +91,9 @@ export function isRelationProperty(propDef: PropertyDefinition): boolean {
 /**
  * Get all relation properties from a type definition
  */
-export function getRelationProperties(typeDef: TypeDefinition): PropertyDefinition[] {
+export function getRelationProperties(
+  typeDef: TypeDefinition
+): PropertyDefinition[] {
   return typeDef.schema.filter(isRelationProperty);
 }
 
@@ -237,7 +239,10 @@ export class RelationHelper {
   /**
    * Get objects related by a specific property
    */
-  getRelatedByProperty(objectId: string, propertyId: string): SkelenoteObject[] {
+  getRelatedByProperty(
+    objectId: string,
+    propertyId: string
+  ): SkelenoteObject[] {
     const obj = this.store.get(objectId);
     if (!obj) return [];
 

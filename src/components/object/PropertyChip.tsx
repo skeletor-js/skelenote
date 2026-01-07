@@ -9,7 +9,11 @@ import dayjs from 'dayjs';
 import { PropertyEditor } from './PropertyEditor';
 import { Icon } from '@/components/ui/Icon';
 import { useObjects } from '@/contexts';
-import type { PropertyDefinition, PropertyValue, SkelenoteObject } from '@/lib/types';
+import type {
+  PropertyDefinition,
+  PropertyValue,
+  SkelenoteObject,
+} from '@/lib/types';
 import type { IconName } from '@/lib/icons';
 import styles from './PropertyBar.module.css';
 
@@ -56,7 +60,12 @@ function getPropertyIcon(type: string, value: PropertyValue): IconName | null {
   }
 }
 
-export function PropertyChip({ definition, value, onChange, cascadeContext }: PropertyChipProps) {
+export function PropertyChip({
+  definition,
+  value,
+  onChange,
+  cascadeContext,
+}: PropertyChipProps) {
   const [opened, setOpened] = useState(false);
   const { store } = useObjects();
 
@@ -92,7 +101,9 @@ export function PropertyChip({ definition, value, onChange, cascadeContext }: Pr
         if (validIds.length === 1 && store) {
           const obj = store.get(validIds[0] as string);
           if (obj) {
-            return (obj.properties.title ?? obj.properties.name ?? 'Untitled') as string;
+            return (obj.properties.title ??
+              obj.properties.name ??
+              'Untitled') as string;
           }
         }
         return `${validIds.length} linked`;
@@ -132,7 +143,9 @@ export function PropertyChip({ definition, value, onChange, cascadeContext }: Pr
   const propertyIcon = getPropertyIcon(definition.type, value);
 
   // Determine if we should close popover after change
-  const shouldCloseOnChange = !['relation', 'recurrence'].includes(definition.type);
+  const shouldCloseOnChange = !['relation', 'recurrence'].includes(
+    definition.type
+  );
 
   const handleChange = (newValue: PropertyValue) => {
     onChange(newValue);
@@ -158,10 +171,7 @@ export function PropertyChip({ definition, value, onChange, cascadeContext }: Pr
       shadow="md"
     >
       <Popover.Target>
-        <UnstyledButton
-          onClick={() => setOpened(true)}
-          className={styles.chip}
-        >
+        <UnstyledButton onClick={() => setOpened(true)} className={styles.chip}>
           <Group gap={4} wrap="nowrap">
             {propertyIcon && (
               <Icon name={propertyIcon} size={12} className={styles.chipIcon} />
@@ -176,11 +186,7 @@ export function PropertyChip({ definition, value, onChange, cascadeContext }: Pr
             >
               {displayValue}
             </Text>
-            <Icon
-              name="edit-2"
-              size={10}
-              className={styles.editIcon}
-            />
+            <Icon name="edit-2" size={10} className={styles.editIcon} />
           </Group>
         </UnstyledButton>
       </Popover.Target>
@@ -190,7 +196,9 @@ export function PropertyChip({ definition, value, onChange, cascadeContext }: Pr
           <Text size="xs" fw={600} c="dimmed" mb="xs">
             {definition.name}
             {definition.required && (
-              <Text component="span" c="red" ml={2}>*</Text>
+              <Text component="span" c="red" ml={2}>
+                *
+              </Text>
             )}
           </Text>
           <PropertyEditor

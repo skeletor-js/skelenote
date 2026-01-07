@@ -63,7 +63,10 @@ export interface ContentPreviewProps {
 /**
  * Render inline content to React elements
  */
-function renderInlineContent(content: InlineContent[] | undefined, key: string): React.ReactNode {
+function renderInlineContent(
+  content: InlineContent[] | undefined,
+  key: string
+): React.ReactNode {
   if (!content || !Array.isArray(content)) {
     return null;
   }
@@ -89,7 +92,11 @@ function renderInlineContent(content: InlineContent[] | undefined, key: string):
         text = <s key={`${itemKey}-strike`}>{text}</s>;
       }
       if (textItem.styles?.code) {
-        text = <code key={`${itemKey}-code`} className={classes.inlineCode}>{text}</code>;
+        text = (
+          <code key={`${itemKey}-code`} className={classes.inlineCode}>
+            {text}
+          </code>
+        );
       }
 
       return <span key={itemKey}>{text}</span>;
@@ -140,7 +147,8 @@ function renderBlock(block: Block, key: string): React.ReactNode {
 
     case 'heading': {
       const level = (block.props?.level as number) || 1;
-      const HeadingTag = `h${Math.min(level, 6)}` as keyof JSX.IntrinsicElements;
+      const HeadingTag =
+        `h${Math.min(level, 6)}` as keyof JSX.IntrinsicElements;
       return (
         <HeadingTag key={key} className={classes.heading} data-level={level}>
           {content}
@@ -154,7 +162,9 @@ function renderBlock(block: Block, key: string): React.ReactNode {
           {content}
           {block.children?.length ? (
             <ul className={classes.nestedList}>
-              {block.children.map((child, i) => renderBlock(child, `${key}-child-${i}`))}
+              {block.children.map((child, i) =>
+                renderBlock(child, `${key}-child-${i}`)
+              )}
             </ul>
           ) : null}
         </li>
@@ -166,7 +176,9 @@ function renderBlock(block: Block, key: string): React.ReactNode {
           {content}
           {block.children?.length ? (
             <ol className={classes.nestedList}>
-              {block.children.map((child, i) => renderBlock(child, `${key}-child-${i}`))}
+              {block.children.map((child, i) =>
+                renderBlock(child, `${key}-child-${i}`)
+              )}
             </ol>
           ) : null}
         </li>
@@ -177,7 +189,9 @@ function renderBlock(block: Block, key: string): React.ReactNode {
       return (
         <li key={key} className={classes.checkItem} data-checked={checked}>
           <span className={classes.checkbox}>{checked ? '☑' : '☐'}</span>
-          <span className={checked ? classes.checkedText : undefined}>{content}</span>
+          <span className={checked ? classes.checkedText : undefined}>
+            {content}
+          </span>
         </li>
       );
     }
@@ -229,7 +243,10 @@ function renderBlock(block: Block, key: string): React.ReactNode {
  */
 function groupBlocks(blocks: Block[]): React.ReactNode[] {
   const result: React.ReactNode[] = [];
-  let currentList: { type: 'ul' | 'ol' | 'checklist'; items: React.ReactNode[] } | null = null;
+  let currentList: {
+    type: 'ul' | 'ol' | 'checklist';
+    items: React.ReactNode[];
+  } | null = null;
 
   blocks.forEach((block, index) => {
     const key = `block-${index}`;
@@ -284,12 +301,24 @@ function createListElement(
   key: string
 ): React.ReactNode {
   if (list.type === 'ul') {
-    return <ul key={key} className={classes.bulletList}>{list.items}</ul>;
+    return (
+      <ul key={key} className={classes.bulletList}>
+        {list.items}
+      </ul>
+    );
   }
   if (list.type === 'ol') {
-    return <ol key={key} className={classes.numberedList}>{list.items}</ol>;
+    return (
+      <ol key={key} className={classes.numberedList}>
+        {list.items}
+      </ol>
+    );
   }
-  return <ul key={key} className={classes.checkList}>{list.items}</ul>;
+  return (
+    <ul key={key} className={classes.checkList}>
+      {list.items}
+    </ul>
+  );
 }
 
 export function ContentPreview({
@@ -319,9 +348,7 @@ export function ContentPreview({
 
   return (
     <ScrollArea.Autosize mah={maxHeight} type="auto">
-      <Box className={classes.contentPreview}>
-        {renderedContent}
-      </Box>
+      <Box className={classes.contentPreview}>{renderedContent}</Box>
     </ScrollArea.Autosize>
   );
 }

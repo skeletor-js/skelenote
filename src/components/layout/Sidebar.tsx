@@ -1,5 +1,13 @@
 import { useMemo, useCallback } from 'react';
-import { Stack, Divider, ActionIcon, Text, ScrollArea, Box, NavLink } from '@mantine/core';
+import {
+  Stack,
+  Divider,
+  ActionIcon,
+  Text,
+  ScrollArea,
+  Box,
+  NavLink,
+} from '@mantine/core';
 import { Plus } from 'lucide-react';
 import { SidebarSection } from './SidebarSection';
 import { SidebarItem } from './SidebarItem';
@@ -7,19 +15,40 @@ import { PinnedSection } from './PinnedSection';
 import { SavedViewsSection } from './SavedViewsSection';
 import { ObjectsSection } from './ObjectsSection';
 import { type TagColor } from '@/components/ui';
-import { useSidebar, useNavigation, useObjects, useTypeRegistry, type ViewType } from '@/contexts';
+import {
+  useSidebar,
+  useNavigation,
+  useObjects,
+  useTypeRegistry,
+  type ViewType,
+} from '@/contexts';
 import { useLinkToDaily } from '@/hooks';
-import { BuiltInTypeIds, type PropertyValue, type SavedView } from '@/lib/types';
+import {
+  BuiltInTypeIds,
+  type PropertyValue,
+  type SavedView,
+} from '@/lib/types';
 import styles from './SidebarItem.module.css';
 
 // Default properties for each type when creating
-const defaultPropertiesForType: Record<string, Record<string, PropertyValue>> = {
-  [BuiltInTypeIds.TASK]: { title: 'New Task', status: 'todo', priority: 'medium' },
+const defaultPropertiesForType: Record<
+  string,
+  Record<string, PropertyValue>
+> = {
+  [BuiltInTypeIds.TASK]: {
+    title: 'New Task',
+    status: 'todo',
+    priority: 'medium',
+  },
   [BuiltInTypeIds.NOTE]: { title: 'New Note' },
   [BuiltInTypeIds.PROJECT]: { name: 'New Project', status: 'active' },
   [BuiltInTypeIds.AREA]: { name: 'New Area' },
   [BuiltInTypeIds.LINK]: { url: 'https://', title: 'New Link' },
-  [BuiltInTypeIds.MEETING]: { title: 'New Meeting', startTime: Date.now(), durationMinutes: '60' },
+  [BuiltInTypeIds.MEETING]: {
+    title: 'New Meeting',
+    startTime: Date.now(),
+    durationMinutes: '60',
+  },
   [BuiltInTypeIds.TAG]: { name: 'new-tag' },
   [BuiltInTypeIds.PERSON]: { name: 'New Person' },
 };
@@ -37,9 +66,17 @@ interface SidebarProps {
   onCreateFromTemplate?: () => void;
 }
 
-export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) {
+export function Sidebar({
+  inboxCount = 0,
+  onCreateFromTemplate,
+}: SidebarProps) {
   const { selectedItem, setSelectedItem } = useSidebar();
-  const { navigateToView, navigateToObject, navigateToSavedView, activeSavedViewId } = useNavigation();
+  const {
+    navigateToView,
+    navigateToObject,
+    navigateToSavedView,
+    activeSavedViewId,
+  } = useNavigation();
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { linkToDaily } = useLinkToDaily();
@@ -291,7 +328,9 @@ export function Sidebar({ inboxCount = 0, onCreateFromTemplate }: SidebarProps) 
                             width: 8,
                             height: 8,
                             borderRadius: '50%',
-                            backgroundColor: tag.color ? `var(--mantine-color-${tag.color}-5)` : 'var(--mantine-color-gray-5)',
+                            backgroundColor: tag.color
+                              ? `var(--mantine-color-${tag.color}-5)`
+                              : 'var(--mantine-color-gray-5)',
                           }}
                         />
                       }

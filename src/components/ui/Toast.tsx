@@ -1,5 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Paper, Group, Text, CloseButton, Button, MantineColor } from '@mantine/core';
+import {
+  Paper,
+  Group,
+  Text,
+  CloseButton,
+  Button,
+  MantineColor,
+} from '@mantine/core';
 import { Icon } from './Icon';
 import type { Toast as ToastData, ToastType } from '@/contexts/ToastContext';
 import type { IconName } from '@/lib/icons';

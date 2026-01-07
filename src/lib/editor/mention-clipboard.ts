@@ -22,7 +22,9 @@ const EXPIRY_MS = 60000; // 1 minute expiry
  * Copy mention data to clipboard and storage.
  * The clipboard will contain a special format that the editor can recognize.
  */
-export async function copyMentionToClipboard(data: Omit<MentionClipboardData, 'timestamp'>): Promise<boolean> {
+export async function copyMentionToClipboard(
+  data: Omit<MentionClipboardData, 'timestamp'>
+): Promise<boolean> {
   const mentionData: MentionClipboardData = {
     ...data,
     timestamp: Date.now(),

@@ -77,7 +77,9 @@ export interface UseSelectionOptions {
  * }, [selection.selectAll]);
  * ```
  */
-export function useSelection({ allItems }: UseSelectionOptions): UseSelectionResult {
+export function useSelection({
+  allItems,
+}: UseSelectionOptions): UseSelectionResult {
   const [state, setState] = useState<SelectionState>({
     selectedIds: new Set(),
     lastSelectedId: null,
@@ -150,7 +152,10 @@ export function useSelection({ allItems }: UseSelectionOptions): UseSelectionRes
         }
 
         // Select all items in range (inclusive)
-        const [from, to] = startIndex <= endIndex ? [startIndex, endIndex] : [endIndex, startIndex];
+        const [from, to] =
+          startIndex <= endIndex
+            ? [startIndex, endIndex]
+            : [endIndex, startIndex];
         const next = new Set(prev.selectedIds);
         for (let i = from; i <= to; i++) {
           next.add(allItems[i]);
@@ -169,7 +174,8 @@ export function useSelection({ allItems }: UseSelectionOptions): UseSelectionRes
   const selectAll = useCallback(() => {
     setState({
       selectedIds: new Set(allItems),
-      lastSelectedId: allItems.length > 0 ? allItems[allItems.length - 1] : null,
+      lastSelectedId:
+        allItems.length > 0 ? allItems[allItems.length - 1] : null,
     });
   }, [allItems]);
 
@@ -182,12 +188,18 @@ export function useSelection({ allItems }: UseSelectionOptions): UseSelectionRes
   }, []);
 
   // Check if an item is selected
-  const isSelected = useCallback((id: string) => state.selectedIds.has(id), [state.selectedIds]);
+  const isSelected = useCallback(
+    (id: string) => state.selectedIds.has(id),
+    [state.selectedIds]
+  );
 
   // Derived values
   const hasSelection = state.selectedIds.size > 0;
   const selectedCount = state.selectedIds.size;
-  const selectedArray = useMemo(() => [...state.selectedIds], [state.selectedIds]);
+  const selectedArray = useMemo(
+    () => [...state.selectedIds],
+    [state.selectedIds]
+  );
 
   return {
     selectedIds: state.selectedIds,

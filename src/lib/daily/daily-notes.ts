@@ -29,13 +29,18 @@ export function extractDateFromId(id: string): string | null {
  * Check if an object is a daily note
  */
 export function isDailyNote(obj: SkelenoteObject): boolean {
-  return obj.typeId === BuiltInTypeIds.NOTE && obj.properties.isDailyNote === true;
+  return (
+    obj.typeId === BuiltInTypeIds.NOTE && obj.properties.isDailyNote === true
+  );
 }
 
 /**
  * Get a daily note by date (returns undefined if it doesn't exist)
  */
-export function getDailyNoteByDate(store: ObjectStore, date: Date): SkelenoteObject | undefined {
+export function getDailyNoteByDate(
+  store: ObjectStore,
+  date: Date
+): SkelenoteObject | undefined {
   const id = getDailyNoteId(date);
   const obj = store.get(id);
 
@@ -63,7 +68,10 @@ function getStartOfDay(date: Date): number {
  * - Creates new note with proper properties if not
  * - Applies daily note template if configured
  */
-export function getOrCreateDailyNote(store: ObjectStore, date: Date): SkelenoteObject {
+export function getOrCreateDailyNote(
+  store: ObjectStore,
+  date: Date
+): SkelenoteObject {
   const id = getDailyNoteId(date);
 
   // Check if it already exists
@@ -97,7 +105,9 @@ export function getOrCreateDailyNote(store: ObjectStore, date: Date): SkelenoteO
 /**
  * Get today's daily note, creating it if it doesn't exist
  */
-export function getOrCreateTodaysDailyNote(store: ObjectStore): SkelenoteObject {
+export function getOrCreateTodaysDailyNote(
+  store: ObjectStore
+): SkelenoteObject {
   return getOrCreateDailyNote(store, new Date());
 }
 

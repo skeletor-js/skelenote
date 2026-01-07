@@ -21,7 +21,10 @@ export interface Shortcut {
 /**
  * Category display names and order
  */
-export const CATEGORY_INFO: Record<ShortcutCategory, { label: string; order: number }> = {
+export const CATEGORY_INFO: Record<
+  ShortcutCategory,
+  { label: string; order: number }
+> = {
   global: { label: 'Global', order: 1 },
   navigation: { label: 'Navigation', order: 2 },
   views: { label: 'Views', order: 3 },
@@ -41,10 +44,22 @@ export const SHORTCUTS: Shortcut[] = [
 
   // Navigation shortcuts
   { keys: ['Cmd', '['], description: 'Navigate back', category: 'navigation' },
-  { keys: ['Cmd', ']'], description: 'Navigate forward', category: 'navigation' },
+  {
+    keys: ['Cmd', ']'],
+    description: 'Navigate forward',
+    category: 'navigation',
+  },
   { keys: ['↑', '↓'], description: 'Move selection', category: 'navigation' },
-  { keys: ['Tab'], description: 'Next focusable element', category: 'navigation' },
-  { keys: ['Shift', 'Tab'], description: 'Previous focusable element', category: 'navigation' },
+  {
+    keys: ['Tab'],
+    description: 'Next focusable element',
+    category: 'navigation',
+  },
+  {
+    keys: ['Shift', 'Tab'],
+    description: 'Previous focusable element',
+    category: 'navigation',
+  },
   { keys: ['Enter'], description: 'Open / Confirm', category: 'navigation' },
   { keys: ['Esc'], description: 'Close / Cancel', category: 'navigation' },
 
@@ -53,19 +68,55 @@ export const SHORTCUTS: Shortcut[] = [
   { keys: ['Cmd', '2'], description: 'Go to Daily Notes', category: 'views' },
   { keys: ['Cmd', '3'], description: 'Go to Tasks', category: 'views' },
   { keys: ['Cmd', '4'], description: 'Go to Archive', category: 'views' },
-  { keys: ['Cmd', 'Shift', 'T'], description: 'Go to Tasks', category: 'views' },
+  {
+    keys: ['Cmd', 'Shift', 'T'],
+    description: 'Go to Tasks',
+    category: 'views',
+  },
   { keys: ['Cmd', '\\'], description: 'Close split view', category: 'views' },
-  { keys: ['Cmd', 'Shift', '\\'], description: 'Swap split panes', category: 'views' },
-  { keys: ['Cmd', 'Shift', 'H'], description: 'Time Machine', category: 'views' },
+  {
+    keys: ['Cmd', 'Shift', '\\'],
+    description: 'Swap split panes',
+    category: 'views',
+  },
+  {
+    keys: ['Cmd', 'Shift', 'H'],
+    description: 'Time Machine',
+    category: 'views',
+  },
 
   // Object shortcuts
   { keys: ['Cmd', 'N'], description: 'New object', category: 'objects' },
-  { keys: ['Cmd', 'D'], description: 'Duplicate (when viewing)', category: 'objects' },
-  { keys: ['Cmd', 'Shift', 'P'], description: 'Pin / Unpin (when viewing)', category: 'objects' },
-  { keys: ['Cmd', 'Shift', 'E'], description: 'Export to Markdown', category: 'objects' },
-  { keys: ['Cmd', 'Backspace'], description: 'Archive object', category: 'objects' },
-  { keys: ['H'], description: 'View history (when viewing)', category: 'objects' },
-  { keys: ['E'], description: 'Complete task (when viewing task)', category: 'objects' },
+  {
+    keys: ['Cmd', 'D'],
+    description: 'Duplicate (when viewing)',
+    category: 'objects',
+  },
+  {
+    keys: ['Cmd', 'Shift', 'P'],
+    description: 'Pin / Unpin (when viewing)',
+    category: 'objects',
+  },
+  {
+    keys: ['Cmd', 'Shift', 'E'],
+    description: 'Export to Markdown',
+    category: 'objects',
+  },
+  {
+    keys: ['Cmd', 'Backspace'],
+    description: 'Archive object',
+    category: 'objects',
+  },
+  {
+    keys: ['H'],
+    description: 'View history (when viewing)',
+    category: 'objects',
+  },
+  {
+    keys: ['E'],
+    description: 'Complete task (when viewing task)',
+    category: 'objects',
+  },
 
   // Editing shortcuts
   { keys: ['@'], description: 'Mention object', category: 'editing' },
@@ -77,7 +128,11 @@ export const SHORTCUTS: Shortcut[] = [
   // Undo/Redo - works in editor (text) and globally (object operations)
   { keys: ['Cmd', 'Z'], description: 'Undo', category: 'editing' },
   { keys: ['Cmd', 'Shift', 'Z'], description: 'Redo', category: 'editing' },
-  { keys: ['Cmd', 'Y'], description: 'Redo (alternative)', category: 'editing' },
+  {
+    keys: ['Cmd', 'Y'],
+    description: 'Redo (alternative)',
+    category: 'editing',
+  },
 ];
 
 /**

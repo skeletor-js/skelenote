@@ -4,7 +4,14 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Group, Text, TextInput, ActionIcon, Menu, Tooltip } from '@mantine/core';
+import {
+  Group,
+  Text,
+  TextInput,
+  ActionIcon,
+  Menu,
+  Tooltip,
+} from '@mantine/core';
 import { MoreHorizontal } from 'lucide-react';
 import { useNavigation } from '@/contexts';
 import { Icon } from '@/components/ui/Icon';
@@ -71,7 +78,8 @@ export function ObjectHeader({
 }: ObjectHeaderProps) {
   const { openInSplit, splitPane } = useNavigation();
   // Determine which property holds the title (varies by type)
-  const titlePropertyId = object.properties.title !== undefined ? 'title' : 'name';
+  const titlePropertyId =
+    object.properties.title !== undefined ? 'title' : 'name';
   const currentTitle = String(object.properties[titlePropertyId] ?? 'Untitled');
 
   const [isEditing, setIsEditing] = useState(false);
@@ -141,15 +149,11 @@ export function ObjectHeader({
   // Determine if we should show the overflow menu
   const showOverflowMenu = paneType === 'primary';
   const showSplitOption = !splitPane.isOpen;
-  const showHistoryOption = onViewHistory && splitPane.mode !== 'version-comparison';
+  const showHistoryOption =
+    onViewHistory && splitPane.mode !== 'version-comparison';
 
   return (
-    <Group
-      component="header"
-      gap="sm"
-      wrap="nowrap"
-      className={styles.header}
-    >
+    <Group component="header" gap="sm" wrap="nowrap" className={styles.header}>
       {/* Type indicator */}
       <Icon
         name={getIconFromEmoji(typeDef.icon)}
@@ -184,7 +188,9 @@ export function ObjectHeader({
           onKeyDown={titleEditable ? handleTitleKeyDown : undefined}
           tabIndex={titleEditable ? 0 : undefined}
           role={titleEditable ? 'button' : undefined}
-          aria-label={titleEditable ? `Edit title: ${currentTitle}` : currentTitle}
+          aria-label={
+            titleEditable ? `Edit title: ${currentTitle}` : currentTitle
+          }
           className={styles.title}
           truncate
         >
@@ -335,7 +341,9 @@ export function ObjectHeader({
             {/* Pin/Unpin (also in quick actions but keep in menu for discoverability) */}
             {onPin && (
               <Menu.Item
-                leftSection={<Icon name={isPinned ? 'pin-off' : 'pin'} size={14} />}
+                leftSection={
+                  <Icon name={isPinned ? 'pin-off' : 'pin'} size={14} />
+                }
                 onClick={onPin}
               >
                 {isPinned ? 'Unpin' : 'Pin to sidebar'}
@@ -374,7 +382,8 @@ export function ObjectHeader({
             )}
 
             {/* Archive/Delete - with divider if there are other items */}
-            {((canArchive && onArchive && !isArchived) || (canDelete && onDelete && isArchived)) && <Menu.Divider />}
+            {((canArchive && onArchive && !isArchived) ||
+              (canDelete && onDelete && isArchived)) && <Menu.Divider />}
 
             {/* Archive - only for non-archived items */}
             {canArchive && onArchive && !isArchived && (

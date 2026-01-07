@@ -16,8 +16,17 @@ import {
   clearPendingMention,
   isMentionClipboardText,
 } from '@/lib/editor';
-import { getMentionMenuItems, MentionSuggestionMenu, type MentionItem } from './MentionSuggestion';
-import { useObjects, useTypeRegistry, useTheme, useNavigation } from '@/contexts';
+import {
+  getMentionMenuItems,
+  MentionSuggestionMenu,
+  type MentionItem,
+} from './MentionSuggestion';
+import {
+  useObjects,
+  useTypeRegistry,
+  useTheme,
+  useNavigation,
+} from '@/contexts';
 
 interface EditorProps {
   objectId: string;
@@ -25,7 +34,11 @@ interface EditorProps {
   onContentChange: (content: string) => void;
 }
 
-export function Editor({ objectId, initialContent, onContentChange }: EditorProps) {
+export function Editor({
+  objectId,
+  initialContent,
+  onContentChange,
+}: EditorProps) {
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);

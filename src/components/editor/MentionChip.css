@@ -18,56 +18,58 @@
 
 .mention-chip:hover {
   text-decoration: underline;
+  background-color: var(--hover-warm);
+  border-radius: 2px;
 }
 
 /* Dark mode overrides */
-[data-mantine-color-scheme="dark"] .mention-chip {
+[data-mantine-color-scheme='dark'] .mention-chip {
   background: transparent;
   color: var(--mantine-color-text);
 }
 
 /* Different colors for different object types */
-.mention-chip[data-type-id="task"] {
+.mention-chip[data-type-id='task'] {
   color: var(--mantine-color-ochre-5);
 }
 
-.mention-chip[data-type-id="project"] {
+.mention-chip[data-type-id='project'] {
   color: var(--mantine-color-clay-5);
 }
 
-.mention-chip[data-type-id="note"] {
+.mention-chip[data-type-id='note'] {
   color: var(--mantine-color-slate-5);
 }
 
-.mention-chip[data-type-id="meeting"] {
+.mention-chip[data-type-id='meeting'] {
   color: var(--mantine-color-sage-5);
 }
 
-.mention-chip[data-type-id="person"] {
+.mention-chip[data-type-id='person'] {
   color: var(--mantine-color-clay-4);
 }
 
-.mention-chip[data-type-id="link"] {
+.mention-chip[data-type-id='link'] {
   color: var(--mantine-color-slate-4);
 }
 
-.mention-chip[data-type-id="tag"] {
+.mention-chip[data-type-id='tag'] {
   color: var(--mantine-color-ochre-4);
 }
 
 /* Dark mode type colors - brighter for visibility */
-[data-mantine-color-scheme="dark"] .mention-chip[data-type-id="task"] {
+[data-mantine-color-scheme='dark'] .mention-chip[data-type-id='task'] {
   color: var(--mantine-color-ochre-4);
 }
 
-[data-mantine-color-scheme="dark"] .mention-chip[data-type-id="project"] {
+[data-mantine-color-scheme='dark'] .mention-chip[data-type-id='project'] {
   color: var(--mantine-color-clay-4);
 }
 
-[data-mantine-color-scheme="dark"] .mention-chip[data-type-id="note"] {
+[data-mantine-color-scheme='dark'] .mention-chip[data-type-id='note'] {
   color: var(--mantine-color-slate-4);
 }
 
-[data-mantine-color-scheme="dark"] .mention-chip[data-type-id="meeting"] {
+[data-mantine-color-scheme='dark'] .mention-chip[data-type-id='meeting'] {
   color: var(--mantine-color-sage-4);
 }

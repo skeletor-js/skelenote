@@ -51,7 +51,7 @@ export function UndoProvider({ children }: UndoProviderProps) {
     // Create UndoManager with configuration
     const undoManager = new UndoManager(doc, {
       mergeInterval: 1000, // Group changes within 1 second
-      maxUndoSteps: 100,   // Keep last 100 undo steps
+      maxUndoSteps: 100, // Keep last 100 undo steps
     });
 
     // Set up onPop callback for toast notifications

@@ -90,7 +90,9 @@ export class EmbeddingStorage {
       const request = store.put(storableRecord);
 
       request.onerror = () => {
-        reject(new Error(`Failed to save embedding: ${request.error?.message}`));
+        reject(
+          new Error(`Failed to save embedding: ${request.error?.message}`)
+        );
       };
 
       request.onsuccess = () => {
@@ -174,7 +176,9 @@ export class EmbeddingStorage {
       const request = store.delete(objectId);
 
       request.onerror = () => {
-        reject(new Error(`Failed to delete embedding: ${request.error?.message}`));
+        reject(
+          new Error(`Failed to delete embedding: ${request.error?.message}`)
+        );
       };
 
       request.onsuccess = () => {
@@ -223,7 +227,9 @@ export class EmbeddingStorage {
       const request = store.getAll();
 
       request.onerror = () => {
-        reject(new Error(`Failed to get all embeddings: ${request.error?.message}`));
+        reject(
+          new Error(`Failed to get all embeddings: ${request.error?.message}`)
+        );
       };
 
       request.onsuccess = () => {
@@ -248,7 +254,9 @@ export class EmbeddingStorage {
       const request = store.getAllKeys();
 
       request.onerror = () => {
-        reject(new Error(`Failed to get object IDs: ${request.error?.message}`));
+        reject(
+          new Error(`Failed to get object IDs: ${request.error?.message}`)
+        );
       };
 
       request.onsuccess = () => {
@@ -269,7 +277,9 @@ export class EmbeddingStorage {
       const request = store.count();
 
       request.onerror = () => {
-        reject(new Error(`Failed to count embeddings: ${request.error?.message}`));
+        reject(
+          new Error(`Failed to count embeddings: ${request.error?.message}`)
+        );
       };
 
       request.onsuccess = () => {
@@ -290,7 +300,9 @@ export class EmbeddingStorage {
       const request = store.clear();
 
       request.onerror = () => {
-        reject(new Error(`Failed to clear embeddings: ${request.error?.message}`));
+        reject(
+          new Error(`Failed to clear embeddings: ${request.error?.message}`)
+        );
       };
 
       request.onsuccess = () => {
@@ -311,7 +323,11 @@ export class EmbeddingStorage {
       const request = store.getAll();
 
       request.onerror = () => {
-        reject(new Error(`Failed to get outdated embeddings: ${request.error?.message}`));
+        reject(
+          new Error(
+            `Failed to get outdated embeddings: ${request.error?.message}`
+          )
+        );
       };
 
       request.onsuccess = () => {
@@ -383,7 +399,9 @@ export class EmbeddingStorage {
       const request = indexedDB.deleteDatabase(DB_NAME);
 
       request.onerror = () => {
-        reject(new Error(`Failed to delete database: ${request.error?.message}`));
+        reject(
+          new Error(`Failed to delete database: ${request.error?.message}`)
+        );
       };
 
       request.onsuccess = () => {
@@ -408,7 +426,7 @@ export function hashContent(content: string): string {
   let hash = 0;
   for (let i = 0; i < content.length; i++) {
     const char = content.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
   return hash.toString(16);

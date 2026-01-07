@@ -4,11 +4,26 @@
  */
 
 import { useCallback, useState } from 'react';
-import { UnstyledButton, Checkbox, Group, Text, Badge, Box, ActionIcon, Tooltip } from '@mantine/core';
+import {
+  UnstyledButton,
+  Checkbox,
+  Group,
+  Text,
+  Badge,
+  Box,
+  ActionIcon,
+  Tooltip,
+} from '@mantine/core';
 import type { SkelenoteObject } from '@/lib/types';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
 import { useObjects, useToast } from '@/contexts';
-import { Tag, ContextMenu, Icon, type TagColor, type ContextMenuItem } from '@/components/ui';
+import {
+  Tag,
+  ContextMenu,
+  Icon,
+  type TagColor,
+  type ContextMenuItem,
+} from '@/components/ui';
 import { ObjectSearchModal } from '@/components/object/editors';
 import { useContextMenu, usePinnedObjects, useDuplicate } from '@/hooks';
 import styles from './TaskRow.module.css';
@@ -44,7 +59,8 @@ export function TaskRow({
 }: TaskRowProps) {
   const { store, refreshData } = useObjects();
   const { addToast } = useToast();
-  const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu();
+  const { isOpen, position, openContextMenu, closeContextMenu } =
+    useContextMenu();
   const { isPinned, pin, unpin } = usePinnedObjects();
   const { duplicate } = useDuplicate();
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
@@ -316,7 +332,9 @@ export function TaskRow({
           {/* Due date - inline after title */}
           {dueDate && (
             <>
-              <Text size="xs" c="dimmed">·</Text>
+              <Text size="xs" c="dimmed">
+                ·
+              </Text>
               <Text
                 size="xs"
                 c={isTaskOverdue ? 'brick' : 'dimmed'}
@@ -330,7 +348,13 @@ export function TaskRow({
 
           {/* Project chip - inline */}
           {projectName && (
-            <Badge size="xs" variant="light" color="gray" radius="sm" style={{ flexShrink: 0 }}>
+            <Badge
+              size="xs"
+              variant="light"
+              color="gray"
+              radius="sm"
+              style={{ flexShrink: 0 }}
+            >
               {projectName}
             </Badge>
           )}
@@ -354,90 +378,105 @@ export function TaskRow({
 
           {/* Hover-reveal action icons - appear to the right of tags */}
           <Group gap={4} className={styles.actions} wrap="nowrap">
-          <Tooltip label={isComplete ? 'Mark as incomplete' : 'Mark as complete'} position="top" withArrow>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              color="sage"
-              onClick={handleCheckboxClick}
-              aria-label={isComplete ? 'Mark as incomplete' : 'Mark as complete'}
+            <Tooltip
+              label={isComplete ? 'Mark as incomplete' : 'Mark as complete'}
+              position="top"
+              withArrow
             >
-              <Icon name="check" size={14} />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label="Open in split pane" position="top" withArrow>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              onClick={handleOpenInSplit}
-              aria-label="Open in split pane"
-            >
-              <Icon name="columns-2" size={14} />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label="Add tag" position="top" withArrow>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              onClick={handleAddTagClick}
-              aria-label="Add tag"
-            >
-              <Icon name="tag" size={14} />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label="Assign project" position="top" withArrow>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              onClick={handleProjectClick}
-              aria-label="Assign project"
-            >
-              <Icon name="folder" size={14} />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label="Assign area" position="top" withArrow>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              onClick={handleAreaClick}
-              aria-label="Assign area"
-            >
-              <Icon name="layers" size={14} />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label={taskIsPinned ? 'Unpin' : 'Pin to sidebar'} position="top" withArrow>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              onClick={(e) => { e.stopPropagation(); handleTogglePin(); }}
-              aria-label={taskIsPinned ? 'Unpin from sidebar' : 'Pin to sidebar'}
-            >
-              <Icon name="pin" size={14} />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label="Duplicate" position="top" withArrow>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              onClick={handleDuplicateClick}
-              aria-label="Duplicate"
-            >
-              <Icon name="copy" size={14} />
-            </ActionIcon>
-          </Tooltip>
-          {onArchive && (
-            <Tooltip label="Archive" position="top" withArrow>
               <ActionIcon
                 variant="subtle"
                 size="sm"
-                onClick={handleArchiveClick}
-                aria-label="Archive"
+                color="sage"
+                onClick={handleCheckboxClick}
+                aria-label={
+                  isComplete ? 'Mark as incomplete' : 'Mark as complete'
+                }
               >
-                <Icon name="archive" size={14} />
+                <Icon name="check" size={14} />
               </ActionIcon>
             </Tooltip>
-          )}
-        </Group>
+            <Tooltip label="Open in split pane" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleOpenInSplit}
+                aria-label="Open in split pane"
+              >
+                <Icon name="columns-2" size={14} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label="Add tag" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleAddTagClick}
+                aria-label="Add tag"
+              >
+                <Icon name="tag" size={14} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label="Assign project" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleProjectClick}
+                aria-label="Assign project"
+              >
+                <Icon name="folder" size={14} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label="Assign area" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleAreaClick}
+                aria-label="Assign area"
+              >
+                <Icon name="layers" size={14} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip
+              label={taskIsPinned ? 'Unpin' : 'Pin to sidebar'}
+              position="top"
+              withArrow
+            >
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleTogglePin();
+                }}
+                aria-label={
+                  taskIsPinned ? 'Unpin from sidebar' : 'Pin to sidebar'
+                }
+              >
+                <Icon name="pin" size={14} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label="Duplicate" position="top" withArrow>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleDuplicateClick}
+                aria-label="Duplicate"
+              >
+                <Icon name="copy" size={14} />
+              </ActionIcon>
+            </Tooltip>
+            {onArchive && (
+              <Tooltip label="Archive" position="top" withArrow>
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  onClick={handleArchiveClick}
+                  aria-label="Archive"
+                >
+                  <Icon name="archive" size={14} />
+                </ActionIcon>
+              </Tooltip>
+            )}
+          </Group>
         </Group>
       </UnstyledButton>
 

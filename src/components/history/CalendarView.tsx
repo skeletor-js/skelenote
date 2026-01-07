@@ -3,7 +3,14 @@
  */
 
 import { useMemo } from 'react';
-import { Box, Group, Button, Text, SimpleGrid, ActionIcon } from '@mantine/core';
+import {
+  Box,
+  Group,
+  Button,
+  Text,
+  SimpleGrid,
+  ActionIcon,
+} from '@mantine/core';
 import { Icon } from '@/components/ui/Icon';
 import type { CalendarViewProps } from './types';
 
@@ -114,7 +121,9 @@ export function CalendarView({
         >
           <Icon name="chevron-left" size={18} />
         </ActionIcon>
-        <Text size="md" fw={600}>{monthLabel}</Text>
+        <Text size="md" fw={600}>
+          {monthLabel}
+        </Text>
         <ActionIcon
           variant="subtle"
           onClick={goToNextMonth}
@@ -154,7 +163,9 @@ export function CalendarView({
           const hasChanges = dayChanges && dayChanges.totalChanges > 0;
           const isSelected = selectedDate === dateKey;
           const isToday = dateKey === todayKey;
-          const barWidth = hasChanges ? getBarWidth(dayChanges.totalChanges) : 0;
+          const barWidth = hasChanges
+            ? getBarWidth(dayChanges.totalChanges)
+            : 0;
 
           return (
             <Button
@@ -167,8 +178,11 @@ export function CalendarView({
               p={0}
               onClick={() => hasChanges && onDateSelect(dateKey)}
               disabled={!hasChanges}
-              aria-label={`${monthLabel.split(' ')[0]} ${day}${hasChanges ? `, ${dayChanges.totalChanges} changes` : ', no changes'
-                }${isSelected ? ', selected' : ''}${isToday ? ', today' : ''}`}
+              aria-label={`${monthLabel.split(' ')[0]} ${day}${
+                hasChanges
+                  ? `, ${dayChanges.totalChanges} changes`
+                  : ', no changes'
+              }${isSelected ? ', selected' : ''}${isToday ? ', today' : ''}`}
               aria-current={isToday ? 'date' : undefined}
               aria-pressed={isSelected}
               style={{
@@ -179,7 +193,9 @@ export function CalendarView({
                     ? '1px solid var(--selection-border)'
                     : undefined,
                 // For selected state, use selection-glow background
-                backgroundColor: isSelected ? 'var(--selection-glow)' : undefined,
+                backgroundColor: isSelected
+                  ? 'var(--selection-glow)'
+                  : undefined,
               }}
             >
               <Text

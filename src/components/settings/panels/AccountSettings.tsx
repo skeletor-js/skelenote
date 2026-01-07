@@ -28,7 +28,9 @@ export function AccountSettings() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">Account</Text>
+        <Text size="lg" fw={600} mb="xs">
+          Account
+        </Text>
         <Text size="sm" c="dimmed">
           Your identity and encryption settings.
         </Text>
@@ -36,7 +38,9 @@ export function AccountSettings() {
 
       {/* Encryption Status */}
       <Box>
-        <Text size="sm" fw={500} mb="xs">Encryption</Text>
+        <Text size="sm" fw={500} mb="xs">
+          Encryption
+        </Text>
         <Group gap="sm">
           {hasSkeletonKey ? (
             <>
@@ -46,7 +50,9 @@ export function AccountSettings() {
               <Text size="sm">End-to-end encrypted with Skeleton Key</Text>
             </>
           ) : (
-            <Text size="sm" c="ochre">No Skeleton Key configured</Text>
+            <Text size="sm" c="ochre">
+              No Skeleton Key configured
+            </Text>
           )}
         </Group>
         <Text size="xs" c="dimmed" mt="xs">
@@ -57,7 +63,9 @@ export function AccountSettings() {
 
       {/* User ID */}
       <Box>
-        <Text size="sm" fw={500} mb="xs">User ID</Text>
+        <Text size="sm" fw={500} mb="xs">
+          User ID
+        </Text>
         <Text size="xs" c="dimmed" mb="sm">
           Share this ID across devices to sync data between them.
         </Text>
@@ -80,7 +88,9 @@ export function AccountSettings() {
 
       {/* Device ID */}
       <Box>
-        <Text size="sm" fw={500} mb="xs">Device ID</Text>
+        <Text size="sm" fw={500} mb="xs">
+          Device ID
+        </Text>
         <Text size="xs" c="dimmed" mb="sm">
           Unique identifier for this device (read-only).
         </Text>

@@ -178,14 +178,20 @@ export function SkeletonKeySetup() {
   const displayError = localError || error;
 
   return (
-    <Center h="100vh" p="xl" style={{ backgroundColor: 'var(--mantine-color-body)' }}>
+    <Center
+      h="100vh"
+      p="xl"
+      style={{ backgroundColor: 'var(--mantine-color-body)' }}
+    >
       <Box maw={500} w="100%">
         {/* Header */}
         <Stack align="center" gap="xs" mb="xl">
           <ThemeIcon size={64} radius="sm" variant="light" color="ember">
             <Icon name="key" size={32} />
           </ThemeIcon>
-          <Title order={1} ta="center">Skeleton Key</Title>
+          <Title order={1} ta="center">
+            Skeleton Key
+          </Title>
           <Text c="dimmed" ta="center">
             Your encryption key for secure, zero-knowledge sync
           </Text>
@@ -223,7 +229,9 @@ export function SkeletonKeySetup() {
                   </ThemeIcon>
                   <Box>
                     <Text fw={600}>Create New Skeleton Key</Text>
-                    <Text size="sm" c="dimmed">Generate a new encryption key</Text>
+                    <Text size="sm" c="dimmed">
+                      Generate a new encryption key
+                    </Text>
                   </Box>
                 </Group>
               </UnstyledButton>
@@ -244,7 +252,9 @@ export function SkeletonKeySetup() {
                   </ThemeIcon>
                   <Box>
                     <Text fw={600}>Import Existing Key</Text>
-                    <Text size="sm" c="dimmed">Enter your 24-word phrase</Text>
+                    <Text size="sm" c="dimmed">
+                      Enter your 24-word phrase
+                    </Text>
                   </Box>
                 </Group>
               </UnstyledButton>
@@ -270,8 +280,12 @@ export function SkeletonKeySetup() {
                     borderRadius: 'var(--mantine-radius-sm)',
                   }}
                 >
-                  <Text size="xs" c="dimmed">{index + 1}</Text>
-                  <Text size="sm" fw={500}>{word}</Text>
+                  <Text size="xs" c="dimmed">
+                    {index + 1}
+                  </Text>
+                  <Text size="sm" fw={500}>
+                    {word}
+                  </Text>
                 </Box>
               ))}
             </SimpleGrid>
@@ -349,7 +363,9 @@ export function SkeletonKeySetup() {
               </Button>
               <Button
                 onClick={handleVerifyAndComplete}
-                disabled={isLoading || confirmInputs.some((input) => !input.trim())}
+                disabled={
+                  isLoading || confirmInputs.some((input) => !input.trim())
+                }
                 loading={isLoading}
               >
                 Verify & Continue
@@ -403,7 +419,9 @@ export function SkeletonKeySetup() {
             <ThemeIcon size={80} radius="sm" color="sage" variant="light">
               <Icon name="check-circle" size={40} />
             </ThemeIcon>
-            <Title order={2} ta="center">Skeleton Key Ready</Title>
+            <Title order={2} ta="center">
+              Skeleton Key Ready
+            </Title>
             <Text c="dimmed" ta="center">
               Your encryption is set up. All synced data will be encrypted with
               your Skeleton Key.

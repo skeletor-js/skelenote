@@ -43,7 +43,12 @@ function MenuItemIcon({ icon }: { icon: string }) {
 /**
  * Context menu using Mantine Menu with portal positioning
  */
-export function ContextMenu({ items, position, isOpen, onClose }: ContextMenuProps) {
+export function ContextMenu({
+  items,
+  position,
+  isOpen,
+  onClose,
+}: ContextMenuProps) {
   const [adjustedPosition, setAdjustedPosition] = useState(position);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

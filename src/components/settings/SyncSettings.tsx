@@ -114,7 +114,9 @@ export function SyncSettings() {
 
       {/* Encryption Status */}
       <Box>
-        <Text size="sm" fw={500} mb="xs">Encryption</Text>
+        <Text size="sm" fw={500} mb="xs">
+          Encryption
+        </Text>
         <Group gap="sm">
           {hasSkeletonKey ? (
             <>
@@ -124,7 +126,9 @@ export function SyncSettings() {
               <Text size="sm">End-to-end encrypted with Skeleton Key</Text>
             </>
           ) : (
-            <Text size="sm" c="ochre">No Skeleton Key configured</Text>
+            <Text size="sm" c="ochre">
+              No Skeleton Key configured
+            </Text>
           )}
         </Group>
         <Text size="xs" c="dimmed" mt="xs">
@@ -147,14 +151,18 @@ export function SyncSettings() {
 
       {/* Cloud Relay */}
       <Box>
-        <Title order={4} mb="xs">Cloud Relay</Title>
+        <Title order={4} mb="xs">
+          Cloud Relay
+        </Title>
         <Text size="sm" c="dimmed" mb="md">
           Sync through a relay server when devices aren't on the same network.
         </Text>
 
         <Stack gap="sm">
           <Box>
-            <Text size="xs" fw={500} mb={4}>Server URL</Text>
+            <Text size="xs" fw={500} mb={4}>
+              Server URL
+            </Text>
             <TextInput
               placeholder="wss://your-worker.workers.dev"
               value={serverUrl}
@@ -171,10 +179,7 @@ export function SyncSettings() {
           </Group>
 
           {isConnected ? (
-            <Button
-              variant="default"
-              onClick={handleDisconnect}
-            >
+            <Button variant="default" onClick={handleDisconnect}>
               Disconnect
             </Button>
           ) : (
@@ -192,7 +197,9 @@ export function SyncSettings() {
 
       {/* User ID */}
       <Box>
-        <Text size="sm" fw={500} mb="xs">User ID</Text>
+        <Text size="sm" fw={500} mb="xs">
+          User ID
+        </Text>
         <Text size="xs" c="dimmed" mb="sm">
           Share this ID across devices to sync data between them.
         </Text>
@@ -215,7 +222,9 @@ export function SyncSettings() {
 
       {/* Device ID */}
       <Box>
-        <Text size="sm" fw={500} mb="xs">Device ID</Text>
+        <Text size="sm" fw={500} mb="xs">
+          Device ID
+        </Text>
         <Text size="xs" c="dimmed" mb="sm">
           Unique identifier for this device (read-only).
         </Text>
@@ -226,7 +235,9 @@ export function SyncSettings() {
 
       {/* Danger Zone */}
       <Box>
-        <Text size="sm" fw={500} c="brick" mb="xs">Danger Zone</Text>
+        <Text size="sm" fw={500} c="brick" mb="xs">
+          Danger Zone
+        </Text>
         <Text size="xs" c="dimmed" mb="sm">
           Reset your vault to use a different Skeleton Key. This will disconnect
           sync and clear your encryption key from this device.

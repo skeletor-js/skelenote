@@ -13,7 +13,11 @@ interface RelationChipProps {
   showRemove?: boolean;
 }
 
-export function RelationChip({ objectId, onRemove, showRemove = true }: RelationChipProps) {
+export function RelationChip({
+  objectId,
+  onRemove,
+  showRemove = true,
+}: RelationChipProps) {
   const { store } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { navigateToObject, openInSplit } = useNavigation();
@@ -28,7 +32,9 @@ export function RelationChip({ objectId, onRemove, showRemove = true }: Relation
 
   const typeDef = typeRegistry.get(object.typeId);
   const icon = typeDef?.icon ?? '📄';
-  const name = (object.properties.title ?? object.properties.name ?? 'Untitled') as string;
+  const name = (object.properties.title ??
+    object.properties.name ??
+    'Untitled') as string;
 
   const handleClick = (e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey) {

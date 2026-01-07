@@ -114,9 +114,14 @@ export function RelatedTypeSection({
             transition: 'transform 150ms ease',
           }}
         />
-        <Icon name={getTypeIcon()} size={14} style={{ color: 'var(--mantine-color-gray-5)' }} />
+        <Icon
+          name={getTypeIcon()}
+          size={14}
+          style={{ color: 'var(--mantine-color-gray-5)' }}
+        />
         <Text size="sm" c="dimmed">
-          {typeName}{count > 0 && ` (${count})`}
+          {typeName}
+          {count > 0 && ` (${count})`}
         </Text>
       </Group>
 

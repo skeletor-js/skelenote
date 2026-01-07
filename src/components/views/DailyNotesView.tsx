@@ -19,16 +19,14 @@ import {
   useSemanticSearchSafe,
 } from '@/contexts';
 import { useConfirmDialog } from '@/hooks';
-import {
-  getOrCreateDailyNote,
-  getDailyNoteByDate,
-} from '@/lib/daily';
+import { getOrCreateDailyNote, getDailyNoteByDate } from '@/lib/daily';
 
 export function DailyNotesView() {
   const { store, isLoading, refreshData, scheduleSave } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
-  const { dialogState, confirm, handleConfirm, handleCancel } = useConfirmDialog();
+  const { dialogState, confirm, handleConfirm, handleCancel } =
+    useConfirmDialog();
   const semanticContext = useSemanticSearchSafe();
 
   // Track previous daily note ID for flushing on date change
@@ -83,7 +81,10 @@ export function DailyNotesView() {
   // Flush semantic index when switching dates or unmounting
   useEffect(() => {
     // Flush previous note when daily note changes
-    if (previousNoteIdRef.current && previousNoteIdRef.current !== dailyNote?.id) {
+    if (
+      previousNoteIdRef.current &&
+      previousNoteIdRef.current !== dailyNote?.id
+    ) {
       semanticContext?.flushContentChanges(previousNoteIdRef.current);
     }
     previousNoteIdRef.current = dailyNote?.id ?? null;
@@ -97,11 +98,14 @@ export function DailyNotesView() {
   }, [dailyNote?.id, semanticContext]);
 
   // Handler for date selection from WeekStrip
-  const handleDateSelect = useCallback((date: Date) => {
-    setSelectedDate(date);
-    // Refresh data to ensure we have the latest
-    refreshData();
-  }, [refreshData]);
+  const handleDateSelect = useCallback(
+    (date: Date) => {
+      setSelectedDate(date);
+      // Refresh data to ensure we have the latest
+      refreshData();
+    },
+    [refreshData]
+  );
 
   // Handler for deleting the daily note
   const handleDelete = useCallback(async () => {
@@ -134,7 +138,9 @@ export function DailyNotesView() {
         <ViewHeader title="Daily Notes" />
         <Center p="xl" style={{ flex: 1 }}>
           <Loader size="sm" />
-          <Text ml="sm" c="dimmed">Loading...</Text>
+          <Text ml="sm" c="dimmed">
+            Loading...
+          </Text>
         </Center>
       </Stack>
     );
@@ -154,10 +160,7 @@ export function DailyNotesView() {
         {dailyNote && typeDef && (
           <Stack gap="md">
             {/* Journal-style date header */}
-            <DailyNoteHeader
-              date={selectedDate}
-              onDelete={handleDelete}
-            />
+            <DailyNoteHeader date={selectedDate} onDelete={handleDelete} />
 
             {/* Content Section with BlockNote Editor */}
             {typeDef.hasContent && (

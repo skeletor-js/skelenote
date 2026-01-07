@@ -24,18 +24,18 @@
      ========================================================================== */
 
   /* Surface hierarchy - "bi-fold notebook" effect */
-  --surface-canvas: #FAFAFA;
+  --surface-canvas: #fafafa;
   /* Main content - mimics paper */
-  --surface-sidebar: #F4F4F5;
+  --surface-sidebar: #f4f4f5;
   /* Sidebar - slightly darker, like cover */
   --surface-paper: var(--mantine-color-white);
   /* Elevated surfaces only */
   --surface-raised: var(--mantine-color-gray-0);
 
   /* Borders - Vellum (#E4E4E7) for paper-like edges */
-  --border-subtle: #E4E4E7;
+  --border-subtle: #e4e4e7;
   /* Vellum - paper edge aesthetic */
-  --border-default: #E4E4E7;
+  --border-default: #e4e4e7;
   /* Consistent with Vellum */
 
   /* Warm interaction states - "Fireplace Glow" */
@@ -43,17 +43,17 @@
   /* Ember at 4% - subtle warmth */
   --hover-warm-strong: rgba(184, 92, 80, 0.08);
   /* Ember at 8% - stronger warmth */
-  --selection-glow: #F9E4E1;
+  --selection-glow: #f9e4e1;
   /* Ember-1 - visible warm glow */
-  --selection-border: #F2CEC9;
+  --selection-border: #f2cec9;
   /* Ember-2 - selection accent */
   /* Ember-2 - selection accent */
 
   /* Override Mantine's default border to use Vellum */
-  --mantine-color-default-border: #E4E4E7;
+  --mantine-color-default-border: #e4e4e7;
 }
 
-[data-mantine-color-scheme="dark"] {
+[data-mantine-color-scheme='dark'] {
   /* ==========================================================================
      COZY DESIGN SYSTEM - Dark Mode Surface Hierarchy
      
@@ -63,30 +63,30 @@
      ========================================================================== */
 
   /* Surface hierarchy */
-  --surface-canvas: #0A0A0A;
+  --surface-canvas: #0a0a0a;
   /* Near-black base layer */
-  --surface-sidebar: #0A0A0A;
+  --surface-sidebar: #0a0a0a;
   /* Sidebar matches canvas */
-  --surface-paper: #18181B;
+  --surface-paper: #18181b;
   /* Elevated content (gray.9) */
-  --surface-raised: #27272A;
+  --surface-raised: #27272a;
   /* Further elevated (gray.8) */
 
   /* Borders */
-  --border-subtle: #27272A;
+  --border-subtle: #27272a;
   /* Subtle borders (gray.8) */
-  --border-default: #3F3F46;
+  --border-default: #3f3f46;
   /* More visible borders (gray.7) */
 
   /* Warm interaction states - subtle ember glow on dark */
-  --hover-warm: rgba(184, 92, 80, 0.10);
+  --hover-warm: rgba(184, 92, 80, 0.1);
   --hover-warm-strong: rgba(184, 92, 80, 0.15);
   --selection-glow: rgba(184, 92, 80, 0.18);
   /* Subtle and readable */
-  --selection-border: #6E322B;
+  --selection-border: #6e322b;
 
   /* Override Mantine's default border to be more visible */
-  --mantine-color-default-border: #3F3F46;
+  --mantine-color-default-border: #3f3f46;
 }
 
 /* Hide scrollbars globally while maintaining scroll functionality */

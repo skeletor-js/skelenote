@@ -53,19 +53,13 @@ export function SplitPane({
 
   return (
     <Split style={{ height: '100%' }}>
-      <Split.Pane
-        initialWidth={`${100 - splitWidth}%`}
-        minWidth="300px"
-      >
+      <Split.Pane initialWidth={`${100 - splitWidth}%`} minWidth="300px">
         <Box style={{ height: '100%', overflow: 'auto', minWidth: 0 }}>
           {children}
         </Box>
       </Split.Pane>
       <Split.Resizer />
-      <Split.Pane
-        initialWidth={`${splitWidth}%`}
-        minWidth="300px"
-      >
+      <Split.Pane initialWidth={`${splitWidth}%`} minWidth="300px">
         <Box
           style={{
             height: '100%',

@@ -14,7 +14,9 @@
 }
 
 .omnibarInput input {
-  transition: box-shadow 150ms ease, border-color 150ms ease;
+  transition:
+    box-shadow 150ms ease,
+    border-color 150ms ease;
 }
 
 .omnibarInput input:focus {
@@ -53,12 +55,12 @@
    Using semantic surface variables for consistency with design system
    ================================================================ */
 
-[data-mantine-color-scheme="dark"] .dropdown {
+[data-mantine-color-scheme='dark'] .dropdown {
   background: var(--surface-paper);
   border-color: var(--mantine-color-default-border);
 }
 
-[data-mantine-color-scheme="dark"] .resultItem:hover,
-[data-mantine-color-scheme="dark"] .resultItem[data-selected='true'] {
+[data-mantine-color-scheme='dark'] .resultItem:hover,
+[data-mantine-color-scheme='dark'] .resultItem[data-selected='true'] {
   background: var(--surface-raised);
 }

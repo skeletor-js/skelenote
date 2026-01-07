@@ -8,13 +8,24 @@ import { useTheme, useLinkToDaily } from '@/hooks';
 import { BuiltInTypeIds, type PropertyValue } from '@/lib/types';
 
 // Default properties for each type when creating
-const defaultPropertiesForType: Record<string, Record<string, PropertyValue>> = {
-  [BuiltInTypeIds.TASK]: { title: 'New Task', status: 'todo', priority: 'medium' },
+const defaultPropertiesForType: Record<
+  string,
+  Record<string, PropertyValue>
+> = {
+  [BuiltInTypeIds.TASK]: {
+    title: 'New Task',
+    status: 'todo',
+    priority: 'medium',
+  },
   [BuiltInTypeIds.NOTE]: { title: 'New Note' },
   [BuiltInTypeIds.PROJECT]: { name: 'New Project', status: 'active' },
   [BuiltInTypeIds.AREA]: { name: 'New Area' },
   [BuiltInTypeIds.LINK]: { url: 'https://', title: 'New Link' },
-  [BuiltInTypeIds.MEETING]: { title: 'New Meeting', startTime: Date.now(), durationMinutes: '60' },
+  [BuiltInTypeIds.MEETING]: {
+    title: 'New Meeting',
+    startTime: Date.now(),
+    durationMinutes: '60',
+  },
   [BuiltInTypeIds.TAG]: { name: 'new-tag' },
   [BuiltInTypeIds.PERSON]: { name: 'New Person' },
 };
@@ -110,7 +121,12 @@ export function CreationControls({
         width={180}
       >
         <Menu.Target>
-          <Tooltip label="Add new object" position="bottom" withArrow disabled={addMenuOpened}>
+          <Tooltip
+            label="Add new object"
+            position="bottom"
+            withArrow
+            disabled={addMenuOpened}
+          >
             <ActionIcon
               variant="subtle"
               color="ember"
@@ -149,8 +165,13 @@ interface SystemControlsProps {
  * System controls for the top nav bar (far right).
  * Contains: Sync Indicator, Theme Toggle, Zen Mode, Settings.
  */
-export function SystemControls({ onToggleSettings, isZenMode = false, onToggleZenMode }: SystemControlsProps) {
-  const { navigateToView, navigateBack, currentView, canGoBack } = useNavigation();
+export function SystemControls({
+  onToggleSettings,
+  isZenMode = false,
+  onToggleZenMode,
+}: SystemControlsProps) {
+  const { navigateToView, navigateBack, currentView, canGoBack } =
+    useNavigation();
   const { theme, toggleTheme } = useTheme();
 
   // Handle settings click - toggle if already on settings

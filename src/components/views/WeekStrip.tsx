@@ -106,7 +106,11 @@ function getRelativeWeekContext(weekStart: Date): string | null {
   return null;
 }
 
-export function WeekStrip({ selectedDate, onDateSelect, hasNote }: WeekStripProps) {
+export function WeekStrip({
+  selectedDate,
+  onDateSelect,
+  hasNote,
+}: WeekStripProps) {
   // Calculate week start (Monday) from selected date
   const weekStart = useMemo(() => getWeekStart(selectedDate), [selectedDate]);
 
@@ -117,7 +121,10 @@ export function WeekStrip({ selectedDate, onDateSelect, hasNote }: WeekStripProp
   const weekLabel = useMemo(() => formatWeekLabel(weekStart), [weekStart]);
 
   // Relative week context (This Week, Last Week, etc.)
-  const relativeContext = useMemo(() => getRelativeWeekContext(weekStart), [weekStart]);
+  const relativeContext = useMemo(
+    () => getRelativeWeekContext(weekStart),
+    [weekStart]
+  );
 
   // Check if selected date is today (to hide Today button)
   const isSelectedToday = useMemo(() => isToday(selectedDate), [selectedDate]);
@@ -262,12 +269,7 @@ export function WeekStrip({ selectedDate, onDateSelect, hasNote }: WeekStripProp
 
         {/* Today button - hidden when already viewing today */}
         {!isSelectedToday && (
-          <Button
-            variant="subtle"
-            size="xs"
-            onClick={goToToday}
-            ml="xs"
-          >
+          <Button variant="subtle" size="xs" onClick={goToToday} ml="xs">
             Today
           </Button>
         )}

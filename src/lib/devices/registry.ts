@@ -67,14 +67,18 @@ export class DeviceRegistry {
    * Get the devices map
    */
   private getDevicesMap(): LoroMap<Record<string, unknown>> {
-    return this.doc.getMap('root').get(DEVICES_KEY) as LoroMap<Record<string, unknown>>;
+    return this.doc.getMap('root').get(DEVICES_KEY) as LoroMap<
+      Record<string, unknown>
+    >;
   }
 
   /**
    * Get the revocations map
    */
   private getRevocationsMap(): LoroMap<Record<string, unknown>> {
-    return this.doc.getMap('root').get(REVOCATIONS_KEY) as LoroMap<Record<string, unknown>>;
+    return this.doc.getMap('root').get(REVOCATIONS_KEY) as LoroMap<
+      Record<string, unknown>
+    >;
   }
 
   /**
@@ -104,7 +108,9 @@ export class DeviceRegistry {
     const deviceData = devices.get(deviceId);
 
     if (deviceData && typeof deviceData === 'object') {
-      const deviceMap = devices.get(deviceId) as LoroMap<Record<string, unknown>>;
+      const deviceMap = devices.get(deviceId) as LoroMap<
+        Record<string, unknown>
+      >;
       deviceMap.set('lastSeen', timestamp);
       this.notifyChange();
     }
@@ -118,7 +124,9 @@ export class DeviceRegistry {
     const deviceData = devices.get(deviceId);
 
     if (deviceData && typeof deviceData === 'object') {
-      const deviceMap = devices.get(deviceId) as LoroMap<Record<string, unknown>>;
+      const deviceMap = devices.get(deviceId) as LoroMap<
+        Record<string, unknown>
+      >;
       deviceMap.set('name', newName);
       this.notifyChange();
     }
@@ -131,7 +139,10 @@ export class DeviceRegistry {
    */
   addRevocation(revocation: RevocationRecord): void {
     const revocations = this.getRevocationsMap();
-    const revocationMap = revocations.setContainer(revocation.deviceId, new LoroMap());
+    const revocationMap = revocations.setContainer(
+      revocation.deviceId,
+      new LoroMap()
+    );
 
     revocationMap.set('deviceId', revocation.deviceId);
     revocationMap.set('revokedAt', revocation.revokedAt);

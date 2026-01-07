@@ -88,7 +88,9 @@ export function SyncSettingsPanel() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">Sync</Text>
+        <Text size="lg" fw={600} mb="xs">
+          Sync
+        </Text>
         <Text size="sm" c="dimmed">
           Configure how your data syncs across devices.
         </Text>
@@ -106,14 +108,18 @@ export function SyncSettingsPanel() {
 
       {/* Cloud Relay */}
       <Box>
-        <Text size="md" fw={600} mb="xs">Cloud Relay</Text>
+        <Text size="md" fw={600} mb="xs">
+          Cloud Relay
+        </Text>
         <Text size="sm" c="dimmed" mb="md">
           Sync through a relay server when devices aren't on the same network.
         </Text>
 
         <Stack gap="sm">
           <Box>
-            <Text size="xs" fw={500} mb={4}>Server URL</Text>
+            <Text size="xs" fw={500} mb={4}>
+              Server URL
+            </Text>
             <TextInput
               placeholder="wss://your-worker.workers.dev"
               value={serverUrl}
@@ -130,10 +136,7 @@ export function SyncSettingsPanel() {
           </Group>
 
           {isConnected ? (
-            <Button
-              variant="default"
-              onClick={handleDisconnect}
-            >
+            <Button variant="default" onClick={handleDisconnect}>
               Disconnect
             </Button>
           ) : (

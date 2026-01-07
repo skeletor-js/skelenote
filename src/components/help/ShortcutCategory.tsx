@@ -4,14 +4,21 @@
 
 import { Stack, Text } from '@mantine/core';
 import { ShortcutRow } from './ShortcutRow';
-import { CATEGORY_INFO, type Shortcut, type ShortcutCategory as CategoryType } from '@/lib/shortcuts';
+import {
+  CATEGORY_INFO,
+  type Shortcut,
+  type ShortcutCategory as CategoryType,
+} from '@/lib/shortcuts';
 
 interface ShortcutCategoryProps {
   category: CategoryType;
   shortcuts: Shortcut[];
 }
 
-export function ShortcutCategory({ category, shortcuts }: ShortcutCategoryProps) {
+export function ShortcutCategory({
+  category,
+  shortcuts,
+}: ShortcutCategoryProps) {
   if (shortcuts.length === 0) {
     return null;
   }

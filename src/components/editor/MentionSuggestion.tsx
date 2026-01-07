@@ -36,12 +36,16 @@ export function useMentionSuggestions(query: string): MentionItem[] {
     const items: MentionItem[] = allObjects
       .filter((obj: SkelenoteObject) => {
         // Get display name from title or name property
-        const name = (obj.properties.title ?? obj.properties.name ?? '') as string;
+        const name = (obj.properties.title ??
+          obj.properties.name ??
+          '') as string;
         return name.toLowerCase().includes(lowerQuery);
       })
       .slice(0, 10) // Limit results
       .map((obj: SkelenoteObject) => {
-        const name = (obj.properties.title ?? obj.properties.name ?? 'Untitled') as string;
+        const name = (obj.properties.title ??
+          obj.properties.name ??
+          'Untitled') as string;
         const typeDef = typeRegistry.get(obj.typeId);
         const icon = (typeDef?.icon ?? 'file') as IconName;
 
@@ -78,12 +82,16 @@ export function getMentionMenuItems(
     .filter((obj: SkelenoteObject) => {
       // Exclude the current object to prevent self-mentions
       if (excludeObjectId && obj.id === excludeObjectId) return false;
-      const name = (obj.properties.title ?? obj.properties.name ?? '') as string;
+      const name = (obj.properties.title ??
+        obj.properties.name ??
+        '') as string;
       return name.toLowerCase().includes(lowerQuery);
     })
     .slice(0, 10)
     .map((obj: SkelenoteObject) => {
-      const name = (obj.properties.title ?? obj.properties.name ?? 'Untitled') as string;
+      const name = (obj.properties.title ??
+        obj.properties.name ??
+        'Untitled') as string;
       const typeDef = typeRegistry.get(obj.typeId);
       const icon = (typeDef?.icon ?? 'file') as IconName;
 
@@ -141,7 +149,11 @@ export function MentionSuggestionMenu({
           className={`mention-suggestion-item ${index === selectedIndex ? 'mention-suggestion-item--selected' : ''}`}
           onClick={() => onItemClick?.(item)}
         >
-          <Icon name={item.icon} size={14} className="mention-suggestion-item__icon" />
+          <Icon
+            name={item.icon}
+            size={14}
+            className="mention-suggestion-item__icon"
+          />
           <span className="mention-suggestion-item__title">{item.title}</span>
         </div>
       ))}

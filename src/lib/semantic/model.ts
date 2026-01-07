@@ -82,7 +82,13 @@ export async function getEmbeddingPipeline(
 
     // Create feature-extraction pipeline
     embeddingPipeline = (await pipeline('feature-extraction', modelId, {
-      progress_callback: (progress: { status: string; file?: string; progress?: number; loaded?: number; total?: number }) => {
+      progress_callback: (progress: {
+        status: string;
+        file?: string;
+        progress?: number;
+        loaded?: number;
+        total?: number;
+      }) => {
         if (progress.status === 'download' && progress.progress !== undefined) {
           onProgress?.({
             operation: 'download',

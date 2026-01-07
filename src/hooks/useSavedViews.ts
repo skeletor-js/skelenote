@@ -5,7 +5,11 @@
 import { useMemo, useCallback } from 'react';
 import { useObjects } from '@/contexts';
 import { ViewStore, createViewStore } from '@/lib/loro';
-import type { SavedView, CreateSavedViewInput, UpdateSavedViewInput } from '@/lib/types';
+import type {
+  SavedView,
+  CreateSavedViewInput,
+  UpdateSavedViewInput,
+} from '@/lib/types';
 
 export interface UseSavedViewsResult {
   /** All saved views sorted by creation date (newest first) */

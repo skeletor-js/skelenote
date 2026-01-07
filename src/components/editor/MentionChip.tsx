@@ -18,7 +18,11 @@ interface MentionChipProps {
 /**
  * Inner component that uses hooks - must be a proper React component
  */
-function MentionChipComponent({ objectId, objectName, objectTypeId }: MentionChipProps) {
+function MentionChipComponent({
+  objectId,
+  objectName,
+  objectTypeId,
+}: MentionChipProps) {
   const { store } = useObjects();
   const { navigateToObject, openInSplit } = useNavigation();
 
@@ -56,7 +60,9 @@ function MentionChipComponent({ objectId, objectName, objectTypeId }: MentionChi
     }
 
     // Use current name from object (reflects title changes)
-    const currentName = (obj.properties.title ?? obj.properties.name) as string | undefined;
+    const currentName = (obj.properties.title ?? obj.properties.name) as
+      | string
+      | undefined;
     const displayName = currentName || objectName || 'Unknown';
 
     return (

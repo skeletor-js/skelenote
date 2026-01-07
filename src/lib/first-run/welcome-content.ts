@@ -6,7 +6,10 @@
 /**
  * Generate welcome note content with a link to today's daily note
  */
-export function getWelcomeNoteBlocks(dailyNoteId: string, dailyNoteName: string): unknown[] {
+export function getWelcomeNoteBlocks(
+  dailyNoteId: string,
+  dailyNoteName: string
+): unknown[] {
   return [
     {
       id: 'welcome-1',
@@ -128,7 +131,7 @@ export function getWelcomeNoteBlocks(dailyNoteId: string, dailyNoteName: string)
       content: [
         {
           type: 'text',
-          text: 'Your daily note is created automatically each day. Use it as a central hub to log thoughts, link to tasks, and capture what happened. Today\'s note: ',
+          text: "Your daily note is created automatically each day. Use it as a central hub to log thoughts, link to tasks, and capture what happened. Today's note: ",
           styles: {},
         },
         {

@@ -143,13 +143,22 @@ export function HistoryWeekStrip({
   }, [selectedDate, changesByDate]);
 
   // Generate array of 7 dates for this week
-  const weekDays = useMemo(() => getWeekDays(displayWeekStart), [displayWeekStart]);
+  const weekDays = useMemo(
+    () => getWeekDays(displayWeekStart),
+    [displayWeekStart]
+  );
 
   // Week label for display
-  const weekLabel = useMemo(() => formatWeekLabel(displayWeekStart), [displayWeekStart]);
+  const weekLabel = useMemo(
+    () => formatWeekLabel(displayWeekStart),
+    [displayWeekStart]
+  );
 
   // Relative week context
-  const relativeContext = useMemo(() => getRelativeWeekContext(displayWeekStart), [displayWeekStart]);
+  const relativeContext = useMemo(
+    () => getRelativeWeekContext(displayWeekStart),
+    [displayWeekStart]
+  );
 
   // Calculate max changes in visible week for relative bar sizing
   const maxChangesInWeek = useMemo(() => {
@@ -165,14 +174,17 @@ export function HistoryWeekStrip({
   }, [weekDays, changesByDate]);
 
   // Calculate bar width as percentage based on relative density
-  const getBarWidth = useCallback((totalChanges: number): number => {
-    if (maxChangesInWeek === 0) return 0;
-    const ratio = totalChanges / maxChangesInWeek;
-    if (ratio <= 0.25) return 25;
-    if (ratio <= 0.5) return 50;
-    if (ratio <= 0.75) return 75;
-    return 100;
-  }, [maxChangesInWeek]);
+  const getBarWidth = useCallback(
+    (totalChanges: number): number => {
+      if (maxChangesInWeek === 0) return 0;
+      const ratio = totalChanges / maxChangesInWeek;
+      if (ratio <= 0.25) return 25;
+      if (ratio <= 0.5) return 50;
+      if (ratio <= 0.75) return 75;
+      return 100;
+    },
+    [maxChangesInWeek]
+  );
 
   // Check if today has changes (for smart Today button)
   const todayKey = formatDateKey(new Date());
@@ -180,40 +192,45 @@ export function HistoryWeekStrip({
   const isOnTodaysWeek = isSameDay(displayWeekStart, getWeekStart(new Date()));
 
   // Find next/prev day with changes for navigation
-  const findDayWithChanges = useCallback((
-    startDate: Date,
-    direction: 'forward' | 'backward'
-  ): string | null => {
-    const sortedDates = Array.from(changesByDate.keys()).sort();
-    const startKey = formatDateKey(startDate);
+  const findDayWithChanges = useCallback(
+    (startDate: Date, direction: 'forward' | 'backward'): string | null => {
+      const sortedDates = Array.from(changesByDate.keys()).sort();
+      const startKey = formatDateKey(startDate);
 
-    if (direction === 'forward') {
-      return sortedDates.find(d => d > startKey) ?? null;
-    } else {
-      return [...sortedDates].reverse().find(d => d < startKey) ?? null;
-    }
-  }, [changesByDate]);
+      if (direction === 'forward') {
+        return sortedDates.find((d) => d > startKey) ?? null;
+      } else {
+        return [...sortedDates].reverse().find((d) => d < startKey) ?? null;
+      }
+    },
+    [changesByDate]
+  );
 
   // Find next/prev week with changes
-  const findWeekWithChanges = useCallback((
-    currentWeekStart: Date,
-    direction: 'forward' | 'backward'
-  ): string | null => {
-    const offset = direction === 'forward' ? 7 : -7;
-    const targetWeekStart = new Date(currentWeekStart);
-    targetWeekStart.setDate(targetWeekStart.getDate() + offset);
+  const findWeekWithChanges = useCallback(
+    (
+      currentWeekStart: Date,
+      direction: 'forward' | 'backward'
+    ): string | null => {
+      const offset = direction === 'forward' ? 7 : -7;
+      const targetWeekStart = new Date(currentWeekStart);
+      targetWeekStart.setDate(targetWeekStart.getDate() + offset);
 
-    // Look for any day in the target week direction
-    const sortedDates = Array.from(changesByDate.keys()).sort();
+      // Look for any day in the target week direction
+      const sortedDates = Array.from(changesByDate.keys()).sort();
 
-    if (direction === 'forward') {
-      const targetStartKey = formatDateKey(targetWeekStart);
-      return sortedDates.find(d => d >= targetStartKey) ?? null;
-    } else {
-      const currentStartKey = formatDateKey(currentWeekStart);
-      return [...sortedDates].reverse().find(d => d < currentStartKey) ?? null;
-    }
-  }, [changesByDate]);
+      if (direction === 'forward') {
+        const targetStartKey = formatDateKey(targetWeekStart);
+        return sortedDates.find((d) => d >= targetStartKey) ?? null;
+      } else {
+        const currentStartKey = formatDateKey(currentWeekStart);
+        return (
+          [...sortedDates].reverse().find((d) => d < currentStartKey) ?? null
+        );
+      }
+    },
+    [changesByDate]
+  );
 
   // Navigation handlers
   const goToPreviousDay = useCallback(() => {
@@ -305,7 +322,9 @@ export function HistoryWeekStrip({
           const isTodayDate = isToday(date);
           const dayChanges = changesByDate.get(dateKey);
           const hasChanges = dayChanges && dayChanges.totalChanges > 0;
-          const barWidth = hasChanges ? getBarWidth(dayChanges.totalChanges) : 0;
+          const barWidth = hasChanges
+            ? getBarWidth(dayChanges.totalChanges)
+            : 0;
 
           return (
             <Button
@@ -384,12 +403,7 @@ export function HistoryWeekStrip({
 
         {/* Today button - only show if today has changes and not already on today's week */}
         {todayHasChanges && !isOnTodaysWeek && (
-          <Button
-            variant="subtle"
-            size="xs"
-            onClick={goToToday}
-            ml="xs"
-          >
+          <Button variant="subtle" size="xs" onClick={goToToday} ml="xs">
             Today
           </Button>
         )}

@@ -23,7 +23,9 @@
 
 /* Action buttons - subtle hover feedback */
 .actionButton {
-  transition: background-color 150ms ease, border-color 150ms ease;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
 }
 
 /* Section dividers */

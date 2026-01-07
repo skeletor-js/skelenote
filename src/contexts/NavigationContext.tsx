@@ -12,14 +12,14 @@ import type { Frontiers } from 'loro-crdt';
  */
 export type ViewType =
   | 'inbox'
-  | 'tasks'          // NEW: Consolidated tasks view with tabs
-  | 'today'          // DEPRECATED: Use 'tasks' instead
+  | 'tasks' // NEW: Consolidated tasks view with tabs
+  | 'today' // DEPRECATED: Use 'tasks' instead
   | 'daily-notes'
-  | 'this-week'      // DEPRECATED: Use 'tasks' instead
-  | 'overdue'        // DEPRECATED: Use 'tasks' instead
-  | 'waiting'        // NEW: Renamed from 'blocked' for clearer meaning
-  | 'eventually'     // DEPRECATED: Use 'tasks' instead
-  | 'completed'      // DEPRECATED: Use 'tasks' instead
+  | 'this-week' // DEPRECATED: Use 'tasks' instead
+  | 'overdue' // DEPRECATED: Use 'tasks' instead
+  | 'waiting' // NEW: Renamed from 'blocked' for clearer meaning
+  | 'eventually' // DEPRECATED: Use 'tasks' instead
+  | 'completed' // DEPRECATED: Use 'tasks' instead
   | 'object'
   | 'settings'
   | 'time-machine'
@@ -180,92 +180,118 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     }
   }, [splitPane.mode]);
 
-  const navigateToObject = useCallback((objectId: string) => {
-    // Close version comparison if navigating to a different object
-    if (splitPane.mode === 'version-comparison' && splitPane.objectId !== objectId) {
+  const navigateToObject = useCallback(
+    (objectId: string) => {
+      // Close version comparison if navigating to a different object
+      if (
+        splitPane.mode === 'version-comparison' &&
+        splitPane.objectId !== objectId
+      ) {
+        closeVersionComparisonIfActive();
+      }
+      setHistory((prev) => [...prev, currentState]);
+      setForwardHistory([]); // Clear forward history on new navigation
+      setCurrentState({
+        view: 'object',
+        objectId,
+        searchQuery: null,
+        timeMachineFilter: null,
+        savedViewId: null,
+        browseTypeId: null,
+      });
+    },
+    [
+      currentState,
+      splitPane.mode,
+      splitPane.objectId,
+      closeVersionComparisonIfActive,
+    ]
+  );
+
+  const navigateToView = useCallback(
+    (view: ViewType) => {
       closeVersionComparisonIfActive();
-    }
-    setHistory((prev) => [...prev, currentState]);
-    setForwardHistory([]); // Clear forward history on new navigation
-    setCurrentState({
-      view: 'object',
-      objectId,
-      searchQuery: null,
-      timeMachineFilter: null,
-      savedViewId: null,
-      browseTypeId: null,
-    });
-  }, [currentState, splitPane.mode, splitPane.objectId, closeVersionComparisonIfActive]);
+      setHistory((prev) => [...prev, currentState]);
+      setForwardHistory([]); // Clear forward history on new navigation
+      setCurrentState({
+        view,
+        objectId: null,
+        searchQuery: null,
+        timeMachineFilter: null,
+        savedViewId: null,
+        browseTypeId: null,
+      });
+    },
+    [currentState, closeVersionComparisonIfActive]
+  );
 
-  const navigateToView = useCallback((view: ViewType) => {
-    closeVersionComparisonIfActive();
-    setHistory((prev) => [...prev, currentState]);
-    setForwardHistory([]); // Clear forward history on new navigation
-    setCurrentState({
-      view,
-      objectId: null,
-      searchQuery: null,
-      timeMachineFilter: null,
-      savedViewId: null,
-      browseTypeId: null,
-    });
-  }, [currentState, closeVersionComparisonIfActive]);
+  const navigateToSearch = useCallback(
+    (query?: string) => {
+      closeVersionComparisonIfActive();
+      setHistory((prev) => [...prev, currentState]);
+      setForwardHistory([]); // Clear forward history on new navigation
+      setCurrentState({
+        view: 'search',
+        objectId: null,
+        searchQuery: query ?? null,
+        timeMachineFilter: null,
+        savedViewId: null,
+        browseTypeId: null,
+      });
+    },
+    [currentState, closeVersionComparisonIfActive]
+  );
 
-  const navigateToSearch = useCallback((query?: string) => {
-    closeVersionComparisonIfActive();
-    setHistory((prev) => [...prev, currentState]);
-    setForwardHistory([]); // Clear forward history on new navigation
-    setCurrentState({
-      view: 'search',
-      objectId: null,
-      searchQuery: query ?? null,
-      timeMachineFilter: null,
-      savedViewId: null,
-      browseTypeId: null,
-    });
-  }, [currentState, closeVersionComparisonIfActive]);
+  const navigateToTimeMachine = useCallback(
+    (objectId?: string) => {
+      closeVersionComparisonIfActive();
+      setHistory((prev) => [...prev, currentState]);
+      setForwardHistory([]); // Clear forward history on new navigation
+      setCurrentState({
+        view: 'time-machine',
+        objectId: null,
+        searchQuery: null,
+        timeMachineFilter: objectId ?? null,
+        savedViewId: null,
+        browseTypeId: null,
+      });
+    },
+    [currentState, closeVersionComparisonIfActive]
+  );
 
-  const navigateToTimeMachine = useCallback((objectId?: string) => {
-    closeVersionComparisonIfActive();
-    setHistory((prev) => [...prev, currentState]);
-    setForwardHistory([]); // Clear forward history on new navigation
-    setCurrentState({
-      view: 'time-machine',
-      objectId: null,
-      searchQuery: null,
-      timeMachineFilter: objectId ?? null,
-      savedViewId: null,
-      browseTypeId: null,
-    });
-  }, [currentState, closeVersionComparisonIfActive]);
+  const navigateToSavedView = useCallback(
+    (viewId: string) => {
+      closeVersionComparisonIfActive();
+      setHistory((prev) => [...prev, currentState]);
+      setForwardHistory([]); // Clear forward history on new navigation
+      setCurrentState({
+        view: 'saved-view',
+        objectId: null,
+        searchQuery: null,
+        timeMachineFilter: null,
+        savedViewId: viewId,
+        browseTypeId: null,
+      });
+    },
+    [currentState, closeVersionComparisonIfActive]
+  );
 
-  const navigateToSavedView = useCallback((viewId: string) => {
-    closeVersionComparisonIfActive();
-    setHistory((prev) => [...prev, currentState]);
-    setForwardHistory([]); // Clear forward history on new navigation
-    setCurrentState({
-      view: 'saved-view',
-      objectId: null,
-      searchQuery: null,
-      timeMachineFilter: null,
-      savedViewId: viewId,
-      browseTypeId: null,
-    });
-  }, [currentState, closeVersionComparisonIfActive]);
-
-  const navigateToTypeBrowse = useCallback((typeId: string) => {
-    closeVersionComparisonIfActive();
-    setHistory((prev) => [...prev, currentState]);
-    setForwardHistory([]); // Clear forward history on new navigation
-    setCurrentState({
-      view: 'type-browse',
-      objectId: null,
-      searchQuery: null,
-      timeMachineFilter: null,
-      savedViewId: null,
-      browseTypeId: typeId,
-    });
-  }, [currentState, closeVersionComparisonIfActive]);
+  const navigateToTypeBrowse = useCallback(
+    (typeId: string) => {
+      closeVersionComparisonIfActive();
+      setHistory((prev) => [...prev, currentState]);
+      setForwardHistory([]); // Clear forward history on new navigation
+      setCurrentState({
+        view: 'type-browse',
+        objectId: null,
+        searchQuery: null,
+        timeMachineFilter: null,
+        savedViewId: null,
+        browseTypeId: typeId,
+      });
+    },
+    [currentState, closeVersionComparisonIfActive]
+  );
 
   const navigateBack = useCallback(() => {
     if (history.length === 0) return;
