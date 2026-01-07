@@ -1,40 +1,42 @@
 ---
 name: ship
-description: Full PR workflow - push, create PR, wait for CI, squash merge
+description: Full PR workflow - push, create PR, squash merge (no CI wait)
 ---
 
 # Ship Skill
 
 Complete end-to-end workflow from feature branch to merged main.
 
+**Important:** CI does NOT run on PRs. You must run `/check` locally before using this skill.
+
 ## Steps
 
-1. Verify we're on a feature branch:
+1. Run `/check` to validate locally (REQUIRED):
+```bash
+pnpm lint && pnpm exec tsc --noEmit && pnpm test:run && cd src-tauri && cargo test
+```
+
+2. Verify we're on a feature branch:
 ```bash
 git branch --show-current
 ```
 
-2. Push the branch:
+3. Push the branch:
 ```bash
 git push -u origin HEAD
 ```
 
-3. Check if PR already exists:
+4. Check if PR already exists:
 ```bash
 gh pr view 2>/dev/null
 ```
 
-4. If no PR exists, create one:
+5. If no PR exists, create one:
 ```bash
 gh pr create --fill
 ```
 
-5. Wait for CI checks to complete:
-```bash
-gh pr checks --watch
-```
-
-6. Once CI passes, squash merge:
+6. Squash merge immediately (no CI wait):
 ```bash
 gh pr merge --squash --delete-branch
 ```
@@ -61,18 +63,18 @@ git pull origin main
 ## Example Output
 
 ```
+✓ Local checks passed
 ✓ Pushed to origin/feature/fix-typo
 ✓ Created PR #43
-✓ Waiting for CI checks...
-✓ CI passed
 ✓ Squash merged PR #43
 ✓ Switched to main
 
 Done! Commit abc1234 is now on main.
+CI will run on main after merge.
 ```
 
 ## Notes
 
 - This skill combines /pr and /squash into a single workflow
-- It will wait (potentially for several minutes) for CI to complete
-- If CI fails, it will stop and report the failure
+- CI runs AFTER merge to main, not on the PR
+- If you skip `/check` and CI fails after merge, fix immediately on main or revert

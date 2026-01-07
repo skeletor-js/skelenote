@@ -67,12 +67,16 @@
 | Key derivation | BIP39 + HKDF | Argon2 | = | Different but equally strong |
 | Local key storage | OS Keychain + Stronghold | Local encrypted | S>N | Skelenote uses secure enclave |
 | Mnemonic backup | 24-word Skeleton Key | Password-based | S>N | BIP39 mnemonic more recoverable |
-| Vault (extra encryption) | No | Yes | N>S | Notesnook has secondary vault |
+| Vault (extra encryption) | Planned (v0.5) | Yes | N>S | Notesnook has secondary vault |
+| Two-factor auth (2FA) | No | Yes | N>S | TOTP, SMS, email options |
 | Device revocation | Yes | No | S>N | Skelenote can revoke compromised devices |
 | Device fingerprint | Yes | No | S>N | Visual verification for P2P |
-| Security audit | Planned | Not completed | = | Neither fully audited |
+| App lock | Planned (v0.5) | Yes | N>S | Auto-lock on inactivity |
+| Privacy mode | No | Yes | N>S | Blur content on screen |
+| Security audit | Planned | Planned | = | Neither fully audited |
+| Vericrypt (verify encryption) | No | Yes | N>S | Tool to verify encryption claims |
 
-**Gap Analysis:** Skelenote should consider adding a "Vault" feature for extra-sensitive notes.
+**Gap Analysis:** Skelenote should add Secondary Vault (v0.5), 2FA, and App Lock to match Notesnook's security features.
 
 ---
 
@@ -112,21 +116,25 @@
 
 | Feature | Skelenote | Notesnook | Parity | Notes |
 |---------|:---------:|:---------:|:------:|-------|
-| Rich text editor | BlockNote | Custom | = | Both have modern block editors |
+| Rich text editor | BlockNote | TipTap (Prosemirror) | = | Both have modern block editors |
 | Markdown support | Via BlockNote | Full | N>S | Notesnook has deeper markdown |
+| Markdown pasting | No | Yes | N>S | Paste markdown → rich text |
 | Tables | Yes | Yes | = | |
 | Code blocks | Yes | Yes (syntax highlighting) | = | |
-| Math formulas (LaTeX) | No | Yes | N>S | **Gap: Notesnook has KaTeX** |
+| Math formulas (LaTeX) | Planned (v1.0) | Yes | N>S | **Gap: Notesnook has KaTeX** |
 | Chemistry formulas | No | Yes | N>S | |
+| Callouts/Alerts | No | Yes | N>S | Alert blocks for notes |
+| Table of Contents | No | Yes | N>S | Auto-generated from headings |
 | Checklists | Yes | Yes | = | |
 | @mentions | Yes | Yes | = | |
 | Internal links | Yes | Yes (bidirectional) | = | Both support internal links |
-| Embeds (video/audio) | No | Yes | N>S | |
+| Embeds (video/audio) | Planned (v1.0) | Yes | N>S | |
 | Images | Via BlockNote | Yes | = | |
-| File attachments | Limited | Yes (encrypted) | N>S | |
-| Editor statistics | No | Yes (v3.3) | N>S | Word count, reading time |
+| File attachments | Planned (v1.0) | Yes (encrypted) | N>S | |
+| Editor statistics | Planned (v0.2) | Yes (v3.3) | N>S | Word count, reading time |
+| Outline lists | Yes | Yes | = | |
 
-**Gap Analysis:** Skelenote needs LaTeX/KaTeX support and better attachment handling.
+**Gap Analysis:** Skelenote needs LaTeX/KaTeX support, callouts, table of contents, and markdown pasting.
 
 ---
 
@@ -264,12 +272,37 @@
 |---------|:---------:|:---------:|:------:|-------|
 | Dark mode | Yes | Yes | = | |
 | Light mode | Yes | Yes | = | |
-| Custom themes | Limited | Yes (custom CSS) | N>S | |
+| Custom themes | Limited | Yes (Theme Builder) | N>S | Notesnook has theme marketplace |
 | Font customization | Yes | Yes | = | |
-| Keyboard shortcuts | 20+ | In progress | S>N | |
+| Keyboard shortcuts | 20+ | Yes (v3.1+) | = | |
 | Command palette | Yes (Omnibar) | Yes (v3.0.27) | = | |
 | Zen/focus mode | Yes | Yes | = | |
 | Quick capture | Yes (in-app) | Yes | = | |
+| Tabs | Split view | Yes | = | Different approaches |
+| Multi-window support | No | Planned | N>S | |
+| Customizable sidebar | Yes | Yes | = | |
+
+---
+
+### Desktop Integration
+
+| Feature | Skelenote | Notesnook | Parity | Notes |
+|---------|:---------:|:---------:|:------:|-------|
+| System tray menu | No | Yes | N>S | Quick access without full app |
+| Auto-start on startup | No | Yes | N>S | Launch on system boot |
+| Jumplist/dock menu | No | Yes | N>S | Recent notes in OS dock |
+| Spell checker | Yes | Yes | = | Native browser spellcheck |
+
+---
+
+### Mobile Integration
+
+| Feature | Skelenote | Notesnook | Parity | Notes |
+|---------|:---------:|:---------:|:------:|-------|
+| Home screen widgets | Planned (v0.3) | Yes | N>S | Quick access widgets |
+| Pin notes to notifications | Planned (v0.3) | Yes | N>S | Persistent note access |
+| Quick notes from notification | Planned (v0.3) | Yes | N>S | Create notes from drawer |
+| Share sheet integration | Planned (v0.3) | Yes | N>S | Receive from other apps |
 
 ---
 
@@ -304,16 +337,20 @@ Based on [Notesnook's public roadmap](https://notesnook.com/roadmap/):
 | Feature | Notes |
 |---------|-------|
 | ProductHunt launch | Marketing milestone |
-| Vericrypt | Encryption verification tool |
+| Multi-window support | Already have split view |
+| Encrypted workspaces | Similar concept to our Areas |
+| Third-party security audit | Both planning this |
 
 ### Recently Completed
 | Feature | Version | Relevance |
 |---------|---------|-----------|
-| Search filters | v3.3 | Skelenote should match |
-| Editor stats | v3.3 | Nice-to-have |
+| Markdown pasting | v3.0.27 | Skelenote should add |
 | Command palette | v3.0.27 | Skelenote has Omnibar |
 | Unified sidebar | v3.1.0 | Similar to Skelenote |
-| Yearly reminders | v3.0.0 | Skelenote needs reminders |
+| Tabs system | v3.0.0 | Skelenote has split view |
+| Table of Contents | v3.0.0 | Skelenote should add |
+| Callouts | v3.0.0 | Skelenote should add |
+| App lock at rest | v3.0.0 | Skelenote planning (v0.5) |
 
 ---
 
@@ -323,46 +360,63 @@ Based on [Notesnook's public roadmap](https://notesnook.com/roadmap/):
 
 These features would bring Skelenote to parity with Notesnook's strongest offerings:
 
-| Feature | Effort | Impact | Recommendation |
-|---------|--------|--------|----------------|
-| **Mobile apps** | High | Critical | Top priority - blocks adoption |
-| **Reminders** | Medium | High | Essential for task management |
-| **PDF export** | Low | Medium | Quick win |
-| **HTML export** | Low | Medium | Quick win |
+| Feature | Effort | Impact | Target |
+|---------|--------|--------|--------|
+| **Mobile apps** | High | Critical | v0.3 |
+| **Reminders** | Medium | High | v0.3 |
+| **PDF/HTML export** | Low | Medium | v0.2 |
+| **Import wizards** | Medium | High | v0.2 |
 
-### Priority 2: Match Important Features
+### Priority 2: Security Parity
 
-| Feature | Effort | Impact | Recommendation |
-|---------|--------|--------|----------------|
-| LaTeX/KaTeX support | Medium | Medium | Important for academic users |
-| File attachments | Medium | Medium | Encrypted attachments |
-| Custom colors | Low | Low | More than 6 preset colors |
-| Import wizards | Medium | High | Notion/Obsidian importers |
+| Feature | Effort | Impact | Target |
+|---------|--------|--------|--------|
+| App lock (auto-lock) | Medium | High | v0.5 |
+| Secondary vault | Medium | High | v0.5 |
+| Two-factor auth (2FA) | Medium | Medium | v0.5 |
+| Privacy mode (blur) | Low | Low | v0.5 |
 
-### Priority 3: Supersede Notesnook
+### Priority 3: Editor Enhancements
+
+| Feature | Effort | Impact | Target |
+|---------|--------|--------|--------|
+| LaTeX/KaTeX support | Medium | Medium | v1.0 |
+| Callouts/Alert blocks | Low | Medium | v0.2 |
+| Table of Contents | Low | Medium | v0.2 |
+| Markdown pasting | Low | Low | v0.2 |
+| Editor statistics | Low | Low | v0.2 |
+
+### Priority 4: Desktop Polish
+
+| Feature | Effort | Impact | Target |
+|---------|--------|--------|--------|
+| System tray menu | Low | Low | v0.2 |
+| Auto-start on startup | Low | Low | v0.2 |
+| Jumplist/dock menu | Low | Low | Future |
+
+### Priority 5: Supersede Notesnook
 
 These features would make Skelenote definitively better:
 
 | Feature | Effort | Impact | Notes |
 |---------|--------|--------|-------|
-| **Graph view** | Medium | High | Already planned, execute well |
-| **Local AI copilot** | High | High | Already planned - major differentiator |
-| **Whisper transcription** | Medium | High | Already planned |
-| **Canvas view** | High | Medium | Spatial thinking |
-| **Secure sharing (like Monographs)** | Medium | Medium | E2E encrypted sharing |
+| **Graph view** | Medium | High | Already planned (v0.3) |
+| **Local AI copilot** | High | High | Already planned (v0.4) - major differentiator |
+| **Whisper transcription** | Medium | High | Already planned (v0.4) |
+| **Canvas view** | High | Medium | Spatial thinking (v1.0) |
 
-### Priority 4: Maintain Advantages
+### Priority 6: Maintain Advantages
 
-Features where Skelenote is already ahead - don't regress:
+Features where Skelenote is already ahead—don't regress:
 
-- CRDT-based sync (major technical moat)
-- P2P sync (Campfire)
-- Native task management
-- PARA structure
-- Daily notes with templates
-- Semantic search
-- Time Machine
-- One-time pricing
+- **CRDT-based sync** — Major technical moat
+- **P2P sync (Campfire)** — No server required
+- **Native task management** — First-class, not checklists
+- **PARA structure** — Built-in methodology
+- **Daily notes with templates** — Deterministic IDs, auto-creation
+- **Semantic search** — Local ML, no cloud
+- **Time Machine** — Granular CRDT history
+- **One-time pricing** — No subscriptions
 
 ---
 
