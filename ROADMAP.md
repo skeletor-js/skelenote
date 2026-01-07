@@ -2,6 +2,8 @@
 
 > **Living document** — Tracks planned releases, features, and strategic priorities.
 
+> **Live Tracking:** [GitHub Project Board](https://github.com/users/skeletor-js/projects/1) | [All Issues](https://github.com/skeletor-js/skelenote/issues?q=label%3Aroadmap)
+
 ---
 
 ## Release Overview

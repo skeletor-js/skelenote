@@ -33,6 +33,36 @@ git checkout -b feature/descriptive-name
 - `refactor/` - Code improvements
 - `docs/` - Documentation updates
 
+## GitHub Projects & Issue Tracking
+
+Skelenote uses GitHub Projects to track development progress. The roadmap in `ROADMAP.md` is mirrored in GitHub for real-time tracking.
+
+### Project Structure
+- **Project:** "Skelenote Roadmap" ([View Board](https://github.com/users/skeletor-js/projects/1))
+- **Milestones:** One per release (v0.2, v0.3, etc.)
+- **Labels:** `roadmap`, `phase-1`/`phase-2`/etc., `competitive-gap`, `package`
+
+### Custom Fields
+| Field | Values |
+|-------|--------|
+| Status | Backlog, Todo, In Progress, Done |
+| Priority | Critical, High, Medium, Low |
+| Category | Core, Export, Import, Editor, Mobile, Security, AI, Packages |
+| Effort | XS, S, M, L, XL |
+
+### Working with Issues
+
+When starting work on a roadmap item:
+1. Find the issue in the project board or via `gh issue list --milestone "v0.2 - Exodus"`
+2. Move it to "In Progress" on the board
+3. Create a branch referencing the issue: `git checkout -b feature/123-pdf-export`
+4. Link PR to issue in description: `Closes #123`
+
+### Skills Available
+- `/project` - View project board, list items, move between columns
+- `/issue` - Create/view/close issues
+- `/roadmap-sync` - Check roadmap<->issue alignment
+
 ## CI/CD Pipeline
 
 Skelenote uses GitHub Actions for continuous integration and cross-platform builds. See `docs/developer/ci-cd.md` for complete details.

@@ -9,7 +9,11 @@
 
 ## Related Issues
 
-<!-- Link to related issues: Fixes #123, Closes #456 -->
+<!-- Link to the GitHub issue this PR addresses -->
+<!-- Use "Closes #123" to auto-close when merged -->
+Closes #
+
+<!-- The issue should be on the Skelenote Roadmap project board -->
 
 ## Type of Change
 
