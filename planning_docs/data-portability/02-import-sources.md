@@ -46,7 +46,8 @@ All import sources (except JSON) require converting Markdown to BlockNote format
 ### Features
 
 - Parse YAML frontmatter for properties
-- Convert `[[wiki-links]]` to Skelenote mentions
+- Convert `[[wiki-links]]` to Skelenote mentions (if target object exists in import)
+- Unresolved `[[wiki-links]]` → plaintext showing the original link name
 - Preserve folder structure as Projects/Areas (optional)
 - Handle `#tags` in content
 
@@ -170,12 +171,25 @@ Settings > Data > "Import Data"
 
 ---
 
-## Open Questions
+## Design Decisions
 
-- [ ] **Conflict resolution**: How to detect duplicates? Title + date hash?
-- [ ] **Type inference**: How aggressively guess types from content/properties?
-- [ ] **Wiki-links**: Create placeholder objects for unresolved links?
-- [ ] **Rollback**: Should imports be reversible (undo all imported objects)?
+> [!IMPORTANT]
+> These decisions were made to keep the importer simple and leverage existing Skelenote workflows.
+
+### No Auto-Duplicate Detection
+All imported objects are created as new. This mirrors how Notion handles imports—they add new rows and let users clean up. **Why:** Everyone's data structure is different, and automated deduplication would inevitably make wrong guesses.
+
+### User Confirms Type Mapping
+The preview step shows detected types with the ability to override. No aggressive inference—we default to Note unless there are explicit signals (e.g., status property → Task). **Why:** Let users make the final call on their own structure.
+
+### Unresolved Wiki-Links → Plaintext
+When an Obsidian `[[Some Document]]` references something not in the import, convert to plaintext showing the original link name. **Why:** Preserves information without creating orphan placeholder objects.
+
+### Rollback via Time Machine
+Imports are a normal CRDT operation. Rather than building separate undo logic, we mark imports in the Time Machine view so users can easily find and revert an import if needed. **Why:** Leverages existing infrastructure, simpler implementation.
+
+### Import to Inbox
+All imported objects arrive with `inboxed: true`. This lets users triage and organize using the familiar Inbox workflow. **Why:** Natural integration with existing UX.
 
 ---
 
@@ -189,4 +203,5 @@ Settings > Data > "Import Data"
 | JSON import (backup restore) | 1 day |
 | Apple Notes import | 3-4 days |
 | Import UI (modal, progress) | 2 days |
-| **Total** | **13-17 days** |
+| Time Machine import markers | 0.5 day |
+| **Total** | **14-18 days** |

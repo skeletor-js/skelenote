@@ -48,7 +48,6 @@
 * **The Exodus Wizards:** Import tools for:
     * **Notion:** Databases → Object Types.
     * **Obsidian:** Frontmatter → Properties.
-    * **Roam:** Outlines → Block Structures.
 * **Graph View:** Visual node-link diagram of vault connections.
 
 ---
