@@ -296,7 +296,7 @@ export const ProjectType: TypeDefinition = {
       id: 'area',
       name: 'Area',
       type: 'relation',
-      required: true,
+      required: false,
       multiple: false,
       config: {
         targetTypeIds: [BuiltInTypeIds.AREA],

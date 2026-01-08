@@ -132,7 +132,7 @@ export function SemanticEnableModal({
               <Button variant="subtle" color="gray" onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button color="ember" onClick={handleConfirm}>
+              <Button variant="filled" color="ember" onClick={handleConfirm}>
                 Retry
               </Button>
             </Group>
@@ -193,7 +193,7 @@ export function SemanticEnableModal({
               <Button variant="subtle" color="gray" onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button color="ember" onClick={handleConfirm}>
+              <Button variant="filled" color="ember" onClick={handleConfirm}>
                 Download & Enable
               </Button>
             </Group>

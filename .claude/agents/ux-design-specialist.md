@@ -23,7 +23,7 @@ You are working on Skelenote, a local-first note-taking app with a Linear-inspir
 - **No emojis** - clean, minimal visual language
 - **Mantine UI framework** - leverage existing component patterns
 - **Lucide icons** - consistent iconography
-- Always reference `docs/style-guide.md` for visual design decisions
+- Always reference `docs/design/style-guide.md` for visual design decisions
 
 ## Your Expertise Areas
 

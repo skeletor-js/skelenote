@@ -367,14 +367,6 @@ export const theme = createTheme({
         variant: 'subtle',
         color: 'gray',
       },
-      styles: {
-        root: {
-          // Warm hover for action icons
-          '&:hover': {
-            backgroundColor: 'var(--hover-warm)',
-          },
-        },
-      },
     },
     Paper: {
       defaultProps: {
@@ -430,10 +422,6 @@ export const theme = createTheme({
         item: {
           fontSize: rem(13),
           padding: `${rem(6)} ${rem(10)}`,
-          // Warm hover for menu items
-          '&:hover, &[data-hovered]': {
-            backgroundColor: 'var(--hover-warm)',
-          },
         },
       },
     },
@@ -441,15 +429,6 @@ export const theme = createTheme({
       styles: {
         root: {
           borderRadius: rem(4),
-          // Single consistent hover effect everywhere
-          '&:hover': {
-            backgroundColor: 'var(--selection-glow)',
-          },
-          // Active state styling (no special hover - uses same as above)
-          '&[data-active="true"]': {
-            backgroundColor: 'var(--selection-glow)',
-            color: 'var(--mantine-color-ember-6)',
-          },
         },
         label: {
           fontSize: rem(13),
@@ -476,9 +455,6 @@ export const theme = createTheme({
       styles: {
         input: {
           borderWidth: '1.5px',
-          '&:not(:checked)': {
-            borderColor: 'var(--mantine-color-gray-3)',
-          },
         },
       },
     },

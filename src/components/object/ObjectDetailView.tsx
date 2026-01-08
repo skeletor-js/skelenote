@@ -3,16 +3,17 @@
  * Redesigned with high-density layout and Linear-inspired styling
  */
 
-import { useCallback, useMemo, useEffect } from 'react';
+import { useCallback, useMemo, useEffect, useState } from 'react';
 import { Stack, Box, Text, Button, Loader, Center } from '@mantine/core';
 import { ObjectHeader } from './ObjectHeader';
 import { PropertyBar } from './PropertyBar';
 import { Backlinks } from './Backlinks';
 import { RelatedObjectsSection } from './RelatedObjectsSection';
 import { Editor } from '@/components/editor';
-import { ConfirmDialog, Icon } from '@/components/ui';
+import { ConfirmDialog, Icon, ContextMenu } from '@/components/ui';
+import { ExportOptionsModal, type ExportOptions } from '@/components/export';
 import { removeMentionsFromContent } from '@/lib/editor';
-import { exportObjectToMarkdown } from '@/lib/export';
+import { exportObjectToMarkdown, exportObjectToPDF } from '@/lib/export';
 import type { PropertyValue } from '@/lib/types';
 import {
   useObjects,
@@ -22,7 +23,7 @@ import {
   useKeyboardShortcuts,
   useSemanticSearchSafe,
 } from '@/contexts';
-import { useConfirmDialog, useDuplicate } from '@/hooks';
+import { useConfirmDialog, useDuplicate, useContextMenu } from '@/hooks';
 import styles from './ObjectDetailView.module.css';
 
 interface ObjectDetailViewProps {
@@ -52,6 +53,17 @@ export function ObjectDetailView({
   const { duplicate, canDuplicate } = useDuplicate();
   const semanticContext = useSemanticSearchSafe();
 
+  // Export modal state
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+
+  // Context menu state
+  const {
+    isOpen: contextMenuOpen,
+    position: contextMenuPosition,
+    openContextMenu,
+    closeContextMenu,
+  } = useContextMenu();
+
   // Check if we're in version comparison mode
   const isVersionComparison = splitPane.mode === 'version-comparison';
 
@@ -66,50 +78,80 @@ export function ObjectDetailView({
     navigateToTimeMachine(objectId);
   }, [navigateToTimeMachine, objectId]);
 
-  // Handler to export object to Markdown
-  const handleExport = useCallback(async () => {
-    if (!store) return;
+  // Handler to open export modal
+  const handleExport = useCallback(() => {
+    setExportModalOpen(true);
+  }, []);
 
-    const object = store.get(objectId);
-    if (!object) return;
+  // Handler for export with options from modal
+  const handleExportWithOptions = useCallback(
+    async (options: ExportOptions) => {
+      if (!store) return;
 
-    const objTypeDef = typeRegistry.get(object.typeId);
-    if (!objTypeDef) return;
+      const object = store.get(objectId);
+      if (!object) return;
 
-    const content = store.getContent(objectId);
+      const objTypeDef = typeRegistry.get(object.typeId);
+      if (!objTypeDef) return;
 
-    // Create resolver function for object names
-    const resolveObjectName = (id: string): string | undefined => {
-      const obj = store.get(id);
-      if (!obj) return undefined;
-      const name = obj.properties.title ?? obj.properties.name;
-      return name ? String(name) : undefined;
-    };
+      const content = store.getContent(objectId);
 
-    try {
-      const filePath = await exportObjectToMarkdown(
-        object,
-        objTypeDef,
-        content,
-        resolveObjectName
-      );
+      // Create resolver function for object names
+      const resolveObjectName = (id: string): string | undefined => {
+        const obj = store.get(id);
+        if (!obj) return undefined;
+        const name = obj.properties.title ?? obj.properties.name;
+        return name ? String(name) : undefined;
+      };
 
-      if (filePath) {
-        // Extract filename from path
-        const filename = filePath.split('/').pop() || filePath;
+      try {
+        let filePath: string | null = null;
+
+        if (options.format === 'pdf') {
+          filePath = await exportObjectToPDF(
+            object,
+            objTypeDef,
+            content,
+            resolveObjectName,
+            {
+              theme: options.pdfTheme,
+              includeTitle: options.includeTitle,
+              includeFrontmatter: options.includeFrontmatter,
+              pageSize: 'A4',
+            }
+          );
+        } else {
+          // Default to markdown
+          filePath = await exportObjectToMarkdown(
+            object,
+            objTypeDef,
+            content,
+            resolveObjectName,
+            {
+              includeFrontmatter: options.includeFrontmatter,
+              includeTitle: options.includeTitle,
+            }
+          );
+        }
+
+        if (filePath) {
+          // Extract filename from path
+          const filename = filePath.split('/').pop() || filePath;
+          addToast({
+            type: 'success',
+            message: `Exported to ${filename}`,
+          });
+        }
+      } catch (error) {
+        console.error('Export failed:', error);
         addToast({
-          type: 'success',
-          message: `Exported to ${filename}`,
+          type: 'error',
+          message: 'Failed to export. Please try again.',
         });
       }
-    } catch (error) {
-      console.error('Export failed:', error);
-      addToast({
-        type: 'error',
-        message: 'Failed to export. Please try again.',
-      });
-    }
-  }, [store, objectId, typeRegistry, addToast]);
+    },
+    [store, objectId, typeRegistry, addToast]
+  );
 
   // Handler to duplicate object
   const handleDuplicate = useCallback(() => {
@@ -298,6 +340,51 @@ export function ObjectDetailView({
     [store, objectId, scheduleSave, semanticContext]
   );
 
+  // Context menu items for right-click
+  const contextMenuItems = useMemo(() => {
+    const object = store?.get(objectId);
+    const isDailyNoteObj = object?.properties.isDailyNote === true;
+
+    return [
+      {
+        id: 'export',
+        label: 'Export...',
+        icon: 'download',
+        onClick: handleExport,
+      },
+      {
+        id: 'duplicate',
+        label: 'Duplicate',
+        icon: 'copy',
+        disabled: !canDuplicate(objectId),
+        onClick: handleDuplicate,
+      },
+      {
+        id: 'archive',
+        label: 'Archive',
+        icon: 'archive',
+        disabled: isDailyNoteObj,
+        onClick: handleArchive,
+      },
+      {
+        id: 'delete',
+        label: 'Delete',
+        icon: 'trash-2',
+        variant: 'danger' as const,
+        disabled: isDailyNoteObj,
+        onClick: handleDelete,
+      },
+    ];
+  }, [
+    store,
+    objectId,
+    canDuplicate,
+    handleExport,
+    handleDuplicate,
+    handleArchive,
+    handleDelete,
+  ]);
+
   // Flush semantic index changes when leaving editor
   useEffect(() => {
     return () => {
@@ -414,7 +501,7 @@ export function ObjectDetailView({
       />
 
       {/* Scrollable content area */}
-      <Box className={styles.content}>
+      <Box className={styles.content} onContextMenu={openContextMenu}>
         <Stack gap="sm">
           {/* Properties as inline chips with prominent status/priority badges */}
           <PropertyBar
@@ -461,6 +548,21 @@ export function ObjectDetailView({
         variant={dialogState.variant}
         onConfirm={handleConfirm}
         onCancel={handleCancel}
+      />
+
+      {/* Export Options Modal */}
+      <ExportOptionsModal
+        opened={exportModalOpen}
+        onClose={() => setExportModalOpen(false)}
+        onExport={handleExportWithOptions}
+      />
+
+      {/* Right-click context menu */}
+      <ContextMenu
+        items={contextMenuItems}
+        position={contextMenuPosition}
+        isOpen={contextMenuOpen}
+        onClose={closeContextMenu}
       />
     </Box>
   );

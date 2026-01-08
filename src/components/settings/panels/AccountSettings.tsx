@@ -14,6 +14,7 @@ import {
   CopyButton,
   ActionIcon,
   ThemeIcon,
+  Divider,
 } from '@mantine/core';
 import { Icon } from '@/components/ui';
 import { useSkeletonKeySafe } from '@/contexts';
@@ -28,13 +29,15 @@ export function AccountSettings() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">
+        <Text size="xl" fw={600} mb="xs">
           Account
         </Text>
         <Text size="sm" c="dimmed">
           Your identity and encryption settings.
         </Text>
       </Box>
+
+      <Divider />
 
       {/* Encryption Status */}
       <Box>

@@ -88,13 +88,15 @@ export function SyncSettingsPanel() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">
+        <Text size="xl" fw={600} mb="xs">
           Sync
         </Text>
         <Text size="sm" c="dimmed">
           Configure how your data syncs across devices.
         </Text>
       </Box>
+
+      <Divider />
 
       {/* Device Manager */}
       <DeviceManager />
