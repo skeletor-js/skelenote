@@ -365,7 +365,10 @@ function convertImage(
 /**
  * Convert a single block to HTML
  */
-function convertBlock(block: BlockNoteBlock, context: ConversionContext): string {
+function convertBlock(
+  block: BlockNoteBlock,
+  context: ConversionContext
+): string {
   switch (block.type) {
     case 'paragraph':
       return convertParagraph(block, context);
@@ -658,7 +661,10 @@ async function processImagesInHTML(
       const base64 = await imageUrlToBase64(url);
       if (base64) {
         result = result.replace(
-          new RegExp(escapeHtml(url).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+          new RegExp(
+            escapeHtml(url).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+            'g'
+          ),
           base64
         );
       }
@@ -798,7 +804,9 @@ export async function exportAllToHTMLZip(
     );
   }
 
-  filteredObjects = filteredObjects.filter((obj) => typeRegistry.get(obj.typeId));
+  filteredObjects = filteredObjects.filter((obj) =>
+    typeRegistry.get(obj.typeId)
+  );
 
   if (filteredObjects.length === 0) {
     throw new Error('No objects to export');
@@ -816,7 +824,12 @@ export async function exportAllToHTMLZip(
     if (!typeDef) continue;
 
     const title = getObjectTitle(obj);
-    onProgress?.({ current: i, total, currentObject: title, phase: 'exporting' });
+    onProgress?.({
+      current: i,
+      total,
+      currentObject: title,
+      phase: 'exporting',
+    });
 
     const content = getContent(obj.id);
     const html = await generateHTMLContent(obj, content, resolveObjectName, {

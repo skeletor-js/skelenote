@@ -9,11 +9,7 @@
 
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeTextFile } from '@tauri-apps/plugin-fs';
-import type {
-  SkelenoteObject,
-  TypeDefinition,
-  TypeRegistry,
-} from '../types';
+import type { SkelenoteObject, TypeDefinition, TypeRegistry } from '../types';
 
 /**
  * Progress callback for bulk export

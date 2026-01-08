@@ -322,7 +322,9 @@ export function ExportOptionsModal({
                 label="Archived Objects"
                 description="Include objects that have been archived"
                 checked={jsonIncludeArchived}
-                onChange={(e) => setJsonIncludeArchived(e.currentTarget.checked)}
+                onChange={(e) =>
+                  setJsonIncludeArchived(e.currentTarget.checked)
+                }
               />
             </>
           )}

@@ -531,7 +531,9 @@ export async function exportAllToPlainTextZip(
     );
   }
 
-  filteredObjects = filteredObjects.filter((obj) => typeRegistry.get(obj.typeId));
+  filteredObjects = filteredObjects.filter((obj) =>
+    typeRegistry.get(obj.typeId)
+  );
 
   if (filteredObjects.length === 0) {
     throw new Error('No objects to export');
@@ -549,7 +551,12 @@ export async function exportAllToPlainTextZip(
     if (!typeDef) continue;
 
     const title = getObjectTitle(obj);
-    onProgress?.({ current: i, total, currentObject: title, phase: 'exporting' });
+    onProgress?.({
+      current: i,
+      total,
+      currentObject: title,
+      phase: 'exporting',
+    });
 
     const content = getContent(obj.id);
     const text = generatePlainTextContent(obj, content, resolveObjectName, {
