@@ -37,7 +37,9 @@ import {
  * @param markdown - Markdown string to convert
  * @returns BlockNote blocks and wiki-links found
  */
-export function parseMarkdownToBlocks(markdown: string): MarkdownToBlockNoteResult {
+export function parseMarkdownToBlocks(
+  markdown: string
+): MarkdownToBlockNoteResult {
   const blocks: BlockNoteBlock[] = [];
   const wikiLinks: WikiLink[] = [];
   const errors: string[] = [];
@@ -110,7 +112,11 @@ export function parseMarkdownToBlocks(markdown: string): MarkdownToBlockNoteResu
     }
 
     // Table
-    if (line.includes('|') && i + 1 < lines.length && lines[i + 1].includes('---')) {
+    if (
+      line.includes('|') &&
+      i + 1 < lines.length &&
+      lines[i + 1].includes('---')
+    ) {
       const { block, endIndex } = parseTable(lines, i);
       if (block) {
         blocks.push(block);
@@ -234,7 +240,8 @@ function parseList(
   }
 
   const content = match[2];
-  const blockType = listType === 'bullet' ? 'bulletListItem' : 'numberedListItem';
+  const blockType =
+    listType === 'bullet' ? 'bulletListItem' : 'numberedListItem';
 
   return {
     block: {
@@ -489,7 +496,11 @@ export function importMarkdown(
   const errors: string[] = [];
 
   // Parse frontmatter
-  const { properties: frontmatter, content, hasFrontmatter } = parseFrontmatter(markdown);
+  const {
+    properties: frontmatter,
+    content,
+    hasFrontmatter,
+  } = parseFrontmatter(markdown);
 
   // Determine type
   const typeFromFrontmatter = mapTypeToSkelenote(frontmatter.type as string);
@@ -525,13 +536,11 @@ export function importMarkdown(
 
   // Convert wiki-links to mentions if resolver provided
   if (opts.resolveWikiLink && wikiLinks.length > 0) {
-    const { blocks: processedBlocks, unresolvedLinks } = convertWikiLinksToMentions(
-      blocks,
-      (target) => {
+    const { blocks: processedBlocks, unresolvedLinks } =
+      convertWikiLinksToMentions(blocks, (target) => {
         const id = opts.resolveWikiLink!(target);
         return id ? { id } : null;
-      }
-    );
+      });
     blocks = processedBlocks;
 
     if (unresolvedLinks.length > 0) {
@@ -546,7 +555,9 @@ export function importMarkdown(
     blocks.length > 0 &&
     blocks[0].type === 'heading'
   ) {
-    const headingContent = blocks[0].content as BlockNoteInlineContent[] | undefined;
+    const headingContent = blocks[0].content as
+      | BlockNoteInlineContent[]
+      | undefined;
     if (
       Array.isArray(headingContent) &&
       headingContent.length > 0 &&

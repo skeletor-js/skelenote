@@ -126,7 +126,9 @@ describe('hasWikiLinks', () => {
 
 describe('extractFolderMapping', () => {
   it('maps immediate folder to project', () => {
-    const result = extractFolderMapping('/Users/me/Documents/Work/MyProject/notes.md');
+    const result = extractFolderMapping(
+      '/Users/me/Documents/Work/MyProject/notes.md'
+    );
 
     expect(result.projectName).toBe('MyProject');
   });
@@ -139,7 +141,9 @@ describe('extractFolderMapping', () => {
   });
 
   it('extracts intermediate folders as tags', () => {
-    const result = extractFolderMapping('/vault/Archive/2023/Q4/Project/file.md');
+    const result = extractFolderMapping(
+      '/vault/Archive/2023/Q4/Project/file.md'
+    );
 
     expect(result.projectName).toBe('Project');
     expect(result.areaName).toBe('Q4');
@@ -147,14 +151,18 @@ describe('extractFolderMapping', () => {
   });
 
   it('ignores common root folders', () => {
-    const result = extractFolderMapping('/vault/notes/documents/Project/file.md');
+    const result = extractFolderMapping(
+      '/vault/notes/documents/Project/file.md'
+    );
 
     expect(result.projectName).toBe('Project');
     expect(result.areaName).toBeUndefined();
   });
 
   it('handles Windows paths', () => {
-    const result = extractFolderMapping('C:\\Users\\me\\Work\\Project\\file.md');
+    const result = extractFolderMapping(
+      'C:\\Users\\me\\Work\\Project\\file.md'
+    );
 
     expect(result.projectName).toBe('Project');
     expect(result.areaName).toBe('Work');
@@ -243,7 +251,10 @@ describe('parseMarkdownToBlocks', () => {
     const { blocks } = parseMarkdownToBlocks(markdown);
 
     expect(blocks).toHaveLength(1);
-    const content = blocks[0].content as Array<{ type: string; styles?: Record<string, boolean> }>;
+    const content = blocks[0].content as Array<{
+      type: string;
+      styles?: Record<string, boolean>;
+    }>;
 
     expect(content.some((c) => c.styles?.bold)).toBe(true);
     expect(content.some((c) => c.styles?.italic)).toBe(true);
@@ -254,7 +265,10 @@ describe('parseMarkdownToBlocks', () => {
     const markdown = '[Click here](https://example.com)';
     const { blocks } = parseMarkdownToBlocks(markdown);
 
-    const content = blocks[0].content as Array<{ type: string; props?: Record<string, unknown> }>;
+    const content = blocks[0].content as Array<{
+      type: string;
+      props?: Record<string, unknown>;
+    }>;
     const link = content.find((c) => c.type === 'link');
 
     expect(link).toBeDefined();
@@ -269,7 +283,10 @@ describe('parseMarkdownToBlocks', () => {
     expect(wikiLinks[0].target).toBe('My Note');
 
     // The wiki-link should be converted to a placeholder link
-    const content = blocks[0].content as Array<{ type: string; props?: Record<string, unknown> }>;
+    const content = blocks[0].content as Array<{
+      type: string;
+      props?: Record<string, unknown>;
+    }>;
     const link = content.find((c) => c.type === 'link');
 
     expect(link?.props?.href).toContain('skelenote:mention:');

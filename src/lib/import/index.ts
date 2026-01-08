@@ -12,7 +12,11 @@
  */
 
 // Main converter
-export { importMarkdown, importMarkdownFiles, parseMarkdownToBlocks } from './markdown';
+export {
+  importMarkdown,
+  importMarkdownFiles,
+  parseMarkdownToBlocks,
+} from './markdown';
 
 // Frontmatter utilities
 export {
