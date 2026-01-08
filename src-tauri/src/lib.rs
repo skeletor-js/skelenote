@@ -945,6 +945,40 @@ async fn device_get_blocked(
     Ok(network_state.blocklist.get_blocked().await)
 }
 
+// ============================================================================
+// Attachment Storage Commands
+// ============================================================================
+
+/// Save an attachment file to local storage
+///
+/// Saves the file to the app's attachments directory with a UUID prefix.
+/// Returns a file:// URL that can be used in BlockNote blocks.
+#[tauri::command]
+async fn save_attachment(
+    app: AppHandle,
+    bytes: Vec<u8>,
+    filename: String,
+) -> Result<String, String> {
+    let app_data = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data dir: {}", e))?;
+
+    let attachments_dir = app_data.join("attachments");
+    std::fs::create_dir_all(&attachments_dir)
+        .map_err(|e| format!("Failed to create attachments dir: {}", e))?;
+
+    // Generate unique filename: {uuid}_{original_filename}
+    let unique_filename = format!("{}_{}", uuid::Uuid::new_v4(), filename);
+    let file_path = attachments_dir.join(&unique_filename);
+
+    std::fs::write(&file_path, bytes)
+        .map_err(|e| format!("Failed to write attachment: {}", e))?;
+
+    // Return file:// URL
+    Ok(format!("file://{}", file_path.display()))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -1021,6 +1055,8 @@ pub fn run() {
             device_block,
             device_is_blocked,
             device_get_blocked,
+            // Attachment Storage commands
+            save_attachment,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

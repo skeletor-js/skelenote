@@ -16,6 +16,7 @@ import {
   Box,
   Alert,
   SegmentedControl,
+  Divider,
 } from '@mantine/core';
 import { useSemanticSearchSafe, useObjects } from '@/contexts';
 import { SemanticEnableModal } from '../SemanticEnableModal';
@@ -147,13 +148,15 @@ export function SearchSettings() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">
+        <Text size="xl" fw={600} mb="xs">
           Search
         </Text>
         <Text size="sm" c="dimmed">
           Configure semantic search for finding conceptually similar content.
         </Text>
       </Box>
+
+      <Divider />
 
       {!isEnabled ? (
         <Stack gap="md">
@@ -204,7 +207,7 @@ export function SearchSettings() {
             </Text>
             <Group gap="lg">
               <Box ta="center">
-                <Text size="xl" fw={700}>
+                <Text size="xl" fw={600}>
                   {indexedCount}
                 </Text>
                 <Text size="xs" c="dimmed">
@@ -212,7 +215,7 @@ export function SearchSettings() {
                 </Text>
               </Box>
               <Box ta="center">
-                <Text size="xl" fw={700}>
+                <Text size="xl" fw={600}>
                   {formatLastIndexed()}
                 </Text>
                 <Text size="xs" c="dimmed">
@@ -256,6 +259,7 @@ export function SearchSettings() {
             <SegmentedControl
               value={getThresholdPreset()}
               onChange={handleThresholdChange}
+              radius="sm"
               data={[
                 { label: 'Broad (15%)', value: 'broad' },
                 { label: 'Balanced (20%)', value: 'balanced' },

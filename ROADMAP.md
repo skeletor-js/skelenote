@@ -13,6 +13,7 @@
 | **v0.1** | Foundation | Core productivity system | Jan 2026 | ✅ Shipped |
 | **v0.2** | Exodus | Data freedom & portability | Q1 2026 | 🔨 Next |
 | **v0.3** | Pocket | Mobile apps & notifications | Q1 2026 | 📋 Planned |
+| **v0.35** | Architect | Custom object types & extensibility | Q1 2026 | 📋 Planned |
 | **v0.4** | Oracle | Sovereign AI on-device | Q1 2026 | 📋 Planned |
 | **v0.5** | Sentinel | Security hardening | Q2 2026 | 📋 Planned |
 | **v1.0** | Cartographer | Visualization & spatial | Q2 2026 | 💭 Exploring |
@@ -360,6 +361,56 @@ Source Device (has key)          Target Device (new)
 | **Click navigation** | Select node → open in detail pane |
 | **Local vs. Global** | Start from one object or show entire vault |
 | **Performance** | Virtual rendering for vaults with 1000+ objects |
+
+---
+
+## v0.35 — Architect
+
+*Build your own object types.*
+
+**Status:** 📋 Planned
+**Version:** `0.35.0`
+**Target:** Q1 2026
+
+> [!IMPORTANT]
+> This release transforms Skelenote from a fixed 9-type system into a fully extensible platform. Create custom object types, customize built-in types, and toggle features on/off.
+
+### Type Management
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Built-in Type Settings** | Toggle built-in types on/off (hide from UI, preserve data) | 🔲 |
+| **Type Visibility** | Objects of disabled types hidden but accessible via direct link | 🔲 |
+| **Built-in Customization** | Add/hide properties on built-in types, rename display names | 🔲 |
+| **Reset to Defaults** | Restore built-in types to original schema | 🔲 |
+
+### Custom Object Types
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Schema Sync** | Type definitions stored in Loro CRDT, sync across devices | 🔲 |
+| **Property Builder** | Visual UI to add/remove/reorder properties with type selector | 🔲 |
+| **Icon Picker** | Searchable Lucide icon grid with categories | 🔲 |
+| **Type Creation** | Create types with name, icon, properties, hasContent toggle | 🔲 |
+| **Template Assignment** | Associate templates with custom types | 🔲 |
+| **Relation Targeting** | Custom types available as relation targets, backlinks work | 🔲 |
+
+### CODE Object Type (Optional)
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **CODE Type Definition** | New built-in type for code snippets (opt-in) | 🔲 |
+| **Code Editor** | Syntax highlighting, line numbers, proper indentation | 🔲 |
+| **Language Selector** | 20+ languages with auto-detection | 🔲 |
+| **Theme Support** | Light/dark syntax themes matching app theme | 🔲 |
+
+### Type Import/Export (Nice-to-Have)
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Export Type Definition** | Export custom type as JSON for sharing | 🔲 |
+| **Import Type Definition** | Import JSON with conflict handling | 🔲 |
+| **Type Presets** | Gallery of pre-built types (Recipe, Book, Workout, etc.) | 🔲 |
 
 ---
 

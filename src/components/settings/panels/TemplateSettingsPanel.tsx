@@ -108,7 +108,7 @@ export function TemplateSettingsPanel() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">
+        <Text size="xl" fw={600} mb="xs">
           Templates
         </Text>
         <Text size="sm" c="dimmed">
@@ -116,6 +116,8 @@ export function TemplateSettingsPanel() {
           content. Use placeholders like {'{{date}}'} for dynamic content.
         </Text>
       </Box>
+
+      <Divider />
 
       {/* Daily Note Template - Promoted to top */}
       <Box>

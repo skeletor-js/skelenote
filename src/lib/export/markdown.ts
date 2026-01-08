@@ -264,48 +264,55 @@ function convertBlockquote(
 
 /**
  * Convert a table to GitHub Flavored Markdown
+ *
+ * BlockNote v0.45.0 table structure:
+ * {
+ *   type: "table",
+ *   content: {
+ *     type: "tableContent",
+ *     columnWidths: [...],
+ *     rows: [{ cells: [{ type: "tableCell", content: [...] }] }]
+ *   }
+ * }
  */
 function convertTable(
   block: BlockNoteBlock,
   context: ConversionContext
 ): string {
-  const content = block.content as BlockNoteBlock[];
-  if (!content || content.length === 0) return '';
+  // BlockNote tables have content as an object with a rows property
+  const tableContent = block.content as {
+    rows?: Array<{ cells?: BlockNoteBlock[] }>;
+  };
+  const rows = tableContent?.rows;
+  if (!rows || rows.length === 0) return '';
 
-  const rows: string[][] = [];
+  const rowsData: string[][] = [];
 
   // Extract table rows
-  for (const row of content) {
-    if (row.type === 'tableRow' && row.content) {
-      const cells: string[] = [];
-      for (const cell of row.content as BlockNoteBlock[]) {
-        if (cell.type === 'tableCell' && cell.content) {
-          cells.push(
-            convertInlineArray(
-              cell.content as BlockNoteInlineContent[],
-              context
-            )
-          );
-        }
-      }
-      rows.push(cells);
+  for (const row of rows) {
+    const cellStrings: string[] = [];
+    for (const cell of row.cells || []) {
+      cellStrings.push(
+        convertInlineArray(cell.content as BlockNoteInlineContent[], context)
+      );
     }
+    rowsData.push(cellStrings);
   }
 
-  if (rows.length === 0) return '';
+  if (rowsData.length === 0) return '';
 
   const lines: string[] = [];
 
   // First row is header
-  const header = rows[0];
+  const header = rowsData[0];
   lines.push(`| ${header.join(' | ')} |`);
 
   // Separator row
   lines.push(`| ${header.map(() => '---').join(' | ')} |`);
 
   // Data rows
-  for (let i = 1; i < rows.length; i++) {
-    lines.push(`| ${rows[i].join(' | ')} |`);
+  for (let i = 1; i < rowsData.length; i++) {
+    lines.push(`| ${rowsData[i].join(' | ')} |`);
   }
 
   return lines.join('\n');
@@ -313,12 +320,57 @@ function convertTable(
 
 /**
  * Convert an image block to Markdown
+ * Prefers sourceUrl (original URL) over url (may be base64 data URI)
  */
 function convertImage(block: BlockNoteBlock): string {
-  const url = (block.props?.url as string) || '';
+  // Prefer sourceUrl if available (preserves original URL when BlockNote converts to base64)
+  const url =
+    (block.props?.sourceUrl as string) || (block.props?.url as string) || '';
   const alt =
     (block.props?.caption as string) || (block.props?.name as string) || '';
   return `![${alt}](${url})`;
+}
+
+/**
+ * Convert a video block to Markdown
+ * Since Markdown doesn't have native video support, renders as a link
+ */
+function convertVideo(block: BlockNoteBlock): string {
+  const url =
+    (block.props?.sourceUrl as string) || (block.props?.url as string) || '';
+  const caption =
+    (block.props?.caption as string) ||
+    (block.props?.name as string) ||
+    'Video';
+  return `[${caption}](${url})`;
+}
+
+/**
+ * Convert an audio block to Markdown
+ * Since Markdown doesn't have native audio support, renders as a link
+ */
+function convertAudio(block: BlockNoteBlock): string {
+  const url =
+    (block.props?.sourceUrl as string) || (block.props?.url as string) || '';
+  const caption =
+    (block.props?.caption as string) ||
+    (block.props?.name as string) ||
+    'Audio';
+  return `[${caption}](${url})`;
+}
+
+/**
+ * Convert a file block to Markdown
+ * Renders as a download link
+ */
+function convertFile(block: BlockNoteBlock): string {
+  const url =
+    (block.props?.sourceUrl as string) || (block.props?.url as string) || '';
+  const name =
+    (block.props?.name as string) ||
+    (block.props?.caption as string) ||
+    'Download';
+  return `[${name}](${url})`;
 }
 
 /**
@@ -356,6 +408,15 @@ function convertBlock(
 
     case 'image':
       return convertImage(block);
+
+    case 'video':
+      return convertVideo(block);
+
+    case 'audio':
+      return convertAudio(block);
+
+    case 'file':
+      return convertFile(block);
 
     default:
       // For unknown block types, try to extract content
@@ -421,4 +482,97 @@ export function convertBlockNoteToMarkdown(
     markdown,
     mentionedObjectIds: Array.from(context.mentionedObjectIds),
   };
+}
+
+/**
+ * Check if a URL is a local attachment URL (file:// or asset://)
+ */
+function isLocalAttachmentUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  return (
+    url.startsWith('file://') ||
+    url.startsWith('asset://localhost/') ||
+    url.startsWith('https://asset.localhost/')
+  );
+}
+
+/**
+ * Extract the file path from a local attachment URL
+ * Handles both file:// and asset:// URL formats
+ */
+export function extractFilePathFromUrl(url: string): string | null {
+  // file:// format
+  if (url.startsWith('file://')) {
+    return url.replace('file://', '');
+  }
+
+  // macOS/Linux asset format: asset://localhost/path
+  if (url.startsWith('asset://localhost/')) {
+    return decodeURIComponent(url.replace('asset://localhost/', ''));
+  }
+
+  // Windows asset format: https://asset.localhost/path
+  if (url.startsWith('https://asset.localhost/')) {
+    return decodeURIComponent(url.replace('https://asset.localhost/', ''));
+  }
+
+  return null;
+}
+
+/**
+ * Extract all local attachment URLs from BlockNote content blocks
+ * Handles both file:// URLs (legacy) and asset:// URLs (new)
+ * Used to identify local attachments that need to be copied during export
+ */
+export function extractFileUrls(blocks: BlockNoteBlock[]): string[] {
+  const urls: string[] = [];
+
+  function scanBlock(block: BlockNoteBlock) {
+    // Check file block types
+    if (['image', 'video', 'audio', 'file'].includes(block.type)) {
+      const url =
+        (block.props?.sourceUrl as string) || (block.props?.url as string);
+      if (isLocalAttachmentUrl(url)) {
+        urls.push(url);
+      }
+    }
+
+    // Recursively scan children
+    if (block.children && Array.isArray(block.children)) {
+      for (const child of block.children) {
+        scanBlock(child);
+      }
+    }
+
+    // Scan content if it contains blocks (e.g., tables)
+    if (block.content && Array.isArray(block.content)) {
+      for (const item of block.content) {
+        if (typeof item === 'object' && item !== null && 'type' in item) {
+          scanBlock(item as BlockNoteBlock);
+        }
+      }
+    }
+  }
+
+  for (const block of blocks) {
+    scanBlock(block);
+  }
+
+  return [...new Set(urls)]; // Deduplicate
+}
+
+/**
+ * Rewrite local attachment URLs in markdown content to relative paths
+ * @param markdown - The markdown string to process
+ * @param urlMap - Map from original URL to relative path
+ */
+export function rewriteFileUrls(
+  markdown: string,
+  urlMap: Map<string, string>
+): string {
+  let result = markdown;
+  for (const [fileUrl, relativePath] of urlMap) {
+    result = result.split(fileUrl).join(relativePath);
+  }
+  return result;
 }

@@ -5,7 +5,14 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Stack, Text, Box, SegmentedControl, Select } from '@mantine/core';
+import {
+  Stack,
+  Text,
+  Box,
+  SegmentedControl,
+  Select,
+  Divider,
+} from '@mantine/core';
 import { useTheme } from '@/contexts';
 
 type ThemePreference = 'light' | 'dark' | 'system';
@@ -81,13 +88,15 @@ export function AppearanceSettings() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">
+        <Text size="xl" fw={600} mb="xs">
           Appearance
         </Text>
         <Text size="sm" c="dimmed">
           Customize how Skelenote looks and feels.
         </Text>
       </Box>
+
+      <Divider />
 
       {/* Theme Selection */}
       <Box>
@@ -100,6 +109,7 @@ export function AppearanceSettings() {
         <SegmentedControl
           value={themePreference}
           onChange={handleThemeChange}
+          radius="sm"
           data={[
             { label: 'Light', value: 'light' },
             { label: 'Dark', value: 'dark' },

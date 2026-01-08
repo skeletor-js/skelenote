@@ -238,7 +238,7 @@ export function ObjectHeader({
                 variant="subtle"
                 size="sm"
                 onClick={onExport}
-                aria-label="Export to Markdown"
+                aria-label="Export"
                 className={styles.quickAction}
               >
                 <Icon name="download" size={14} />
@@ -366,7 +366,7 @@ export function ObjectHeader({
               </Menu.Item>
             )}
 
-            {/* Export to Markdown */}
+            {/* Export */}
             {onExport && (
               <Menu.Item
                 leftSection={<Icon name="download" size={14} />}
@@ -377,7 +377,7 @@ export function ObjectHeader({
                   </Text>
                 }
               >
-                Export to Markdown
+                Export...
               </Menu.Item>
             )}
 

@@ -30,6 +30,9 @@ import '@mantine/notifications/styles.css';
 // App global styles (fonts, minimal overrides)
 import '@/styles/global.css';
 
+// Mantine component overrides (CSS selectors not supported in styles API)
+import '@/styles/mantine-overrides.css';
+
 // Migrate localStorage keys from legacy naming to skelenote
 migrateLocalStorageKeys();
 

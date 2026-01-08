@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { Stack, Group, Text, Box, Button, Alert } from '@mantine/core';
+import { Stack, Group, Text, Box, Button, Alert, Divider } from '@mantine/core';
 import { Icon } from '@/components/ui';
 import {
   useSyncContextSafe,
@@ -70,7 +70,7 @@ export function DangerZoneSettings() {
             size={18}
             color="var(--mantine-color-brick-5)"
           />
-          <Text size="lg" fw={600} c="brick">
+          <Text size="xl" fw={600} c="brick">
             Danger Zone
           </Text>
         </Group>
@@ -78,6 +78,8 @@ export function DangerZoneSettings() {
           These actions are destructive and cannot be easily undone.
         </Text>
       </Box>
+
+      <Divider />
 
       <Alert
         variant="light"

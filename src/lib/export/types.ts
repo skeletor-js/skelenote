@@ -67,8 +67,28 @@ export interface BlockNoteBlock {
   id?: string;
   type: string;
   props?: Record<string, unknown>;
-  content?: BlockNoteInlineContent[] | BlockNoteBlock[];
+  content?: BlockNoteInlineContent[] | BlockNoteBlock[] | TableContent;
   children?: BlockNoteBlock[];
+}
+
+/**
+ * BlockNote table content structure (v0.45.0+)
+ *
+ * Tables have a special content structure different from other blocks:
+ * - content is an object (not array) with type "tableContent"
+ * - rows contain cells directly (not via content property)
+ */
+export interface TableContent {
+  type: 'tableContent';
+  columnWidths?: number[];
+  rows: TableRow[];
+}
+
+/**
+ * Table row structure
+ */
+export interface TableRow {
+  cells: BlockNoteBlock[];
 }
 
 /**
@@ -100,3 +120,84 @@ export type SupportedBlockType =
  * Supported inline content types
  */
 export type SupportedInlineType = 'text' | 'link' | 'mention';
+
+/**
+ * Export format type
+ * Extensible for future formats: html, json, plaintext
+ */
+export type ExportFormat = 'markdown' | 'pdf';
+
+/**
+ * Currently implemented export formats
+ */
+export const IMPLEMENTED_FORMATS: ExportFormat[] = ['markdown', 'pdf'];
+
+/**
+ * Export format metadata
+ */
+export interface ExportFormatInfo {
+  value: ExportFormat;
+  label: string;
+  icon: string;
+  description: string;
+  implemented: boolean;
+}
+
+/**
+ * All export formats with metadata
+ */
+export const EXPORT_FORMATS: ExportFormatInfo[] = [
+  {
+    value: 'markdown',
+    label: 'Markdown',
+    icon: 'file-text',
+    description: 'Standard .md format with wiki-links',
+    implemented: true,
+  },
+  {
+    value: 'pdf',
+    label: 'PDF',
+    icon: 'file',
+    description: 'Styled document with Skelenote typography',
+    implemented: true,
+  },
+];
+
+/**
+ * PDF-specific export options
+ */
+export interface PDFExportOptions {
+  /** Theme for PDF styling */
+  theme: 'light' | 'dark';
+  /** Include the title at the top of the PDF */
+  includeTitle: boolean;
+  /** Include frontmatter metadata (type, dates, properties) */
+  includeFrontmatter: boolean;
+  /** Page size */
+  pageSize?: 'A4' | 'LETTER';
+}
+
+/**
+ * Default PDF export options
+ */
+export const DEFAULT_PDF_EXPORT_OPTIONS: PDFExportOptions = {
+  theme: 'light',
+  includeTitle: true,
+  includeFrontmatter: false,
+  pageSize: 'A4',
+};
+
+/**
+ * Combined export options for the export modal
+ */
+export interface CombinedExportOptions {
+  format: ExportFormat;
+  /** Markdown-specific: include YAML frontmatter */
+  includeFrontmatter: boolean;
+  /** Include title in export */
+  includeTitle: boolean;
+  /** PDF-specific: theme */
+  pdfTheme: 'light' | 'dark';
+  /** PDF-specific: page size */
+  pageSize: 'A4' | 'LETTER';
+}
