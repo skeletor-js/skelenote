@@ -18,6 +18,7 @@ import {
   Divider,
 } from '@mantine/core';
 import { Icon, type IconName } from '@/components/ui/Icon';
+import { ImportWizard } from '@/components/import';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
 import {
   exportAllToZip,
@@ -355,6 +356,20 @@ export function DataSettings() {
             ? 'Exporting...'
             : `Export All (${counts.total} objects)`}
         </Button>
+      </Box>
+
+      <Divider />
+
+      {/* Import Section */}
+      <Box>
+        <Text size="md" fw={600} mb="xs">
+          Import
+        </Text>
+        <Text size="sm" c="dimmed" mb="md">
+          Import documents from other apps or Markdown files.
+        </Text>
+
+        <ImportWizard />
       </Box>
     </Stack>
   );
