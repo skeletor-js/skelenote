@@ -435,24 +435,129 @@ The standard pattern for Inbox, Task, and Search rows.
 - Color: accent or gray
 - Hover: tooltip with details
 
-### 7.9 Settings Sections
+### 7.9 Settings Panels
 
-**Section layout:**
+Settings panels follow a consistent structure that creates clear visual hierarchy and brand consistency.
+
+**Panel Structure:**
 ```tsx
 <Stack gap="lg">
+  {/* Page Header */}
   <Box>
-    <Group justify="space-between" mb="sm">
-      <Text fw={600}>{sectionTitle}</Text>
-      <ActionIcon variant="subtle"><Icon name="refresh-cw" size={14} /></ActionIcon>
-    </Group>
-    {sectionContent}
+    <Text size="xl" fw={600} mb="xs">
+      Page Title
+    </Text>
+    <Text size="sm" c="dimmed">
+      Brief description of what this panel contains.
+    </Text>
   </Box>
+
   <Divider />
-  {/* Next section */}
+
+  {/* Content Sections */}
+  <Box>
+    <Text size="md" fw={600} mb="xs">
+      Section Title
+    </Text>
+    <Text size="sm" c="dimmed" mb="md">
+      Section description or instructions.
+    </Text>
+    {/* Section content */}
+  </Box>
 </Stack>
 ```
 
-**Toggle setting:**
+**Typography Hierarchy:**
+
+| Element | Size | Weight | Color |
+|---------|------|--------|-------|
+| Page title | `xl` (18px) | 600 | Default |
+| Page description | `sm` (12px) | 400 | `dimmed` |
+| Section title | `md` (14px) | 600 | Default |
+| Section description | `sm` (12px) | 400 | `dimmed` |
+| Field label | `sm` (12px) | 500 | Default |
+| Field description | `xs` (11px) | 400 | `dimmed` |
+
+**SegmentedControl (format/theme selectors):**
+```tsx
+<SegmentedControl
+  value={value}
+  onChange={handleChange}
+  radius="sm"
+  fullWidth
+  data={[
+    {
+      value: 'option1',
+      label: (
+        <Group gap="xs" justify="center">
+          <Icon name="icon-name" size={14} />
+          <Text size="sm">Label</Text>
+        </Group>
+      ),
+    },
+    // ... more options
+  ]}
+/>
+```
+
+Key props:
+
+- `radius="sm"` - Matches brand's 4px corner radius
+- `fullWidth` - Ensures equal-width segments regardless of label length
+
+**Info Box (stats, status displays):**
+```tsx
+<Box
+  style={{
+    border: '1px solid var(--mantine-color-gray-2)',
+    borderRadius: 'var(--mantine-radius-sm)',
+    padding: 'var(--mantine-spacing-sm) var(--mantine-spacing-md)',
+    backgroundColor: 'var(--mantine-color-gray-0)',
+  }}
+>
+  <Group gap="md" wrap="wrap">
+    <Box style={{ whiteSpace: 'nowrap' }}>
+      <Text span fw={600} size="sm">{value}</Text>
+      <Text span size="xs" c="dimmed" ml={4}>{label}</Text>
+    </Box>
+    {/* Separator dot between items */}
+    <Text c="dimmed" size="xs">·</Text>
+    {/* More stat items... */}
+  </Group>
+</Box>
+```
+
+**Checkbox Options (without label heading):**
+```tsx
+<Stack gap="xs" mb="lg">
+  <Checkbox
+    label="Option description"
+    checked={value}
+    onChange={handler}
+    size="sm"
+  />
+  {/* More checkboxes... */}
+</Stack>
+```
+
+Note: Remove redundant "Options" labels when checkboxes are self-explanatory.
+
+**Primary Action Button:**
+```tsx
+<Button
+  variant="filled"
+  color="ember"
+  onClick={handleAction}
+  disabled={isDisabled}
+  loading={isLoading}
+>
+  Action Label
+</Button>
+```
+
+Always use explicit `variant="filled"` and `color="ember"` for primary CTAs.
+
+**Toggle Setting:**
 ```tsx
 <Group justify="space-between">
   <Box>
@@ -461,6 +566,56 @@ The standard pattern for Inbox, Task, and Search rows.
   </Box>
   <Switch checked={value} onChange={onChange} />
 </Group>
+```
+
+**Field with Label:**
+```tsx
+<Box mb="md">
+  <Text size="sm" fw={500} mb="xs">
+    Field Label
+  </Text>
+  <Text size="xs" c="dimmed" mb="sm">
+    Optional description or instructions.
+  </Text>
+  <Select
+    value={value}
+    onChange={handler}
+    data={options}
+  />
+</Box>
+```
+
+**Danger Zone Pattern:**
+```tsx
+<Box>
+  <Group gap="xs" mb="xs">
+    <Icon
+      name="alert-triangle"
+      size={18}
+      color="var(--mantine-color-brick-5)"
+    />
+    <Text size="xl" fw={600} c="brick">
+      Danger Zone
+    </Text>
+  </Group>
+  <Text size="sm" c="dimmed">
+    Warning description.
+  </Text>
+</Box>
+
+<Divider />
+
+<Alert
+  variant="light"
+  color="brick"
+  styles={{
+    root: {
+      borderLeft: '3px solid var(--mantine-color-brick-5)',
+    },
+  }}
+>
+  {/* Dangerous actions */}
+</Alert>
 ```
 
 ---

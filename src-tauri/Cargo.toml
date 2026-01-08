@@ -42,6 +42,7 @@ thiserror = "1.0"
 # Networking - Local Network Sync
 tokio = { version = "1", features = ["full"] }
 hex = "0.4"  # For fingerprint encoding
+uuid = { version = "1", features = ["v4"] }  # For unique attachment filenames
 hostname = "0.4"  # For device name detection
 mdns-sd = "0.11"  # mDNS service discovery (Bonjour/Avahi)
 local-ip-address = "0.6"  # For getting local network IP addresses

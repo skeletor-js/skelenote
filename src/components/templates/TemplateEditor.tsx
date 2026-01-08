@@ -390,7 +390,12 @@ export function TemplateEditor({
         <Button variant="subtle" color="gray" onClick={onClose}>
           Cancel
         </Button>
-        <Button color="ember" onClick={handleSave} disabled={!name.trim()}>
+        <Button
+          variant="filled"
+          color="ember"
+          onClick={handleSave}
+          disabled={!name.trim()}
+        >
           {isEditMode ? 'Save Changes' : 'Create Template'}
         </Button>
       </Group>

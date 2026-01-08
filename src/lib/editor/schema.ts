@@ -1,6 +1,9 @@
 /**
  * BlockNote editor schema configuration
- * Includes custom mention inline content for object references
+ * Uses BlockNote's default blocks with custom mention inline content
+ *
+ * Note: Media blocks (image, video, audio, file) are temporarily disabled.
+ * See GitHub issue for tracking reimplementation.
  */
 
 import {
@@ -10,13 +13,26 @@ import {
 } from '@blocknote/core';
 import { Mention } from '@/components/editor/MentionChip';
 
+// Exclude media blocks (temporarily disabled due to Tauri asset:// URL issues)
+/* eslint-disable @typescript-eslint/no-unused-vars */
+const {
+  image: _,
+  video: _v,
+  audio: _a,
+  file: _f,
+  ...textBlockSpecs
+} = defaultBlockSpecs;
+/* eslint-enable @typescript-eslint/no-unused-vars */
+
 /**
  * Custom schema with mention support
- * Includes all default blocks plus custom mention inline content
+ *
+ * Media blocks (image, video, audio, file) are temporarily disabled
+ * due to implementation issues with Tauri asset:// URLs.
  */
 export const editorSchema = BlockNoteSchema.create({
   blockSpecs: {
-    ...defaultBlockSpecs,
+    ...textBlockSpecs,
   },
   inlineContentSpecs: {
     ...defaultInlineContentSpecs,

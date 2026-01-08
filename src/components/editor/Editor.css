@@ -310,3 +310,169 @@
   background: var(--surface-paper) !important;
   border-color: var(--mantine-color-default-border) !important;
 }
+
+/* ================================================================
+   File Block Toolbar Positioning Fix
+   Ensures the toolbar stays within viewport and above sidebar
+
+   Mantine AppShell uses z-index ~200-300 for navbar.
+   We use 9999 to ensure toolbar always appears on top.
+   ================================================================ */
+
+/* Ensure all BlockNote popover/toolbar elements appear above everything */
+.bn-mantine .bn-popover,
+.bn-mantine .bn-suggestion-menu,
+.bn-mantine .bn-toolbar,
+.bn-mantine [data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+}
+
+/* File block wrapper - ensure proper positioning context */
+.bn-mantine .bn-file-block-content-wrapper {
+  position: relative;
+  min-width: 0; /* Prevent overflow */
+}
+
+/* Constrain file block toolbar to not overflow left edge */
+.bn-mantine .bn-file-block-content-wrapper .bn-toolbar {
+  min-width: max-content;
+  left: 0 !important;
+  margin-left: 0 !important;
+}
+
+/* File panel/upload panel styling - also needs high z-index */
+.bn-mantine .bn-file-panel {
+  background: var(--mantine-color-body) !important;
+  border: 1px solid var(--mantine-color-default-border) !important;
+  border-radius: var(--mantine-radius-sm) !important;
+  box-shadow: none !important;
+  z-index: 9999 !important;
+}
+
+[data-mantine-color-scheme='dark'] .bn-mantine .bn-file-panel {
+  background: var(--surface-paper) !important;
+  border-color: var(--mantine-color-default-border) !important;
+}
+
+/* Ensure file panel tabs have proper styling */
+.bn-mantine .bn-file-panel .mantine-Tabs-tab {
+  color: var(--mantine-color-text) !important;
+}
+
+.bn-mantine .bn-file-panel .mantine-Tabs-tab:hover {
+  background: var(--hover-warm) !important;
+}
+
+.bn-mantine .bn-file-panel .mantine-Tabs-tab[data-active] {
+  background: var(--selection-glow) !important;
+  color: var(--mantine-color-ember-6) !important;
+}
+
+/* ================================================================
+   Custom File Block Styling
+   Styles for custom image, video, audio, and file blocks
+   ================================================================ */
+
+/* Common upload panel styling for all custom blocks */
+.bn-image-upload-panel,
+.bn-video-upload-panel,
+.bn-audio-upload-panel,
+.bn-file-upload-panel {
+  transition: border-color 150ms ease;
+}
+
+.bn-image-upload-panel:hover,
+.bn-video-upload-panel:hover,
+.bn-audio-upload-panel:hover,
+.bn-file-upload-panel:hover {
+  border-color: var(--mantine-color-ember-4) !important;
+}
+
+/* Image block */
+.bn-image-block {
+  margin: var(--mantine-spacing-sm) 0;
+}
+
+.bn-image-block img {
+  transition: box-shadow 150ms ease;
+}
+
+.bn-image-block:focus-within img {
+  box-shadow: 0 0 0 2px var(--mantine-color-ember-4);
+}
+
+/* Video block */
+.bn-video-block {
+  margin: var(--mantine-spacing-sm) 0;
+}
+
+.bn-video-block video {
+  transition: box-shadow 150ms ease;
+}
+
+.bn-video-block:focus-within video {
+  box-shadow: 0 0 0 2px var(--mantine-color-ember-4);
+}
+
+/* Audio block */
+.bn-audio-block {
+  margin: var(--mantine-spacing-sm) 0;
+}
+
+.bn-audio-block:focus-within > div {
+  border-color: var(--mantine-color-ember-4) !important;
+}
+
+/* File block */
+.bn-file-block {
+  margin: var(--mantine-spacing-sm) 0;
+}
+
+.bn-file-block:focus-within > div {
+  border-color: var(--mantine-color-ember-4) !important;
+}
+
+/* Caption inputs for all blocks */
+.bn-image-caption,
+.bn-video-caption,
+.bn-audio-caption,
+.bn-file-caption {
+  outline: none;
+  font-family: var(--mantine-font-family);
+}
+
+.bn-image-caption:focus,
+.bn-video-caption:focus,
+.bn-audio-caption:focus,
+.bn-file-caption:focus {
+  color: var(--mantine-color-text) !important;
+}
+
+/* Persistent toolbar styling */
+.bn-image-toolbar,
+.bn-video-toolbar,
+.bn-audio-toolbar,
+.bn-file-toolbar {
+  opacity: 1;
+  transition: opacity 150ms ease;
+}
+
+/* Dark mode adjustments for custom blocks */
+[data-mantine-color-scheme='dark'] .bn-image-upload-panel,
+[data-mantine-color-scheme='dark'] .bn-video-upload-panel,
+[data-mantine-color-scheme='dark'] .bn-audio-upload-panel,
+[data-mantine-color-scheme='dark'] .bn-file-upload-panel {
+  background-color: var(--surface-raised) !important;
+}
+
+[data-mantine-color-scheme='dark'] .bn-audio-block > div,
+[data-mantine-color-scheme='dark'] .bn-file-block > div {
+  background-color: var(--surface-raised) !important;
+}
+
+[data-mantine-color-scheme='dark'] .bn-image-toolbar,
+[data-mantine-color-scheme='dark'] .bn-video-toolbar,
+[data-mantine-color-scheme='dark'] .bn-audio-toolbar,
+[data-mantine-color-scheme='dark'] .bn-file-toolbar {
+  background: var(--surface-paper) !important;
+}

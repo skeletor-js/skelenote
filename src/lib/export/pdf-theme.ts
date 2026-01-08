@@ -70,6 +70,7 @@ export function getThemeColors(theme: PDFTheme): PDFColors {
 
 /**
  * Typography configuration for PDF
+ * Using built-in PDF fonts for reliable rendering
  */
 export const typography = {
   fontFamily: {

@@ -92,7 +92,7 @@ export function RestoreDialog({
           <Button variant="subtle" color="gray" onClick={onCancel}>
             Cancel
           </Button>
-          <Button color="ember" onClick={onConfirm} autoFocus>
+          <Button variant="filled" color="ember" onClick={onConfirm} autoFocus>
             Restore
           </Button>
         </Group>

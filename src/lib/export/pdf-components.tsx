@@ -5,9 +5,16 @@
  */
 
 import { Text, View, Image, Link, StyleSheet } from '@react-pdf/renderer';
+
+// Using built-in PDF fonts (Helvetica, Courier) for reliable rendering
+// These fonts are embedded in PDF viewers and don't require loading
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Style = Record<string, any>;
-import type { BlockNoteBlock, BlockNoteInlineContent } from './types';
+import type {
+  BlockNoteBlock,
+  BlockNoteInlineContent,
+  FrontmatterProperty,
+} from './types';
 import {
   type PDFColors,
   type PDFTheme,
@@ -588,6 +595,16 @@ function PDFBlockquote({
 
 /**
  * Render a table
+ *
+ * BlockNote v0.45.0 table structure:
+ * {
+ *   type: "table",
+ *   content: {
+ *     type: "tableContent",
+ *     columnWidths: [...],
+ *     rows: [{ cells: [{ type: "tableCell", content: [...] }] }]
+ *   }
+ * }
  */
 function PDFTable({
   block,
@@ -598,13 +615,17 @@ function PDFTable({
   context: RenderContext;
   styles: ReturnType<typeof createStyles>;
 }) {
-  const rows = block.content as BlockNoteBlock[];
+  // BlockNote tables have content as an object with a rows property
+  const tableContent = block.content as {
+    rows?: Array<{ cells?: BlockNoteBlock[] }>;
+  };
+  const rows = tableContent?.rows;
   if (!rows || rows.length === 0) return null;
 
   return (
     <View style={styles.table}>
       {rows.map((row, rowIndex) => {
-        const cells = row.content as BlockNoteBlock[];
+        const cells = row.cells || [];
         const isHeader = rowIndex === 0;
 
         return (
@@ -612,7 +633,7 @@ function PDFTable({
             key={`row-${rowIndex}`}
             style={isHeader ? styles.tableHeaderRow : styles.tableRow}
           >
-            {cells?.map((cell, cellIndex) => (
+            {cells.map((cell, cellIndex) => (
               <Text
                 key={`cell-${cellIndex}`}
                 style={isHeader ? styles.tableHeaderCell : styles.tableCell}
@@ -750,6 +771,72 @@ export interface PDFContentProps {
   resolveObjectName: (objectId: string) => string | undefined;
   /** Optional title to display at the top */
   title?: string;
+  /** Optional metadata to display below the title */
+  metadata?: FrontmatterProperty[];
+}
+
+/**
+ * Render metadata section for PDF
+ */
+function PDFMetadata({
+  metadata,
+  styles,
+  colors,
+}: {
+  metadata: FrontmatterProperty[];
+  styles: ReturnType<typeof createStyles>;
+  colors: PDFColors;
+}) {
+  // Filter out title (already shown separately) and empty values
+  const filteredMetadata = metadata.filter(
+    (prop) => prop.key !== 'title' && prop.value !== null
+  );
+
+  if (filteredMetadata.length === 0) return null;
+
+  return (
+    <View
+      style={{
+        backgroundColor: colors.codeBg,
+        padding: spacing.md,
+        marginBottom: spacing.lg,
+        borderRadius: 4,
+      }}
+    >
+      {filteredMetadata.map((prop, index) => (
+        <View
+          key={`meta-${index}`}
+          style={{
+            flexDirection: 'row',
+            marginBottom: index < filteredMetadata.length - 1 ? spacing.xs : 0,
+          }}
+        >
+          <Text
+            style={{
+              ...styles.paragraph,
+              fontWeight: typography.fontWeight.bold,
+              marginBottom: 0,
+              width: 100,
+              color: colors.textSecondary,
+            }}
+          >
+            {prop.key}:
+          </Text>
+          <Text
+            style={{
+              ...styles.paragraph,
+              marginBottom: 0,
+              flex: 1,
+            }}
+          >
+            {Array.isArray(prop.value)
+              ? prop.value.join(', ')
+              : String(prop.value)}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
 }
 
 /**
@@ -760,6 +847,7 @@ export function PDFContent({
   theme,
   resolveObjectName,
   title,
+  metadata,
 }: PDFContentProps) {
   const colors = getThemeColors(theme);
   const styles = createStyles(colors);
@@ -771,6 +859,9 @@ export function PDFContent({
   return (
     <View>
       {title && <Text style={styles.title}>{title}</Text>}
+      {metadata && metadata.length > 0 && (
+        <PDFMetadata metadata={metadata} styles={styles} colors={colors} />
+      )}
       {blocks.map((block, index) => {
         // Track numbered list indices
         if (block.type === 'numberedListItem') {
@@ -794,8 +885,3 @@ export function PDFContent({
     </View>
   );
 }
-
-/**
- * Get theme colors (exported for use in pdf.ts)
- */
-export { getThemeColors, createStyles };

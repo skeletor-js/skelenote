@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { AppShell, Box } from '@mantine/core';
 import { Sidebar } from './Sidebar';
 import { TopNavBar, type OmnibarFocusFunctions } from './TopNavBar';
 import { usePlatform } from '@/hooks';
+import { useNavigation } from '@/contexts/NavigationContext';
 
 // Layout dimensions per style guide
 const SIDEBAR_WIDTH = 240;
@@ -26,12 +27,36 @@ export function Layout({
   onRegisterOmnibarFocus,
 }: LayoutProps) {
   const { windowControlsHeight } = usePlatform();
+  const { currentView } = useNavigation();
   const [isZenMode, setIsZenMode] = useState(false);
+
+  // Track sidebar state before entering settings
+  const previousZenModeRef = useRef<boolean | null>(null);
+  const wasInSettingsRef = useRef(false);
 
   // Header height should accommodate window controls
   const headerHeight = Math.max(48, windowControlsHeight + 16);
 
   const toggleZenMode = () => setIsZenMode((prev) => !prev);
+
+  // Auto-hide sidebar when entering settings, restore when leaving
+  useEffect(() => {
+    const isInSettings = currentView === 'settings';
+
+    if (isInSettings && !wasInSettingsRef.current) {
+      // Entering settings - save current state and hide sidebar
+      previousZenModeRef.current = isZenMode;
+      setIsZenMode(true);
+    } else if (!isInSettings && wasInSettingsRef.current) {
+      // Leaving settings - restore previous state
+      if (previousZenModeRef.current !== null) {
+        setIsZenMode(previousZenModeRef.current);
+        previousZenModeRef.current = null;
+      }
+    }
+
+    wasInSettingsRef.current = isInSettings;
+  }, [currentView, isZenMode]);
 
   return (
     <AppShell

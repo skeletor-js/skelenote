@@ -5,7 +5,16 @@
  */
 
 import { useState } from 'react';
-import { Stack, Group, Text, Box, Button, Code, Anchor } from '@mantine/core';
+import {
+  Stack,
+  Group,
+  Text,
+  Box,
+  Button,
+  Code,
+  Anchor,
+  Divider,
+} from '@mantine/core';
 import { Icon } from '@/components/ui';
 import { KeyboardShortcutsModal } from '@/components/help';
 
@@ -18,13 +27,15 @@ export function AboutSettings() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">
+        <Text size="xl" fw={600} mb="xs">
           About
         </Text>
         <Text size="sm" c="dimmed">
           Information about Skelenote.
         </Text>
       </Box>
+
+      <Divider />
 
       {/* Version */}
       <Box>

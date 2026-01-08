@@ -15,6 +15,7 @@ import {
   Progress,
   Box,
   SegmentedControl,
+  Divider,
 } from '@mantine/core';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
@@ -197,13 +198,15 @@ export function DataSettings() {
   return (
     <Stack gap="lg">
       <Box>
-        <Text size="lg" fw={600} mb="xs">
+        <Text size="xl" fw={600} mb="xs">
           Data
         </Text>
         <Text size="sm" c="dimmed">
           Export and manage your data.
         </Text>
       </Box>
+
+      <Divider />
 
       {/* Export Section */}
       <Box>
@@ -225,6 +228,8 @@ export function DataSettings() {
             value={exportFormat}
             onChange={(value) => setExportFormat(value as ExportFormat)}
             disabled={isExporting}
+            radius="sm"
+            fullWidth
             data={implementedFormats.map((f) => ({
               value: f.value,
               label: (
@@ -247,6 +252,8 @@ export function DataSettings() {
               value={pdfTheme}
               onChange={(value) => setPdfTheme(value as 'light' | 'dark')}
               disabled={isExporting}
+              radius="sm"
+              fullWidth
               data={[
                 {
                   value: 'light',
@@ -274,16 +281,16 @@ export function DataSettings() {
         <Box
           mb="md"
           style={{
-            border: '1px solid var(--mantine-color-vellum)',
+            border: '1px solid var(--mantine-color-gray-2)',
             borderRadius: 'var(--mantine-radius-sm)',
             padding: 'var(--mantine-spacing-sm) var(--mantine-spacing-md)',
-            backgroundColor: 'var(--mantine-color-canvas)',
+            backgroundColor: 'var(--mantine-color-gray-0)',
             width: '100%',
           }}
         >
           <Group gap="md" wrap="wrap">
             <Box style={{ whiteSpace: 'nowrap' }}>
-              <Text span fw={700} size="sm">
+              <Text span fw={600} size="sm">
                 {counts.total}
               </Text>
               <Text span size="xs" c="dimmed" ml={4}>
@@ -311,25 +318,22 @@ export function DataSettings() {
           </Group>
         </Box>
 
-        <Box mb="md">
-          <Text size="sm" fw={500} mb="xs">
-            Options
-          </Text>
-          <Stack gap="xs">
-            <Checkbox
-              label="Organize files into folders by type"
-              checked={organizeByType}
-              onChange={(e) => setOrganizeByType(e.target.checked)}
-              disabled={isExporting}
-            />
-            <Checkbox
-              label="Include archived objects"
-              checked={includeArchived}
-              onChange={(e) => setIncludeArchived(e.target.checked)}
-              disabled={isExporting}
-            />
-          </Stack>
-        </Box>
+        <Stack gap="xs" mb="lg">
+          <Checkbox
+            label="Organize files into folders by type"
+            checked={organizeByType}
+            onChange={(e) => setOrganizeByType(e.target.checked)}
+            disabled={isExporting}
+            size="sm"
+          />
+          <Checkbox
+            label="Include archived objects"
+            checked={includeArchived}
+            onChange={(e) => setIncludeArchived(e.target.checked)}
+            disabled={isExporting}
+            size="sm"
+          />
+        </Stack>
 
         {progress && (
           <Box mb="md">
@@ -341,6 +345,8 @@ export function DataSettings() {
         )}
 
         <Button
+          variant="filled"
+          color="ember"
           onClick={handleExport}
           disabled={isExporting || counts.total === 0}
           loading={isExporting}
@@ -349,12 +355,6 @@ export function DataSettings() {
             ? 'Exporting...'
             : `Export All (${counts.total} objects)`}
         </Button>
-
-        <Text size="xs" c="dimmed" mt="sm">
-          {exportFormat === 'pdf'
-            ? 'Each object becomes a styled PDF with Skelenote typography. Images are embedded for self-contained documents.'
-            : 'Each object becomes a Markdown file with YAML frontmatter. Mentions are converted to [[wiki-links]].'}
-        </Text>
       </Box>
     </Stack>
   );

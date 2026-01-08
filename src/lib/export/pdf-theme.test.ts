@@ -137,8 +137,8 @@ describe('PDF Theme', () => {
 
   describe('typography', () => {
     it('defines font families', () => {
-      expect(typography.fontFamily.sans).toBe('Helvetica');
-      expect(typography.fontFamily.mono).toBe('Courier');
+      expect(typography.fontFamily.sans).toBe('Noto Sans');
+      expect(typography.fontFamily.mono).toBe('Noto Sans Mono');
     });
 
     it('defines all font sizes', () => {

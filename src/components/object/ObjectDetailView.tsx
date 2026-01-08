@@ -10,7 +10,7 @@ import { PropertyBar } from './PropertyBar';
 import { Backlinks } from './Backlinks';
 import { RelatedObjectsSection } from './RelatedObjectsSection';
 import { Editor } from '@/components/editor';
-import { ConfirmDialog, Icon } from '@/components/ui';
+import { ConfirmDialog, Icon, ContextMenu } from '@/components/ui';
 import { ExportOptionsModal, type ExportOptions } from '@/components/export';
 import { removeMentionsFromContent } from '@/lib/editor';
 import { exportObjectToMarkdown, exportObjectToPDF } from '@/lib/export';
@@ -23,7 +23,7 @@ import {
   useKeyboardShortcuts,
   useSemanticSearchSafe,
 } from '@/contexts';
-import { useConfirmDialog, useDuplicate } from '@/hooks';
+import { useConfirmDialog, useDuplicate, useContextMenu } from '@/hooks';
 import styles from './ObjectDetailView.module.css';
 
 interface ObjectDetailViewProps {
@@ -55,6 +55,14 @@ export function ObjectDetailView({
 
   // Export modal state
   const [exportModalOpen, setExportModalOpen] = useState(false);
+
+  // Context menu state
+  const {
+    isOpen: contextMenuOpen,
+    position: contextMenuPosition,
+    openContextMenu,
+    closeContextMenu,
+  } = useContextMenu();
 
   // Check if we're in version comparison mode
   const isVersionComparison = splitPane.mode === 'version-comparison';
@@ -108,7 +116,7 @@ export function ObjectDetailView({
             {
               theme: options.pdfTheme,
               includeTitle: options.includeTitle,
-              includeMetadata: false,
+              includeFrontmatter: options.includeFrontmatter,
               pageSize: 'A4',
             }
           );
@@ -332,6 +340,51 @@ export function ObjectDetailView({
     [store, objectId, scheduleSave, semanticContext]
   );
 
+  // Context menu items for right-click
+  const contextMenuItems = useMemo(() => {
+    const object = store?.get(objectId);
+    const isDailyNoteObj = object?.properties.isDailyNote === true;
+
+    return [
+      {
+        id: 'export',
+        label: 'Export...',
+        icon: 'download',
+        onClick: handleExport,
+      },
+      {
+        id: 'duplicate',
+        label: 'Duplicate',
+        icon: 'copy',
+        disabled: !canDuplicate(objectId),
+        onClick: handleDuplicate,
+      },
+      {
+        id: 'archive',
+        label: 'Archive',
+        icon: 'archive',
+        disabled: isDailyNoteObj,
+        onClick: handleArchive,
+      },
+      {
+        id: 'delete',
+        label: 'Delete',
+        icon: 'trash-2',
+        variant: 'danger' as const,
+        disabled: isDailyNoteObj,
+        onClick: handleDelete,
+      },
+    ];
+  }, [
+    store,
+    objectId,
+    canDuplicate,
+    handleExport,
+    handleDuplicate,
+    handleArchive,
+    handleDelete,
+  ]);
+
   // Flush semantic index changes when leaving editor
   useEffect(() => {
     return () => {
@@ -448,7 +501,7 @@ export function ObjectDetailView({
       />
 
       {/* Scrollable content area */}
-      <Box className={styles.content}>
+      <Box className={styles.content} onContextMenu={openContextMenu}>
         <Stack gap="sm">
           {/* Properties as inline chips with prominent status/priority badges */}
           <PropertyBar
@@ -502,6 +555,14 @@ export function ObjectDetailView({
         opened={exportModalOpen}
         onClose={() => setExportModalOpen(false)}
         onExport={handleExportWithOptions}
+      />
+
+      {/* Right-click context menu */}
+      <ContextMenu
+        items={contextMenuItems}
+        position={contextMenuPosition}
+        isOpen={contextMenuOpen}
+        onClose={closeContextMenu}
       />
     </Box>
   );

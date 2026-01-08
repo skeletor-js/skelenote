@@ -9,10 +9,16 @@ import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
 import JSZip from 'jszip';
 import type { SkelenoteObject, TypeDefinition, TypeRegistry } from '../types';
-import type { BlockNoteBlock } from './types';
+import type { BlockNoteBlock, FrontmatterProperty } from './types';
 import type { BulkExportProgress, BulkExportOptions } from './index';
 import { processImagesInContent } from './image-utils';
-import { type PDFTheme, type PageSize, pageConfig } from './pdf-theme';
+import { generateFrontmatterProperties } from './frontmatter';
+import {
+  type PDFTheme,
+  type PageSize,
+  pageConfig,
+  getThemeColors,
+} from './pdf-theme';
 
 /**
  * PDF export options
@@ -22,8 +28,8 @@ export interface PDFExportOptions {
   theme: PDFTheme;
   /** Include the object title at the top */
   includeTitle: boolean;
-  /** Include metadata (type, dates) in footer */
-  includeMetadata: boolean;
+  /** Include frontmatter metadata (type, dates, properties) */
+  includeFrontmatter: boolean;
   /** Page size */
   pageSize: PageSize;
 }
@@ -34,7 +40,7 @@ export interface PDFExportOptions {
 export const DEFAULT_PDF_OPTIONS: PDFExportOptions = {
   theme: 'light',
   includeTitle: true,
-  includeMetadata: false,
+  includeFrontmatter: false,
   pageSize: 'A4',
 };
 
@@ -43,8 +49,8 @@ export const DEFAULT_PDF_OPTIONS: PDFExportOptions = {
  */
 async function loadReactPDF() {
   const { Document, Page, pdf } = await import('@react-pdf/renderer');
-  const { PDFContent, getThemeColors } = await import('./pdf-components');
-  return { Document, Page, pdf, PDFContent, getThemeColors };
+  const { PDFContent } = await import('./pdf-components');
+  return { Document, Page, pdf, PDFContent };
 }
 
 /**
@@ -89,11 +95,11 @@ export async function generatePDFBlob(
   object: SkelenoteObject,
   content: string,
   resolveObjectName: (objectId: string) => string | undefined,
-  options: PDFExportOptions = DEFAULT_PDF_OPTIONS
+  options: PDFExportOptions = DEFAULT_PDF_OPTIONS,
+  typeDef?: TypeDefinition
 ): Promise<Uint8Array> {
   // Load react-pdf lazily
-  const { Document, Page, pdf, PDFContent, getThemeColors } =
-    await loadReactPDF();
+  const { Document, Page, pdf, PDFContent } = await loadReactPDF();
 
   // Parse and process content
   let blocks = parseContent(content);
@@ -105,6 +111,16 @@ export async function generatePDFBlob(
   const colors = getThemeColors(options.theme);
   const page = pageConfig[options.pageSize];
   const title = options.includeTitle ? getObjectTitle(object) : undefined;
+
+  // Generate frontmatter properties if requested and typeDef is available
+  let metadata: FrontmatterProperty[] | undefined;
+  if (options.includeFrontmatter && typeDef) {
+    metadata = generateFrontmatterProperties({
+      object,
+      typeDef,
+      resolveObjectName,
+    });
+  }
 
   // Create PDF document
   const doc = (
@@ -124,6 +140,7 @@ export async function generatePDFBlob(
           theme={options.theme}
           resolveObjectName={resolveObjectName}
           title={title}
+          metadata={metadata}
         />
       </Page>
     </Document>
@@ -145,7 +162,7 @@ export async function generatePDFBlob(
  */
 export async function exportObjectToPDF(
   object: SkelenoteObject,
-  _typeDef: TypeDefinition,
+  typeDef: TypeDefinition,
   content: string,
   resolveObjectName: (objectId: string) => string | undefined,
   options: PDFExportOptions = DEFAULT_PDF_OPTIONS
@@ -155,7 +172,8 @@ export async function exportObjectToPDF(
     object,
     content,
     resolveObjectName,
-    options
+    options,
+    typeDef
   );
 
   // Generate default filename
@@ -256,7 +274,7 @@ export async function exportAllToPDFZip(
   const pdfOptions: PDFExportOptions = {
     theme: mergedOptions.pdfTheme,
     includeTitle: mergedOptions.includeTitle ?? true,
-    includeMetadata: false,
+    includeFrontmatter: mergedOptions.includeFrontmatter ?? false,
     pageSize: mergedOptions.pageSize ?? 'A4',
   };
 
@@ -284,7 +302,8 @@ export async function exportAllToPDFZip(
       obj,
       content,
       resolveObjectName,
-      pdfOptions
+      pdfOptions,
+      typeDef
     );
 
     // Generate unique filename

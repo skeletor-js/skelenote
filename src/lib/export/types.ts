@@ -67,8 +67,28 @@ export interface BlockNoteBlock {
   id?: string;
   type: string;
   props?: Record<string, unknown>;
-  content?: BlockNoteInlineContent[] | BlockNoteBlock[];
+  content?: BlockNoteInlineContent[] | BlockNoteBlock[] | TableContent;
   children?: BlockNoteBlock[];
+}
+
+/**
+ * BlockNote table content structure (v0.45.0+)
+ *
+ * Tables have a special content structure different from other blocks:
+ * - content is an object (not array) with type "tableContent"
+ * - rows contain cells directly (not via content property)
+ */
+export interface TableContent {
+  type: 'tableContent';
+  columnWidths?: number[];
+  rows: TableRow[];
+}
+
+/**
+ * Table row structure
+ */
+export interface TableRow {
+  cells: BlockNoteBlock[];
 }
 
 /**
@@ -105,18 +125,12 @@ export type SupportedInlineType = 'text' | 'link' | 'mention';
  * Export format type
  * Extensible for future formats: html, json, plaintext
  */
-export type ExportFormat = 'markdown' | 'pdf' | 'html' | 'json' | 'plaintext';
+export type ExportFormat = 'markdown' | 'pdf';
 
 /**
  * Currently implemented export formats
  */
-export const IMPLEMENTED_FORMATS: ExportFormat[] = [
-  'markdown',
-  'pdf',
-  'html',
-  'json',
-  'plaintext',
-];
+export const IMPLEMENTED_FORMATS: ExportFormat[] = ['markdown', 'pdf'];
 
 /**
  * Export format metadata
@@ -147,27 +161,6 @@ export const EXPORT_FORMATS: ExportFormatInfo[] = [
     description: 'Styled document with Skelenote typography',
     implemented: true,
   },
-  {
-    value: 'html',
-    label: 'HTML',
-    icon: 'code',
-    description: 'Standalone HTML with embedded styles',
-    implemented: true,
-  },
-  {
-    value: 'json',
-    label: 'JSON Backup',
-    icon: 'braces',
-    description: 'Full-fidelity vault backup',
-    implemented: true,
-  },
-  {
-    value: 'plaintext',
-    label: 'Plain Text',
-    icon: 'file-type',
-    description: 'Simple text without formatting',
-    implemented: true,
-  },
 ];
 
 /**
@@ -178,8 +171,8 @@ export interface PDFExportOptions {
   theme: 'light' | 'dark';
   /** Include the title at the top of the PDF */
   includeTitle: boolean;
-  /** Include metadata (dates, type) in PDF */
-  includeMetadata: boolean;
+  /** Include frontmatter metadata (type, dates, properties) */
+  includeFrontmatter: boolean;
   /** Page size */
   pageSize?: 'A4' | 'LETTER';
 }
@@ -190,68 +183,8 @@ export interface PDFExportOptions {
 export const DEFAULT_PDF_EXPORT_OPTIONS: PDFExportOptions = {
   theme: 'light',
   includeTitle: true,
-  includeMetadata: false,
+  includeFrontmatter: false,
   pageSize: 'A4',
-};
-
-/**
- * HTML-specific export options
- */
-export interface HTMLExportOptions {
-  /** Theme for HTML styling */
-  theme: 'light' | 'dark';
-  /** Include the title at the top */
-  includeTitle: boolean;
-  /** Embed images as base64 data URIs */
-  embedImages: boolean;
-}
-
-/**
- * Default HTML export options
- */
-export const DEFAULT_HTML_EXPORT_OPTIONS: HTMLExportOptions = {
-  theme: 'light',
-  includeTitle: true,
-  embedImages: true,
-};
-
-/**
- * JSON-specific export options
- */
-export interface JSONExportOptions {
-  /** Include type definitions in export */
-  includeTypeDefinitions: boolean;
-  /** Include archived objects */
-  includeArchived: boolean;
-  /** Pretty-print JSON with indentation */
-  prettyPrint: boolean;
-}
-
-/**
- * Default JSON export options
- */
-export const DEFAULT_JSON_EXPORT_OPTIONS: JSONExportOptions = {
-  includeTypeDefinitions: true,
-  includeArchived: true,
-  prettyPrint: true,
-};
-
-/**
- * Plain text export options
- */
-export interface PlainTextExportOptions {
-  /** Include the title at the top */
-  includeTitle: boolean;
-  /** Style for list bullets */
-  listStyle: 'dash' | 'asterisk' | 'number';
-}
-
-/**
- * Default plain text export options
- */
-export const DEFAULT_PLAINTEXT_EXPORT_OPTIONS: PlainTextExportOptions = {
-  includeTitle: true,
-  listStyle: 'dash',
 };
 
 /**
@@ -267,14 +200,4 @@ export interface CombinedExportOptions {
   pdfTheme: 'light' | 'dark';
   /** PDF-specific: page size */
   pageSize: 'A4' | 'LETTER';
-  /** HTML-specific: theme */
-  htmlTheme: 'light' | 'dark';
-  /** HTML-specific: embed images */
-  htmlEmbedImages: boolean;
-  /** JSON-specific: include type definitions */
-  jsonIncludeTypes: boolean;
-  /** JSON-specific: include archived */
-  jsonIncludeArchived: boolean;
-  /** Plain text: list style */
-  plaintextListStyle: 'dash' | 'asterisk' | 'number';
 }

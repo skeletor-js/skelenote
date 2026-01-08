@@ -4,15 +4,7 @@
  */
 
 import { useCallback, useState, useMemo } from 'react';
-import {
-  UnstyledButton,
-  Checkbox,
-  Text,
-  Box,
-  Group,
-  ActionIcon,
-  Tooltip,
-} from '@mantine/core';
+import { Checkbox, Text, Box, Group, ActionIcon, Tooltip } from '@mantine/core';
 import { BuiltInTypeIds, type SkelenoteObject } from '@/lib/types';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
 import {
@@ -303,21 +295,36 @@ export function InboxRow({
       : []),
   ];
 
+  // Handle keyboard navigation for accessibility
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleRowClick(e as unknown as React.MouseEvent);
+      }
+    },
+    [handleRowClick]
+  );
+
   return (
     <>
-      <UnstyledButton
+      <Box
         onClick={handleRowClick}
+        onKeyDown={handleKeyDown}
         onContextMenu={openContextMenu}
         px="sm"
         py="xs"
         className={classes.inboxRow}
         data-selected={isSelected || undefined}
+        tabIndex={0}
+        role="button"
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: 'var(--mantine-spacing-sm)',
           borderRadius: 'var(--mantine-radius-sm)',
           borderBottom: '1px solid var(--border-subtle)',
+          cursor: 'pointer',
         }}
       >
         {/* Selection checkbox - only show when in selection mode */}
@@ -469,7 +476,7 @@ export function InboxRow({
             )}
           </Group>
         </Group>
-      </UnstyledButton>
+      </Box>
 
       {/* Context Menu */}
       <ContextMenu
