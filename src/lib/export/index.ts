@@ -30,6 +30,48 @@ export type {
 } from './pdf';
 export * from './pdf-theme';
 
+// HTML exports
+export {
+  exportObjectToHTML,
+  exportAllToHTMLZip,
+  convertBlockNoteToHTML,
+  generateHTMLContent,
+} from './html';
+export type {
+  HTMLExportOptions as HTMLModuleOptions,
+  HTMLBulkExportOptions,
+  HTMLConversionResult,
+} from './html';
+
+// JSON backup exports
+export {
+  exportObjectToJSON,
+  exportVaultToJSON,
+  exportFilteredToJSON,
+  generateJSONBackup,
+  validateBackup,
+  JSON_BACKUP_VERSION,
+} from './json';
+export type {
+  JSONExportOptions as JSONModuleOptions,
+  JSONBulkExportOptions,
+  SkelenoteBackup,
+  ExportedObject,
+} from './json';
+
+// Plain text exports
+export {
+  exportObjectToPlainText,
+  exportAllToPlainTextZip,
+  convertBlockNoteToPlainText,
+  generatePlainTextContent,
+} from './plaintext';
+export type {
+  PlainTextExportOptions as PlainTextModuleOptions,
+  PlainTextBulkExportOptions,
+  PlainTextConversionResult,
+} from './plaintext';
+
 /**
  * Sanitize a title for use as a filename
  * Removes/replaces characters that are invalid in filenames

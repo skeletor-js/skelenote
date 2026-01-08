@@ -29,6 +29,14 @@ export interface ExportOptions {
   pdfTheme: 'light' | 'dark';
   includeTitle: boolean;
   includeFrontmatter: boolean;
+  // HTML options
+  htmlTheme: 'light' | 'dark';
+  htmlEmbedImages: boolean;
+  // JSON options
+  jsonIncludeTypes: boolean;
+  jsonIncludeArchived: boolean;
+  // Plain text options
+  plaintextListStyle: 'dash' | 'asterisk' | 'number';
 }
 
 interface ExportOptionsModalProps {
@@ -61,6 +69,16 @@ export function ExportOptionsModal({
   const [pdfTheme, setPdfTheme] = useState<'light' | 'dark'>('light');
   const [includeTitle, setIncludeTitle] = useState(true);
   const [includeFrontmatter, setIncludeFrontmatter] = useState(false);
+  // HTML options
+  const [htmlTheme, setHtmlTheme] = useState<'light' | 'dark'>('light');
+  const [htmlEmbedImages, setHtmlEmbedImages] = useState(true);
+  // JSON options
+  const [jsonIncludeTypes, setJsonIncludeTypes] = useState(true);
+  const [jsonIncludeArchived, setJsonIncludeArchived] = useState(true);
+  // Plain text options
+  const [plaintextListStyle, setPlaintextListStyle] = useState<
+    'dash' | 'asterisk' | 'number'
+  >('dash');
 
   // Filter to only implemented formats, or allowed formats if specified
   const availableFormats = useMemo(() => {
@@ -90,9 +108,26 @@ export function ExportOptionsModal({
       pdfTheme,
       includeTitle,
       includeFrontmatter,
+      htmlTheme,
+      htmlEmbedImages,
+      jsonIncludeTypes,
+      jsonIncludeArchived,
+      plaintextListStyle,
     });
     onClose();
-  }, [format, pdfTheme, includeTitle, includeFrontmatter, onExport, onClose]);
+  }, [
+    format,
+    pdfTheme,
+    includeTitle,
+    includeFrontmatter,
+    htmlTheme,
+    htmlEmbedImages,
+    jsonIncludeTypes,
+    jsonIncludeArchived,
+    plaintextListStyle,
+    onExport,
+    onClose,
+  ]);
 
   const handleClose = useCallback(() => {
     onClose();
@@ -103,7 +138,11 @@ export function ExportOptionsModal({
 
   // Determine if we should show format-specific options
   const showPdfOptions = format === 'pdf';
-  const showFrontmatterOption = format === 'markdown' || format === 'json';
+  const showHtmlOptions = format === 'html';
+  const showJsonOptions = format === 'json';
+  const showPlaintextOptions = format === 'plaintext';
+  const showFrontmatterOption = format === 'markdown';
+  const showTitleOption = format !== 'json';
 
   return (
     <Modal
@@ -185,26 +224,107 @@ export function ExportOptionsModal({
           </Box>
         )}
 
+        {/* HTML Options */}
+        {showHtmlOptions && (
+          <Box>
+            <Text size="sm" fw={500} mb="xs">
+              Theme
+            </Text>
+            <SegmentedControl
+              fullWidth
+              value={htmlTheme}
+              onChange={(value) => setHtmlTheme(value as 'light' | 'dark')}
+              data={[
+                {
+                  value: 'light',
+                  label: (
+                    <Group gap="xs" justify="center">
+                      <Icon name="sun" size={14} />
+                      <Text size="sm">Light</Text>
+                    </Group>
+                  ),
+                },
+                {
+                  value: 'dark',
+                  label: (
+                    <Group gap="xs" justify="center">
+                      <Icon name="moon" size={14} />
+                      <Text size="sm">Dark</Text>
+                    </Group>
+                  ),
+                },
+              ]}
+            />
+          </Box>
+        )}
+
+        {/* Plain Text Options */}
+        {showPlaintextOptions && (
+          <Box>
+            <Text size="sm" fw={500} mb="xs">
+              List Style
+            </Text>
+            <SegmentedControl
+              fullWidth
+              value={plaintextListStyle}
+              onChange={(value) =>
+                setPlaintextListStyle(value as 'dash' | 'asterisk' | 'number')
+              }
+              data={[
+                { value: 'dash', label: '- Dash' },
+                { value: 'asterisk', label: '* Asterisk' },
+                { value: 'number', label: '1. Number' },
+              ]}
+            />
+          </Box>
+        )}
+
         <Divider />
 
         {/* Options */}
         <Stack gap="sm">
           <Text size="sm" fw={500}>
-            Include
+            Options
           </Text>
-          <Checkbox
-            label="Title"
-            description="Include the object title at the top"
-            checked={includeTitle}
-            onChange={(e) => setIncludeTitle(e.currentTarget.checked)}
-          />
+          {showTitleOption && (
+            <Checkbox
+              label="Title"
+              description="Include the object title at the top"
+              checked={includeTitle}
+              onChange={(e) => setIncludeTitle(e.currentTarget.checked)}
+            />
+          )}
           {showFrontmatterOption && (
             <Checkbox
               label="Frontmatter"
-              description="Include metadata (type, dates, properties)"
+              description="Include YAML metadata (type, dates, properties)"
               checked={includeFrontmatter}
               onChange={(e) => setIncludeFrontmatter(e.currentTarget.checked)}
             />
+          )}
+          {showHtmlOptions && (
+            <Checkbox
+              label="Embed Images"
+              description="Embed images as base64 for self-contained files"
+              checked={htmlEmbedImages}
+              onChange={(e) => setHtmlEmbedImages(e.currentTarget.checked)}
+            />
+          )}
+          {showJsonOptions && (
+            <>
+              <Checkbox
+                label="Type Definitions"
+                description="Include type schemas for full restore compatibility"
+                checked={jsonIncludeTypes}
+                onChange={(e) => setJsonIncludeTypes(e.currentTarget.checked)}
+              />
+              <Checkbox
+                label="Archived Objects"
+                description="Include objects that have been archived"
+                checked={jsonIncludeArchived}
+                onChange={(e) => setJsonIncludeArchived(e.currentTarget.checked)}
+              />
+            </>
           )}
         </Stack>
 

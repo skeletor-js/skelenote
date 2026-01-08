@@ -110,7 +110,13 @@ export type ExportFormat = 'markdown' | 'pdf' | 'html' | 'json' | 'plaintext';
 /**
  * Currently implemented export formats
  */
-export const IMPLEMENTED_FORMATS: ExportFormat[] = ['markdown', 'pdf'];
+export const IMPLEMENTED_FORMATS: ExportFormat[] = [
+  'markdown',
+  'pdf',
+  'html',
+  'json',
+  'plaintext',
+];
 
 /**
  * Export format metadata
@@ -145,22 +151,22 @@ export const EXPORT_FORMATS: ExportFormatInfo[] = [
     value: 'html',
     label: 'HTML',
     icon: 'code',
-    description: 'Web-ready HTML document',
-    implemented: false,
+    description: 'Standalone HTML with embedded styles',
+    implemented: true,
   },
   {
     value: 'json',
-    label: 'JSON',
+    label: 'JSON Backup',
     icon: 'braces',
-    description: 'Raw BlockNote JSON structure',
-    implemented: false,
+    description: 'Full-fidelity vault backup',
+    implemented: true,
   },
   {
     value: 'plaintext',
     label: 'Plain Text',
     icon: 'file-type',
     description: 'Simple text without formatting',
-    implemented: false,
+    implemented: true,
   },
 ];
 
@@ -189,6 +195,66 @@ export const DEFAULT_PDF_EXPORT_OPTIONS: PDFExportOptions = {
 };
 
 /**
+ * HTML-specific export options
+ */
+export interface HTMLExportOptions {
+  /** Theme for HTML styling */
+  theme: 'light' | 'dark';
+  /** Include the title at the top */
+  includeTitle: boolean;
+  /** Embed images as base64 data URIs */
+  embedImages: boolean;
+}
+
+/**
+ * Default HTML export options
+ */
+export const DEFAULT_HTML_EXPORT_OPTIONS: HTMLExportOptions = {
+  theme: 'light',
+  includeTitle: true,
+  embedImages: true,
+};
+
+/**
+ * JSON-specific export options
+ */
+export interface JSONExportOptions {
+  /** Include type definitions in export */
+  includeTypeDefinitions: boolean;
+  /** Include archived objects */
+  includeArchived: boolean;
+  /** Pretty-print JSON with indentation */
+  prettyPrint: boolean;
+}
+
+/**
+ * Default JSON export options
+ */
+export const DEFAULT_JSON_EXPORT_OPTIONS: JSONExportOptions = {
+  includeTypeDefinitions: true,
+  includeArchived: true,
+  prettyPrint: true,
+};
+
+/**
+ * Plain text export options
+ */
+export interface PlainTextExportOptions {
+  /** Include the title at the top */
+  includeTitle: boolean;
+  /** Style for list bullets */
+  listStyle: 'dash' | 'asterisk' | 'number';
+}
+
+/**
+ * Default plain text export options
+ */
+export const DEFAULT_PLAINTEXT_EXPORT_OPTIONS: PlainTextExportOptions = {
+  includeTitle: true,
+  listStyle: 'dash',
+};
+
+/**
  * Combined export options for the export modal
  */
 export interface CombinedExportOptions {
@@ -201,4 +267,14 @@ export interface CombinedExportOptions {
   pdfTheme: 'light' | 'dark';
   /** PDF-specific: page size */
   pageSize: 'A4' | 'LETTER';
+  /** HTML-specific: theme */
+  htmlTheme: 'light' | 'dark';
+  /** HTML-specific: embed images */
+  htmlEmbedImages: boolean;
+  /** JSON-specific: include type definitions */
+  jsonIncludeTypes: boolean;
+  /** JSON-specific: include archived */
+  jsonIncludeArchived: boolean;
+  /** Plain text: list style */
+  plaintextListStyle: 'dash' | 'asterisk' | 'number';
 }
