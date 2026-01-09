@@ -1,7 +1,7 @@
 /**
  * Search Settings Panel
  *
- * Semantic search configuration without the "Remove" option (moved to Danger Zone).
+ * Semantic search configuration including enable/disable toggle.
  * Extracted from SemanticSettings.tsx
  */
 
@@ -27,6 +27,8 @@ export function SearchSettings() {
   const objectsContext = useObjects();
   const [showEnableModal, setShowEnableModal] = useState(false);
   const [isRebuilding, setIsRebuilding] = useState(false);
+  const [showDisableConfirm, setShowDisableConfirm] = useState(false);
+  const [isDisabling, setIsDisabling] = useState(false);
 
   // Get indexable content from objects
   const getIndexableContent = useCallback((): IndexableContent[] => {
@@ -92,6 +94,17 @@ export function SearchSettings() {
       setIsRebuilding(false);
     }
   }, [semanticContext, getIndexableContent]);
+
+  const handleDisable = useCallback(async () => {
+    if (!semanticContext) return;
+    setIsDisabling(true);
+    try {
+      await semanticContext.disable(true);
+    } finally {
+      setIsDisabling(false);
+      setShowDisableConfirm(false);
+    }
+  }, [semanticContext]);
 
   if (!semanticContext) {
     return null;
@@ -182,7 +195,12 @@ export function SearchSettings() {
       ) : (
         <Stack gap="lg">
           <Group justify="space-between">
-            <Checkbox label="Enable semantic search" checked={true} readOnly />
+            <Checkbox
+              label="Enable semantic search"
+              checked={true}
+              onChange={() => setShowDisableConfirm(true)}
+              disabled={isDisabling}
+            />
             <Text
               size="sm"
               c={
@@ -200,6 +218,36 @@ export function SearchSettings() {
                   : status}
             </Text>
           </Group>
+
+          {showDisableConfirm && (
+            <Alert variant="light" color="ochre">
+              <Stack gap="xs">
+                <Text size="sm">
+                  This will delete the search index (~50MB). You can re-enable
+                  later.
+                </Text>
+                <Group gap="sm">
+                  <Button
+                    size="xs"
+                    color="brick"
+                    onClick={handleDisable}
+                    disabled={isDisabling}
+                    loading={isDisabling}
+                  >
+                    Yes, Disable
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant="default"
+                    onClick={() => setShowDisableConfirm(false)}
+                    disabled={isDisabling}
+                  >
+                    Cancel
+                  </Button>
+                </Group>
+              </Stack>
+            </Alert>
+          )}
 
           <Box>
             <Text size="sm" fw={500} mb="xs">

@@ -3,7 +3,7 @@
  * Shows: type icon, title/name, type label, created date, preview (first tag), process button
  */
 
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, memo } from 'react';
 import { Checkbox, Text, Box, Group, ActionIcon, Tooltip } from '@mantine/core';
 import { BuiltInTypeIds, type SkelenoteObject } from '@/lib/types';
 import { useObjects, useTypeRegistry, useToast } from '@/contexts';
@@ -40,7 +40,7 @@ interface InboxRowProps {
   isSelectingMode?: boolean;
 }
 
-export function InboxRow({
+export const InboxRow = memo(function InboxRow({
   item,
   onClick,
   onOpenInSplit,
@@ -78,15 +78,18 @@ export function InboxRow({
     item.properties.name ??
     'Untitled') as string;
 
-  // Get first tag for preview
+  // Get first tag for preview (memoized to prevent re-computation on every render)
   const tagIds = item.properties.tags as string[] | null;
-  const firstTag = tagIds?.[0] ? store?.get(tagIds[0]) : null;
-  const tagInfo = firstTag
-    ? {
-        name: firstTag.properties.name as string,
-        color: firstTag.properties.color as TagColor | undefined,
-      }
-    : null;
+  const tagInfo = useMemo(() => {
+    const firstTagId = tagIds?.[0];
+    if (!firstTagId || !store) return null;
+    const firstTag = store.get(firstTagId);
+    if (!firstTag) return null;
+    return {
+      name: firstTag.properties.name as string,
+      color: firstTag.properties.color as TagColor | undefined,
+    };
+  }, [tagIds, store]);
 
   // Compute date label: only show for tasks with due dates
   const dateLabel = useMemo(() => {
@@ -514,4 +517,4 @@ export function InboxRow({
       />
     </>
   );
-}
+});

@@ -4,15 +4,23 @@
  * Multi-step wizard for importing documents from various sources.
  * Lives inside the DataSettings panel.
  *
- * Supports two flows:
- * 1. File-based: Markdown, Obsidian, JSON backup, Apple Notes
- * 2. API-based: Notion (connects via API token)
+ * Supports three flows:
+ * 1. File-based: Markdown files
+ * 2. Folder-based: Obsidian vaults (with wiki-link resolution)
+ * 3. API-based: Notion (connects via API token)
  */
 
 import { useState, useCallback } from 'react';
 import { Box } from '@mantine/core';
 import { useObjects, useToast } from '@/contexts';
-import { importMarkdown } from '@/lib/import';
+import {
+  importMarkdown,
+  readVaultDirectory,
+  parseVaultFiles,
+  importObsidianVault,
+  inferTypeFromVaultFile,
+} from '@/lib/import';
+import type { ParsedVaultFile, ObsidianImportProgress } from '@/lib/import';
 import { BuiltInTypeIds, generateId } from '@/lib/types';
 import type { NotionClient } from '@/lib/import/notion-api';
 import type {
@@ -78,6 +86,12 @@ export function ImportWizard() {
 
   // File-based flow state
   const [previewItems, setPreviewItems] = useState<PreviewItem[]>([]);
+
+  // Obsidian vault flow state
+  const [vaultPath, setVaultPath] = useState<string | null>(null);
+  const [parsedVaultFiles, setParsedVaultFiles] = useState<ParsedVaultFile[]>(
+    []
+  );
 
   // Notion API flow state
   const [notionClient, setNotionClient] = useState<NotionClient | null>(null);
@@ -201,70 +215,193 @@ export function ImportWizard() {
     [startNotionImport]
   );
 
-  // File-based flow handlers
-  const handleFilesSelected = useCallback(
-    async (files: File[]) => {
-      const items: PreviewItem[] = [];
+  // Obsidian vault flow handlers
+  const handleFolderSelected = useCallback(async (path: string) => {
+    setVaultPath(path);
 
-      for (const file of files) {
-        try {
-          const content = await file.text();
+    setProgress({
+      current: 0,
+      total: 0,
+      currentDocument: 'Reading vault...',
+      phase: 'parsing',
+      startTime: Date.now(),
+    });
+    setStep('progress');
 
-          // For JSON backup, handle differently
-          if (source === 'json') {
-            items.push({
-              id: generateId(),
-              filename: file.name,
-              title: `Backup: ${file.name}`,
-              inferredType: 'backup',
-              properties: {},
-              content,
-              selected: true,
-              errors: [],
-              warnings: [],
-            });
-            continue;
-          }
+    try {
+      // Read all markdown files from the vault
+      const vaultFiles = await readVaultDirectory(path);
 
-          // Parse markdown
-          const parsed = importMarkdown(content, {
-            filePath: file.name,
-            extractTitleFromH1: true,
-          });
+      // Parse files
+      const parsed = parseVaultFiles(vaultFiles);
 
-          items.push({
-            id: generateId(),
-            filename: file.name,
-            title: parsed.title || file.name.replace(/\.md$/, ''),
-            inferredType: parsed.typeId || BuiltInTypeIds.NOTE,
-            properties: parsed.properties,
-            content: JSON.stringify(parsed.blocks),
-            selected: true,
-            errors: parsed.errors,
-            warnings: [],
-          });
-        } catch (error) {
-          items.push({
-            id: generateId(),
-            filename: file.name,
-            title: file.name,
-            inferredType: BuiltInTypeIds.NOTE,
-            properties: {},
-            content: '',
-            selected: false,
-            errors: [
-              error instanceof Error ? error.message : 'Failed to parse file',
-            ],
-            warnings: [],
-          });
-        }
+      // Apply type inference
+      for (const file of parsed) {
+        const inference = inferTypeFromVaultFile(file);
+        file.parsed.typeId = inference.typeId;
       }
 
+      setParsedVaultFiles(parsed);
+
+      // Convert to preview items for the preview step
+      const items: PreviewItem[] = parsed.map((file) => ({
+        id: generateId(),
+        filename: file.path,
+        title: file.parsed.title || file.name,
+        inferredType: file.parsed.typeId || BuiltInTypeIds.NOTE,
+        properties: file.parsed.properties,
+        content: JSON.stringify(file.parsed.blocks),
+        selected: true,
+        errors: file.parsed.errors,
+        warnings:
+          file.hashtags.length > 0
+            ? [`${file.hashtags.length} tag(s) will be created`]
+            : [],
+      }));
+
       setPreviewItems(items);
+      setProgress(null);
       setStep('preview');
+    } catch (error) {
+      setProgress(null);
+      setResult({
+        imported: 0,
+        skipped: 0,
+        errors: 1,
+        warnings: [
+          error instanceof Error ? error.message : 'Failed to read vault',
+        ],
+        objectIds: [],
+      });
+      setStep('success');
+    }
+  }, []);
+
+  const handleObsidianImport = useCallback(
+    async (items: PreviewItem[]) => {
+      if (!store) return;
+
+      // Sync preview item selections back to parsed files
+      const selectedItems = new Set(
+        items.filter((i) => i.selected).map((i) => i.filename)
+      );
+
+      // Update parsed files with user's type overrides and selection
+      const filesToImport = parsedVaultFiles
+        .map((file) => {
+          const previewItem = items.find((i) => i.filename === file.path);
+          if (previewItem) {
+            file.selected = previewItem.selected;
+            file.parsed.typeId = previewItem.inferredType;
+          }
+          return file;
+        })
+        .filter((f) => selectedItems.has(f.path));
+
+      setStep('progress');
+      const startTime = Date.now();
+
+      try {
+        const importResult = await importObsidianVault({
+          store,
+          vaultPath: vaultPath || '',
+          files: filesToImport,
+          onProgress: (obsidianProgress: ObsidianImportProgress) => {
+            setProgress({
+              current: obsidianProgress.current,
+              total: obsidianProgress.total,
+              currentDocument:
+                obsidianProgress.currentFile || obsidianProgress.message,
+              phase:
+                obsidianProgress.phase === 'complete'
+                  ? 'complete'
+                  : obsidianProgress.phase === 'linking'
+                    ? 'linking'
+                    : 'importing',
+              startTime,
+            });
+          },
+        });
+
+        refreshData();
+
+        setResult({
+          imported: importResult.imported,
+          skipped: importResult.skipped,
+          errors: importResult.errors.length,
+          warnings: importResult.errors,
+          objectIds: Array.from(importResult.fileToObjectId.values()),
+        });
+
+        setStep('success');
+
+        if (importResult.imported > 0) {
+          const tagCount = importResult.createdTags.size;
+          const tagMsg = tagCount > 0 ? ` (${tagCount} tags created)` : '';
+          addToast({
+            type: 'success',
+            message: `Imported ${importResult.imported} note${importResult.imported !== 1 ? 's' : ''} from Obsidian${tagMsg}`,
+          });
+        }
+      } catch (error) {
+        setResult({
+          imported: 0,
+          skipped: 0,
+          errors: 1,
+          warnings: [error instanceof Error ? error.message : 'Import failed'],
+          objectIds: [],
+        });
+        setStep('success');
+      }
     },
-    [source]
+    [store, vaultPath, parsedVaultFiles, refreshData, addToast]
   );
+
+  // File-based flow handlers (for regular Markdown)
+  const handleFilesSelected = useCallback(async (files: File[]) => {
+    const items: PreviewItem[] = [];
+
+    for (const file of files) {
+      try {
+        const content = await file.text();
+
+        // Parse markdown
+        const parsed = importMarkdown(content, {
+          filePath: file.name,
+          extractTitleFromH1: true,
+        });
+
+        items.push({
+          id: generateId(),
+          filename: file.name,
+          title: parsed.title || file.name.replace(/\.md$/, ''),
+          inferredType: parsed.typeId || BuiltInTypeIds.NOTE,
+          properties: parsed.properties,
+          content: JSON.stringify(parsed.blocks),
+          selected: true,
+          errors: parsed.errors,
+          warnings: [],
+        });
+      } catch (error) {
+        items.push({
+          id: generateId(),
+          filename: file.name,
+          title: file.name,
+          inferredType: BuiltInTypeIds.NOTE,
+          properties: {},
+          content: '',
+          selected: false,
+          errors: [
+            error instanceof Error ? error.message : 'Failed to parse file',
+          ],
+          warnings: [],
+        });
+      }
+    }
+
+    setPreviewItems(items);
+    setStep('preview');
+  }, []);
 
   const handleStartImport = useCallback(
     async (items: PreviewItem[]) => {
@@ -384,6 +521,8 @@ export function ImportWizard() {
     setResult(null);
     setNotionClient(null);
     setSelectedDatabases([]);
+    setVaultPath(null);
+    setParsedVaultFiles([]);
   }, []);
 
   // Go back one step
@@ -480,6 +619,7 @@ export function ImportWizard() {
         <ImportFilePicker
           source={source}
           onFilesSelected={handleFilesSelected}
+          onFolderSelected={handleFolderSelected}
           onBack={() => setStep('source')}
         />
       )}
@@ -488,7 +628,9 @@ export function ImportWizard() {
         <ImportPreview
           items={previewItems}
           onItemsChange={setPreviewItems}
-          onStartImport={handleStartImport}
+          onStartImport={
+            source === 'obsidian' ? handleObsidianImport : handleStartImport
+          }
           onBack={handleBack}
         />
       )}

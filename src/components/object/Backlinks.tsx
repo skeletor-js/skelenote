@@ -5,8 +5,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Collapse, Stack, Group, Text, Box } from '@mantine/core';
-import { useObjects, useTypeRegistry } from '@/contexts';
-import { createRelationHelper } from '@/lib/loro';
+import { useObjects } from '@/contexts';
 import { Icon } from '@/components/ui';
 import { BacklinkItem } from './BacklinkItem';
 import styles from './BacklinksSection.module.css';
@@ -19,17 +18,16 @@ interface BacklinksProps {
 const SMART_EXPAND_THRESHOLD = 3;
 
 export function Backlinks({ objectId }: BacklinksProps) {
-  const { store } = useObjects();
-  const typeRegistry = useTypeRegistry();
+  const { store, relationHelper, dataVersion } = useObjects();
   const [isExpanded, setIsExpanded] = useState<boolean | null>(null);
 
-  // Find all backlinks to this object
+  // Find all backlinks to this object (cached by dataVersion)
   const backlinks = useMemo(() => {
-    if (!store) return [];
+    if (!store || !relationHelper) return [];
 
-    const relationHelper = createRelationHelper(store, typeRegistry);
-    return relationHelper.findBacklinks(objectId);
-  }, [store, typeRegistry, objectId]);
+    // Pass dataVersion to enable caching - same dataVersion returns cached result
+    return relationHelper.findBacklinks(objectId, dataVersion);
+  }, [store, relationHelper, objectId, dataVersion]);
 
   // Group backlinks by source object to avoid duplicates in display
   // Also filter out deleted source objects
