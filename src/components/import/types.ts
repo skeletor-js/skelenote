@@ -8,12 +8,7 @@ import { BuiltInTypeIds } from '@/lib/types';
 /**
  * Available import sources
  */
-export type ImportSource =
-  | 'notion'
-  | 'obsidian'
-  | 'markdown'
-  | 'json'
-  | 'apple-notes';
+export type ImportSource = 'notion' | 'obsidian' | 'markdown';
 
 /**
  * Import wizard steps
@@ -86,35 +81,6 @@ export const IMPORT_SOURCES: ImportSourceConfig[] = [
         'Select one or more .md files',
         'YAML frontmatter will be parsed as properties',
         'First H1 heading becomes the title',
-      ],
-    },
-  },
-  {
-    value: 'json',
-    label: 'JSON',
-    icon: 'download',
-    acceptedTypes: '.json',
-    supportsFolder: false,
-    instructions: {
-      title: 'Skelenote backup',
-      steps: [
-        'Select a previously exported .json backup file',
-        'All objects, relations, and content will be restored',
-      ],
-    },
-  },
-  {
-    value: 'apple-notes',
-    label: 'Apple Notes',
-    icon: 'file-text',
-    acceptedTypes: '.md,.html,.txt',
-    supportsFolder: true,
-    instructions: {
-      title: 'Export from Apple Notes',
-      steps: [
-        'In Apple Notes, select notes to export',
-        'Use File > Export as PDF or a third-party exporter',
-        'Select the exported files below',
       ],
     },
   },

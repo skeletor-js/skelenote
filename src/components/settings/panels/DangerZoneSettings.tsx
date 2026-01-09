@@ -1,31 +1,21 @@
 /**
  * Danger Zone Settings Panel
  *
- * Consolidated destructive actions: Reset Vault and Remove Semantic Search.
- * Extracted from SyncSettings.tsx and SemanticSettings.tsx.
+ * Destructive actions: Reset Vault.
+ * Extracted from SyncSettings.tsx.
  */
 
 import { useState, useCallback } from 'react';
 import { Stack, Group, Text, Box, Button, Alert, Divider } from '@mantine/core';
 import { Icon } from '@/components/ui';
-import {
-  useSyncContextSafe,
-  useSkeletonKeySafe,
-  useSemanticSearchSafe,
-} from '@/contexts';
+import { useSyncContextSafe, useSkeletonKeySafe } from '@/contexts';
 
 export function DangerZoneSettings() {
   const syncContext = useSyncContextSafe();
   const skeletonKeyContext = useSkeletonKeySafe();
-  const semanticContext = useSemanticSearchSafe();
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  const [showRemoveSemanticConfirm, setShowRemoveSemanticConfirm] =
-    useState(false);
-  const [isRemovingSemantic, setIsRemovingSemantic] = useState(false);
-
-  const isSemanticEnabled = semanticContext?.isEnabled ?? false;
 
   // Handle vault reset
   const handleResetVault = useCallback(async () => {
@@ -47,19 +37,6 @@ export function DangerZoneSettings() {
       setShowResetConfirm(false);
     }
   }, [skeletonKeyContext, syncContext]);
-
-  // Handle semantic search removal
-  const handleRemoveSemantic = useCallback(async () => {
-    if (!semanticContext) return;
-
-    setIsRemovingSemantic(true);
-    try {
-      await semanticContext.disable(true);
-    } finally {
-      setIsRemovingSemantic(false);
-      setShowRemoveSemanticConfirm(false);
-    }
-  }, [semanticContext]);
 
   return (
     <Stack gap="lg">
@@ -135,51 +112,6 @@ export function DangerZoneSettings() {
               </Button>
             )}
           </Box>
-
-          {/* Remove Semantic Search - only show if enabled */}
-          {isSemanticEnabled && (
-            <Box>
-              <Text size="sm" fw={500} mb="xs">
-                Remove Semantic Search
-              </Text>
-              <Text size="xs" c="dimmed" mb="sm">
-                Disables the feature and deletes the model and index to free
-                ~50MB storage. You can re-enable it later if needed.
-              </Text>
-
-              {showRemoveSemanticConfirm ? (
-                <Group gap="sm">
-                  <Text size="sm">Are you sure?</Text>
-                  <Button
-                    size="xs"
-                    color="brick"
-                    onClick={handleRemoveSemantic}
-                    disabled={isRemovingSemantic}
-                    loading={isRemovingSemantic}
-                  >
-                    Yes, Remove
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="default"
-                    onClick={() => setShowRemoveSemanticConfirm(false)}
-                    disabled={isRemovingSemantic}
-                  >
-                    Cancel
-                  </Button>
-                </Group>
-              ) : (
-                <Button
-                  variant="outline"
-                  color="brick"
-                  size="sm"
-                  onClick={() => setShowRemoveSemanticConfirm(true)}
-                >
-                  Remove Semantic Search
-                </Button>
-              )}
-            </Box>
-          )}
         </Stack>
       </Alert>
     </Stack>

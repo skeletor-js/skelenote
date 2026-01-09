@@ -119,44 +119,65 @@ export function useSemanticIndexSync({
     [getEngine, processChange]
   );
 
+  // Ref to track debounce timer for data version changes
+  const dataVersionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
+
   // Detect changes when dataVersion changes (create, update properties, delete)
+  // Debounced to prevent O(n) rescans on rapid mutations
   useEffect(() => {
     if (!store || !isEnabled) return;
 
-    const currentObjects = store.getAll({ includeArchived: true });
-    const currentIds = new Set(currentObjects.map((o) => o.id));
-
-    // Detect deletions
-    for (const prevId of previousObjectIdsRef.current) {
-      if (!currentIds.has(prevId)) {
-        queueChange(prevId, 'delete');
-      }
+    // Clear existing debounce timer
+    if (dataVersionDebounceRef.current) {
+      clearTimeout(dataVersionDebounceRef.current);
     }
 
-    // Detect creates and property updates
-    for (const obj of currentObjects) {
-      const indexable = getIndexableContentForObject(
-        obj.id,
-        store,
-        typeRegistry
-      );
-      if (!indexable) continue;
+    // Debounce the rescan by 500ms to batch rapid mutations
+    dataVersionDebounceRef.current = setTimeout(() => {
+      const currentObjects = store.getAll({ includeArchived: true });
+      const currentIds = new Set(currentObjects.map((o) => o.id));
 
-      const currentHash = hashContent(indexable.title + indexable.content);
-      const previousHash = objectHashesRef.current.get(obj.id);
-
-      // Skip if this object has a pending content change (will be handled on flush)
-      if (pendingContentChangesRef.current.has(obj.id)) {
-        continue;
+      // Detect deletions
+      for (const prevId of previousObjectIdsRef.current) {
+        if (!currentIds.has(prevId)) {
+          queueChange(prevId, 'delete');
+        }
       }
 
-      if (previousHash !== currentHash) {
-        queueChange(obj.id, 'upsert');
-      }
-    }
+      // Detect creates and property updates
+      for (const obj of currentObjects) {
+        const indexable = getIndexableContentForObject(
+          obj.id,
+          store,
+          typeRegistry
+        );
+        if (!indexable) continue;
 
-    // Update previous IDs for next comparison
-    previousObjectIdsRef.current = currentIds;
+        const currentHash = hashContent(indexable.title + indexable.content);
+        const previousHash = objectHashesRef.current.get(obj.id);
+
+        // Skip if this object has a pending content change (will be handled on flush)
+        if (pendingContentChangesRef.current.has(obj.id)) {
+          continue;
+        }
+
+        if (previousHash !== currentHash) {
+          queueChange(obj.id, 'upsert');
+        }
+      }
+
+      // Update previous IDs for next comparison
+      previousObjectIdsRef.current = currentIds;
+    }, 500);
+
+    // Cleanup on unmount or re-run
+    return () => {
+      if (dataVersionDebounceRef.current) {
+        clearTimeout(dataVersionDebounceRef.current);
+      }
+    };
   }, [dataVersion, store, isEnabled, typeRegistry, queueChange]);
 
   // Process queue when engine becomes ready

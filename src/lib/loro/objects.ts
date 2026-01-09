@@ -43,16 +43,42 @@ export class ValidationError extends Error {
 }
 
 /**
+ * Cached result of getAll() to avoid repeated serialization
+ */
+interface ObjectsCache {
+  /** All objects including archived */
+  all: SkelenoteObject[];
+  /** All objects excluding archived */
+  nonArchived: SkelenoteObject[];
+}
+
+/**
  * ObjectStore provides CRUD operations for skelenote objects
  */
 export class ObjectStore {
   private doc: LoroDoc;
   private typeRegistry: TypeRegistry;
+  /** Cache for getAll() results to avoid repeated objectsMap.toJSON() calls */
+  private objectsCache: ObjectsCache | null = null;
 
   constructor(doc: LoroDoc, typeRegistry: TypeRegistry) {
     this.doc = doc;
     this.typeRegistry = typeRegistry;
     initializeDocument(doc);
+  }
+
+  /**
+   * Invalidate the objects cache (call after any mutation)
+   */
+  private invalidateCache(): void {
+    this.objectsCache = null;
+  }
+
+  /**
+   * Public method to invalidate cache (useful for external sync updates)
+   */
+  clearCache(): void {
+    this.objectsCache = null;
   }
 
   /**
@@ -94,6 +120,9 @@ export class ObjectStore {
       getContentText(this.doc, obj.id);
     }
 
+    // Invalidate cache after mutation
+    this.invalidateCache();
+
     return obj;
   }
 
@@ -123,30 +152,38 @@ export class ObjectStore {
   }
 
   /**
-   * Options for querying objects
-   */
-  /**
-   * Get all objects
+   * Get all objects (cached to avoid repeated serialization)
    * @param options.includeArchived - Include archived objects (default: false)
    */
   getAll(options?: { includeArchived?: boolean }): SkelenoteObject[] {
-    const objectsMap = getObjectsMap(this.doc);
-    const objects: SkelenoteObject[] = [];
+    // Return cached result if available
+    if (this.objectsCache) {
+      return options?.includeArchived
+        ? this.objectsCache.all
+        : this.objectsCache.nonArchived;
+    }
 
-    // Iterate over all entries in the map
+    // Build cache from Loro map
+    const objectsMap = getObjectsMap(this.doc);
+    const all: SkelenoteObject[] = [];
+
+    // Iterate over all entries in the map (expensive: toJSON serializes everything)
     const entries = objectsMap.toJSON() as Record<string, string>;
     for (const data of Object.values(entries)) {
       if (typeof data === 'string') {
-        objects.push(deserializeObject(data));
+        all.push(deserializeObject(data));
       }
     }
 
-    // Exclude archived unless explicitly requested
-    if (!options?.includeArchived) {
-      return objects.filter((obj) => !obj.archived);
-    }
+    // Cache both variants
+    this.objectsCache = {
+      all,
+      nonArchived: all.filter((obj) => !obj.archived),
+    };
 
-    return objects;
+    return options?.includeArchived
+      ? this.objectsCache.all
+      : this.objectsCache.nonArchived;
   }
 
   /**
@@ -189,6 +226,9 @@ export class ObjectStore {
     const objectsMap = getObjectsMap(this.doc);
     objectsMap.set(id, serializeObject(updated));
 
+    // Invalidate cache after mutation
+    this.invalidateCache();
+
     return updated;
   }
 
@@ -222,6 +262,9 @@ export class ObjectStore {
       if (index !== -1) {
         pinnedOrder.delete(index, 1);
       }
+
+      // Invalidate cache after mutation
+      this.invalidateCache();
     }
 
     return exists;
@@ -310,6 +353,9 @@ export class ObjectStore {
     const pinnedOrder = getPinnedOrderList(this.doc);
     pinnedOrder.push(objectId);
 
+    // Invalidate cache after mutation
+    this.invalidateCache();
+
     return updated;
   }
 
@@ -341,6 +387,9 @@ export class ObjectStore {
     if (index !== -1) {
       pinnedOrder.delete(index, 1);
     }
+
+    // Invalidate cache after mutation
+    this.invalidateCache();
 
     return updated;
   }
@@ -409,6 +458,9 @@ export class ObjectStore {
     const objectsMap = getObjectsMap(this.doc);
     objectsMap.set(objectId, serializeObject(updated));
 
+    // Invalidate cache after mutation
+    this.invalidateCache();
+
     return updated;
   }
 
@@ -433,27 +485,17 @@ export class ObjectStore {
     const objectsMap = getObjectsMap(this.doc);
     objectsMap.set(objectId, serializeObject(updated));
 
+    // Invalidate cache after mutation
+    this.invalidateCache();
+
     return updated;
   }
 
   /**
-   * Get all archived objects
+   * Get all archived objects (uses cached getAll)
    */
   getArchived(): SkelenoteObject[] {
-    const objectsMap = getObjectsMap(this.doc);
-    const objects: SkelenoteObject[] = [];
-
-    const entries = objectsMap.toJSON() as Record<string, string>;
-    for (const data of Object.values(entries)) {
-      if (typeof data === 'string') {
-        const obj = deserializeObject(data);
-        if (obj.archived) {
-          objects.push(obj);
-        }
-      }
-    }
-
-    return objects;
+    return this.getAll({ includeArchived: true }).filter((obj) => obj.archived);
   }
 
   // ─────────────────────────────────────────────────────────────────────────

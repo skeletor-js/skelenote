@@ -979,6 +979,83 @@ async fn save_attachment(
     Ok(format!("file://{}", file_path.display()))
 }
 
+// ============================================================================
+// Import Commands - Vault/Folder Reading
+// ============================================================================
+
+/// A file from an Obsidian vault or markdown folder
+#[derive(serde::Serialize)]
+struct VaultFile {
+    /// Relative path from vault root (e.g., "Projects/my-note.md")
+    path: String,
+    /// File content as UTF-8 string
+    content: String,
+}
+
+/// Read all markdown files from a directory recursively
+///
+/// Used for Obsidian vault import and bulk markdown import.
+/// Returns an array of { path, content } for each .md file.
+#[tauri::command]
+async fn read_vault_directory(directory: String) -> Result<Vec<VaultFile>, String> {
+    use std::path::Path;
+    use walkdir::WalkDir;
+
+    let root = Path::new(&directory);
+    if !root.is_dir() {
+        return Err(format!("Not a directory: {}", directory));
+    }
+
+    let mut files = Vec::new();
+
+    for entry in WalkDir::new(&root)
+        .follow_links(true)
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
+        let path = entry.path();
+
+        // Skip directories and non-markdown files
+        if !path.is_file() {
+            continue;
+        }
+
+        let extension = path.extension().and_then(|s| s.to_str());
+        if extension != Some("md") && extension != Some("markdown") {
+            continue;
+        }
+
+        // Skip hidden files and folders (starting with .)
+        let relative_path = path.strip_prefix(&root).unwrap_or(path);
+        if relative_path
+            .components()
+            .any(|c| c.as_os_str().to_string_lossy().starts_with('.'))
+        {
+            continue;
+        }
+
+        // Read file content
+        match std::fs::read_to_string(path) {
+            Ok(content) => {
+                files.push(VaultFile {
+                    path: relative_path.to_string_lossy().to_string(),
+                    content,
+                });
+            }
+            Err(e) => {
+                // Log error but continue with other files
+                eprintln!("Failed to read {}: {}", path.display(), e);
+            }
+        }
+    }
+
+    // Sort by path for consistent ordering
+    files.sort_by(|a, b| a.path.cmp(&b.path));
+
+    println!("[Import] Read {} markdown files from {}", files.len(), directory);
+    Ok(files)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -1058,6 +1135,8 @@ pub fn run() {
             device_get_blocked,
             // Attachment Storage commands
             save_attachment,
+            // Import commands
+            read_vault_directory,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

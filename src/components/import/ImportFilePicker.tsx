@@ -2,10 +2,20 @@
  * Import File Picker (Step 2)
  *
  * File selection with source-specific instructions.
+ * Supports both file selection and folder selection (for Obsidian vaults).
  */
 
-import { useState } from 'react';
-import { Stack, Text, Alert, FileInput, Button, Group } from '@mantine/core';
+import { useState, useCallback } from 'react';
+import {
+  Stack,
+  Text,
+  Alert,
+  FileInput,
+  Button,
+  Group,
+  TextInput,
+} from '@mantine/core';
+import { open as openDialog } from '@tauri-apps/plugin-dialog';
 import { Icon } from '@/components/ui/Icon';
 import { getSourceConfig, type ImportSource } from './types';
 import classes from './ImportWizard.module.css';
@@ -13,16 +23,22 @@ import classes from './ImportWizard.module.css';
 interface ImportFilePickerProps {
   source: ImportSource;
   onFilesSelected: (files: File[]) => void;
+  onFolderSelected?: (path: string) => void;
   onBack: () => void;
 }
 
 export function ImportFilePicker({
   source,
   onFilesSelected,
+  onFolderSelected,
   onBack,
 }: ImportFilePickerProps) {
   const [files, setFiles] = useState<File[]>([]);
+  const [folderPath, setFolderPath] = useState<string | null>(null);
   const config = getSourceConfig(source);
+
+  // For Obsidian, we use folder selection
+  const useFolderPicker = source === 'obsidian';
 
   const handleFileChange = (selectedFiles: File | File[] | null) => {
     if (!selectedFiles) {
@@ -35,16 +51,31 @@ export function ImportFilePicker({
     setFiles(fileArray);
   };
 
+  const handleFolderSelect = useCallback(async () => {
+    try {
+      const selected = await openDialog({
+        directory: true,
+        multiple: false,
+        title: 'Select Obsidian Vault',
+      });
+
+      if (selected && typeof selected === 'string') {
+        setFolderPath(selected);
+      }
+    } catch (error) {
+      console.error('Failed to open folder dialog:', error);
+    }
+  }, []);
+
   const handleContinue = () => {
-    if (files.length > 0) {
+    if (useFolderPicker && folderPath && onFolderSelected) {
+      onFolderSelected(folderPath);
+    } else if (files.length > 0) {
       onFilesSelected(files);
     }
   };
 
-  const placeholderText =
-    source === 'json'
-      ? 'Select .json file'
-      : `Select ${config.acceptedTypes} files`;
+  const canContinue = useFolderPicker ? !!folderPath : files.length > 0;
 
   return (
     <Stack gap="md">
@@ -66,19 +97,44 @@ export function ImportFilePicker({
         </Stack>
       </Alert>
 
-      <FileInput
-        placeholder={placeholderText}
-        accept={config.acceptedTypes}
-        multiple={source !== 'json'}
-        leftSection={<Icon name="upload" size={14} />}
-        value={files.length > 1 ? files : files[0] || null}
-        onChange={handleFileChange}
-        clearable
-      />
+      {useFolderPicker ? (
+        <Group gap="sm">
+          <TextInput
+            placeholder="No folder selected"
+            value={folderPath || ''}
+            readOnly
+            leftSection={<Icon name="folder" size={14} />}
+            style={{ flex: 1 }}
+          />
+          <Button
+            variant="default"
+            onClick={handleFolderSelect}
+            leftSection={<Icon name="folder" size={14} />}
+          >
+            Browse
+          </Button>
+        </Group>
+      ) : (
+        <FileInput
+          placeholder={`Select ${config.acceptedTypes} files`}
+          accept={config.acceptedTypes}
+          multiple
+          leftSection={<Icon name="upload" size={14} />}
+          value={files.length > 0 ? files : undefined}
+          onChange={handleFileChange}
+          clearable
+        />
+      )}
 
-      {files.length > 0 && (
+      {!useFolderPicker && files.length > 0 && (
         <Text size="xs" c="dimmed">
           {files.length} file{files.length !== 1 ? 's' : ''} selected
+        </Text>
+      )}
+
+      {useFolderPicker && folderPath && (
+        <Text size="xs" c="dimmed">
+          Vault selected: {folderPath.split('/').pop()}
         </Text>
       )}
 
@@ -90,7 +146,7 @@ export function ImportFilePicker({
           variant="filled"
           color="ember"
           onClick={handleContinue}
-          disabled={files.length === 0}
+          disabled={!canContinue}
         >
           Continue
         </Button>

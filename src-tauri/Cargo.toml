@@ -47,6 +47,7 @@ hostname = "0.4"  # For device name detection
 mdns-sd = "0.11"  # mDNS service discovery (Bonjour/Avahi)
 local-ip-address = "0.6"  # For getting local network IP addresses
 flume = "0.11"  # Channel types used by mdns-sd
+walkdir = "2"  # Recursive directory traversal for import
 tauri-plugin-dialog = "2.4.2"
 tauri-plugin-http = "=2.3.0"  # Pinned - v2.4+ has streamChannel bug (github.com/tauri-apps/plugins-workspace/issues/2546)
 

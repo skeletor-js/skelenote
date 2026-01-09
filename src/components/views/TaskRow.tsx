@@ -3,7 +3,7 @@
  * Shows: checkbox, title, due date, project, tags
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo, memo } from 'react';
 import {
   UnstyledButton,
   Checkbox,
@@ -47,7 +47,7 @@ interface TaskRowProps {
   isSelectingMode?: boolean;
 }
 
-export function TaskRow({
+export const TaskRow = memo(function TaskRow({
   task,
   onToggleComplete,
   onClick,
@@ -71,21 +71,27 @@ export function TaskRow({
   const dueDate = task.properties.dueDate as number | null;
   const title = task.properties.title as string;
 
-  // Get project name
+  // Get project name (memoized to prevent re-computation on every render)
   const projectId = task.properties.project as string | null;
-  const project = projectId ? store?.get(projectId) : null;
-  const projectName = project?.properties.name as string | undefined;
+  const projectName = useMemo(() => {
+    if (!projectId || !store) return undefined;
+    const project = store.get(projectId);
+    return project?.properties.name as string | undefined;
+  }, [projectId, store]);
 
-  // Get tags
+  // Get tags (memoized to prevent re-computation on every render)
   const tagIds = task.properties.tags as string[] | null;
-  const tags = tagIds
-    ?.map((id) => store?.get(id))
-    .filter((t): t is SkelenoteObject => t !== undefined)
-    .map((t) => ({
-      id: t.id,
-      name: t.properties.name as string,
-      color: t.properties.color as TagColor | undefined,
-    }));
+  const tags = useMemo(() => {
+    if (!tagIds || !store) return undefined;
+    return tagIds
+      .map((id) => store.get(id))
+      .filter((t): t is SkelenoteObject => t !== undefined)
+      .map((t) => ({
+        id: t.id,
+        name: t.properties.name as string,
+        color: t.properties.color as TagColor | undefined,
+      }));
+  }, [tagIds, store]);
 
   // Check if overdue
   const isTaskOverdue = dueDate !== null && !isComplete && isOverdue(dueDate);
@@ -516,4 +522,4 @@ export function TaskRow({
       />
     </>
   );
-}
+});

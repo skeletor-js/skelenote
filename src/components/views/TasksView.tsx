@@ -87,7 +87,7 @@ export function TasksView() {
   });
   const { refreshData, store } = useObjects();
 
-  // Get counts for badge display
+  // Get counts for badge display (single pass for efficiency)
   const { countToday, countThisWeek, countOverdue, countWaiting } =
     useMemo(() => {
       if (!store) {
@@ -100,11 +100,30 @@ export function TasksView() {
       }
       const allTasks = store.getByType('built-in:task');
 
+      // Pre-compute filters once (avoid creating new functions in loop)
+      const todayFilter = getTaskFilter('today');
+      const thisWeekFilter = getTaskFilter('this-week');
+      const overdueFilter = getTaskFilter('overdue');
+      const waitingFilter = getTaskFilter('waiting');
+
+      // Single pass through tasks to count all categories
+      let today = 0;
+      let thisWeek = 0;
+      let overdue = 0;
+      let waiting = 0;
+
+      for (const task of allTasks) {
+        if (todayFilter(task)) today++;
+        if (thisWeekFilter(task)) thisWeek++;
+        if (overdueFilter(task)) overdue++;
+        if (waitingFilter(task)) waiting++;
+      }
+
       return {
-        countToday: allTasks.filter(getTaskFilter('today')).length,
-        countThisWeek: allTasks.filter(getTaskFilter('this-week')).length,
-        countOverdue: allTasks.filter(getTaskFilter('overdue')).length,
-        countWaiting: allTasks.filter(getTaskFilter('waiting')).length,
+        countToday: today,
+        countThisWeek: thisWeek,
+        countOverdue: overdue,
+        countWaiting: waiting,
       };
     }, [store]);
 

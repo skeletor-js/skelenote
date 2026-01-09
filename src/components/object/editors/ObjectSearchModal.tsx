@@ -51,6 +51,8 @@ export function ObjectSearchModal({
 
     const allObjects = store.getAll();
     const lowerQuery = query.toLowerCase();
+    // Convert excludeIds to Set for O(1) lookup instead of O(n) array scan
+    const excludeIdsSet = new Set(excludeIds);
 
     return allObjects.filter((obj: SkelenoteObject) => {
       // Filter by target types if specified
@@ -58,8 +60,8 @@ export function ObjectSearchModal({
         if (!targetTypeIds.includes(obj.typeId)) return false;
       }
 
-      // Exclude already selected objects
-      if (excludeIds.includes(obj.id)) return false;
+      // Exclude already selected objects (O(1) Set lookup)
+      if (excludeIdsSet.has(obj.id)) return false;
 
       // Apply custom filter if provided
       if (filterFn && !filterFn(obj)) return false;

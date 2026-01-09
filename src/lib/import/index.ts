@@ -7,7 +7,6 @@
  * This module is the foundation for all import wizards:
  * - Obsidian
  * - Notion
- * - Apple Notes
  * - Generic Markdown
  */
 
@@ -68,3 +67,21 @@ export type {
 } from './notion-import';
 
 export type { TypeInferenceResult } from './notion-type-inference';
+
+// Obsidian vault import
+export {
+  readVaultDirectory,
+  parseVaultFiles,
+  importObsidianVault,
+  extractHashtags,
+  inferTypeFromVaultFile,
+} from './obsidian';
+
+export type {
+  VaultFile,
+  ParsedVaultFile,
+  ObsidianImportProgress,
+  ObsidianImportResult,
+  ObsidianImportOptions,
+  ObsidianProgressCallback,
+} from './obsidian';

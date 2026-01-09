@@ -98,15 +98,32 @@ export function getRelationProperties(
 }
 
 /**
+ * Cache entry for backlinks computation
+ */
+interface BacklinksCacheEntry {
+  backlinks: Backlink[];
+  dataVersion: number;
+}
+
+/**
  * RelationHelper provides utilities for managing relations and computing backlinks
  */
 export class RelationHelper {
   private store: ObjectStore;
   private typeRegistry: TypeRegistry;
+  /** Cache for backlinks computation to avoid O(n²) on repeated calls */
+  private backlinksCache: Map<string, BacklinksCacheEntry> = new Map();
 
   constructor(store: ObjectStore, typeRegistry: TypeRegistry) {
     this.store = store;
     this.typeRegistry = typeRegistry;
+  }
+
+  /**
+   * Clear the backlinks cache (call when data changes)
+   */
+  clearBacklinksCache(): void {
+    this.backlinksCache.clear();
   }
 
   /**
@@ -142,8 +159,21 @@ export class RelationHelper {
   /**
    * Find all objects that reference the given object ID (backlinks)
    * Includes both relation properties and @-mentions in content
+   *
+   * @param targetId - The object ID to find backlinks for
+   * @param dataVersion - Optional version number for cache invalidation.
+   *   If provided, cached results are returned when version matches.
    */
-  findBacklinks(targetId: string): Backlink[] {
+  findBacklinks(targetId: string, dataVersion?: number): Backlink[] {
+    // Check cache if dataVersion is provided
+    if (dataVersion !== undefined) {
+      const cached = this.backlinksCache.get(targetId);
+      if (cached && cached.dataVersion === dataVersion) {
+        return cached.backlinks;
+      }
+    }
+
+    // Compute backlinks (O(n) scan)
     const backlinks: Backlink[] = [];
 
     for (const obj of this.store.getAll()) {
@@ -181,6 +211,11 @@ export class RelationHelper {
           // Content not available, skip
         }
       }
+    }
+
+    // Store in cache if dataVersion is provided
+    if (dataVersion !== undefined) {
+      this.backlinksCache.set(targetId, { backlinks, dataVersion });
     }
 
     return backlinks;
