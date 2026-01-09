@@ -50,3 +50,21 @@ export type {
 } from './types';
 
 export { DEFAULT_IMPORT_OPTIONS } from './types';
+
+// Notion API import (dynamically loaded)
+// These are re-exported for convenience, but the modules use dynamic imports internally
+export type {
+  NotionDatabaseInfo,
+  NotionPageInfo,
+  DatabasePropertySchema,
+  ProgressCallback,
+} from './notion-api';
+
+export type {
+  SelectedDatabase,
+  NotionImportOptions,
+  NotionImportProgress,
+  NotionImportResult,
+} from './notion-import';
+
+export type { TypeInferenceResult } from './notion-type-inference';

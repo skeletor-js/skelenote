@@ -3,6 +3,7 @@
  */
 
 import type { IconName } from '@/lib/icons';
+import { BuiltInTypeIds } from '@/lib/types';
 
 /**
  * Available import sources
@@ -47,15 +48,14 @@ export const IMPORT_SOURCES: ImportSourceConfig[] = [
     value: 'notion',
     label: 'Notion',
     icon: 'globe',
-    acceptedTypes: '.zip',
+    acceptedTypes: '', // Uses API, not file upload
     supportsFolder: false,
     instructions: {
-      title: 'Export from Notion',
+      title: 'Connect to Notion',
       steps: [
-        'In Notion, go to Settings & Members > Settings',
-        'Scroll to Export all workspace content',
-        'Choose Markdown & CSV format',
-        'Upload the exported ZIP file below',
+        'Create an integration at notion.so/my-integrations',
+        'Share databases with your integration',
+        'Paste your integration token',
       ],
     },
   },
@@ -172,9 +172,12 @@ export interface ImportResult {
  * Type options for manual type override in preview
  */
 export const TYPE_OPTIONS = [
-  { value: 'built-in:note', label: 'Note' },
-  { value: 'built-in:task', label: 'Task' },
-  { value: 'built-in:project', label: 'Project' },
-  { value: 'built-in:area', label: 'Area' },
-  { value: 'built-in:meeting', label: 'Meeting' },
-] as const;
+  { value: BuiltInTypeIds.TASK, label: 'Task' },
+  { value: BuiltInTypeIds.NOTE, label: 'Note' },
+  { value: BuiltInTypeIds.PROJECT, label: 'Project' },
+  { value: BuiltInTypeIds.AREA, label: 'Area' },
+  { value: BuiltInTypeIds.MEETING, label: 'Meeting' },
+  { value: BuiltInTypeIds.LINK, label: 'Link' },
+  { value: BuiltInTypeIds.PERSON, label: 'Person' },
+  { value: BuiltInTypeIds.TAG, label: 'Tag' },
+];

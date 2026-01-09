@@ -327,6 +327,30 @@ export function ObjectDetailView({
     [store, objectId, refreshData]
   );
 
+  const handleTypeChange = useCallback(
+    (newTypeId: string) => {
+      if (!store) return;
+      const object = store.get(objectId);
+      if (!object || object.typeId === newTypeId) return;
+
+      const result = store.changeTypeMany([objectId], newTypeId);
+      if (result.updated > 0) {
+        refreshData();
+        const targetType = typeRegistry.get(newTypeId);
+        addToast({
+          type: 'success',
+          message: `Changed to ${targetType?.name ?? newTypeId}`,
+        });
+      } else if (result.errors.length > 0) {
+        addToast({
+          type: 'error',
+          message: 'Failed to change type',
+        });
+      }
+    },
+    [store, objectId, refreshData, typeRegistry, addToast]
+  );
+
   const handleContentChange = useCallback(
     (content: string) => {
       if (!store) return;
@@ -498,6 +522,8 @@ export function ObjectDetailView({
         canDuplicate={canDuplicate(objectId)}
         showBackToTimeMachine={isVersionComparison}
         onBackToTimeMachine={handleBackToTimeMachine}
+        onTypeChange={handleTypeChange}
+        canChangeType={!isDailyNote && object.typeId !== 'built-in:template'}
       />
 
       {/* Scrollable content area */}
