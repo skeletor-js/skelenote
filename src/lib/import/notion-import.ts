@@ -69,8 +69,8 @@ export interface NotionImportResult {
   imported: number;
   skipped: number;
   errors: string[];
-  /** Mapping from Notion page ID to Skelenote object ID */
-  idMapping: Map<string, string>;
+  /** Mapping from Notion page ID to Skelenote object metadata */
+  idMapping: Map<string, { objectId: string; typeId: string; title: string }>;
   /** Created tag IDs */
   createdTags: Map<string, string>;
 }
@@ -246,17 +246,18 @@ export async function importFromNotion(
           result.createdTags,
           result.idMapping
         );
-        return { pageId: page.id, objectId, title: page.title };
+        return { pageId: page.id, objectId, title: page.title, typeId };
       })
     );
 
     // Process results
     for (const batchResult of batchResults) {
       if (batchResult.status === 'fulfilled') {
-        result.idMapping.set(
-          batchResult.value.pageId,
-          batchResult.value.objectId
-        );
+        result.idMapping.set(batchResult.value.pageId, {
+          objectId: batchResult.value.objectId,
+          typeId: batchResult.value.typeId,
+          title: batchResult.value.title,
+        });
         importedCount++;
         result.imported++;
       } else {
@@ -302,7 +303,7 @@ async function importPage(
   page: NotionPageInfo,
   typeId: string,
   createdTags: Map<string, string>,
-  idMapping: Map<string, string>
+  idMapping: Map<string, { objectId: string; typeId: string; title: string }>
 ): Promise<string> {
   // Convert properties
   const converted = convertNotionProperties(page.properties, typeId);
@@ -349,10 +350,16 @@ async function importPage(
 
     if (blocks.length > 0) {
       // Build page relation map for @mention resolution
-      const pageRelations = new Map<string, { id: string; title: string }>();
-      for (const [notionId, skelenoteId] of idMapping) {
-        // We'd need the title here - for now just use the ID
-        pageRelations.set(notionId, { id: skelenoteId, title: notionId });
+      const pageRelations = new Map<
+        string,
+        { id: string; title: string; typeId: string }
+      >();
+      for (const [notionId, mapping] of idMapping) {
+        pageRelations.set(notionId, {
+          id: mapping.objectId,
+          title: mapping.title,
+          typeId: mapping.typeId,
+        });
       }
 
       const blockNoteBlocks = convertNotionBlocks(

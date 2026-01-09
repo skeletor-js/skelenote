@@ -62,7 +62,7 @@ function getRichText(
  */
 export function convertNotionBlocks(
   blocks: NotionBlock[],
-  pageRelations?: Map<string, { id: string; title: string }>
+  pageRelations?: Map<string, { id: string; title: string; typeId: string }>
 ): BlockNoteBlock[] {
   const result: BlockNoteBlock[] = [];
 
@@ -81,7 +81,7 @@ export function convertNotionBlocks(
  */
 function convertBlock(
   block: NotionBlock,
-  pageRelations?: Map<string, { id: string; title: string }>
+  pageRelations?: Map<string, { id: string; title: string; typeId: string }>
 ): BlockNoteBlock | null {
   const blockType = block.type;
 
@@ -171,7 +171,7 @@ function convertBlock(
  */
 function convertParagraph(
   block: NotionBlock,
-  pageRelations?: Map<string, { id: string; title: string }>
+  pageRelations?: Map<string, { id: string; title: string; typeId: string }>
 ): BlockNoteBlock {
   const data = getBlockData(block);
   return {
@@ -185,7 +185,7 @@ function convertParagraph(
  */
 function convertHeading(
   block: NotionBlock,
-  pageRelations?: Map<string, { id: string; title: string }>
+  pageRelations?: Map<string, { id: string; title: string; typeId: string }>
 ): BlockNoteBlock {
   const data = getBlockData(block);
   const richText = getRichText(data);
@@ -206,7 +206,7 @@ function convertHeading(
  */
 function convertBulletListItem(
   block: NotionBlock,
-  pageRelations?: Map<string, { id: string; title: string }>
+  pageRelations?: Map<string, { id: string; title: string; typeId: string }>
 ): BlockNoteBlock {
   const data = getBlockData(block);
   return {
@@ -220,7 +220,7 @@ function convertBulletListItem(
  */
 function convertNumberedListItem(
   block: NotionBlock,
-  pageRelations?: Map<string, { id: string; title: string }>
+  pageRelations?: Map<string, { id: string; title: string; typeId: string }>
 ): BlockNoteBlock {
   const data = getBlockData(block);
   return {
@@ -234,7 +234,7 @@ function convertNumberedListItem(
  */
 function convertToDo(
   block: NotionBlock,
-  pageRelations?: Map<string, { id: string; title: string }>
+  pageRelations?: Map<string, { id: string; title: string; typeId: string }>
 ): BlockNoteBlock {
   const data = getBlockData(block);
   return {
@@ -265,11 +265,11 @@ function convertCode(block: NotionBlock): BlockNoteBlock {
  */
 function convertQuote(
   block: NotionBlock,
-  pageRelations?: Map<string, { id: string; title: string }>
+  pageRelations?: Map<string, { id: string; title: string; typeId: string }>
 ): BlockNoteBlock {
   const data = getBlockData(block);
   return {
-    type: 'blockquote',
+    type: 'quote',
     content: convertRichText(getRichText(data), pageRelations),
   };
 }
@@ -279,7 +279,7 @@ function convertQuote(
  */
 function convertCallout(
   block: NotionBlock,
-  pageRelations?: Map<string, { id: string; title: string }>
+  pageRelations?: Map<string, { id: string; title: string; typeId: string }>
 ): BlockNoteBlock {
   const data = getBlockData(block);
   const icon = data?.icon as { type: string; emoji?: string } | undefined;
@@ -295,7 +295,7 @@ function convertCallout(
   }
 
   return {
-    type: 'blockquote',
+    type: 'quote',
     content,
   };
 }
@@ -336,7 +336,7 @@ function convertTable(block: NotionBlock): BlockNoteBlock {
  */
 function convertToggle(
   block: NotionBlock,
-  pageRelations?: Map<string, { id: string; title: string }>
+  pageRelations?: Map<string, { id: string; title: string; typeId: string }>
 ): BlockNoteBlock {
   const data = getBlockData(block);
   const content = convertRichText(getRichText(data), pageRelations);
@@ -355,7 +355,8 @@ function convertToggle(
 }
 
 /**
- * Convert image block
+ * Convert image block to paragraph with link
+ * (Image blocks are disabled in the editor schema due to Tauri asset:// URL issues)
  */
 function convertImage(block: NotionBlock): BlockNoteBlock {
   const data = getBlockData(block);
@@ -372,13 +373,19 @@ function convertImage(block: NotionBlock): BlockNoteBlock {
     (data?.caption as NotionRichText[])?.map((t) => t.plain_text).join('') ||
     '';
 
+  // Convert to paragraph with link since image blocks are disabled
+  const linkText = caption || url.split('/').pop() || 'Image';
   return {
-    type: 'image',
-    props: {
-      url,
-      caption,
-      width: 'auto',
-    },
+    type: 'paragraph',
+    content: [
+      { type: 'text', text: '[Image: ' },
+      {
+        type: 'link',
+        content: [{ type: 'text', text: linkText }],
+        props: { href: url },
+      },
+      { type: 'text', text: ']' },
+    ],
   };
 }
 
@@ -484,7 +491,7 @@ function convertEquation(block: NotionBlock): BlockNoteBlock {
  */
 function convertRichText(
   richText: NotionRichText[],
-  pageRelations?: Map<string, { id: string; title: string }>
+  pageRelations?: Map<string, { id: string; title: string; typeId: string }>
 ): BlockNoteInlineContent[] {
   const result: BlockNoteInlineContent[] = [];
 
@@ -505,6 +512,7 @@ function convertRichText(
           props: {
             objectId: resolved.id,
             objectName: resolved.title,
+            objectTypeId: resolved.typeId,
           },
         });
       } else {

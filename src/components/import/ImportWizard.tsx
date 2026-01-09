@@ -165,7 +165,9 @@ export function ImportWizard() {
           skipped: importResult.skipped,
           errors: importResult.errors.length,
           warnings: importResult.errors,
-          objectIds: Array.from(importResult.idMapping.values()),
+          objectIds: Array.from(importResult.idMapping.values()).map(
+            (v) => v.objectId
+          ),
         });
 
         setStep('success');
