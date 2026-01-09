@@ -1,10 +1,11 @@
 # AGENTS.md
 
-> **For AI Coding Assistants** — This file provides context and guidance for AI tools working with this repository. Keep in sync with `CLAUDE.md`.
+> **For AI Coding Assistants** — This file provides context and guidance for AI tools working with this repository.
 
 ## Important: GitHub Organization
 
 The GitHub organization is **skeletor-js**. All GitHub URLs should use:
+
 - `https://github.com/skeletor-js/skelenote`
 
 ## Build & Development Commands
@@ -21,6 +22,7 @@ pnpm lint                # Run ESLint
 ## Git Workflow
 
 **When starting work on main, always create a feature branch first:**
+
 ```bash
 git checkout -b feature/descriptive-name
 ```
@@ -28,6 +30,7 @@ git checkout -b feature/descriptive-name
 **Make regular commits as you work.** This maintains cleanliness and provides fallback points if things break. Don't wait until the end to commit everything.
 
 **Branch naming conventions:**
+
 - `feature/` - New features
 - `fix/` - Bug fixes
 - `refactor/` - Code improvements
@@ -38,11 +41,13 @@ git checkout -b feature/descriptive-name
 Skelenote uses GitHub Projects to track development progress. The roadmap in `ROADMAP.md` is mirrored in GitHub for real-time tracking.
 
 ### Project Structure
+
 - **Project:** "Skelenote Roadmap" ([View Board](https://github.com/users/skeletor-js/projects/1))
 - **Milestones:** One per release (v0.2, v0.3, etc.)
 - **Labels:** `roadmap`, `phase-1`/`phase-2`/etc., `competitive-gap`, `package`
 
 ### Custom Fields
+
 | Field | Values |
 |-------|--------|
 | Status | Backlog, Todo, In Progress, Done |
@@ -53,12 +58,14 @@ Skelenote uses GitHub Projects to track development progress. The roadmap in `RO
 ### Working with Issues
 
 When starting work on a roadmap item:
+
 1. Find the issue in the project board or via `gh issue list --milestone "v0.2 - Exodus"`
 2. Move it to "In Progress" on the board
 3. Create a branch referencing the issue: `git checkout -b feature/123-pdf-export`
 4. Link PR to issue in description: `Closes #123`
 
 ### Skills Available
+
 - `/project` - View project board, list items, move between columns
 - `/issue` - Create/view/close issues
 - `/roadmap-sync` - Check roadmap<->issue alignment
@@ -80,6 +87,7 @@ Skelenote uses GitHub Actions for continuous integration and cross-platform buil
 ### Platform Support
 
 All platforms are fully tested and built in CI:
+
 - **macOS**: ARM64 (Apple Silicon) and x86_64 (Intel) - `.dmg` and `.app`
 - **Windows**: x86_64 - `.exe` NSIS installer
 - **Linux**: `.deb` (Debian/Ubuntu), `.rpm` (Fedora/RHEL), `.AppImage` (universal)
@@ -87,6 +95,7 @@ All platforms are fully tested and built in CI:
 ### Before Merging (REQUIRED)
 
 Since CI doesn't run on PRs, you MUST validate locally before merging:
+
 ```bash
 pnpm lint                  # ESLint
 pnpm exec tsc --noEmit     # TypeScript
@@ -116,6 +125,7 @@ Or use the `/check` skill to run all validations at once.
 Skelenote is a local-first, zero-knowledge note-taking app built with **Tauri 2.0** (Rust backend) and **React/TypeScript** frontend.
 
 ### Tech Stack
+
 - **Desktop Shell**: Tauri 2.0 (Rust) - handles crypto, P2P networking, file system
 - **Frontend**: React 18 + TypeScript + Vite
 - **UI Framework**: Mantine 8 with custom theme (`src/theme/mantine.ts`)
@@ -124,6 +134,7 @@ Skelenote is a local-first, zero-knowledge note-taking app built with **Tauri 2.
 - **Encryption**: XChaCha20-Poly1305, BIP39 mnemonic ("Skeleton Key")
 
 ### Repository Structure
+
 ```
 skelenote/
 ├── .github/workflows/      # CI/CD (test, build, release)
@@ -162,7 +173,9 @@ skelenote/
 ```
 
 ### Path Aliases
+
 Use `@/` for imports from `src/`:
+
 ```typescript
 import { useObjects } from '@/contexts';
 import { ObjectStore } from '@/lib/loro';
@@ -196,6 +209,7 @@ interface SkelenoteObject {
 - **KeyboardShortcutsContext** - Global hotkey registration
 
 ### Data Flow
+
 1. **ObjectContext** creates `LoroDocStore` which manages Loro CRDT documents
 2. `ObjectStore` wraps the Loro doc with typed CRUD operations
 3. Changes trigger `refreshData()` which increments `dataVersion` and debounces save
@@ -211,6 +225,7 @@ interface SkelenoteObject {
 ### Sync Architecture
 
 Two sync modes:
+
 1. **Cloud Relay** - WebSocket to relay server (optional)
 2. **Local P2P** - mDNS discovery + direct TCP on local network
 
@@ -219,6 +234,7 @@ Both use the same CRDT merge - Loro handles conflict resolution automatically.
 ### Rust/Tauri Commands
 
 Frontend calls Rust via `invoke()`. Key command prefixes:
+
 - `crypto_*` - Encryption, key management
 - `network_*` - P2P server, discovery, connections
 - `device_*` - Device management, revocation
@@ -232,6 +248,7 @@ Frontend calls Rust via `invoke()`. Key command prefixes:
 ### Testing
 
 Tests use Vitest. Run tests with:
+
 ```bash
 pnpm test                   # Run all tests in watch mode
 pnpm test:run               # Run all tests once (CI mode)
@@ -242,6 +259,7 @@ pnpm test:ui                # Run tests with Vitest UI
 Test files are co-located with source files using `.test.ts` or `.spec.ts` suffix.
 
 **Rust tests:**
+
 ```bash
 cd src-tauri
 cargo test                  # Run all Rust tests
@@ -258,6 +276,7 @@ cargo test -- --nocapture   # Show println! output
 ## Skelenote Object Lifecycle
 
 ### Inbox Workflow
+
 - **New objects enter with `inboxed: true`** - they appear in Inbox until triaged
 - **Process an item**: `store.markProcessed(id)` → sets `inboxed: false`
 - **Archive an item**: Sets BOTH `archived: true` AND `inboxed: false`
@@ -265,13 +284,16 @@ cargo test -- --nocapture   # Show println! output
 - **Daily Notes skip Inbox**: Created with `inboxed: false` since they're auto-generated
 
 ### Content vs Properties
+
 - **Properties**: Stored in `object.properties` map (title, status, dueDate, etc.)
 - **Content**: Rich text stored separately as Loro Text at `content:<objectId>`
 - **Why separate?**: BlockNote content is collaborative text that syncs character-by-character via CRDT
 - **Check `hasContent`**: Only objects with `hasContent: true` have content storage initialized
 
 ### The `refreshData()` Pattern
+
 After any store mutation, call `refreshData()` to:
+
 1. Increment `dataVersion` counter (triggers React re-renders via dependency)
 2. Broadcast CRDT update to connected peers
 3. Schedule debounced save to disk (300ms)
@@ -279,15 +301,19 @@ After any store mutation, call `refreshData()` to:
 ## Relation System & @Mentions
 
 ### How @Mentions Create Relations
+
 1. User types `@` in BlockNote editor → `MentionSuggestion` shows matching objects
 2. Selecting an object inserts a mention block into content:
+
    ```json
    { "type": "mention", "props": { "objectId": "...", "objectName": "...", "objectTypeId": "..." } }
    ```
+
 3. These mentions are NOT automatically converted to relation properties
 4. `extractMentionsFromContent()` recursively scans BlockNote JSON to find all mentions
 
 ### Backlinks Are Computed, Not Stored
+
 - `findBacklinks(targetId)` scans ALL objects looking for references
 - Checks TWO sources:
   1. Relation properties (explicit links like `project`, `tags`, `area`)
@@ -295,7 +321,9 @@ After any store mutation, call `refreshData()` to:
 - Returns array of `{ sourceId, propertyId, propertyName }`
 
 ### Linking to Daily Notes
+
 When linking an object to today's daily note (`linkObjectToDaily()`):
+
 1. Sets `dailyNote` relation property on the object
 2. Appends a mention block to the daily note's content
 3. Creates bidirectional relationship (relation property + content mention)
@@ -303,11 +331,13 @@ When linking an object to today's daily note (`linkObjectToDaily()`):
 ## Daily Notes System
 
 ### Deterministic Daily Note IDs
+
 - Format: `note-{YYYY-MM-DD}` (e.g., `note-2024-12-25`)
 - Same date always produces same ID across all devices
 - Enables sync without conflicts
 
 ### Daily Note Properties
+
 - `typeId`: `built-in:note`
 - `isDailyNote`: `true` (distinguishes from regular notes)
 - `inboxed`: `false` (skip inbox)
@@ -315,6 +345,7 @@ When linking an object to today's daily note (`linkObjectToDaily()`):
 - `title`: "Thursday, December 25" (formatted long date)
 
 ### Daily Note Template
+
 - Stored in localStorage: `skelenote:dailyNoteTemplateId`
 - Applied automatically when daily note is created
 - Placeholders: `{{date}}`, `{{date_short}}`, `{{time}}`, `{{tomorrow}}`, `{{yesterday}}`, `{{week}}`, `{{month}}`, `{{year}}`
@@ -322,11 +353,13 @@ When linking an object to today's daily note (`linkObjectToDaily()`):
 ## Task System
 
 ### Task Status Flow
+
 - `todo` → `in-progress` → `done`
 - `waiting` (special status for blocked tasks)
 - Toggling complete: `todo` ↔ `done`
 
 ### Task Filters (in TasksView)
+
 | Filter | Shows |
 |--------|-------|
 | Today | Due today, not done |
@@ -337,10 +370,13 @@ When linking an object to today's daily note (`linkObjectToDaily()`):
 | Completed | Status = done |
 
 ### Priority Sorting
+
 `urgent (4) > high (3) > medium (2) > low (1) > none (0)`
 
 ### Recurrence System
+
 When a recurring task is marked done:
+
 1. Original task gets `status: 'done'`
 2. New task is created with:
    - Same: title, priority, project, area, tags, recurrence pattern
@@ -348,6 +384,7 @@ When a recurring task is marked done:
    - Calculated: `dueDate` based on recurrence rule
 
 ### Recurrence Patterns
+
 ```typescript
 {
   frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly',
@@ -363,24 +400,29 @@ When a recurring task is marked done:
 ## Template System
 
 ### Template Structure
+
 Templates are SkelenoteObjects with:
+
 - `typeId`: `built-in:template`
 - `targetTypeId`: The type this template creates
 - `templateProperties`: JSON-encoded default property values
 - `isDailyNoteTemplate`: If true, auto-applies to daily notes
 
 ### What Gets Copied
+
 1. **Properties**: `templateProperties` merged with user overrides
 2. **Content**: If template has content, copied with placeholders expanded
 3. **Generated**: New ID, timestamps, `inboxed: true`
 4. **NOT copied**: Template's own metadata (id, createdAt, etc.)
 
 ### Template ≠ Inheritance
+
 Objects created from templates have no ongoing link. Updating the template doesn't affect previously created objects.
 
 ## Skeleton Key & Encryption
 
 ### Key Hierarchy
+
 ```
 24-word Mnemonic (user backs up)
     ↓ BIP39 seed derivation (empty passphrase)
@@ -392,30 +434,36 @@ Master Key (32 bytes, stored encrypted on device)
 ```
 
 ### Master Key Storage
+
 - Encrypted with device key from OS keychain (macOS Keychain, Windows Credential Manager, Linux Secret Service)
 - Stored at `{APP_DATA}/skeleton_key.enc`
 - Sync key cached in Tauri state after unlock
 
 ### Device Fingerprint
+
 First 8 hex chars of SHA256(User ID) - used for visual verification during P2P pairing
 
 ## Sync Protocol
 
 ### What Gets Encrypted
+
 - Loro CRDT updates (note content, object properties)
 - Loro snapshots (full state)
 
 ### What's NOT Encrypted
+
 - Device IDs and names
 - Revocation messages and signatures
 - Protocol metadata (sequence numbers, timestamps)
 
 ### Encryption Details
+
 - Algorithm: XChaCha20-Poly1305
 - Why XChaCha20: 192-bit nonce is safe for random generation in distributed P2P
 - Format: `[nonce: 24 bytes][ciphertext + auth tag]`
 
 ### P2P vs Cloud
+
 | | Cloud Relay | Local P2P |
 |---|---|---|
 | Transport | WebSocket | TCP |
@@ -451,6 +499,7 @@ Both use identical CRDT merge - Loro handles conflicts automatically.
 ## Common Development Recipes
 
 ### Adding a New Built-in Type
+
 1. Add to `BuiltInTypeIds` enum in `src/lib/types/built-in-types.ts`
 2. Create `TypeDefinition` with property schemas
 3. Add to `registerBuiltInTypes()` function
@@ -459,12 +508,14 @@ Both use identical CRDT merge - Loro handles conflicts automatically.
 6. If excluded from inbox, add to `EXCLUDED_INBOX_TYPES` in `useInbox.ts`
 
 ### Adding a New Object Property
+
 1. Add to type's `properties` array in `src/lib/types/built-in-types.ts`
 2. Update any views/filters that should include it
 3. If it's a relation, the relation helper will automatically include it in backlink calculations
 4. Update UI components that render the object
 
 ### Working with Daily Notes
+
 ```typescript
 // Get or create today's note
 const note = await getOrCreateDailyNote(store, new Date());
@@ -477,6 +528,7 @@ const isLinked = isLinkedToToday(object, todayNoteId);
 ```
 
 ### Creating a Task with Recurrence
+
 ```typescript
 store.create({
   typeId: BuiltInTypeIds.TASK,
@@ -494,6 +546,7 @@ store.create({
 ```
 
 ### Triggering a Sync
+
 ```typescript
 // After mutations, always call:
 refreshData(); // Handles dataVersion, sync broadcast, and debounced save
@@ -505,6 +558,7 @@ await docStore.saveNow();
 ## Anti-Patterns
 
 ### Data Layer
+
 - Storing editor content in object properties (use content Text structure)
 - Calling `sync()` during imports (causes feedback loops)
 - Assuming `getAll()` includes archived objects
@@ -512,24 +566,29 @@ await docStore.saveNow();
 - Storing backlinks (they're computed on demand)
 
 ### Task System
+
 - Modifying a recurring task when completing (creates new task instead)
 - Assuming task filters include completed tasks (they don't, except "Completed")
 
 ### Sync
+
 - Expecting P2P to work across subnets (mDNS is local only)
 - Assuming server can read sync data (it's E2E encrypted)
 - Manually resolving CRDT conflicts (Loro handles this)
 
 ### Templates
+
 - Expecting `{{title}}` to work without passing context
 - Storing template ID on created objects (no link is maintained)
 
 ## Brand Voice & Design System
 
 ### The Aesthetic: "Cozy Rationalism"
+
 Skelenote combines the high-density efficiency of a code editor with the warmth of a physical notebook. We are a response to the "Cold Blue" aesthetic of Silicon Valley SaaS.
 
 ### Core Design Principles
+
 | Principle | Description |
 |-----------|-------------|
 | **High Density** | Pack information efficiently with tight gaps and minimal padding |
@@ -539,17 +598,20 @@ Skelenote combines the high-density efficiency of a code editor with the warmth 
 | **Warm Palette** | Terracotta (Ember), sage, and clay tones instead of cold blues |
 
 ### Key Colors
+
 - **Ember** (`#B85C50`) - Primary actions, CTAs, focus rings
 - **Sage** (`#5E8C61`) - Success, completed, positive actions
 - **Brick** (`#9B3D3D`) - Error, danger, destructive actions
 - **Canvas** (`#FAFAFA`) - App background (soft off-white)
 
 ### What We Avoid
+
 - Heavy drop shadows, rounded pill buttons, bright saturated colors
 - Excessive whitespace, animations longer than 300ms
 - Pure black text (use Carbon `#18181B` instead)
 
 ### Brand Lexicon
+
 | Use | Avoid |
 |-----|-------|
 | The Study | Platform, OS |
@@ -563,17 +625,20 @@ For complete design specs, see `docs/design/style-guide.md`.
 ## Documentation Map
 
 ### Design & Brand
+
 - `docs/design/style-guide.md` - **Complete UI component specs**, colors, typography, spacing, Mantine config
 - `docs/design/skelenote-brand-bible.md` - Brand positioning, voice, strategic narrative
 - `docs/design/skelenote-feature-list.md` - Feature inventory and status
 
 ### Developer Reference
+
 - `docs/developer/architecture.md` - System architecture and data flow
 - `docs/developer/tauri-api.md` - Rust/Tauri command reference
 - `docs/developer/ci-cd.md` - CI/CD workflows, cross-platform builds, release process
 - `CONTRIBUTING.md` - Setup instructions, code style, PR process
 
 ### User Documentation
+
 - `docs/user/getting-started.md` - Onboarding guide
 - `docs/user/guides/` - Feature guides (sync, export, shortcuts, settings)
 - `docs/user/about/` - Philosophy, security model, pricing
@@ -585,18 +650,20 @@ For complete design specs, see `docs/design/style-guide.md`.
 | Change Type | Update Required |
 |-------------|-----------------|
 | New feature | User guide + architecture if significant |
-| New built-in type | Update feature list, add to CLAUDE.md |
+| New built-in type | Update feature list, add to AGENTS.md |
 | UI component changes | Update style-guide.md if pattern changes |
 | API/command changes | Update tauri-api.md |
-| New Tauri command | Update CLAUDE.md Rust/Tauri section |
+| New Tauri command | Update AGENTS.md Rust/Tauri section |
 
 ### Documentation Standards
-- Keep CLAUDE.md as the **single source of truth** for development patterns
+
+- Keep AGENTS.md as the **single source of truth** for development patterns
 - User docs should be **task-oriented** (how to accomplish X)
 - Developer docs should be **reference-oriented** (what X does)
 - Update docs in the **same PR** as the code change
 
 ### What Lives Where
+
 - **AGENTS.md**: Development patterns, gotchas, recipes, anti-patterns
 - **style-guide.md**: Visual specs, component examples, Mantine config
 - **architecture.md**: System design, data flow, module responsibilities

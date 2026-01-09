@@ -158,6 +158,7 @@ Skelenote follows a structured release roadmap. See [ROADMAP.md](ROADMAP.md) for
 | **v0.1** | Foundation | Core productivity system | ✅ Shipped |
 | **v0.2** | Exodus | Data freedom & portability | ✅ Shipped |
 | **v0.3** | Pocket | Mobile apps & notifications | 🔨 Next |
+| **v0.35** | Architect | Custom object types & extensibility | 📋 Planned |
 | **v0.4** | Oracle | Sovereign AI on-device | 📋 Planned |
 | **v0.5** | Sentinel | Security hardening | 📋 Planned |
 | **v1.0** | Cartographer | Visualization & spatial | 💭 Exploring |
