@@ -79,7 +79,6 @@ These features are partially implemented or coming soon:
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Import from Markdown | In progress | Export works; import coming soon |
 | Mobile apps | Planned | Desktop-first for now |
 | Graph view | Planned | Backlinks work; visualization later |
 

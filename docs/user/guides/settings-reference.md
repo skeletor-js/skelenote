@@ -125,16 +125,35 @@ When creating a new object:
 
 ## Data
 
-Export and backup options.
+Export, import, and backup options.
+
+### Import
+
+Bring data from other tools into Skelenote.
+
+**Supported Sources:**
+
+| Source | Description |
+|--------|-------------|
+| **Notion** | Connect via API, import databases with type mapping |
+| **Obsidian** | Import vault folder with wiki-links and hashtags |
+| **Markdown** | Import individual .md files with frontmatter |
+
+Click **Import** to launch the import wizard, which guides you through source selection, configuration, and preview.
+
+See [Export & Import Guide](export-import.md) for detailed instructions.
 
 ### Export All
+
 Create a ZIP archive of all your objects as Markdown files.
 
 **Options:**
+
 - **Organize by type** - Creates folders for each object type
 - **Include archived** - Includes archived objects in export
 
 **Format:**
+
 - Each object becomes a `.md` file
 - Properties stored as YAML frontmatter
 - Mentions converted to `[[wiki-links]]`

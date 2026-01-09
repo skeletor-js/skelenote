@@ -137,7 +137,8 @@ skelenote/
 │   │   ├── crypto/         # Encryption wrapper (calls Tauri)
 │   │   ├── types/          # Type definitions, built-in types
 │   │   ├── search/         # Fuzzy + semantic search
-│   │   └── templates/      # Template management
+│   │   ├── templates/      # Template management
+│   │   └── import/         # Notion, Obsidian, Markdown importers
 │   ├── theme/              # Mantine theme config
 │   └── styles/             # Global CSS, design tokens
 │
