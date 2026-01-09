@@ -6,8 +6,8 @@ A local-first, zero-knowledge private study. Your vault lives on your device, en
 
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](https://github.com/skeletor-js/skelenote/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-green)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.1.0--alpha.1-orange)](https://github.com/skeletor-js/skelenote/releases)
-[![Roadmap](https://img.shields.io/badge/roadmap-v0.2%20Exodus-yellow)](ROADMAP.md)
+[![Version](https://img.shields.io/badge/version-0.2.0-orange)](https://github.com/skeletor-js/skelenote/releases)
+[![Roadmap](https://img.shields.io/badge/roadmap-v0.3%20Pocket-yellow)](ROADMAP.md)
 [![Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?logo=discord&logoColor=white)](https://discord.gg/4apsgSRB7D)
 [![Encryption](https://img.shields.io/badge/encryption-XChaCha20--Poly1305-purple)](docs/user/about/security-privacy.md)
 [![Zero Knowledge](https://img.shields.io/badge/zero--knowledge-E2E%20encrypted-purple)](docs/user/about/security-faq.md)
@@ -17,13 +17,14 @@ A local-first, zero-knowledge private study. Your vault lives on your device, en
 
 ## Vision & Philosophy
 
-Skelenote is built for the "Digital Study"—a quiet room you own, not a noisy service you visit. 
+Skelenote is built for the "Digital Study"—a quiet room you own, not a noisy service you visit.
 
 - **Local. Encrypted. Yours.** — Physical proximity is the ultimate encryption.
 - **Structure is Freedom** — PARA method by default, your way by choice.
 - **No Lock-in** — Your data lives in files, not a database we control.
 
 For a deeper dive into our vision and how we handle ownership, see:
+
 - [Philosophy & Manifesto](docs/user/about/philosophy-manifesto.md)
 - [Ownership & Pricing](docs/user/about/ownership-pricing.md)
 
@@ -41,6 +42,7 @@ Skelenote is currently in **alpha**. We're looking for testers to help shape the
 4. Report bugs via [GitHub Issues](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml)
 
 See also:
+
 - [Known Issues](docs/user/alpha/KNOWN_ISSUES.md)
 - [Troubleshooting](docs/user/alpha/TROUBLESHOOTING.md)
 - [Testing Checklist](docs/user/alpha/TEST_PLAN.md)
@@ -154,17 +156,18 @@ Skelenote follows a structured release roadmap. See [ROADMAP.md](ROADMAP.md) for
 | Version | Codename | Theme | Status |
 |---------|----------|-------|--------|
 | **v0.1** | Foundation | Core productivity system | ✅ Shipped |
-| **v0.2** | Exodus | Data freedom & portability | 🔨 Next |
-| **v0.3** | Pocket | Mobile apps & notifications | 📋 Planned |
+| **v0.2** | Exodus | Data freedom & portability | ✅ Shipped |
+| **v0.3** | Pocket | Mobile apps & notifications | 🔨 Next |
 | **v0.4** | Oracle | Sovereign AI on-device | 📋 Planned |
 | **v0.5** | Sentinel | Security hardening | 📋 Planned |
 | **v1.0** | Cartographer | Visualization & spatial | 💭 Exploring |
 
-**Next up (v0.2 Exodus):**
-- Enhanced export (PDF, HTML, JSON, Plain Text)
-- Import wizards (Notion, Obsidian, Markdown)
-- Editor enhancements (callouts, table of contents, statistics)
-- Desktop polish (system tray, auto-start)
+**Next up (v0.3 Pocket):**
+
+- Native mobile apps (iOS & Android via Tauri 2.0)
+- Secure device linking (QR-based key transfer)
+- Reminders & push notifications
+- Graph view for vault visualization
 
 ---
 
@@ -173,6 +176,7 @@ Skelenote follows a structured release roadmap. See [ROADMAP.md](ROADMAP.md) for
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed setup instructions.
 
 Quick start:
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
@@ -190,6 +194,7 @@ Please ensure your code follows the existing style and includes tests where appr
 Skelenote is licensed under **Apache 2.0 with Commons Clause**.
 
 **What this means:**
+
 - **You can** use Skelenote for personal or commercial work
 - **You can** fork, modify, and contribute back
 - **You can** run it for your team or company internally
@@ -202,6 +207,7 @@ See [LICENSE](LICENSE) for the full text.
 ## Documentation
 
 ### User Guides
+
 - [Getting Started](docs/user/getting-started.md) — Your first day in the Study
 - [Export & Import](docs/user/guides/export-import.md) — Backups and data portability
 - [Sharing Your Vault](docs/user/guides/sharing-vault.md) — Skeleton Key vs Export
@@ -209,11 +215,13 @@ See [LICENSE](LICENSE) for the full text.
 - [Cloud Sync](docs/user/guides/cloud-sync-guide.md) — Optional relay server configuration
 
 ### About Skelenote
+
 - [Philosophy & Manifesto](docs/user/about/philosophy-manifesto.md) — The Core Narrative and Three Laws
 - [Security & Privacy](docs/user/about/security-privacy.md) — Encryption, threat model, zero-knowledge design
 - [Ownership & Pricing](docs/user/about/ownership-pricing.md) — The Sovereign Business Model
 
 ### For Contributors
+
 - [Contributing Guide](CONTRIBUTING.md) — Setup, workflow, and PR process
 - [CI/CD Pipeline](docs/developer/ci-cd.md) — GitHub Actions workflows and cross-platform builds
 - [Design System](docs/design/style-guide.md) — UI components and patterns

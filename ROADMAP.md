@@ -8,15 +8,15 @@
 
 ## Release Overview
 
-| Version | Codename | Theme | Target | Status |
-|---------|----------|-------|--------|--------|
-| **v0.1** | Foundation | Core productivity system | Jan 2026 | ✅ Shipped |
-| **v0.2** | Exodus | Data freedom & portability | Q1 2026 | 🔨 Next |
-| **v0.3** | Pocket | Mobile apps & notifications | Q1 2026 | 📋 Planned |
-| **v0.35** | Architect | Custom object types & extensibility | Q1 2026 | 📋 Planned |
-| **v0.4** | Oracle | Sovereign AI on-device | Q1 2026 | 📋 Planned |
-| **v0.5** | Sentinel | Security hardening | Q2 2026 | 📋 Planned |
-| **v1.0** | Cartographer | Visualization & spatial | Q2 2026 | 💭 Exploring |
+| Version | Codename | Theme | Status |
+|---------|----------|-------|--------|
+| **v0.1** | Foundation | Core productivity system | ✅ Shipped |
+| **v0.2** | Exodus | Data freedom & portability | ✅ Shipped |
+| **v0.3** | Pocket | Mobile apps & notifications | 🔨 Next |
+| **v0.35** | Architect | Custom object types & extensibility | 📋 Planned |
+| **v0.4** | Oracle | Sovereign AI on-device | 📋 Planned |
+| **v0.5** | Sentinel | Security hardening | 📋 Planned |
+| **v1.0** | Cartographer | Visualization & spatial | 💭 Exploring |
 
 ---
 
@@ -35,19 +35,19 @@ For detailed comparisons with other tools in the privacy-focused note-taking spa
 |-----|----------|----------------|
 | Mobile apps | Critical | v0.3 |
 | Reminders & notifications | High | v0.3 |
-| Import wizards (Notion, Obsidian) | High | v0.2 |
-| PDF/HTML export | Medium | v0.2 |
+| Import wizards (Notion, Obsidian) | High | ✅ v0.2 |
+| PDF/HTML export | Medium | ✅ v0.2 |
 | App lock (auto-lock) | Medium | v0.5 |
 | Secondary vault | Medium | v0.5 |
 | Two-factor auth (2FA) | Medium | v0.5 |
 | LaTeX/KaTeX math support | Medium | v1.0 |
 | Audio/video embeds | Medium | v1.0 |
 | Encrypted file attachments | Medium | v1.0 |
-| Callouts/Alert blocks | Low | v0.2 |
-| Table of Contents | Low | v0.2 |
-| Editor statistics | Low | v0.2 |
-| System tray menu | Low | v0.2 |
-| Auto-start on startup | Low | v0.2 |
+| Callouts/Alert blocks | Low | ✅ v0.2 |
+| Table of Contents | Low | v1.0 |
+| Editor statistics | Low | ✅ v0.2 |
+| System tray menu | Low | v1.0 |
+| Auto-start on startup | Low | v1.0 |
 
 ---
 
@@ -56,8 +56,7 @@ For detailed comparisons with other tools in the privacy-focused note-taking spa
 *The encrypted productivity system that works offline.*
 
 **Status:** ✅ Shipped  
-**Version:** `0.1.0-alpha.1`  
-**Released:** January 2026
+**Version:** `0.1.0-alpha.1`
 
 This release establishes the core Skelenote experience: a local-first, encrypted productivity system with native task management and P2P sync.
 
@@ -125,10 +124,10 @@ This release establishes the core Skelenote experience: a local-first, encrypted
 
 *Your data, your format, your choice.*
 
-**Status:** 🔨 Next  
-**Version:** `0.2.0`  
-**Target:** Q1 2026  
-**Effort:** ~5.5 weeks ([detailed planning](./docs/planning/data-portability/README.md))
+**Status:** ✅ Shipped  
+**Version:** `0.2.0`
+
+This release delivers complete data portability—import from anywhere, export to any format, leave anytime.
 
 > [!IMPORTANT]
 > This release completes data portability. Users should never feel locked into Skelenote—import from anywhere, export to any format, leave anytime.
@@ -159,6 +158,7 @@ const { generatePDF } = await import('@/lib/export/pdf');
 **Files:** `src/lib/export/pdf.ts`, `html.ts`, `json.ts`, `plaintext.ts`
 
 **UI Entry Points:**
+
 - Document menu → "Export as..."
 - Right-click context menu
 - Keyboard: `Cmd+Shift+E`
@@ -191,6 +191,7 @@ Import tools that preserve structure, not just content.
 | **Import to Inbox** | All imported objects arrive with `inboxed: true` for triage |
 
 **UI Flow:**
+
 1. Settings → Data → Import Data
 2. Source selector (icons for Notion, Obsidian, Markdown, JSON, Apple Notes)
 3. File/folder picker with source-specific instructions
@@ -204,16 +205,19 @@ Import tools that preserve structure, not just content.
 
 ### Phase 3: Editor & Desktop Polish
 
-| Feature | Description | Effort |
+| Feature | Description | Status |
 |---------|-------------|--------|
-| **Callouts/Alert blocks** | Info, warning, tip, caution styled blocks | 0.5 day |
-| **Table of Contents** | Auto-generated from headings, collapsible | 0.5 day |
-| **Markdown pasting** | Paste markdown text → convert to rich text | 0.5 day |
-| **Editor Statistics** | Word count, character count, reading time in document header | 0.5 day |
-| **Custom Tag Colors** | Expand from 6 presets to full color picker | 0.5 day |
-| **Improved Tree Sidebar** | Collapsible nested hierarchy for Projects/Areas | 1 day |
-| **System tray menu** | Quick access: new note, search, recent items | 0.5 day |
-| **Auto-start on startup** | Optional launch on system boot | 0.5 day |
+| **Callouts/Alert blocks** | Info, warning, tip, caution styled blocks | ✅ |
+| **Markdown pasting** | Paste markdown text → convert to rich text | ✅ |
+| **Editor Statistics** | Word count, character count, reading time in document header | ✅ |
+| **Custom Tag Colors** | Expand from 6 presets to full color picker | ✅ |
+| **Improved Tree Sidebar** | Collapsible nested hierarchy for Projects/Areas | ✅ |
+
+**Deferred to v1.0:**
+
+- Table of Contents (auto-generated from headings)
+- System tray menu
+- Auto-start on startup
 
 ---
 
@@ -247,9 +251,8 @@ Verify with `vite-plugin-visualizer` before/after.
 
 *Skelenote in your pocket.*
 
-**Status:** 📋 Planned  
-**Version:** `0.3.0`  
-**Target:** Q1 2026
+**Status:** 🔨 Next  
+**Version:** `0.3.0`
 
 > [!IMPORTANT]
 > Mobile is the #1 competitive gap. This release delivers native iOS/Android apps with full feature parity—not a companion app, the real thing.
@@ -262,6 +265,7 @@ Verify with `vite-plugin-visualizer` before/after.
 | **Android** | Tauri 2.0 Mobile (WRY + WebView) | Play Store + APK |
 
 **Feature Parity:**
+
 - Full editor with BlockNote
 - All object types and properties
 - Campfire P2P sync (WiFi/Bluetooth)
@@ -270,6 +274,7 @@ Verify with `vite-plugin-visualizer` before/after.
 - Omnibar (adapted for touch)
 
 **Mobile-Specific UX:**
+
 - Swipe gestures for navigation (back, archive, complete)
 - Pull-to-refresh for sync
 - Share sheet integration (receive text, URLs, images)
@@ -277,6 +282,7 @@ Verify with `vite-plugin-visualizer` before/after.
 - Haptic feedback on key interactions
 
 **Technical Challenges:**
+
 - Background sync while app is suspended
 - Battery optimization (sync on WiFi only option)
 - Large vault performance on older devices
@@ -339,6 +345,7 @@ Source Device (has key)          Target Device (new)
 | **Reminder Settings** | Central control: quiet hours, notification sounds, default lead time |
 
 **Technical Notes:**
+
 - Desktop: Tauri notification plugin
 - iOS: UserNotifications framework
 - Android: NotificationManager with channels
@@ -370,7 +377,6 @@ Source Device (has key)          Target Device (new)
 
 **Status:** 📋 Planned
 **Version:** `0.35.0`
-**Target:** Q1 2026
 
 > [!IMPORTANT]
 > This release transforms Skelenote from a fixed 9-type system into a fully extensible platform. Create custom object types, customize built-in types, and toggle features on/off.
@@ -420,7 +426,6 @@ Source Device (has key)          Target Device (new)
 
 **Status:** 📋 Planned  
 **Version:** `0.4.0`  
-**Target:** Q1 2026
 
 > [!TIP]
 > Every AI feature runs entirely on-device. Download models once, use forever, offline. Your journals and meeting notes never leave your hardware.
@@ -440,6 +445,7 @@ Source Device (has key)          Target Device (new)
 | **Timestamps** | Optional timestamp markers in transcription |
 
 **Technical Implementation:**
+
 - `whisper.cpp` compiled to WASM or native via Tauri
 - Models stored in `~/.local/share/skelenote/models/`
 - First-use download with progress indicator
@@ -462,6 +468,7 @@ Source Device (has key)          Target Device (new)
 | **Context Window** | Use multiple related objects as context |
 
 **Technical Implementation:**
+
 - `llama.cpp` or `mlc-llm` for inference
 - Models stored in `~/.local/share/skelenote/models/`
 - Quantized models (Q4_K_M) for reasonable hardware requirements
@@ -489,7 +496,6 @@ Source Device (has key)          Target Device (new)
 
 **Status:** � Planned  
 **Version:** `0.5.0`  
-**Target:** Q2 2026
 
 > [!IMPORTANT]
 > This release hardens security for users with elevated threat models—journalists, lawyers, healthcare workers, activists.
@@ -517,6 +523,7 @@ Source Device (has key)          Target Device (new)
 | **Skip Biometric** | Option to require password on first unlock after reboot |
 
 **Technical Notes:**
+
 - Biometric unlocks the device key, which unlocks the master key
 - Master key never stored in plaintext—always protected by device key
 - Failed attempts trigger exponential backoff
@@ -536,6 +543,7 @@ Source Device (has key)          Target Device (new)
 | **No Sync Option** | Keep sensitive notes device-local only |
 
 **Implementation Notes:**
+
 - Sensitive objects encrypted with derived key from `SecureVaultPassword`
 - Property `sensitiveVault: true` triggers UI treatment
 - Search excludes sensitive objects unless vault is unlocked
@@ -555,6 +563,7 @@ Source Device (has key)          Target Device (new)
 | **Old Key Revocation** | Previous Skeleton Key no longer unlocks vault |
 
 **Use Cases:**
+
 - Skeleton Key compromised
 - Periodic security hygiene
 - Removing access from untrusted device when revocation isn't enough
@@ -602,7 +611,6 @@ Source Device (has key)          Target Device (new)
 
 **Status:** 💭 Exploring  
 **Version:** `1.0.0`  
-**Target:** Q2 2026
 
 > This release marks stable API, mature feature set, and readiness for production use. Features may shift based on user feedback during alpha/beta.
 
@@ -647,6 +655,18 @@ Source Device (has key)          Target Device (new)
 | **Evernote** | ENEX file parsing → Notes with attachments |
 | **Google Keep** | Google Takeout JSON → Notes with checklists |
 | **Bear** | Markdown with Bear tags → Notes + Tags |
+
+---
+
+### Desktop Polish
+
+*Deferred from v0.2.*
+
+| Feature | Description |
+|---------|-------------|
+| **Table of Contents** | Auto-generated from headings, collapsible sidebar |
+| **System tray menu** | Quick access: new note, search, recent items |
+| **Auto-start on startup** | Optional launch on system boot |
 
 ---
 
