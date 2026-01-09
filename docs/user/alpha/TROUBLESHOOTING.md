@@ -169,8 +169,11 @@ If CPU stays high:
 
 If you exported a backup previously:
 
-1. Import is coming soon - watch for updates
-2. For now, you can manually recreate objects from exported Markdown files
+1. Open Settings → Data → Import
+2. Select **Markdown Files** (or **Obsidian** for vault backups)
+3. Choose your backup files and import
+
+See [Export & Import Guide](../guides/export-import.md) for full instructions.
 
 ### Find your data files
 

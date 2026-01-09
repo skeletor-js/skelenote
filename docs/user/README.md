@@ -13,6 +13,7 @@ Guides for using Skelenote.
 - [Campfire Mode](guides/campfire-guide.md) - Local P2P sync between devices
 - [Cloud Sync](guides/cloud-sync-guide.md) - Relay server setup and self-hosting
 - [Export & Import](guides/export-import.md) - Backups and data portability
+- [Sharing Your Vault](guides/sharing-vault.md) - Skeleton Key vs Export, secure sharing
 
 ## About Skelenote
 

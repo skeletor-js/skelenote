@@ -100,7 +100,14 @@ Your Skeleton Key is stored separately in the system keychain, so it will still 
 
 ### From Markdown Export
 
-Full import from Markdown is coming soon. For now, you can manually recreate objects from the exported files.
+Use the import wizard to restore from Markdown exports:
+
+1. Open Settings → Data → Import
+2. Select **Markdown Files**
+3. Choose your exported `.md` files
+4. Review and import
+
+See [Export & Import Guide](../guides/export-import.md) for details.
 
 ---
 

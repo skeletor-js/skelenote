@@ -426,6 +426,13 @@ export function SkeletonKeySetup() {
               Your encryption is set up. All synced data will be encrypted with
               your Skeleton Key.
             </Text>
+            <Alert variant="light" color="gray" mt="md">
+              <Text size="sm">
+                <strong>Tip:</strong> Consider exporting your vault regularly as
+                a backup. Go to Settings → Data → Export to create a Markdown
+                archive of all your notes.
+              </Text>
+            </Alert>
           </Stack>
         )}
       </Box>

@@ -203,6 +203,8 @@ See [LICENSE](LICENSE) for the full text.
 
 ### User Guides
 - [Getting Started](docs/user/getting-started.md) — Your first day in the Study
+- [Export & Import](docs/user/guides/export-import.md) — Backups and data portability
+- [Sharing Your Vault](docs/user/guides/sharing-vault.md) — Skeleton Key vs Export
 - [Campfire Mode](docs/user/guides/campfire-guide.md) — Local P2P sync setup and use cases
 - [Cloud Sync](docs/user/guides/cloud-sync-guide.md) — Optional relay server configuration
 
