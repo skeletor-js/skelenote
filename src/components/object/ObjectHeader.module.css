@@ -27,6 +27,29 @@
   flex-shrink: 0;
 }
 
+.typeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  margin: -4px;
+  border-radius: var(--mantine-radius-sm);
+  transition: background-color 150ms ease;
+  cursor: pointer;
+}
+
+.typeButton:hover {
+  background-color: var(--mantine-color-gray-1);
+}
+
+.typeButton .typeIcon {
+  transition: color 150ms ease;
+}
+
+.typeButton:hover .typeIcon {
+  color: var(--mantine-color-ember-6);
+}
+
 .title {
   flex: 1;
   min-width: 0;
@@ -88,4 +111,8 @@
 
 :global([data-mantine-color-scheme='dark']) .quickAction:hover {
   color: var(--mantine-color-gray-3);
+}
+
+:global([data-mantine-color-scheme='dark']) .typeButton:hover {
+  background-color: var(--mantine-color-dark-5);
 }

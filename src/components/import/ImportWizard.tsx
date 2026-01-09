@@ -3,6 +3,10 @@
  *
  * Multi-step wizard for importing documents from various sources.
  * Lives inside the DataSettings panel.
+ *
+ * Supports two flows:
+ * 1. File-based: Markdown, Obsidian, JSON backup, Apple Notes
+ * 2. API-based: Notion (connects via API token)
  */
 
 import { useState, useCallback } from 'react';
@@ -10,11 +14,23 @@ import { Box } from '@mantine/core';
 import { useObjects, useToast } from '@/contexts';
 import { importMarkdown } from '@/lib/import';
 import { BuiltInTypeIds, generateId } from '@/lib/types';
+import type { NotionClient } from '@/lib/import/notion-api';
+import type {
+  SelectedDatabase,
+  NotionImportProgress,
+} from '@/lib/import/notion-import';
 import { ImportSourceSelector } from './ImportSourceSelector';
 import { ImportFilePicker } from './ImportFilePicker';
 import { ImportPreview } from './ImportPreview';
 import { ImportProgressView } from './ImportProgressView';
 import { ImportSuccess } from './ImportSuccess';
+import { NotionConnect } from './NotionConnect';
+import { NotionDatabasePicker } from './NotionDatabasePicker';
+import { NotionTypeMapper } from './NotionTypeMapper';
+import {
+  StandalonePageOptions,
+  type StandaloneImportOption,
+} from './StandalonePageOptions';
 import type {
   ImportSource,
   ImportStep,
@@ -24,10 +40,28 @@ import type {
 } from './types';
 import classes from './ImportWizard.module.css';
 
-const STEPS: ImportStep[] = [
+// Extended steps to include Notion-specific flow
+type NotionStep =
+  | 'notion-connect'
+  | 'notion-databases'
+  | 'notion-types'
+  | 'notion-standalone';
+type AllSteps = ImportStep | NotionStep;
+
+// Step sequences for different flows
+const FILE_STEPS: ImportStep[] = [
   'source',
   'files',
   'preview',
+  'progress',
+  'success',
+];
+const NOTION_STEPS: AllSteps[] = [
+  'source',
+  'notion-connect',
+  'notion-databases',
+  'notion-types',
+  'notion-standalone',
   'progress',
   'success',
 ];
@@ -36,17 +70,136 @@ export function ImportWizard() {
   const { store, refreshData } = useObjects();
   const { addToast } = useToast();
 
-  const [step, setStep] = useState<ImportStep>('source');
+  // Common state
+  const [step, setStep] = useState<AllSteps>('source');
   const [source, setSource] = useState<ImportSource | null>(null);
-  const [previewItems, setPreviewItems] = useState<PreviewItem[]>([]);
   const [progress, setProgress] = useState<ImportProgress | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
 
+  // File-based flow state
+  const [previewItems, setPreviewItems] = useState<PreviewItem[]>([]);
+
+  // Notion API flow state
+  const [notionClient, setNotionClient] = useState<NotionClient | null>(null);
+  const [selectedDatabases, setSelectedDatabases] = useState<
+    SelectedDatabase[]
+  >([]);
+
+  // Determine which step sequence to use
+  const isNotionFlow = source === 'notion';
+  const steps = isNotionFlow ? NOTION_STEPS : FILE_STEPS;
+
   const handleSourceSelect = useCallback((newSource: ImportSource) => {
     setSource(newSource);
-    setStep('files');
+    if (newSource === 'notion') {
+      setStep('notion-connect');
+    } else {
+      setStep('files');
+    }
   }, []);
 
+  // Notion flow handlers
+  const handleNotionConnect = useCallback((client: NotionClient) => {
+    setNotionClient(client);
+    setStep('notion-databases');
+  }, []);
+
+  const handleDatabasesSelected = useCallback(
+    (databases: SelectedDatabase[]) => {
+      setSelectedDatabases(databases);
+      setStep('notion-types');
+    },
+    []
+  );
+
+  const handleTypeMappingComplete = useCallback(() => {
+    setStep('notion-standalone');
+  }, []);
+
+  const startNotionImport = useCallback(
+    async (includeStandalonePages: boolean) => {
+      if (!store || !notionClient) return;
+
+      const startTime = Date.now();
+
+      setProgress({
+        current: 0,
+        total: 0,
+        currentDocument: 'Connecting to Notion...',
+        phase: 'parsing',
+        startTime,
+      });
+
+      try {
+        const { importFromNotion } = await import('@/lib/import/notion-import');
+
+        const importResult = await importFromNotion({
+          client: notionClient,
+          store,
+          databases: selectedDatabases,
+          importStandalonePages: includeStandalonePages,
+          onProgress: (notionProgress: NotionImportProgress) => {
+            setProgress({
+              current: notionProgress.pagesImported,
+              total: notionProgress.totalPages,
+              currentDocument:
+                notionProgress.currentPage || notionProgress.message,
+              phase:
+                notionProgress.phase === 'complete'
+                  ? 'complete'
+                  : notionProgress.phase === 'linking'
+                    ? 'linking'
+                    : notionProgress.phase === 'importing'
+                      ? 'importing'
+                      : 'parsing',
+              startTime,
+            });
+          },
+        });
+
+        // Save changes
+        refreshData();
+
+        setResult({
+          imported: importResult.imported,
+          skipped: importResult.skipped,
+          errors: importResult.errors.length,
+          warnings: importResult.errors,
+          objectIds: Array.from(importResult.idMapping.values()),
+        });
+
+        setStep('success');
+
+        if (importResult.imported > 0) {
+          addToast({
+            type: 'success',
+            message: `Imported ${importResult.imported} item${importResult.imported !== 1 ? 's' : ''} from Notion`,
+          });
+        }
+      } catch (error) {
+        setResult({
+          imported: 0,
+          skipped: 0,
+          errors: 1,
+          warnings: [error instanceof Error ? error.message : 'Import failed'],
+          objectIds: [],
+        });
+        setStep('success');
+      }
+    },
+    [store, notionClient, selectedDatabases, refreshData, addToast]
+  );
+
+  const handleStandaloneChoice = useCallback(
+    (option: StandaloneImportOption) => {
+      setStep('progress');
+      // Start the import immediately
+      startNotionImport(option === 'import');
+    },
+    [startNotionImport]
+  );
+
+  // File-based flow handlers
   const handleFilesSelected = useCallback(
     async (files: File[]) => {
       const items: PreviewItem[] = [];
@@ -189,9 +342,6 @@ export function ImportWizard() {
         startTime,
       });
 
-      // For now, we skip link resolution - can be added later
-      // This would resolve wiki-links and create relations
-
       // Complete
       setProgress({
         current: items.length,
@@ -230,20 +380,47 @@ export function ImportWizard() {
     setPreviewItems([]);
     setProgress(null);
     setResult(null);
+    setNotionClient(null);
+    setSelectedDatabases([]);
   }, []);
+
+  // Go back one step
+  const handleBack = useCallback(() => {
+    const currentIndex = steps.indexOf(step);
+    if (currentIndex > 0) {
+      setStep(steps[currentIndex - 1]);
+    }
+  }, [step, steps]);
 
   // Step indicator
   const renderStepIndicator = () => {
-    const currentIndex = STEPS.indexOf(step);
+    const currentIndex = steps.indexOf(step);
+
+    // Use simplified steps for indicator
+    const indicatorSteps = isNotionFlow
+      ? ['source', 'connect', 'select', 'map', 'pages', 'import', 'done']
+      : ['source', 'files', 'preview', 'import', 'done'];
+
+    const indicatorIndex = isNotionFlow
+      ? [
+          'source',
+          'notion-connect',
+          'notion-databases',
+          'notion-types',
+          'notion-standalone',
+          'progress',
+          'success',
+        ].indexOf(step)
+      : currentIndex;
 
     return (
       <div className={classes.stepIndicator}>
-        {STEPS.map((s, i) => {
-          const isActive = s === step;
-          const isCompleted = i < currentIndex;
+        {indicatorSteps.map((_, i) => {
+          const isActive = i === indicatorIndex;
+          const isCompleted = i < indicatorIndex;
           return (
             <div
-              key={s}
+              key={i}
               className={classes.stepDot}
               data-active={isActive || undefined}
               data-completed={isCompleted || undefined}
@@ -258,11 +435,46 @@ export function ImportWizard() {
     <Box>
       {step !== 'source' && step !== 'success' && renderStepIndicator()}
 
+      {/* Source selection */}
       {step === 'source' && (
         <ImportSourceSelector value={source} onChange={handleSourceSelect} />
       )}
 
-      {step === 'files' && source && (
+      {/* Notion API flow */}
+      {step === 'notion-connect' && (
+        <NotionConnect
+          onConnect={handleNotionConnect}
+          onBack={() => setStep('source')}
+        />
+      )}
+
+      {step === 'notion-databases' && notionClient && (
+        <NotionDatabasePicker
+          client={notionClient}
+          onContinue={handleDatabasesSelected}
+          onBack={() => setStep('notion-connect')}
+        />
+      )}
+
+      {step === 'notion-types' && (
+        <NotionTypeMapper
+          databases={selectedDatabases}
+          onDatabasesChange={setSelectedDatabases}
+          onStartImport={handleTypeMappingComplete}
+          onBack={() => setStep('notion-databases')}
+        />
+      )}
+
+      {step === 'notion-standalone' && notionClient && (
+        <StandalonePageOptions
+          client={notionClient}
+          onContinue={handleStandaloneChoice}
+          onBack={() => setStep('notion-types')}
+        />
+      )}
+
+      {/* File-based flow */}
+      {step === 'files' && source && source !== 'notion' && (
         <ImportFilePicker
           source={source}
           onFilesSelected={handleFilesSelected}
@@ -275,10 +487,11 @@ export function ImportWizard() {
           items={previewItems}
           onItemsChange={setPreviewItems}
           onStartImport={handleStartImport}
-          onBack={() => setStep('files')}
+          onBack={handleBack}
         />
       )}
 
+      {/* Shared steps */}
       {step === 'progress' && progress && (
         <ImportProgressView progress={progress} />
       )}

@@ -28,7 +28,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' tauri: http://localhost:* ws://localhost:*; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: tauri: file: asset:; font-src 'self' tauri:; connect-src 'self' tauri: http://localhost:* ws://localhost:* wss://*; media-src 'self' file: asset:; object-src 'none'; frame-ancestors 'none'; base-uri 'self';"
+      "csp": "default-src 'self' tauri: http://localhost:* ws://localhost:*; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: tauri: file: asset:; font-src 'self' tauri:; connect-src 'self' tauri: http://localhost:* ws://localhost:* wss://* https://api.notion.com; media-src 'self' file: asset:; object-src 'none'; frame-ancestors 'none'; base-uri 'self';"
     }
   },
   "bundle": {

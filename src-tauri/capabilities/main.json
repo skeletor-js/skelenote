@@ -20,6 +20,10 @@
     "fs:allow-read",
     "fs:allow-write",
     "shell:allow-open",
-    "dialog:allow-save"
+    "dialog:allow-save",
+    {
+      "identifier": "http:default",
+      "allow": [{ "url": "https://api.notion.com/**" }]
+    }
   ]
 }

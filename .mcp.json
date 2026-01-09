@@ -1,12 +1,5 @@
 {
     "mcpServers": {
-        "context7": {
-            "type": "http",
-            "url": "https://mcp.context7.com/mcp",
-            "headers": {
-                "CONTEXT7_API_KEY": "$CONTEXT7_API_KEY"
-            }
-        },
         "mantine": {
             "command": "npx",
             "args": [
@@ -15,6 +8,11 @@
             "env": {
                 "MANTINE_VERSION": "8.3.10"
             }
+        },
+        "context7": {
+            "command": "/Users/jordanstella/GitHub/skelenote/scripts/context7-mcp.sh",
+            "args": [],
+            "env": {}
         },
         "cloudflare-workers-bindings": {
             "command": "npx",

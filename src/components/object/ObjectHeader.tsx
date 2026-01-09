@@ -11,13 +11,27 @@ import {
   ActionIcon,
   Menu,
   Tooltip,
+  UnstyledButton,
 } from '@mantine/core';
 import { MoreHorizontal } from 'lucide-react';
-import { useNavigation } from '@/contexts';
+import { useNavigation, useTypeRegistry } from '@/contexts';
 import { Icon } from '@/components/ui/Icon';
 import { getIconFromEmoji } from '@/lib/icons';
 import type { SkelenoteObject, TypeDefinition } from '@/lib/types';
+import { BuiltInTypeIds } from '@/lib/types';
 import styles from './ObjectHeader.module.css';
+
+// Types that can be changed to (excludes Template which is special)
+const CHANGEABLE_TYPES = [
+  BuiltInTypeIds.TASK,
+  BuiltInTypeIds.NOTE,
+  BuiltInTypeIds.PROJECT,
+  BuiltInTypeIds.AREA,
+  BuiltInTypeIds.MEETING,
+  BuiltInTypeIds.LINK,
+  BuiltInTypeIds.PERSON,
+  BuiltInTypeIds.TAG,
+];
 
 interface ObjectHeaderProps {
   object: SkelenoteObject;
@@ -53,6 +67,10 @@ interface ObjectHeaderProps {
   onDuplicate?: () => void;
   /** Whether the object can be duplicated (false for daily notes) */
   canDuplicate?: boolean;
+  /** Callback for changing the object type */
+  onTypeChange?: (newTypeId: string) => void;
+  /** Whether the type can be changed (false for daily notes, templates) */
+  canChangeType?: boolean;
 }
 
 export function ObjectHeader({
@@ -75,8 +93,11 @@ export function ObjectHeader({
   isArchived = false,
   onDuplicate,
   canDuplicate = true,
+  onTypeChange,
+  canChangeType = true,
 }: ObjectHeaderProps) {
   const { openInSplit, splitPane } = useNavigation();
+  const typeRegistry = useTypeRegistry();
   // Determine which property holds the title (varies by type)
   const titlePropertyId =
     object.properties.title !== undefined ? 'title' : 'name';
@@ -152,14 +173,67 @@ export function ObjectHeader({
   const showHistoryOption =
     onViewHistory && splitPane.mode !== 'version-comparison';
 
+  // Can this object's type be changed?
+  const showTypeMenu = onTypeChange && canChangeType;
+
   return (
     <Group component="header" gap="sm" wrap="nowrap" className={styles.header}>
-      {/* Type indicator */}
-      <Icon
-        name={getIconFromEmoji(typeDef.icon)}
-        size={18}
-        className={styles.typeIcon}
-      />
+      {/* Type indicator - clickable to change type if allowed */}
+      {showTypeMenu ? (
+        <Menu position="bottom-start" withinPortal>
+          <Menu.Target>
+            <Tooltip
+              label={`Type: ${typeDef.name} (click to change)`}
+              withArrow
+            >
+              <UnstyledButton className={styles.typeButton}>
+                <Icon
+                  name={getIconFromEmoji(typeDef.icon)}
+                  size={18}
+                  className={styles.typeIcon}
+                />
+              </UnstyledButton>
+            </Tooltip>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Label>Change type to</Menu.Label>
+            {CHANGEABLE_TYPES.map((typeId) => {
+              const targetType = typeRegistry.get(typeId);
+              if (!targetType) return null;
+              const isCurrentType = typeId === object.typeId;
+              return (
+                <Menu.Item
+                  key={typeId}
+                  leftSection={
+                    <Icon name={getIconFromEmoji(targetType.icon)} size={14} />
+                  }
+                  onClick={() => !isCurrentType && onTypeChange(typeId)}
+                  disabled={isCurrentType}
+                  rightSection={
+                    isCurrentType ? (
+                      <Icon
+                        name="check"
+                        size={12}
+                        color="var(--mantine-color-sage-6)"
+                      />
+                    ) : undefined
+                  }
+                >
+                  {targetType.name}
+                </Menu.Item>
+              );
+            })}
+          </Menu.Dropdown>
+        </Menu>
+      ) : (
+        <Tooltip label={`Type: ${typeDef.name}`} withArrow>
+          <Icon
+            name={getIconFromEmoji(typeDef.icon)}
+            size={18}
+            className={styles.typeIcon}
+          />
+        </Tooltip>
+      )}
 
       {/* Title (editable or static) */}
       {isEditing && titleEditable ? (
