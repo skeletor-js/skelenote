@@ -2,7 +2,7 @@
 
 This document tracks known bugs and limitations in the current alpha release. Check here before reporting an issue.
 
-**Current Version**: 0.1.0-alpha.1
+**Current Version**: 0.2.0
 
 ---
 

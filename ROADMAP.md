@@ -36,16 +36,16 @@ For detailed comparisons with other tools in the privacy-focused note-taking spa
 | Mobile apps | Critical | v0.3 |
 | Reminders & notifications | High | v0.3 |
 | Import wizards (Notion, Obsidian) | High | ✅ v0.2 |
-| PDF/HTML export | Medium | ✅ v0.2 |
+| PDF export | Medium | ✅ v0.2 |
 | App lock (auto-lock) | Medium | v0.5 |
 | Secondary vault | Medium | v0.5 |
 | Two-factor auth (2FA) | Medium | v0.5 |
 | LaTeX/KaTeX math support | Medium | v1.0 |
 | Audio/video embeds | Medium | v1.0 |
 | Encrypted file attachments | Medium | v1.0 |
-| Callouts/Alert blocks | Low | ✅ v0.2 |
+| Callouts/Alert blocks | Low | v1.0 |
 | Table of Contents | Low | v1.0 |
-| Editor statistics | Low | ✅ v0.2 |
+| Editor statistics | Low | v1.0 |
 | System tray menu | Low | v1.0 |
 | Auto-start on startup | Low | v1.0 |
 
@@ -139,9 +139,6 @@ Export your work in the format that suits your needs.
 | Format | Description | Effort |
 |--------|-------------|--------|
 | **PDF** | Styled documents with Skelenote typography, light/dark variants | 3-4 days |
-| **HTML** | Standalone files with embedded CSS, no external dependencies | 1 day |
-| **JSON** | Full-fidelity backup including type definitions and relations | 0.5 day |
-| **Plain Text** | Simple text fallback, mentions rendered as `@Name` | 0.5 day |
 
 **Technical Implementation:**
 
@@ -155,7 +152,7 @@ const { generatePDF } = await import('@/lib/export/pdf');
 
 **Image Handling:** Base64 data URIs embedded in all formats for self-contained exports.
 
-**Files:** `src/lib/export/pdf.ts`, `html.ts`, `json.ts`, `plaintext.ts`
+**Files:** `src/lib/export/pdf.tsx`, `markdown.ts`
 
 **UI Entry Points:**
 
@@ -207,14 +204,14 @@ Import tools that preserve structure, not just content.
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| **Callouts/Alert blocks** | Info, warning, tip, caution styled blocks | ✅ |
 | **Markdown pasting** | Paste markdown text → convert to rich text | ✅ |
-| **Editor Statistics** | Word count, character count, reading time in document header | ✅ |
 | **Custom Tag Colors** | Expand from 6 presets to full color picker | ✅ |
 | **Improved Tree Sidebar** | Collapsible nested hierarchy for Projects/Areas | ✅ |
 
 **Deferred to v1.0:**
 
+- Callouts/Alert blocks (info, warning, tip, caution styled blocks)
+- Editor Statistics (word count, character count, reading time)
 - Table of Contents (auto-generated from headings)
 - System tray menu
 - Auto-start on startup
