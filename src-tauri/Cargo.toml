@@ -61,3 +61,9 @@ codegen-units = 1
 lto = true
 opt-level = "s"
 strip = true
+
+# CI profile: faster builds for non-release CI runs
+[profile.ci]
+inherits = "release"
+lto = "thin"           # Much faster than full LTO
+codegen-units = 16     # Enable parallel codegen

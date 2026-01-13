@@ -49,7 +49,7 @@ interface SyncProviderProps {
 }
 
 export function SyncProvider({ children }: SyncProviderProps) {
-  const { docStore, refreshData } = useObjects();
+  const { docStore, store, refreshData } = useObjects();
   const { addToast } = useToast();
   const [syncClient, setSyncClient] = useState<SyncClient | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
@@ -124,6 +124,8 @@ export function SyncProvider({ children }: SyncProviderProps) {
       // Wire up to docStore
       docStore.setSyncClient(client);
       docStore.setOnRemoteChange(() => {
+        // Invalidate ObjectStore cache so getAll() returns fresh data
+        store?.clearCache();
         refreshData();
       });
 
@@ -134,7 +136,7 @@ export function SyncProvider({ children }: SyncProviderProps) {
 
       client.connect();
     },
-    [syncClient, docStore, refreshData, addToast]
+    [syncClient, docStore, store, refreshData, addToast]
   );
 
   // Disconnect from sync server

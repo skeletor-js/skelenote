@@ -113,7 +113,7 @@ interface LocalSyncProviderProps {
 
 export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
   const { addToast } = useToast();
-  const { docStore, refreshData } = useObjects();
+  const { docStore, store, refreshData } = useObjects();
   const [isEnabled, setIsEnabled] = useState(false);
   const [status, setStatus] = useState<LocalSyncStatus>('off');
   const [isDiscovering, setIsDiscovering] = useState(false);
@@ -672,6 +672,8 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
       onSyncReceivedRef.current = (data: Uint8Array) => {
         console.log('[LocalSync] Received sync data, forwarding to docStore');
         docStore.handleLocalSyncUpdate(data);
+        // Invalidate ObjectStore cache so getAll() returns fresh data
+        store?.clearCache();
         // Trigger UI refresh after import
         refreshData();
       };
@@ -686,7 +688,7 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
       docStore.setLocalSyncBroadcast(null);
       onSyncReceivedRef.current = null;
     }
-  }, [isEnabled, docStore, broadcastUpdate, refreshData]);
+  }, [isEnabled, docStore, store, broadcastUpdate, refreshData]);
 
   const value: LocalSyncContextValue = {
     isEnabled,

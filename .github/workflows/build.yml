@@ -6,24 +6,28 @@ on:
 
 jobs:
   build:
-    name: Build (${{ matrix.platform }})
+    name: Build (${{ matrix.name }})
     permissions:
       contents: read
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: macos-latest
-            args: '--target aarch64-apple-darwin'
+          - platform: macos-14
+            target: aarch64-apple-darwin
+            args: '--target aarch64-apple-darwin --profile ci'
             name: macOS-ARM
-          - platform: macos-latest
-            args: '--target x86_64-apple-darwin'
+          - platform: macos-13
+            target: x86_64-apple-darwin
+            args: '--target x86_64-apple-darwin --profile ci'
             name: macOS-Intel
           - platform: ubuntu-22.04
-            args: ''
+            target: ''
+            args: '--profile ci'
             name: Linux
           - platform: windows-latest
-            args: '--bundles nsis'
+            target: ''
+            args: '--bundles nsis --profile ci'
             name: Windows
 
     runs-on: ${{ matrix.platform }}
@@ -32,11 +36,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install system dependencies (Ubuntu)
+      - name: Cache apt packages (Ubuntu)
         if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf rpm
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf rpm mold
+          version: 1.0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -52,7 +57,24 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: ${{ matrix.target }}
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+
+      - name: Configure sccache
+        shell: bash
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+
+      - name: Configure mold linker (Linux)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          mkdir -p .cargo
+          echo '[target.x86_64-unknown-linux-gnu]' >> .cargo/config.toml
+          echo 'linker = "clang"' >> .cargo/config.toml
+          echo 'rustflags = ["-C", "link-arg=-fuse-ld=mold"]' >> .cargo/config.toml
 
       - name: Cache Rust
         uses: swatinem/rust-cache@v2
@@ -65,14 +87,17 @@ jobs:
       - name: Build Tauri app
         run: pnpm tauri build ${{ matrix.args }}
 
+      - name: Show sccache stats
+        run: sccache --show-stats
+
       - name: Upload artifacts (macOS)
-        if: matrix.platform == 'macos-latest'
+        if: startsWith(matrix.platform, 'macos')
         uses: actions/upload-artifact@v4
         with:
           name: skelenote-${{ matrix.name }}
           path: |
-            src-tauri/target/*/release/bundle/dmg/*.dmg
-            src-tauri/target/*/release/bundle/macos/*.app
+            src-tauri/target/*/ci/bundle/dmg/*.dmg
+            src-tauri/target/*/ci/bundle/macos/*.app
           if-no-files-found: error
 
       - name: Upload artifacts (Linux)
@@ -81,9 +106,9 @@ jobs:
         with:
           name: skelenote-${{ matrix.name }}
           path: |
-            src-tauri/target/release/bundle/deb/*.deb
-            src-tauri/target/release/bundle/rpm/*.rpm
-            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/ci/bundle/deb/*.deb
+            src-tauri/target/ci/bundle/rpm/*.rpm
+            src-tauri/target/ci/bundle/appimage/*.AppImage
           if-no-files-found: error
 
       - name: Upload artifacts (Windows)
@@ -91,5 +116,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: skelenote-${{ matrix.name }}
-          path: src-tauri/target/release/bundle/nsis/*.exe
+          path: src-tauri/target/ci/bundle/nsis/*.exe
           if-no-files-found: error
