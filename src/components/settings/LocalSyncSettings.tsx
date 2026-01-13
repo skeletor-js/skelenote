@@ -6,23 +6,21 @@ import {
   Text,
   Box,
   Switch,
-  Badge,
-  Alert,
   Button,
-  ThemeIcon,
-  Loader,
   Code,
+  Divider,
 } from '@mantine/core';
 import { Icon } from '@/components/ui';
 import { useLocalSyncSafe } from '@/contexts/LocalSyncContext';
-import { connectToPeer, getConnectedPeers } from '@/lib/sync/local';
+import { PairedDevicesList } from '@/components/sync/PairedDevicesList';
+import { ShowPairingCodeModal } from '@/components/sync/ShowPairingCodeModal';
+import { PairNewDeviceModal } from '@/components/sync/PairNewDeviceModal';
+import { DeviceStatusIndicator } from '@/components/sync/DeviceStatusIndicator';
 
 export function LocalSyncSettings() {
   const localSync = useLocalSyncSafe();
-  const [connectingTo, setConnectingTo] = useState<string | null>(null);
-  const [connectedPeerIds, setConnectedPeerIds] = useState<Set<string>>(
-    new Set()
-  );
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [showPairModal, setShowPairModal] = useState(false);
 
   // Show nothing if context not available (not in Tauri environment)
   if (!localSync) {
@@ -32,38 +30,18 @@ export function LocalSyncSettings() {
   const {
     isEnabled,
     status,
-    discoveredPeers,
+    pairedDevices,
     connectedPeerCount,
     deviceInfo,
     serverPort,
     error,
     enable,
     disable,
-    refreshConnectedCount,
+    generateQrCode,
+    pairDeviceManually,
+    unpairDevice,
+    reconnectDevice,
   } = localSync;
-
-  const handleConnect = async (deviceId: string) => {
-    setConnectingTo(deviceId);
-    try {
-      await connectToPeer(deviceId);
-      console.log(
-        '[LocalSyncSettings] Connection successful, refreshing peer count...'
-      );
-      // Refresh connected peers (local UI state)
-      const peers = await getConnectedPeers();
-      setConnectedPeerIds(new Set(peers.map((p) => p.deviceId)));
-      // Refresh context's connected peer count (triggers docStore wiring)
-      await refreshConnectedCount();
-    } catch (err) {
-      console.error('Failed to connect:', err);
-    } finally {
-      setConnectingTo(null);
-    }
-  };
-
-  const isConnected = (deviceId: string) => {
-    return connectedPeerIds.has(deviceId) || connectedPeerCount > 0;
-  };
 
   const handleToggle = async () => {
     if (isEnabled) {
@@ -73,29 +51,15 @@ export function LocalSyncSettings() {
     }
   };
 
-  const getStatusColor = () => {
-    switch (status) {
-      case 'starting':
-      case 'discovering':
-        return 'ochre';
-      case 'connected':
-        return 'sage';
-      case 'error':
-        return 'brick';
-      case 'off':
-      default:
-        return 'gray';
-    }
-  };
-
   const getStatusLabel = () => {
+    if (connectedPeerCount > 0) {
+      return `${connectedPeerCount} device${connectedPeerCount === 1 ? '' : 's'} connected`;
+    }
     switch (status) {
       case 'starting':
         return 'Starting...';
       case 'discovering':
-        return 'Searching for devices...';
-      case 'connected':
-        return `${discoveredPeers.length} device${discoveredPeers.length === 1 ? '' : 's'} found`;
+        return 'Ready';
       case 'error':
         return 'Error';
       case 'off':
@@ -104,135 +68,158 @@ export function LocalSyncSettings() {
     }
   };
 
+  const getDeviceStatus = ():
+    | 'connected'
+    | 'connecting'
+    | 'offline'
+    | 'error' => {
+    if (connectedPeerCount > 0) return 'connected';
+    if (status === 'starting') return 'connecting';
+    if (status === 'error') return 'error';
+    return 'offline';
+  };
+
+  const formatFingerprint = (fp: string): string => {
+    if (fp.length === 8) {
+      return `${fp.slice(0, 4).toUpperCase()}-${fp.slice(4).toUpperCase()}`;
+    }
+    return fp.toUpperCase();
+  };
+
   return (
-    <Box component="section">
-      <Group justify="space-between" mb="xs">
-        <Title order={4}>Local Network Sync</Title>
-        <Switch
-          checked={isEnabled}
-          onChange={handleToggle}
-          disabled={status === 'starting'}
-        />
-      </Group>
+    <>
+      <Box component="section">
+        <Group justify="space-between" mb="xs">
+          <Title order={4}>Local Sync</Title>
+          <Switch
+            checked={isEnabled}
+            onChange={handleToggle}
+            disabled={status === 'starting'}
+          />
+        </Group>
 
-      <Text size="sm" c="dimmed" mb="md">
-        Sync directly with devices on your WiFi network. No internet required.
-      </Text>
+        <Text size="sm" c="dimmed" mb="md">
+          Sync your vault across devices on the same network. All data stays
+          local - no cloud required.
+        </Text>
 
-      {isEnabled && (
-        <Stack gap="md">
-          <Group gap="xs">
-            <Badge color={getStatusColor()} variant="dot">
-              {getStatusLabel()}
-            </Badge>
-          </Group>
-
-          {error && (
-            <Alert color="brick" variant="light">
-              {error}
-            </Alert>
-          )}
-
-          {discoveredPeers.length > 0 && (
-            <Box>
-              <Text size="xs" fw={600} c="dimmed" tt="uppercase" mb="xs">
-                Nearby Devices
-              </Text>
-              <Stack gap="xs">
-                {discoveredPeers.map((peer) => (
-                  <Group
-                    key={peer.deviceId}
-                    justify="space-between"
-                    p="xs"
-                    style={(theme) => ({
-                      borderRadius: theme.radius.sm,
-                      backgroundColor: 'var(--mantine-color-gray-0)',
-                    })}
-                  >
-                    <Group gap="sm">
-                      <ThemeIcon variant="light" color="slate" size="sm">
-                        <Icon name="monitor" size={14} />
-                      </ThemeIcon>
-                      <Text size="sm">{peer.deviceName}</Text>
-                    </Group>
-                    {isConnected(peer.deviceId) ? (
-                      <Badge color="sage" variant="light" size="sm" radius="sm">
-                        <Group gap={4}>
-                          <Box
-                            w={6}
-                            h={6}
-                            style={{
-                              borderRadius: '50%',
-                              backgroundColor: 'var(--mantine-color-sage-6)',
-                            }}
-                          />
-                          Connected
-                        </Group>
-                      </Badge>
-                    ) : (
-                      <Button
-                        size="xs"
-                        variant="light"
-                        onClick={() => handleConnect(peer.deviceId)}
-                        disabled={connectingTo === peer.deviceId}
-                        loading={connectingTo === peer.deviceId}
-                      >
-                        Connect
-                      </Button>
-                    )}
-                  </Group>
-                ))}
-              </Stack>
-            </Box>
-          )}
-
-          {status === 'discovering' && discoveredPeers.length === 0 && (
-            <Group gap="sm" c="dimmed">
-              <Loader size="xs" />
-              <Text size="sm">
-                Looking for devices with the same Skeleton Key...
+        {isEnabled && (
+          <Stack gap="lg">
+            {/* Status badge */}
+            <Group gap="sm">
+              <DeviceStatusIndicator status={getDeviceStatus()} />
+              <Text size="sm" c="dimmed">
+                {getStatusLabel()}
               </Text>
             </Group>
-          )}
 
-          {deviceInfo && (
-            <Box
-              p="sm"
-              style={(theme) => ({
-                borderRadius: theme.radius.sm,
-                backgroundColor: 'var(--mantine-color-gray-0)',
-              })}
-            >
+            {/* Error display */}
+            {error && (
+              <Box
+                p="sm"
+                style={(theme) => ({
+                  borderRadius: theme.radius.sm,
+                  backgroundColor: 'var(--mantine-color-brick-0)',
+                  border: '1px solid var(--mantine-color-brick-3)',
+                })}
+              >
+                <Text size="sm" c="brick">
+                  {error}
+                </Text>
+              </Box>
+            )}
+
+            {/* Paired Devices Section */}
+            <Box>
+              <Group justify="space-between" align="center" mb="sm">
+                <Text size="md" fw={600} c="carbon">
+                  Paired Devices
+                </Text>
+                <Button
+                  size="xs"
+                  variant="light"
+                  leftSection={<Icon name="plus" size={14} />}
+                  onClick={() => setShowPairModal(true)}
+                >
+                  Pair New Device
+                </Button>
+              </Group>
+
+              <PairedDevicesList
+                devices={pairedDevices}
+                onReconnect={reconnectDevice}
+                onUnpair={unpairDevice}
+              />
+            </Box>
+
+            <Divider />
+
+            {/* This Device Section */}
+            <Box>
+              <Text size="md" fw={600} c="carbon" mb="sm">
+                This Device
+              </Text>
+
               <Stack gap="xs">
-                <Group justify="space-between">
-                  <Text size="xs" c="dimmed">
-                    This device:
-                  </Text>
-                  <Text size="sm" fw={500}>
-                    {deviceInfo.deviceName}
-                  </Text>
-                </Group>
-                {serverPort && (
+                {deviceInfo && (
                   <Group justify="space-between">
-                    <Text size="xs" c="dimmed">
-                      Port:
+                    <Text size="xs" c="dimmed" fw={500}>
+                      Name
                     </Text>
-                    <Text size="sm">{serverPort}</Text>
+                    <Text size="sm" fw={500}>
+                      {deviceInfo.deviceName}
+                    </Text>
                   </Group>
                 )}
-                {deviceInfo.fingerprint && (
+
+                {deviceInfo?.fingerprint && (
                   <Group justify="space-between">
-                    <Text size="xs" c="dimmed">
-                      Fingerprint:
+                    <Text size="xs" c="dimmed" fw={500}>
+                      Device Code
                     </Text>
-                    <Code fz="xs">{deviceInfo.fingerprint}</Code>
+                    <Code fz="xs">
+                      {formatFingerprint(deviceInfo.fingerprint)}
+                    </Code>
+                  </Group>
+                )}
+
+                {serverPort && (
+                  <Group justify="space-between">
+                    <Text size="xs" c="dimmed" fw={500}>
+                      Port
+                    </Text>
+                    <Code fz="xs">{serverPort}</Code>
                   </Group>
                 )}
               </Stack>
+
+              <Button
+                variant="filled"
+                color="ember"
+                fullWidth
+                mt="md"
+                leftSection={<Icon name="qr-code" size={16} />}
+                onClick={() => setShowQrModal(true)}
+              >
+                Show Pairing Code
+              </Button>
             </Box>
-          )}
-        </Stack>
-      )}
-    </Box>
+          </Stack>
+        )}
+      </Box>
+
+      {/* Modals */}
+      <ShowPairingCodeModal
+        opened={showQrModal}
+        onClose={() => setShowQrModal(false)}
+        onGenerateQr={generateQrCode}
+      />
+
+      <PairNewDeviceModal
+        opened={showPairModal}
+        onClose={() => setShowPairModal(false)}
+        onPairManually={pairDeviceManually}
+      />
+    </>
   );
 }

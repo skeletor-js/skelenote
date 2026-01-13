@@ -4,8 +4,10 @@
 //! All data stays on the local network - no external servers involved.
 
 pub mod blocklist;
+pub mod cache;
 pub mod client;
 pub mod mdns;
+pub mod pairing;
 pub mod protocol;
 pub mod server;
 pub mod state;

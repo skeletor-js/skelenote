@@ -12,8 +12,12 @@ use crypto::{
     derive_signing_key, sign_revocation, verify_revocation, get_public_key_bytes,
 };
 use network::{LocalSyncServer, MdnsHandle, NetworkState, DiscoveredPeer};
-use std::sync::Mutex;
+use network::cache::{PairedDevicesCache, PairedDevice, KnownAddress};
+use network::pairing::{PairingPayload, PairingInfo, get_local_ips};
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager, State};
+use tokio::sync::RwLock;
 use zeroize::Zeroizing;
 
 /// Shared crypto state managed by Tauri
@@ -22,6 +26,15 @@ struct CryptoState {
     stronghold: Mutex<Option<StrongholdManager>>,
     /// Cached sync key for encryption/decryption (derived from master key)
     sync_key: Mutex<Option<Zeroizing<[u8; 32]>>>,
+}
+
+/// Shared pairing state managed by Tauri
+#[derive(Clone)]
+struct PairingState {
+    /// Paired devices cache
+    cache: Arc<RwLock<Option<PairedDevicesCache>>>,
+    /// Path to cache file
+    cache_path: PathBuf,
 }
 
 /// Greet command - returns a greeting message
@@ -245,6 +258,7 @@ async fn network_start_server(
     app: AppHandle,
     crypto_state: State<'_, CryptoState>,
     network_state: State<'_, NetworkState>,
+    pairing_state: State<'_, PairingState>,
 ) -> Result<u16, String> {
     // Check if server is already running
     {
@@ -270,6 +284,21 @@ async fn network_start_server(
     {
         let mut fp = network_state.fingerprint.write().await;
         *fp = Some(fingerprint.clone());
+    }
+
+    // Load paired devices cache
+    {
+        let device_id = network_state.device_id.read().await.clone();
+        let device_name = network_state.device_name.read().await.clone();
+        let cache = PairedDevicesCache::load(
+            &pairing_state.cache_path,
+            device_id.clone(),
+            device_name.clone(),
+            fingerprint.clone(),
+        ).map_err(|e| e.to_string())?;
+
+        let mut cache_guard = pairing_state.cache.write().await;
+        *cache_guard = Some(cache);
     }
 
     // Get device info
@@ -1056,6 +1085,757 @@ async fn read_vault_directory(directory: String) -> Result<Vec<VaultFile>, Strin
     Ok(files)
 }
 
+// ============================================================================
+// Pairing Helper Functions
+// ============================================================================
+
+/// Connect to a peer using direct IP and port
+///
+/// Helper function used by both pairing and reconnection flows.
+async fn connect_to_peer_direct(
+    ip: String,
+    port: u16,
+    our_device_id: String,
+    our_device_name: String,
+    our_fingerprint: String,
+    app: Option<tauri::AppHandle>,
+    network_state: &NetworkState,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    use std::net::SocketAddr;
+    use network::client::PeerConnection;
+    use network::protocol::MessageType;
+
+    // Parse address
+    let addr: SocketAddr = format!("{}:{}", ip, port).parse()?;
+
+    println!("[ConnectDirect] Attempting to connect to {}:{}", ip, port);
+
+    // Connect
+    let (connection, mut event_rx) = PeerConnection::connect(
+        addr,
+        our_device_id,
+        our_device_name,
+        our_fingerprint,
+    ).await?;
+
+    println!("[ConnectDirect] Connected to {} ({})", connection.device_name, connection.device_id);
+
+    let peer_device_id = connection.device_id.clone();
+    let peer_device_name = connection.device_name.clone();
+
+    // Check if device is blocked
+    if network_state.is_device_blocked(&peer_device_id).await {
+        println!("[ConnectDirect] Device is blocked: {}", peer_device_id);
+        return Err("Device has been revoked".into());
+    }
+
+    // Store in connected peers
+    {
+        let mut peers = network_state.connected_peers.write().await;
+        peers.insert(peer_device_id.clone(), network::state::ConnectedPeer {
+            device_id: peer_device_id.clone(),
+            device_name: peer_device_name.clone(),
+            address: addr.to_string(),
+            connected_at: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
+        });
+    }
+
+    // Store the write stream
+    let write_stream = connection.get_write_stream();
+    network_state.add_peer_write_stream_arc(peer_device_id.clone(), write_stream).await;
+
+    // Emit connected event if app handle provided
+    if let Some(app) = app {
+        let _ = app.emit("local-peer-connected", serde_json::json!({
+            "deviceId": peer_device_id.clone(),
+            "deviceName": peer_device_name.clone(),
+            "address": addr.to_string(),
+        }));
+
+        // Spawn event handler for incoming messages
+        let peer_id_clone = peer_device_id.clone();
+        let connected_peers = network_state.connected_peers.clone();
+        let peer_streams = network_state.peer_streams.clone();
+        tokio::spawn(async move {
+            while let Some(event) = event_rx.recv().await {
+                match event {
+                    network::client::PeerEvent::MessageReceived { msg_type, payload } => {
+                        if msg_type == MessageType::Update as u8 {
+                            let _ = app.emit("local-sync-message", serde_json::json!({
+                                "deviceId": peer_id_clone,
+                                "msgType": msg_type,
+                                "payload": payload,
+                            }));
+                        }
+                    }
+                    network::client::PeerEvent::Disconnected => {
+                        println!("[ConnectDirect] Peer disconnected: {}", peer_id_clone);
+                        // Remove from connected peers
+                        {
+                            let mut peers = connected_peers.write().await;
+                            peers.remove(&peer_id_clone);
+                        }
+                        // Remove from peer streams
+                        {
+                            let mut streams = peer_streams.write().await;
+                            streams.remove(&peer_id_clone);
+                        }
+                        let _ = app.emit("local-peer-disconnected", serde_json::json!({
+                            "deviceId": peer_id_clone,
+                        }));
+                        break;
+                    }
+                    network::client::PeerEvent::Error { message } => {
+                        println!("[ConnectDirect] Peer error: {}", message);
+                    }
+                    _ => {}
+                }
+            }
+        });
+    }
+
+    Ok(())
+}
+
+// ============================================================================
+// Pairing Commands
+// ============================================================================
+
+/// Response from QR generation command
+#[derive(Debug, serde::Serialize)]
+struct QrCodeResponse {
+    /// Base64-encoded PNG image
+    png_base64: String,
+    /// Raw payload URL
+    payload: String,
+    /// Device fingerprint (for visual verification)
+    fingerprint: String,
+    /// Connection details for manual entry
+    manual_details: ManualPairingDetails,
+}
+
+/// Connection details for manual pairing (no camera needed)
+#[derive(Debug, serde::Serialize)]
+struct ManualPairingDetails {
+    /// List of IP addresses to try
+    ips: Vec<String>,
+    /// TCP port
+    port: u16,
+    /// Device code (fingerprint, formatted like A1B2-C3D4)
+    code: String,
+    /// Device name
+    device_name: String,
+}
+
+/// Generate QR code for pairing this device
+#[tauri::command]
+async fn pairing_generate_qr(
+    _crypto_state: State<'_, CryptoState>,
+    network_state: State<'_, NetworkState>,
+) -> Result<QrCodeResponse, String> {
+    // Get device info
+    let device_id = network_state.device_id.read().await.clone();
+    let device_name = network_state.device_name.read().await.clone();
+
+    // Get fingerprint
+    let fingerprint = {
+        let fp_guard = network_state.fingerprint.read().await;
+        fp_guard.clone().ok_or("Fingerprint not set - server must be started first")?
+    };
+
+    // Get server port
+    let server_info = network_state.get_server_info().await;
+    let port = server_info.port.ok_or("Server not running - call network_start_server first")?;
+
+    // Get local IPs
+    let ips = get_local_ips().map_err(|e| e.to_string())?;
+
+    // Create payload
+    let payload_struct = PairingPayload::new(
+        ips.clone(),
+        port,
+        fingerprint.clone(),
+        device_id,
+        device_name.clone()
+    );
+
+    // Generate URL
+    let url = payload_struct.to_url().map_err(|e| e.to_string())?;
+
+    // Generate QR code PNG
+    let png_bytes = payload_struct.to_qr_png().map_err(|e| e.to_string())?;
+
+    // Encode PNG as base64
+    use base64::{engine::general_purpose::STANDARD, Engine};
+    let png_base64 = STANDARD.encode(&png_bytes);
+
+    // Format fingerprint for display (e.g., "a1b2c3d4" -> "A1B2-C3D4")
+    let formatted_code = fingerprint.to_uppercase().chars()
+        .collect::<Vec<_>>()
+        .chunks(4)
+        .map(|chunk| chunk.iter().collect::<String>())
+        .collect::<Vec<_>>()
+        .join("-");
+
+    Ok(QrCodeResponse {
+        png_base64,
+        payload: url,
+        fingerprint: fingerprint.clone(),
+        manual_details: ManualPairingDetails {
+            ips,
+            port,
+            code: formatted_code,
+            device_name,
+        },
+    })
+}
+
+/// Parse a QR code payload and validate fingerprint
+#[tauri::command]
+async fn pairing_parse_qr(
+    payload: String,
+    network_state: State<'_, NetworkState>,
+) -> Result<PairingInfo, String> {
+    // Parse payload
+    let payload_struct = PairingPayload::from_url(&payload).map_err(|e| e.to_string())?;
+
+    // Get our fingerprint
+    let our_fingerprint = {
+        let fp_guard = network_state.fingerprint.read().await;
+        fp_guard.clone().ok_or("Fingerprint not set - server must be started first")?
+    };
+
+    // Create pairing info with fingerprint check
+    let info = PairingInfo::from_payload(payload_struct, &our_fingerprint);
+
+    Ok(info)
+}
+
+/// Connect to a device using manual connection details
+///
+/// For pairing without scanning QR code - user enters IP, port, and code manually.
+#[tauri::command]
+async fn pairing_connect_manual(
+    ip: String,
+    port: u16,
+    code: String,
+    app: AppHandle,
+    _crypto_state: State<'_, CryptoState>,
+    network_state: State<'_, NetworkState>,
+    pairing_state: State<'_, PairingState>,
+) -> Result<(), String> {
+    // Remove any formatting from code (e.g., "A1B2-C3D4" -> "a1b2c3d4")
+    let clean_code = code.replace("-", "").replace(" ", "").to_lowercase();
+
+    // Get our fingerprint
+    let our_fingerprint = {
+        let fp_guard = network_state.fingerprint.read().await;
+        fp_guard.clone().ok_or("Fingerprint not set - server must be started first")?
+    };
+
+    // Verify fingerprint matches
+    if clean_code != our_fingerprint {
+        return Err("Device code doesn't match - devices must use same Skeleton Key".to_string());
+    }
+
+    let our_device_id = network_state.device_id.read().await.clone();
+    let our_device_name = network_state.device_name.read().await.clone();
+
+    // Try connecting
+    println!("[PairingManual] Attempting connection to {}:{}", ip, port);
+
+    match connect_to_peer_direct(
+        ip.clone(),
+        port,
+        our_device_id.clone(),
+        our_device_name.clone(),
+        our_fingerprint.clone(),
+        Some(app.clone()),
+        &network_state,
+    ).await {
+        Ok(_) => {
+            println!("[PairingManual] Successfully connected to {}:{}", ip, port);
+
+            // Get device info from the connection (we don't know device_id or name yet)
+            // Actually, after connection, we can get it from connected_peers
+            let peer_info = {
+                let peers = network_state.connected_peers.read().await;
+                // Find the peer we just connected to by address
+                peers.values().find(|p| p.address == format!("{}:{}", ip, port)).cloned()
+            };
+
+            if let Some(peer) = peer_info {
+                // Add to paired devices cache
+                let mut cache_guard = pairing_state.cache.write().await;
+                if let Some(cache) = cache_guard.as_mut() {
+                    let mut device = PairedDevice::new(
+                        peer.device_id.clone(),
+                        peer.device_name.clone(),
+                        our_fingerprint,
+                        vec![KnownAddress::new(ip.clone(), port)],
+                    );
+                    // Record initial connection success
+                    device.record_connection_success(&ip, port);
+                    cache.add_device(device);
+
+                    // Save cache to disk
+                    if let Err(e) = cache.save(&pairing_state.cache_path) {
+                        eprintln!("[PairingManual] Failed to save cache: {}", e);
+                    }
+                }
+            }
+
+            Ok(())
+        }
+        Err(e) => {
+            Err(format!("Failed to connect to {}:{}: {}", ip, port, e))
+        }
+    }
+}
+
+/// Connect to a device using pairing info
+#[tauri::command]
+async fn pairing_connect(
+    info: PairingInfo,
+    app: AppHandle,
+    _crypto_state: State<'_, CryptoState>,
+    network_state: State<'_, NetworkState>,
+    pairing_state: State<'_, PairingState>,
+) -> Result<(), String> {
+    // Verify fingerprint matches
+    if !info.fingerprint_match {
+        return Err("Fingerprint mismatch - devices must use same Skeleton Key".to_string());
+    }
+
+    let our_device_id = network_state.device_id.read().await.clone();
+    let our_device_name = network_state.device_name.read().await.clone();
+    let our_fingerprint = network_state.fingerprint.read().await.clone()
+        .ok_or("Fingerprint not set")?;
+
+    // Try connecting to each IP address
+    let mut last_error: Option<Box<dyn std::error::Error + Send + Sync>> = None;
+    for ip in &info.ips {
+        println!("[Pairing] Attempting connection to {}:{}", ip, info.port);
+
+        match connect_to_peer_direct(
+            ip.clone(),
+            info.port,
+            our_device_id.clone(),
+            our_device_name.clone(),
+            our_fingerprint.clone(),
+            Some(app.clone()),
+            &network_state,
+        ).await {
+            Ok(_) => {
+                println!("[Pairing] Successfully connected to {}:{}", ip, info.port);
+
+                // Add to paired devices cache
+                let mut cache_guard = pairing_state.cache.write().await;
+                if let Some(cache) = cache_guard.as_mut() {
+                    let mut device = PairedDevice::new(
+                        info.device_id.clone(),
+                        info.device_name.clone(),
+                        info.fingerprint.clone(),
+                        vec![KnownAddress::new(ip.clone(), info.port)],
+                    );
+                    // Record initial connection success
+                    device.record_connection_success(ip, info.port);
+                    cache.add_device(device);
+
+                    // Save cache to disk
+                    if let Err(e) = cache.save(&pairing_state.cache_path) {
+                        eprintln!("[Pairing] Failed to save cache: {}", e);
+                    }
+                }
+
+                return Ok(());
+            }
+            Err(e) => {
+                println!("[Pairing] Failed to connect to {}:{}: {}", ip, info.port, e);
+                last_error = Some(e);
+            }
+        }
+    }
+
+    Err(format!(
+        "Failed to connect to device - tried {} addresses. Last error: {}",
+        info.ips.len(),
+        last_error.map(|e| e.to_string()).unwrap_or_else(|| "unknown".to_string())
+    ))
+}
+
+/// Get all paired devices with current connection status
+#[derive(Debug, serde::Serialize)]
+struct PairedDeviceWithStatus {
+    #[serde(flatten)]
+    device: PairedDevice,
+    connected: bool,
+}
+
+#[tauri::command]
+async fn cache_get_paired_devices(
+    pairing_state: State<'_, PairingState>,
+    network_state: State<'_, NetworkState>,
+) -> Result<Vec<PairedDeviceWithStatus>, String> {
+    let cache_guard = pairing_state.cache.read().await;
+    let cache = cache_guard.as_ref().ok_or("Cache not initialized")?;
+
+    // Get connected peer IDs
+    let connected_peers = network_state.connected_peers.read().await;
+
+    // Map devices to include connection status
+    let devices = cache.devices.iter().map(|device| {
+        let connected = connected_peers.contains_key(&device.id);
+        PairedDeviceWithStatus {
+            device: device.clone(),
+            connected,
+        }
+    }).collect();
+
+    Ok(devices)
+}
+
+/// Remove a paired device
+#[tauri::command]
+async fn cache_remove_paired_device(
+    device_id: String,
+    pairing_state: State<'_, PairingState>,
+) -> Result<(), String> {
+    let mut cache_guard = pairing_state.cache.write().await;
+    let cache = cache_guard.as_mut().ok_or("Cache not initialized")?;
+
+    cache.remove_device(&device_id).map_err(|e| e.to_string())?;
+
+    // Save cache to disk
+    cache.save(&pairing_state.cache_path).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+/// Prune dead addresses from all paired devices
+///
+/// Removes addresses with >10 consecutive failures and limits each device to 5 addresses.
+/// Should be called periodically after reconnection attempts.
+#[tauri::command]
+async fn cache_prune_addresses(
+    pairing_state: State<'_, PairingState>,
+) -> Result<(), String> {
+    let mut cache_guard = pairing_state.cache.write().await;
+    let cache = cache_guard.as_mut().ok_or("Cache not initialized")?;
+
+    println!("[Cache] Pruning dead addresses from {} devices", cache.devices.len());
+    cache.prune_all_addresses();
+
+    // Save cache to disk
+    cache.save(&pairing_state.cache_path).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+/// Reconnect to all paired devices
+#[tauri::command]
+async fn cache_reconnect_all(
+    app: AppHandle,
+    _crypto_state: State<'_, CryptoState>,
+    network_state: State<'_, NetworkState>,
+    pairing_state: State<'_, PairingState>,
+) -> Result<(), String> {
+    // Release cache read lock to allow writes during connection attempts
+    let devices = {
+        let cache_guard = pairing_state.cache.read().await;
+        let cache = cache_guard.as_ref().ok_or("Cache not initialized")?;
+        cache.devices.clone()
+    };
+
+    let fingerprint = network_state.fingerprint.read().await.clone()
+        .ok_or("Fingerprint not set")?;
+    let device_id = network_state.device_id.read().await.clone();
+    let device_name = network_state.device_name.read().await.clone();
+
+    // Get references we need to pass into tasks
+    let connected_peers = network_state.connected_peers.clone();
+    let peer_streams = network_state.peer_streams.clone();
+    let blocklist = network_state.blocklist.clone();
+
+    // Try connecting to each paired device in parallel (with concurrency limit)
+    let mut tasks = Vec::new();
+
+    for device in devices {
+        let addresses: Vec<_> = device.prioritized_addresses().into_iter().map(|a| a.clone()).collect();
+        let target_device_id = device.id.clone();
+        let fp = fingerprint.clone();
+        let dev_id = device_id.clone();
+        let dev_name = device_name.clone();
+        let app_clone = app.clone();
+        let connected_peers_clone = connected_peers.clone();
+        let peer_streams_clone = peer_streams.clone();
+        let blocklist_clone = blocklist.clone();
+        let pairing_state_clone = pairing_state.inner().clone();
+
+        let task = tokio::spawn(async move {
+            use std::net::SocketAddr;
+            use network::client::PeerConnection;
+
+            // Emit connecting status
+            let _ = app_clone.emit("paired-device-status", serde_json::json!({
+                "deviceId": target_device_id,
+                "status": "connecting",
+            }));
+
+            let mut connected = false;
+            let mut last_error: Option<String> = None;
+
+            // Try each address in priority order
+            for addr_info in addresses {
+                let ip = addr_info.ip.clone();
+                let port = addr_info.port;
+
+                let addr: SocketAddr = match format!("{}:{}", ip, port).parse() {
+                    Ok(a) => a,
+                    Err(e) => {
+                        println!("[Reconnect] Invalid address {}:{}: {}", ip, port, e);
+                        // Record failure in cache
+                        {
+                            let mut cache_guard = pairing_state_clone.cache.write().await;
+                            if let Some(cache) = cache_guard.as_mut() {
+                                let _ = cache.record_connection_failure(&target_device_id, &ip, port);
+                            }
+                        }
+                        continue;
+                    }
+                };
+
+                // Check if device is blocked
+                if blocklist_clone.is_blocked(&target_device_id).await {
+                    println!("[Reconnect] Device is blocked: {}", target_device_id);
+                    last_error = Some("Device has been revoked".to_string());
+                    break;
+                }
+
+                match PeerConnection::connect(addr, dev_id.clone(), dev_name.clone(), fp.clone()).await {
+                    Ok((connection, _event_rx)) => {
+                        let peer_device_id = connection.device_id.clone();
+                        let peer_device_name = connection.device_name.clone();
+
+                        // Store in connected peers
+                        {
+                            let mut peers = connected_peers_clone.write().await;
+                            peers.insert(peer_device_id.clone(), network::state::ConnectedPeer {
+                                device_id: peer_device_id.clone(),
+                                device_name: peer_device_name.clone(),
+                                address: addr.to_string(),
+                                connected_at: std::time::SystemTime::now()
+                                    .duration_since(std::time::UNIX_EPOCH)
+                                    .unwrap()
+                                    .as_secs(),
+                            });
+                        }
+
+                        // Store the write stream
+                        let write_stream = connection.get_write_stream();
+                        {
+                            let mut streams = peer_streams_clone.write().await;
+                            streams.insert(peer_device_id.clone(), write_stream);
+                        }
+
+                        // Record success in cache
+                        {
+                            let mut cache_guard = pairing_state_clone.cache.write().await;
+                            if let Some(cache) = cache_guard.as_mut() {
+                                let _ = cache.record_connection_success(&target_device_id, &ip, port);
+                                // Save cache to disk
+                                if let Err(e) = cache.save(&pairing_state_clone.cache_path) {
+                                    eprintln!("[Reconnect] Failed to save cache: {}", e);
+                                }
+                            }
+                        }
+
+                        // Emit connected event
+                        let _ = app_clone.emit("local-peer-connected", serde_json::json!({
+                            "deviceId": peer_device_id.clone(),
+                            "deviceName": peer_device_name.clone(),
+                            "address": addr.to_string(),
+                        }));
+
+                        // Emit connected status
+                        let _ = app_clone.emit("paired-device-status", serde_json::json!({
+                            "deviceId": target_device_id,
+                            "status": "connected",
+                        }));
+
+                        println!("[Reconnect] Successfully connected to device {} at {}:{}", target_device_id, ip, port);
+                        connected = true;
+                        break;
+                    }
+                    Err(e) => {
+                        println!("[Reconnect] Failed to connect to device {} at {}:{}: {}", target_device_id, ip, port, e);
+                        last_error = Some(e.to_string());
+
+                        // Record failure in cache
+                        {
+                            let mut cache_guard = pairing_state_clone.cache.write().await;
+                            if let Some(cache) = cache_guard.as_mut() {
+                                let _ = cache.record_connection_failure(&target_device_id, &ip, port);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if !connected {
+                // Emit offline status
+                let _ = app_clone.emit("paired-device-status", serde_json::json!({
+                    "deviceId": target_device_id,
+                    "status": "offline",
+                    "error": last_error,
+                }));
+            }
+
+            // Save cache to disk after all attempts
+            {
+                let mut cache_guard = pairing_state_clone.cache.write().await;
+                if let Some(cache) = cache_guard.as_mut() {
+                    if let Err(e) = cache.save(&pairing_state_clone.cache_path) {
+                        eprintln!("[Reconnect] Failed to save cache: {}", e);
+                    }
+                }
+            }
+
+            if connected {
+                Ok(())
+            } else {
+                Err(format!("Failed to connect: {}", last_error.unwrap_or_else(|| "No addresses available".to_string())))
+            }
+        });
+
+        tasks.push(task);
+
+        // Limit concurrency to 3 connections at a time
+        if tasks.len() >= 3 {
+            break;
+        }
+    }
+
+    // Wait for all tasks to complete (but don't fail if some fail)
+    for task in tasks {
+        let _ = task.await;
+    }
+
+    Ok(())
+}
+
+/// Reconnect to a specific paired device
+#[tauri::command]
+async fn cache_reconnect_device(
+    device_id: String,
+    app: AppHandle,
+    _crypto_state: State<'_, CryptoState>,
+    network_state: State<'_, NetworkState>,
+    pairing_state: State<'_, PairingState>,
+) -> Result<(), String> {
+    // Get device info and addresses
+    let addresses = {
+        let cache_guard = pairing_state.cache.read().await;
+        let cache = cache_guard.as_ref().ok_or("Cache not initialized")?;
+
+        let device = cache.get_device(&device_id)
+            .ok_or_else(|| format!("Device not found: {}", device_id))?;
+
+        device.prioritized_addresses().into_iter().map(|a| (a.ip.clone(), a.port)).collect::<Vec<_>>()
+    };
+
+    let fingerprint = network_state.fingerprint.read().await.clone()
+        .ok_or("Fingerprint not set")?;
+    let our_device_id = network_state.device_id.read().await.clone();
+    let our_device_name = network_state.device_name.read().await.clone();
+
+    // Emit connecting status
+    let _ = app.emit("paired-device-status", serde_json::json!({
+        "deviceId": device_id,
+        "status": "connecting",
+    }));
+
+    // Try each address in priority order
+    let address_count = addresses.len();
+    let mut last_error: Option<Box<dyn std::error::Error + Send + Sync>> = None;
+
+    for (ip, port) in &addresses {
+        match connect_to_peer_direct(
+            ip.clone(),
+            *port,
+            our_device_id.clone(),
+            our_device_name.clone(),
+            fingerprint.clone(),
+            Some(app.clone()),
+            &network_state,
+        ).await {
+            Ok(_) => {
+                println!("[Reconnect] Successfully connected to {} at {}:{}", device_id, ip, port);
+
+                // Record success in cache
+                {
+                    let mut cache_guard = pairing_state.cache.write().await;
+                    if let Some(cache) = cache_guard.as_mut() {
+                        let _ = cache.record_connection_success(&device_id, ip, *port);
+                        // Save cache to disk
+                        if let Err(e) = cache.save(&pairing_state.cache_path) {
+                            eprintln!("[Reconnect] Failed to save cache: {}", e);
+                        }
+                    }
+                }
+
+                // Emit connected status
+                let _ = app.emit("paired-device-status", serde_json::json!({
+                    "deviceId": device_id,
+                    "status": "connected",
+                }));
+
+                return Ok(());
+            }
+            Err(e) => {
+                println!("[Reconnect] Failed to connect to {} at {}:{}: {}", device_id, ip, port, e);
+                last_error = Some(e);
+
+                // Record failure in cache
+                {
+                    let mut cache_guard = pairing_state.cache.write().await;
+                    if let Some(cache) = cache_guard.as_mut() {
+                        let _ = cache.record_connection_failure(&device_id, ip, *port);
+                    }
+                }
+            }
+        }
+    }
+
+    // Save cache to disk after all attempts
+    {
+        let mut cache_guard = pairing_state.cache.write().await;
+        if let Some(cache) = cache_guard.as_mut() {
+            if let Err(e) = cache.save(&pairing_state.cache_path) {
+                eprintln!("[Reconnect] Failed to save cache: {}", e);
+            }
+        }
+    }
+
+    // Emit offline status
+    let error_msg = last_error.as_ref().map(|e| e.to_string()).unwrap_or_else(|| "unknown".to_string());
+    let _ = app.emit("paired-device-status", serde_json::json!({
+        "deviceId": device_id,
+        "status": "offline",
+        "error": error_msg.clone(),
+    }));
+
+    Err(format!(
+        "Failed to connect to device {} - tried {} addresses. Last error: {}",
+        device_id,
+        address_count,
+        error_msg
+    ))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -1077,7 +1857,7 @@ pub fn run() {
             // Create data directory if it doesn't exist
             std::fs::create_dir_all(&data_dir).ok();
 
-            let network_state = NetworkState::with_data_dir(data_dir);
+            let network_state = NetworkState::with_data_dir(data_dir.clone());
 
             // Load blocklist from disk in background
             let blocklist = network_state.blocklist.clone();
@@ -1088,6 +1868,15 @@ pub fn run() {
             });
 
             app.manage(network_state);
+
+            // Initialize PairingState with cache file path
+            let cache_path = data_dir.join("paired_devices.json");
+            let pairing_state = PairingState {
+                cache: Arc::new(RwLock::new(None)),
+                cache_path,
+            };
+
+            app.manage(pairing_state);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -1137,6 +1926,17 @@ pub fn run() {
             save_attachment,
             // Import commands
             read_vault_directory,
+            // Pairing commands
+            pairing_generate_qr,
+            pairing_parse_qr,
+            pairing_connect,
+            pairing_connect_manual,
+            // Cache commands
+            cache_get_paired_devices,
+            cache_remove_paired_device,
+            cache_prune_addresses,
+            cache_reconnect_all,
+            cache_reconnect_device,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

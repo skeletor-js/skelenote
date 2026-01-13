@@ -1,9 +1,122 @@
 # P2P Sync: QR Pairing + Cached Peers
 
-> **Status:** Planning
-> **Author:** Claude
-> **Date:** 2026-01-13
 > **Related:** Local P2P Sync, Cross-Platform Mobile Support
+>
+> **Status:** Phase 3 Complete ✓ | Phase 4 (Mobile) Pending | Phase 5 (Polish & Migration) Pending
+>
+> **Last Updated:** 2026-01-12
+
+---
+
+## 🚀 Implementation Status
+
+### Phase 1: Core Infrastructure (Backend) - ✅ COMPLETE
+
+All Rust backend components have been implemented:
+
+- ✅ [cache.rs](../../../src-tauri/src/network/cache.rs) - Paired devices cache with address prioritization
+- ✅ [pairing.rs](../../../src-tauri/src/network/pairing.rs) - QR code generation and parsing
+- ✅ Tauri commands for pairing and cache management
+- ✅ Connection flow modified to support direct IP/port connections
+
+### Phase 2: Frontend UI (Desktop) - ✅ COMPLETE
+
+Desktop UI components have been integrated:
+
+- ✅ LocalSyncContext updated with pairing methods
+- ✅ TypeScript bindings for all pairing and cache commands
+- ✅ QR code generation API (`generatePairingQr()`)
+- ✅ QR parsing API (`parsePairingQr()`)
+- ✅ Manual pairing support (`connectViaManualPairing()`)
+- ⚠️ UI components pending (PairedDevicesList, modals) - see Phase 5
+
+### Phase 3: Reconnection Logic - ✅ COMPLETE (2026-01-12)
+
+Automatic reconnection on app launch has been fully implemented:
+
+- ✅ `cache_reconnect_all` - Parallel reconnection to all paired devices
+- ✅ `cache_reconnect_device` - Reconnect to specific device
+- ✅ Cache maintenance - Records success/failure for each connection attempt
+- ✅ Connection statistics - Tracks `successCount` and `failCount` per address
+- ✅ Address prioritization - Tries most reliable addresses first
+- ✅ Cache persistence - Saves updated statistics to disk after reconnections
+- ✅ Status events - Emits `paired-device-status` events (connecting/connected/offline)
+- ✅ Address pruning - `cache_prune_addresses` removes addresses with >10 consecutive failures
+- ✅ Automatic pruning - Triggered after reconnection attempts in LocalSyncContext
+
+**Key Changes:**
+- Updated `cache_reconnect_all()` to emit status events and update cache with success/failure stats
+- Updated `cache_reconnect_device()` to emit status events and save cache after attempts
+- Updated `pairing_connect()` to record initial connection success in cache
+- Updated `pairing_connect_manual()` to record initial connection success in cache
+- Added `cache_prune_addresses()` command to clean up dead addresses
+- Integrated cache pruning into `LocalSyncContext` after reconnection attempts
+
+**Files Modified:**
+- [src-tauri/src/lib.rs](../../../src-tauri/src/lib.rs) - Added cache maintenance to reconnection functions
+- [src/lib/sync/local/index.ts](../../../src/lib/sync/local/index.ts) - Added `prunePairedDevicesCache()` binding
+- [src/contexts/LocalSyncContext.tsx](../../../src/contexts/LocalSyncContext.tsx) - Integrated cache pruning
+
+### Phase 4: Mobile Support - 🔲 PENDING
+
+iOS and Android QR scanning needs to be implemented.
+
+**Blockers:**
+- Requires Tauri mobile build setup
+- Needs QR scanner plugin evaluation
+
+### Phase 5: Polish & Migration - 🔲 PENDING
+
+Production readiness and mDNS deprecation needs to be completed.
+
+**Pending Tasks:**
+- Build paired devices UI components (PairedDevicesList, modals)
+- Error handling polish and user feedback
+- Migration guide for existing mDNS users
+- Remove mDNS code after migration period
+
+---
+
+## Next Steps
+
+### Immediate: Complete Phase 5 (Desktop Polish)
+
+1. **Build UI Components**
+   - Create `PairedDevicesList` component ([src/components/sync/PairedDevicesList.tsx](../../../src/components/sync/))
+   - Create `ShowPairingCodeModal` component
+   - Create `PairNewDeviceModal` component (with QR scanner and manual entry)
+   - Create `DeviceStatusIndicator` component
+   - Wire up status events (`paired-device-status`) to update UI in real-time
+
+2. **Integrate into Settings**
+   - Add "Local Sync" section to Settings page
+   - Display paired devices list with status indicators
+   - Add "Show Pairing Code" button
+   - Add "Pair New Device" button
+   - Add device context menu (reconnect, details, unpair, revoke)
+
+3. **Test End-to-End**
+   - Fresh pairing between two devices
+   - Reconnection after app restart
+   - Reconnection after IP change
+   - Sync data transfer after reconnection
+   - Unpair and re-pair workflow
+
+### Later: Mobile Support (Phase 4)
+
+1. Evaluate Tauri mobile QR scanner plugins
+2. Test local IP enumeration on iOS/Android
+3. Handle mobile-specific quirks (camera permissions, foreground-only sync)
+4. Build mobile-optimized UI
+
+### Future: Migration (Phase 5 Final)
+
+1. Detect upgrade from mDNS version
+2. Show migration notice to users
+3. Remove mDNS code and dependencies
+4. Write user documentation
+
+---
 
 ## Executive Summary
 
@@ -40,6 +153,7 @@ Replace mDNS-based automatic device discovery with explicit QR code pairing and 
 ### What Exists Today
 
 **mDNS Discovery (`src-tauri/src/network/mdns.rs`):**
+
 - Broadcasts `_skelenote._tcp.local.` service via Bonjour/Avahi
 - Discovers peers by browsing for same service type
 - Filters by fingerprint (only same-user devices visible)
@@ -47,6 +161,7 @@ Replace mDNS-based automatic device discovery with explicit QR code pairing and 
 - Returns `DiscoveredPeer` with IPs, port, fingerprint, device info
 
 **TCP Connection Layer (reusable):**
+
 - `server.rs` - Accepts incoming TCP connections
 - `client.rs` - Initiates outgoing TCP connections
 - `protocol.rs` - Binary message encoding (HELLO, UPDATE, PING, etc.)
@@ -54,6 +169,7 @@ Replace mDNS-based automatic device discovery with explicit QR code pairing and 
 - `blocklist.rs` - Device revocation list
 
 **Frontend Integration (`src/lib/sync/local/`):**
+
 - Tauri command wrappers for network operations
 - Event listeners for peer discovery/connection/sync
 - `LocalSyncContext` manages sync state
@@ -227,6 +343,7 @@ skelenote://pair?v=1&d=eyJ2IjoxLCJpcHMiOlsiMTkyLjE2OC4xLjUwIiwiMTAuMC4wLjE1Il0sI
 ```
 
 Platform paths:
+
 - **macOS:** `~/Library/Application Support/com.skelenote.app/paired_devices.json`
 - **Windows:** `%APPDATA%\com.skelenote.app\paired_devices.json`
 - **Linux:** `~/.local/share/com.skelenote.app/paired_devices.json`
@@ -628,6 +745,7 @@ When a device connects/disconnects, show subtle toast:
 **Scenario:** Device's IP changes due to DHCP lease renewal or network switch.
 
 **Solution:**
+
 - Store multiple IPs per device in cache
 - When connection succeeds from new IP, add it to cache
 - When connection fails, try other cached IPs
@@ -640,6 +758,7 @@ When a device connects/disconnects, show subtle toast:
 **Scenario:** Devices are on different WiFi networks (e.g., 2.4GHz vs 5GHz, or different subnets).
 
 **Solution:**
+
 - Include all local IPs in QR code (multiple interfaces)
 - Try all IPs during connection
 - If none work, show clear error: "Cannot reach device. Make sure both devices are on the same network."
@@ -649,6 +768,7 @@ When a device connects/disconnects, show subtle toast:
 **Scenario:** Local firewall blocks incoming connections.
 
 **Solution:**
+
 - Documentation: Explain that local sync requires incoming connections
 - Error message: "Connection refused - check firewall settings"
 - Future: Could implement hole-punching or relay fallback
@@ -658,6 +778,7 @@ When a device connects/disconnects, show subtle toast:
 **Scenario:** TCP server gets different port on restart.
 
 **Solution:**
+
 - Cache port with IP address
 - Update cache when successful connection reveals new port
 - QR code always shows current port
@@ -668,6 +789,7 @@ When a device connects/disconnects, show subtle toast:
 **Scenario:** QR code scanned from device with different Skeleton Key.
 
 **Solution:**
+
 - Check fingerprint BEFORE attempting connection
 - Error: "This device is using a different Skeleton Key. You can only sync between devices with the same key."
 
@@ -676,6 +798,7 @@ When a device connects/disconnects, show subtle toast:
 **Scenario:** Previously paired device has been revoked.
 
 **Solution:**
+
 - Keep device in paired list but mark as revoked
 - Reject connections from revoked devices
 - Show in UI: "This device has been revoked"
@@ -686,6 +809,7 @@ When a device connects/disconnects, show subtle toast:
 **Scenario:** User scans same device's QR code again.
 
 **Solution:**
+
 - Check if device ID already in cache
 - If yes: Update connection info (IPs, port) instead of adding duplicate
 - Show: "Updated connection info for MacBook Pro"
@@ -695,6 +819,7 @@ When a device connects/disconnects, show subtle toast:
 **Scenario:** Cache has many old IPs that no longer work.
 
 **Solution:**
+
 - Track consecutive failures per address
 - After 10 consecutive failures, remove address from cache
 - Keep at least one address (the most recent successful one)
@@ -705,6 +830,7 @@ When a device connects/disconnects, show subtle toast:
 **Scenario:** App crashes or is killed mid-pairing.
 
 **Solution:**
+
 - Don't add to cache until handshake complete
 - On next launch, device won't be in paired list
 - User can simply pair again
@@ -714,6 +840,7 @@ When a device connects/disconnects, show subtle toast:
 **Scenario:** User has two devices both named "iPhone".
 
 **Solution:**
+
 - Device ID is the unique identifier, not name
 - Show device ID suffix in UI if names collide: "iPhone (a1b2)" and "iPhone (c3d4)"
 
@@ -726,6 +853,7 @@ When a device connects/disconnects, show subtle toast:
 **Threat:** Malicious QR code could point to attacker's device.
 
 **Mitigations:**
+
 - Fingerprint verification before connecting (must match our Skeleton Key)
 - Visual confirmation step showing fingerprint
 - No automatic connection - user must confirm
@@ -733,6 +861,7 @@ When a device connects/disconnects, show subtle toast:
 **Threat:** QR code photographed by attacker.
 
 **Mitigations:**
+
 - QR contains only local IPs (not routable from internet)
 - Fingerprint verification prevents connection from wrong Skeleton Key
 - Server rejects connections from non-paired devices after initial setup
@@ -743,6 +872,7 @@ When a device connects/disconnects, show subtle toast:
 **Threat:** Attacker reads paired_devices.json to learn about user's devices.
 
 **Mitigations:**
+
 - File contains only local network info (IPs, device names)
 - No secrets stored in cache (fingerprint is public-derivable from Skeleton Key)
 - Cache file permissions: user-only read/write
@@ -751,6 +881,7 @@ When a device connects/disconnects, show subtle toast:
 ### 8.3 Connection Security
 
 **Existing mitigations (unchanged):**
+
 - All sync data encrypted with XChaCha20-Poly1305
 - Fingerprint verification on every connection
 - Device blocklist for revocation
@@ -761,6 +892,7 @@ When a device connects/disconnects, show subtle toast:
 **Threat:** Man-in-the-middle during pairing.
 
 **Mitigations:**
+
 - Both devices verify fingerprint matches
 - Fingerprint derived from Skeleton Key (attacker would need your key)
 - Visual confirmation: user verifies code matches on both screens
@@ -780,56 +912,68 @@ Make this distinction clear in UI.
 ### 9.1 Desktop (macOS, Windows, Linux)
 
 **QR Display:**
+
 - Use `qrcode` Rust crate to generate QR as PNG
 - Display in Tauri webview via data URL or temp file
 
 **QR Scanning:**
+
 - Optional: Use webcam via browser APIs (`getUserMedia`)
 - Primary: Manual IP entry (desktops often lack cameras)
 - Could use `nokhwa` Rust crate for native camera access
 
 **Local IPs:**
+
 - Use `local-ip-address` or `get_if_addrs` Rust crate
 - Filter to private IP ranges (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
 
 ### 9.2 iOS
 
 **QR Scanning:**
+
 - Native camera APIs via Tauri plugin or web view
 - `tauri-plugin-barcode-scanner` (if available for mobile)
 - Fallback: Manual entry
 
 **QR Display:**
+
 - Same as desktop - generate PNG, display in web view
 
 **Local IPs:**
+
 - iOS restricts access to network interfaces
 - May need to use `getifaddrs` via Rust FFI
 - Or enumerate via `NWPathMonitor` (needs native Swift bridge)
 
 **Background Behavior:**
+
 - iOS aggressively kills background network connections
 - On app foreground: Trigger reconnection to all paired devices
 - Cannot maintain persistent connections in background
 
 **Camera Permissions:**
+
 - Must request camera permission for QR scanning
 - Add `NSCameraUsageDescription` to Info.plist
 
 ### 9.3 Android
 
 **QR Scanning:**
+
 - Use `tauri-plugin-barcode-scanner` or ML Kit
 - Camera permission required
 
 **QR Display:**
+
 - Same as desktop
 
 **Local IPs:**
+
 - Use `NetworkInterface.getNetworkInterfaces()` via JNI
 - Or Rust `get_if_addrs` (should work on Android)
 
 **Background Behavior:**
+
 - More permissive than iOS but still restricted
 - Could use foreground service for persistent sync
 - For MVP: Reconnect on app foreground
@@ -847,6 +991,7 @@ Make this distinction clear in UI.
 ```
 
 **Tauri mobile plugins to evaluate:**
+
 - `tauri-plugin-barcode-scanner` - QR code scanning
 - `tauri-plugin-camera` - Camera access (alternative)
 
@@ -857,16 +1002,19 @@ Make this distinction clear in UI.
 ### 10.1 mDNS Removal
 
 **Phase 1: Add QR pairing alongside mDNS**
+
 - Both discovery methods available
 - mDNS auto-discovery still works on desktop
 - QR pairing works everywhere
 
 **Phase 2: Deprecate mDNS**
+
 - Remove mDNS from UI
 - Keep code but don't initialize
 - Log deprecation warnings
 
 **Phase 3: Remove mDNS code**
+
 - Delete `src-tauri/src/network/mdns.rs`
 - Remove `mdns_sd` dependency
 - Clean up related Tauri commands
@@ -874,11 +1022,13 @@ Make this distinction clear in UI.
 ### 10.2 Breaking Changes
 
 **For existing users:**
+
 - Devices currently "discovered" via mDNS will need to re-pair via QR
 - One-time action per device pair
 - No data loss - just need to re-establish connections
 
 **Migration UX:**
+
 - On upgrade, show notice: "Local sync has been improved! You'll need to re-pair your devices."
 - Link to help article explaining the change
 
@@ -887,6 +1037,7 @@ Make this distinction clear in UI.
 **Protocol version in QR:** `v: 1`
 
 If we need to change QR format later:
+
 - Increment version
 - New devices can read old QR codes (backwards compatible)
 - Old devices show error for new QR codes: "Please update Skelenote to pair with this device"
@@ -898,12 +1049,14 @@ If we need to change QR format later:
 ### 11.1 Unit Tests
 
 **Cache module (`cache.rs`):**
+
 - Load/save paired devices
 - Add/remove/update devices
 - Address prioritization algorithm
 - Cache cleanup logic
 
 **QR module:**
+
 - Payload encoding/decoding
 - URL scheme parsing
 - Edge cases (special characters in device name, IPv6)
@@ -911,12 +1064,14 @@ If we need to change QR format later:
 ### 11.2 Integration Tests
 
 **Pairing flow:**
+
 - Generate QR → Parse QR → Connect → Verify → Cache updated
 - Fingerprint mismatch rejection
 - Duplicate device handling
 - Error cases (invalid QR, network unreachable)
 
 **Reconnection flow:**
+
 - Load cache → Try addresses → Connect
 - Address prioritization
 - Failure recording
@@ -925,6 +1080,7 @@ If we need to change QR format later:
 ### 11.3 E2E Tests
 
 **Two-device scenarios (manual or automated with VMs):**
+
 - Fresh pair between two devices
 - Reconnection after app restart
 - Reconnection after IP change
@@ -948,6 +1104,82 @@ If we need to change QR format later:
 
 ---
 
+## 12. Testing & Validation
+
+### Phase 3 Testing Checklist
+
+To validate the reconnection logic implementation, test the following scenarios:
+
+#### Cache Maintenance
+- [ ] Connection success updates `successCount` and resets `failCount`
+- [ ] Connection failure increments `failCount`
+- [ ] Cache is persisted to disk after reconnection attempts
+- [ ] `lastConnected` and `lastSeen` timestamps are updated correctly
+- [ ] Address prioritization sorts by success rate and recency
+
+#### Reconnection Flow
+- [ ] `cache_reconnect_all()` tries all paired devices in parallel
+- [ ] Concurrency is limited to 3 devices at once
+- [ ] Status events are emitted: `connecting` → `connected` or `offline`
+- [ ] Failed addresses are tried in priority order
+- [ ] Successful connection stops trying remaining addresses
+- [ ] Cache is saved after all reconnection attempts complete
+
+#### Address Pruning
+- [ ] Addresses with >10 consecutive failures are removed
+- [ ] Each device is limited to 5 addresses maximum
+- [ ] Pruning is triggered after `enable()` and `reconnectDevice()`
+- [ ] At least one address is retained per device
+
+#### Pairing Flow
+- [ ] Initial pairing records connection success in cache
+- [ ] Manual pairing records connection success in cache
+- [ ] Multiple IPs from QR code are all tried until one succeeds
+- [ ] Successful pairing saves device to cache with address stats
+
+### Manual Testing Procedure
+
+1. **Fresh Pairing**
+   - Start two Skelenote instances on different devices
+   - Generate QR code on Device A
+   - Scan/parse QR on Device B
+   - Verify connection established
+   - Check `paired_devices.json` has correct device info
+   - Verify `successCount=1, failCount=0` for connected address
+
+2. **Reconnection After Restart**
+   - Close Device B
+   - Reopen Device B
+   - Verify automatic reconnection to Device A
+   - Check cache updated with new `lastConnected` timestamp
+   - Verify `successCount` incremented
+
+3. **IP Address Change Simulation**
+   - Modify cached IP address to invalid value in `paired_devices.json`
+   - Add valid IP as second address
+   - Restart app
+   - Verify it tries invalid IP first (fails), then tries valid IP (succeeds)
+   - Check `failCount=1` for invalid address, `successCount` incremented for valid
+
+4. **Address Pruning**
+   - Manually set an address to `failCount=11` in cache
+   - Trigger reconnection
+   - Verify pruned address is removed from cache after reconnection
+
+5. **Status Events**
+   - Monitor `paired-device-status` events in browser console
+   - Trigger reconnection via `reconnectDevice()`
+   - Verify events: `{status: "connecting"}` → `{status: "connected"}` or `{status: "offline"}`
+
+### Automated Testing (Future)
+
+For robust validation, consider adding:
+- Rust unit tests for cache prioritization logic
+- Integration tests for reconnection flow with mock peers
+- E2E tests with two Tauri instances on same machine
+
+---
+
 ## 12. Implementation Phases
 
 ### Phase 1: Core Infrastructure (Backend)
@@ -955,6 +1187,7 @@ If we need to change QR format later:
 **Goal:** Implement cache and QR generation in Rust
 
 **Tasks:**
+
 1. Create `src-tauri/src/network/cache.rs`
    - `PairedDevicesCache` struct and serialization
    - Load/save functions
@@ -987,6 +1220,7 @@ If we need to change QR format later:
 **Goal:** Build pairing UI for desktop
 
 **Tasks:**
+
 1. Create `PairedDevicesList` component
    - List view with status indicators
    - Context menu (reconnect, details, unpair, revoke)
@@ -1018,6 +1252,7 @@ If we need to change QR format later:
 **Goal:** Automatic reconnection on app launch
 
 **Tasks:**
+
 1. Implement reconnection service
    - On app start: Load cache, start server, try all paired devices
    - Parallel connection attempts with concurrency limit (3)
@@ -1040,6 +1275,7 @@ If we need to change QR format later:
 **Goal:** QR scanning on iOS/Android
 
 **Tasks:**
+
 1. Evaluate and integrate QR scanner plugin
    - Test `tauri-plugin-barcode-scanner` on mobile
    - Fallback to manual entry if needed
@@ -1061,6 +1297,7 @@ If we need to change QR format later:
 **Goal:** Production-ready, deprecate mDNS
 
 **Tasks:**
+
 1. Error handling polish
    - Clear error messages for all failure cases
    - Retry logic with user feedback
@@ -1102,21 +1339,21 @@ If we need to change QR format later:
 
 ### UX
 
-5. **Auto-reconnect frequency:** How often should we retry offline devices?
+1. **Auto-reconnect frequency:** How often should we retry offline devices?
    - Recommendation: On app launch only. User can manually trigger "Reconnect"
 
-6. **Pairing without camera:** For devices without cameras, is manual entry user-friendly enough?
+2. **Pairing without camera:** For devices without cameras, is manual entry user-friendly enough?
    - Recommendation: Yes, show IP/port/code clearly below QR
 
-7. **Multiple vaults:** If user has multiple Skeleton Keys, how to handle?
+3. **Multiple vaults:** If user has multiple Skeleton Keys, how to handle?
    - Current behavior: Fingerprint mismatch prevents pairing. Clear error message.
 
 ### Product
 
-8. **Keep mDNS as power-user option?** Some users might prefer auto-discovery.
+1. **Keep mDNS as power-user option?** Some users might prefer auto-discovery.
    - Recommendation: Remove completely for simplicity. One way to do things.
 
-9. **Cloud relay for discovery?** Future option if QR proves too manual?
+2. **Cloud relay for discovery?** Future option if QR proves too manual?
    - Recommendation: Out of scope for this plan. Evaluate based on user feedback.
 
 ---

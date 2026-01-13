@@ -34,6 +34,7 @@ keyring = { version = "3", features = ["apple-native", "windows-native", "linux-
 
 # QR code generation
 qrcode = "0.14"
+image = "0.25"  # PNG encoding for QR codes
 base64 = "0.22"
 
 # Error handling

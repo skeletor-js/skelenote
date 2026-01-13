@@ -70,6 +70,7 @@ export type IconName =
 
   // Content
   | 'external-link' // External link
+  | 'link-2-off' // Unlink/disconnect
   | 'copy' // Copy
   | 'download' // Download
   | 'upload' // Upload
@@ -92,6 +93,7 @@ export type IconName =
   | 'monitor' // Desktop/Web
   | 'laptop' // Laptop (macOS/Windows/Linux)
   | 'smartphone' // Mobile (iOS/Android)
+  | 'qr-code' // QR code for pairing
 
   // Time
   | 'clock' // Clock/Timer
