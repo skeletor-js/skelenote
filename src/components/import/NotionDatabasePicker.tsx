@@ -4,7 +4,7 @@
  * Lists accessible Notion databases and allows selection for import.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Stack,
   Text,
@@ -39,11 +39,7 @@ export function NotionDatabasePicker({
   const [error, setError] = useState<string | null>(null);
   const [databases, setDatabases] = useState<SelectedDatabase[]>([]);
 
-  useEffect(() => {
-    loadDatabases();
-  }, [client]);
-
-  const loadDatabases = async () => {
+  const loadDatabases = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -70,7 +66,11 @@ export function NotionDatabasePicker({
     } finally {
       setLoading(false);
     }
-  };
+  }, [client]);
+
+  useEffect(() => {
+    loadDatabases();
+  }, [loadDatabases]);
 
   const toggleSelection = (index: number) => {
     setDatabases((prev) =>
