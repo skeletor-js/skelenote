@@ -14,14 +14,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: macos-14
+          - platform: macos-latest
             target: aarch64-apple-darwin
             args: '--target aarch64-apple-darwin'
             name: macOS-ARM
-          - platform: macos-13
-            target: x86_64-apple-darwin
-            args: '--target x86_64-apple-darwin'
-            name: macOS-Intel
           - platform: ubuntu-22.04
             target: ''
             args: ''
@@ -100,7 +96,7 @@ jobs:
             **Note:** This is an alpha release. Binaries are not code-signed and may show security warnings on macOS and Windows.
 
             ### Downloads
-            - **macOS**: `.dmg` (both Apple Silicon and Intel)
+            - **macOS**: `.dmg` (Apple Silicon)
             - **Windows**: `.exe` (NSIS installer)
             - **Linux**: `.deb` (Debian/Ubuntu), `.rpm` (Fedora/RHEL), `.AppImage` (universal)
           releaseDraft: true
