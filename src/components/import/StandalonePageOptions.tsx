@@ -5,7 +5,7 @@
  * Defaults to importing all as Notes, which go to Inbox for triage.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Stack,
   Text,
@@ -38,11 +38,7 @@ export function StandalonePageOptions({
   const [error, setError] = useState<string | null>(null);
   const [option, setOption] = useState<StandaloneImportOption>('import');
 
-  useEffect(() => {
-    countStandalonePages();
-  }, [client]);
-
-  const countStandalonePages = async () => {
+  const countStandalonePages = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -59,7 +55,11 @@ export function StandalonePageOptions({
     } finally {
       setLoading(false);
     }
-  };
+  }, [client]);
+
+  useEffect(() => {
+    countStandalonePages();
+  }, [countStandalonePages]);
 
   if (loading) {
     return (

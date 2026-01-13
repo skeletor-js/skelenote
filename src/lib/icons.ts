@@ -109,6 +109,9 @@ export type IconName =
   | 'shield' // Security
   | 'wifi' // Connected
   | 'wifi-off' // Disconnected
+  | 'activity' // Sync activity
+  | 'network' // Network addresses
+  | 'maximize-2' // Fullscreen/expand
 
   // Settings & About
   | 'palette' // Appearance/Theme settings
@@ -265,6 +268,9 @@ const VALID_ICON_NAMES: Set<string> = new Set([
   'shield',
   'wifi',
   'wifi-off',
+  'activity',
+  'network',
+  'maximize-2',
   // Settings & About
   'palette',
   'book-open',
