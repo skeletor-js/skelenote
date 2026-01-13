@@ -1206,6 +1206,7 @@ async fn connect_to_peer_direct(
 
 /// Response from QR generation command
 #[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 struct QrCodeResponse {
     /// Base64-encoded PNG image
     png_base64: String,
@@ -1219,6 +1220,7 @@ struct QrCodeResponse {
 
 /// Connection details for manual pairing (no camera needed)
 #[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ManualPairingDetails {
     /// List of IP addresses to try
     ips: Vec<String>,
