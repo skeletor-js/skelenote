@@ -652,8 +652,11 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
   }, [isEnabled, isDiscovering, discoveredPeers.length, connectedPeerCount]);
 
   // Wire up LoroDocStore with local sync when enabled
+  // Note: We wire up as soon as isEnabled is true, not waiting for connectedPeerCount > 0
+  // This prevents a race condition where peers connect and immediately send data
+  // before the callbacks are wired up (React state update + re-render delay)
   useEffect(() => {
-    if (isEnabled && connectedPeerCount > 0) {
+    if (isEnabled) {
       // Wire up the broadcast function for outgoing updates
       docStore.setLocalSyncBroadcast(broadcastUpdate);
       console.log('[LocalSync] Wired docStore broadcast to local peers');
@@ -667,16 +670,16 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
       };
 
       return () => {
-        // Clean up when disabled or disconnected
+        // Clean up when disabled
         docStore.setLocalSyncBroadcast(null);
         onSyncReceivedRef.current = null;
       };
     } else {
-      // Not connected, clear the broadcast function
+      // Disabled, clear the broadcast function
       docStore.setLocalSyncBroadcast(null);
       onSyncReceivedRef.current = null;
     }
-  }, [isEnabled, connectedPeerCount, docStore, broadcastUpdate, refreshData]);
+  }, [isEnabled, docStore, broadcastUpdate, refreshData]);
 
   const value: LocalSyncContextValue = {
     isEnabled,
