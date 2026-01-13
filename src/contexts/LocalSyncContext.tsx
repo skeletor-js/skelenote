@@ -25,8 +25,20 @@ import {
   broadcastSync,
   broadcastDeviceRegistry,
   getPeerCount,
+  generatePairingQr,
+  parsePairingQr,
+  connectViaPairing,
+  connectViaManualPairing,
+  getPairedDevices,
+  removePairedDevice,
+  prunePairedDevicesCache,
+  reconnectAllPairedDevices,
+  reconnectPairedDevice,
   type DiscoveredPeer,
   type DeviceInfo,
+  type PairedDeviceWithStatus,
+  type QrCodeResponse,
+  type PairingInfo,
 } from '@/lib/sync/local';
 import { MessageType } from '@/lib/sync/protocol';
 import {
@@ -55,6 +67,8 @@ interface LocalSyncContextValue {
   isDiscovering: boolean;
   /** List of discovered peers on the network */
   discoveredPeers: DiscoveredPeer[];
+  /** List of paired devices with connection status */
+  pairedDevices: PairedDeviceWithStatus[];
   /** Number of connected peers for sync */
   connectedPeerCount: number;
   /** This device's info (id, name, fingerprint) */
@@ -71,10 +85,24 @@ interface LocalSyncContextValue {
   refreshPeers: () => Promise<void>;
   /** Refresh connected peer count (call after connecting to a peer) */
   refreshConnectedCount: () => Promise<void>;
+  /** Refresh paired devices list */
+  refreshPairedDevices: () => Promise<void>;
   /** Broadcast sync data to all connected local peers */
   broadcastUpdate: (data: Uint8Array) => Promise<number>;
   /** Set callback for when sync data is received from a peer */
   setOnSyncReceived: (callback: ((data: Uint8Array) => void) | null) => void;
+  /** Generate QR code for pairing this device */
+  generateQrCode: () => Promise<QrCodeResponse>;
+  /** Parse QR code payload from another device */
+  parseQrCode: (payload: string) => Promise<PairingInfo>;
+  /** Connect to a device using pairing info */
+  pairDevice: (info: PairingInfo) => Promise<void>;
+  /** Connect using manual connection details */
+  pairDeviceManually: (ip: string, port: number, code: string) => Promise<void>;
+  /** Remove a paired device */
+  unpairDevice: (deviceId: string) => Promise<void>;
+  /** Reconnect to a specific paired device */
+  reconnectDevice: (deviceId: string) => Promise<void>;
 }
 
 const LocalSyncContext = createContext<LocalSyncContextValue | null>(null);
@@ -90,6 +118,9 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
   const [status, setStatus] = useState<LocalSyncStatus>('off');
   const [isDiscovering, setIsDiscovering] = useState(false);
   const [discoveredPeers, setDiscoveredPeers] = useState<DiscoveredPeer[]>([]);
+  const [pairedDevices, setPairedDevices] = useState<PairedDeviceWithStatus[]>(
+    []
+  );
   const [connectedPeerCount, setConnectedPeerCount] = useState(0);
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>(null);
   const [serverPort, setServerPort] = useState<number | null>(null);
@@ -327,6 +358,128 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
     }
   }, []);
 
+  // Refresh paired devices list
+  const refreshPairedDevices = useCallback(async () => {
+    try {
+      const devices = await getPairedDevices();
+      setPairedDevices(devices);
+    } catch (err) {
+      console.error('[LocalSync] Failed to refresh paired devices:', err);
+    }
+  }, []);
+
+  // Generate QR code for pairing
+  const generateQrCode = useCallback(async (): Promise<QrCodeResponse> => {
+    return await generatePairingQr();
+  }, []);
+
+  // Parse QR code payload
+  const parseQrCode = useCallback(
+    async (payload: string): Promise<PairingInfo> => {
+      return await parsePairingQr(payload);
+    },
+    []
+  );
+
+  // Pair device via QR code
+  const pairDevice = useCallback(
+    async (info: PairingInfo) => {
+      try {
+        await connectViaPairing(info);
+        await refreshPairedDevices();
+        await refreshConnectedCount();
+        addToast({
+          type: 'success',
+          message: `Paired with ${info.deviceName}`,
+          duration: 3000,
+        });
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'Failed to pair device';
+        addToast({
+          type: 'error',
+          message,
+          duration: 5000,
+        });
+        throw err;
+      }
+    },
+    [refreshPairedDevices, refreshConnectedCount, addToast]
+  );
+
+  // Pair device manually
+  const pairDeviceManually = useCallback(
+    async (ip: string, port: number, code: string) => {
+      try {
+        await connectViaManualPairing(ip, port, code);
+        await refreshPairedDevices();
+        await refreshConnectedCount();
+        addToast({
+          type: 'success',
+          message: 'Device paired successfully',
+          duration: 3000,
+        });
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'Failed to pair device';
+        addToast({
+          type: 'error',
+          message,
+          duration: 5000,
+        });
+        throw err;
+      }
+    },
+    [refreshPairedDevices, refreshConnectedCount, addToast]
+  );
+
+  // Unpair device
+  const unpairDevice = useCallback(
+    async (deviceId: string) => {
+      try {
+        await removePairedDevice(deviceId);
+        await refreshPairedDevices();
+        addToast({
+          type: 'success',
+          message: 'Device unpaired',
+          duration: 3000,
+        });
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'Failed to unpair device';
+        addToast({
+          type: 'error',
+          message,
+          duration: 5000,
+        });
+        throw err;
+      }
+    },
+    [refreshPairedDevices, addToast]
+  );
+
+  // Reconnect to a specific paired device
+  const reconnectDevice = useCallback(
+    async (deviceId: string) => {
+      try {
+        await reconnectPairedDevice(deviceId);
+        await refreshPairedDevices();
+        await refreshConnectedCount();
+
+        // Prune dead addresses after reconnection attempt
+        try {
+          await prunePairedDevicesCache();
+        } catch (pruneErr) {
+          console.warn('[LocalSync] Failed to prune cache:', pruneErr);
+        }
+      } catch (err) {
+        console.error('[LocalSync] Failed to reconnect device:', err);
+        throw err;
+      }
+    },
+    [refreshPairedDevices, refreshConnectedCount]
+  );
+
   // Enable local sync
   const enable = useCallback(async () => {
     if (isStartingRef.current) return;
@@ -353,6 +506,26 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
       setStatus('discovering');
       setIsEnabled(true);
 
+      // Load paired devices
+      await refreshPairedDevices();
+
+      // Attempt to reconnect to all paired devices
+      try {
+        await reconnectAllPairedDevices();
+        await refreshPairedDevices();
+        await refreshConnectedCount();
+
+        // Prune dead addresses after reconnection attempts
+        try {
+          await prunePairedDevicesCache();
+          console.log('[LocalSync] Pruned dead addresses from cache');
+        } catch (pruneErr) {
+          console.warn('[LocalSync] Failed to prune cache:', pruneErr);
+        }
+      } catch (err) {
+        console.warn('[LocalSync] Failed to reconnect paired devices:', err);
+      }
+
       addToast({
         type: 'success',
         message: 'Local network sync enabled',
@@ -371,7 +544,12 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
     } finally {
       isStartingRef.current = false;
     }
-  }, [setupEventListeners, addToast]);
+  }, [
+    setupEventListeners,
+    addToast,
+    refreshPairedDevices,
+    refreshConnectedCount,
+  ]);
 
   // Disable local sync
   const disable = useCallback(async () => {
@@ -505,6 +683,7 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
     status,
     isDiscovering,
     discoveredPeers,
+    pairedDevices,
     connectedPeerCount,
     deviceInfo,
     serverPort,
@@ -513,8 +692,15 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
     disable,
     refreshPeers,
     refreshConnectedCount,
+    refreshPairedDevices,
     broadcastUpdate,
     setOnSyncReceived,
+    generateQrCode,
+    parseQrCode,
+    pairDevice,
+    pairDeviceManually,
+    unpairDevice,
+    reconnectDevice,
   };
 
   return (

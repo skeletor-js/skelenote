@@ -155,6 +155,148 @@ export async function connectToPeer(deviceId: string): Promise<void> {
   return invoke('network_connect_to_peer', { deviceId });
 }
 
+// Pairing types
+
+export interface ManualPairingDetails {
+  ips: string[];
+  port: number;
+  code: string; // Formatted fingerprint like "A1B2-C3D4"
+  deviceName: string;
+}
+
+export interface QrCodeResponse {
+  pngBase64: string;
+  payload: string;
+  fingerprint: string;
+  manualDetails: ManualPairingDetails;
+}
+
+export interface PairingInfo {
+  deviceId: string;
+  deviceName: string;
+  ips: string[];
+  port: number;
+  fingerprint: string;
+  fingerprintMatch: boolean;
+}
+
+export interface KnownAddress {
+  ip: string;
+  port: number;
+  lastUsed: number;
+  successCount: number;
+  failCount: number;
+}
+
+export interface PairedDevice {
+  id: string;
+  name: string;
+  fingerprint: string;
+  knownAddresses: KnownAddress[];
+  pairedAt: number;
+  lastConnected: number | null;
+  lastSeen: number | null;
+}
+
+export interface PairedDeviceWithStatus {
+  id: string;
+  name: string;
+  fingerprint: string;
+  knownAddresses: KnownAddress[];
+  pairedAt: number;
+  lastConnected: number | null;
+  lastSeen: number | null;
+  connected: boolean;
+}
+
+// Pairing commands
+
+/**
+ * Generate a QR code for pairing this device.
+ * Returns the QR code as base64 PNG and manual connection details.
+ * Server must be started before calling this.
+ */
+export async function generatePairingQr(): Promise<QrCodeResponse> {
+  return invoke<QrCodeResponse>('pairing_generate_qr');
+}
+
+/**
+ * Parse a QR code payload from another device.
+ * Validates the fingerprint to ensure devices use the same Skeleton Key.
+ * @param payload The QR code payload (skelenote://pair?v=1&d=...)
+ */
+export async function parsePairingQr(payload: string): Promise<PairingInfo> {
+  return invoke<PairingInfo>('pairing_parse_qr', { payload });
+}
+
+/**
+ * Connect to a device using pairing info from a scanned QR code.
+ * Tries all IP addresses until one succeeds.
+ * @param info The pairing info from parsePairingQr
+ */
+export async function connectViaPairing(info: PairingInfo): Promise<void> {
+  return invoke('pairing_connect', { info });
+}
+
+/**
+ * Connect to a device using manually entered connection details.
+ * For devices without cameras - user types IP, port, and code.
+ * @param ip The IP address to connect to
+ * @param port The TCP port
+ * @param code The device code (fingerprint, can be formatted like A1B2-C3D4)
+ */
+export async function connectViaManualPairing(
+  ip: string,
+  port: number,
+  code: string
+): Promise<void> {
+  return invoke('pairing_connect_manual', { ip, port, code });
+}
+
+// Cache commands
+
+/**
+ * Get all paired devices with their current connection status.
+ */
+export async function getPairedDevices(): Promise<PairedDeviceWithStatus[]> {
+  return invoke<PairedDeviceWithStatus[]>('cache_get_paired_devices');
+}
+
+/**
+ * Remove a device from the paired devices list.
+ * Device will need to be paired again to reconnect.
+ * @param deviceId The device ID to unpair
+ */
+export async function removePairedDevice(deviceId: string): Promise<void> {
+  return invoke('cache_remove_paired_device', { deviceId });
+}
+
+/**
+ * Prune dead addresses from all paired devices.
+ * Removes addresses with >10 consecutive failures and limits each device to 5 addresses.
+ * Should be called periodically after reconnection attempts.
+ */
+export async function prunePairedDevicesCache(): Promise<void> {
+  return invoke('cache_prune_addresses');
+}
+
+/**
+ * Attempt to reconnect to all paired devices.
+ * Tries cached IP addresses in priority order.
+ */
+export async function reconnectAllPairedDevices(): Promise<void> {
+  return invoke('cache_reconnect_all');
+}
+
+/**
+ * Attempt to reconnect to a specific paired device.
+ * Tries all known IP addresses in priority order.
+ * @param deviceId The device ID to reconnect to
+ */
+export async function reconnectPairedDevice(deviceId: string): Promise<void> {
+  return invoke('cache_reconnect_device', { deviceId });
+}
+
 // Event listeners
 
 /**
