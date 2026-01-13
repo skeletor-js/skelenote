@@ -197,6 +197,13 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
             err
           );
         }
+
+        // Send initial data sync to new peer
+        // Small delay to ensure connection is fully established
+        setTimeout(() => {
+          console.log('[LocalSync] Triggering initial sync for new peer');
+          docStore.sync();
+        }, 100);
       });
 
       const unlistenPeerDisconnected = await onPeerDisconnected((event) => {
