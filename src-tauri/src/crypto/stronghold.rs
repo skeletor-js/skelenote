@@ -141,8 +141,22 @@ impl StrongholdManager {
 ///
 /// Attempts to use the OS keychain first for maximum security.
 /// Falls back to path-based derivation if keychain is unavailable.
+///
+/// IMPORTANT: If a fallback salt file already exists, we MUST use it to maintain
+/// consistency. This prevents issues on Linux where Secret Service availability
+/// can vary between runs (e.g., not running on first boot, then available later).
 fn get_or_create_device_key(app_data_dir: &PathBuf) -> Result<[u8; 32], StrongholdError> {
-    // Try keychain first
+    let salt_file = app_data_dir.join(".device_salt");
+
+    // If a fallback salt file exists, ALWAYS use it for consistency.
+    // This ensures we decrypt with the same key that was used to encrypt,
+    // even if keychain becomes available later.
+    if salt_file.exists() {
+        println!("Using existing fallback salt file for device key");
+        return get_or_create_fallback_key(app_data_dir);
+    }
+
+    // Try keychain first (only if no fallback salt exists)
     match get_key_from_keychain(app_data_dir) {
         Ok(key) => return Ok(key),
         Err(e) => {
