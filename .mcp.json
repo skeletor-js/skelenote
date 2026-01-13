@@ -12,21 +12,6 @@
         "context7": {
             "command": "/Users/jordanstella/GitHub/skelenote/scripts/context7-mcp.sh",
             "args": [],
-            "env": {}
-        },
-        "cloudflare-workers-bindings": {
-            "command": "npx",
-            "args": [
-                "mcp-remote",
-                "https://bindings.mcp.cloudflare.com/sse"
-            ]
-        },
-        "cloudflare-workers-builds": {
-            "command": "npx",
-            "args": [
-                "mcp-remote",
-                "https://builds.mcp.cloudflare.com/sse"
-            ]
         }
     }
 }
