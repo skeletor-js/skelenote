@@ -17,6 +17,9 @@ import {
 import * as crypto from '@/lib/crypto';
 import { clearAllSyncSettings, setUserId } from '@/lib/sync';
 
+// Storage key for biometric preference
+const BIOMETRIC_ENABLED_KEY = 'skelenote:biometricEnabled';
+
 interface SkeletonKeyContextValue {
   /** Whether the crypto subsystem has been initialized */
   isInitialized: boolean;
@@ -26,6 +29,10 @@ interface SkeletonKeyContextValue {
   isLoading: boolean;
   /** Current error message, if any */
   error: string | null;
+  /** Whether the app is currently locked (awaiting biometric unlock) */
+  isLocked: boolean;
+  /** Whether biometric unlock is enabled (user preference) */
+  biometricEnabled: boolean;
   /** Generate a new Skeleton Key (returns mnemonic but does NOT store it) */
   generateNewKey: () => Promise<string>;
   /** Import a Skeleton Key from mnemonic (validates and stores it) */
@@ -38,6 +45,10 @@ interface SkeletonKeyContextValue {
   clearError: () => void;
   /** Clear the Skeleton Key and reset to setup screen */
   resetVault: () => Promise<void>;
+  /** Unlock the app (used after successful biometric authentication) */
+  unlock: () => void;
+  /** Enable or disable biometric unlock requirement */
+  setBiometricEnabled: (enabled: boolean) => void;
 }
 
 const SkeletonKeyContext = createContext<SkeletonKeyContextValue | null>(null);
@@ -51,6 +62,22 @@ export function SkeletonKeyProvider({ children }: SkeletonKeyProviderProps) {
   const [hasSkeletonKey, setHasSkeletonKey] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Biometric lock state
+  const [biometricEnabled, setBiometricEnabledState] = useState(() => {
+    // Read initial preference from localStorage
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(BIOMETRIC_ENABLED_KEY) === 'true';
+    }
+    return false;
+  });
+  // Start locked if biometric is enabled
+  const [isLocked, setIsLocked] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(BIOMETRIC_ENABLED_KEY) === 'true';
+    }
+    return false;
+  });
 
   // Initialize crypto subsystem on mount
   useEffect(() => {
@@ -70,6 +97,10 @@ export function SkeletonKeyProvider({ children }: SkeletonKeyProviderProps) {
             ? err.message
             : 'Failed to initialize encryption system'
         );
+        // Still mark as initialized so app doesn't hang on "Initializing..."
+        // This allows the user to see the setup screen and re-import their key
+        setIsInitialized(true);
+        setHasSkeletonKey(false);
       } finally {
         setIsLoading(false);
       }
@@ -166,6 +197,21 @@ export function SkeletonKeyProvider({ children }: SkeletonKeyProviderProps) {
     setError(null);
   }, []);
 
+  // Unlock the app (called after successful biometric authentication)
+  const unlock = useCallback(() => {
+    setIsLocked(false);
+  }, []);
+
+  // Enable or disable biometric unlock requirement
+  const setBiometricEnabled = useCallback((enabled: boolean) => {
+    localStorage.setItem(BIOMETRIC_ENABLED_KEY, String(enabled));
+    setBiometricEnabledState(enabled);
+    // If disabling, also unlock immediately
+    if (!enabled) {
+      setIsLocked(false);
+    }
+  }, []);
+
   // Reset the vault (clear skeleton key and all data)
   const resetVault = useCallback(async (): Promise<void> => {
     try {
@@ -197,12 +243,16 @@ export function SkeletonKeyProvider({ children }: SkeletonKeyProviderProps) {
     hasSkeletonKey,
     isLoading,
     error,
+    isLocked,
+    biometricEnabled,
     generateNewKey,
     importFromMnemonic,
     getQRCode,
     validateMnemonicPhrase,
     clearError,
     resetVault,
+    unlock,
+    setBiometricEnabled,
   };
 
   return (

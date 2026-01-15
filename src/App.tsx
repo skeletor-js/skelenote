@@ -1,6 +1,14 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  lazy,
+  Suspense,
+} from 'react';
 import {
   Layout,
+  MobileLayout,
   SplitPane,
   type OmnibarFocusFunctions,
 } from '@/components/layout';
@@ -28,11 +36,95 @@ import {
   useUndo,
   type ViewType,
 } from '@/contexts';
-import { useTodaysDailyNote, useTemplates } from '@/hooks';
+import { useTodaysDailyNote, useTemplates, usePlatform } from '@/hooks';
 import type { Template } from '@/lib/templates';
 import { runFirstRunSetup } from '@/lib/first-run';
 import type { TaskFilter } from '@/lib/tasks/filters';
 import { BuiltInTypeIds } from '@/lib/types';
+
+// Lazy-loaded mobile views for better startup performance
+const MobileInboxView = lazy(() =>
+  import('@/components/mobile/views/MobileInboxView').then((m) => ({
+    default: m.MobileInboxView,
+  }))
+);
+const MobileTasksView = lazy(() =>
+  import('@/components/mobile/views/MobileTasksView').then((m) => ({
+    default: m.MobileTasksView,
+  }))
+);
+const MobileDailyNotesView = lazy(() =>
+  import('@/components/mobile/views/MobileDailyNotesView').then((m) => ({
+    default: m.MobileDailyNotesView,
+  }))
+);
+const MobileObjectDetailView = lazy(() =>
+  import('@/components/mobile/views/MobileObjectDetailView').then((m) => ({
+    default: m.MobileObjectDetailView,
+  }))
+);
+const MobileSearchModal = lazy(() =>
+  import('@/components/mobile/views/MobileSearchModal').then((m) => ({
+    default: m.MobileSearchModal,
+  }))
+);
+const MobileSettingsView = lazy(() =>
+  import('@/components/mobile/views/MobileSettingsView').then((m) => ({
+    default: m.MobileSettingsView,
+  }))
+);
+const MobileBrowseView = lazy(() =>
+  import('@/components/mobile/views/MobileBrowseView').then((m) => ({
+    default: m.MobileBrowseView,
+  }))
+);
+const MobileArchiveView = lazy(() =>
+  import('@/components/mobile/views/MobileArchiveView').then((m) => ({
+    default: m.MobileArchiveView,
+  }))
+);
+const MobileProjectsView = lazy(() =>
+  import('@/components/mobile/views/MobileProjectsView').then((m) => ({
+    default: m.MobileProjectsView,
+  }))
+);
+const MobileAreasView = lazy(() =>
+  import('@/components/mobile/views/MobileAreasView').then((m) => ({
+    default: m.MobileAreasView,
+  }))
+);
+const MobileTagsView = lazy(() =>
+  import('@/components/mobile/views/MobileTagsView').then((m) => ({
+    default: m.MobileTagsView,
+  }))
+);
+const MobileTypeBrowseView = lazy(() =>
+  import('@/components/mobile/views/MobileTypeBrowseView').then((m) => ({
+    default: m.MobileTypeBrowseView,
+  }))
+);
+const MobileSavedViewsView = lazy(() =>
+  import('@/components/mobile/views/MobileSavedViewsView').then((m) => ({
+    default: m.MobileSavedViewsView,
+  }))
+);
+const MobileTemplatesView = lazy(() =>
+  import('@/components/mobile/views/MobileTemplatesView').then((m) => ({
+    default: m.MobileTemplatesView,
+  }))
+);
+const LockScreen = lazy(() =>
+  import('@/components/mobile/views/LockScreen').then((m) => ({
+    default: m.LockScreen,
+  }))
+);
+
+// Skeleton screens for mobile loading states
+import {
+  InboxSkeleton,
+  TasksSkeleton,
+  DailyNotesSkeleton,
+} from '@/components/mobile/skeletons';
 
 /**
  * Placeholder component for views not yet implemented
@@ -55,6 +147,10 @@ function PlaceholderView({ view }: { view: ViewType }) {
     search: 'Search',
     'saved-view': 'Saved View',
     'type-browse': 'Browse Objects',
+    browse: 'Browse',
+    projects: 'Projects',
+    areas: 'Areas',
+    tags: 'Tags',
   };
 
   return (
@@ -88,6 +184,192 @@ function TypeBrowseViewRouter() {
     return null;
   }
   return <TypeBrowseView typeId={browseTypeId} />;
+}
+
+/**
+ * Mobile-optimized content router
+ * Uses lazy-loaded mobile views with skeleton fallbacks
+ */
+function MobilePrimaryContent() {
+  // Note: activeSavedViewId will be used when we implement filtered results view
+  const {
+    currentView,
+    selectedObjectId,
+    navigateToView,
+    activeSavedViewId: _activeSavedViewId,
+  } = useNavigation();
+  const { isLoading, error } = useObjects();
+
+  if (isLoading) {
+    return <InboxSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          padding: 'var(--spacing-lg)',
+          textAlign: 'center',
+          color: 'var(--mantine-color-gray-6)',
+        }}
+      >
+        <p>Error initializing data store:</p>
+        <p style={{ color: 'var(--mantine-color-brick-5)' }}>{error.message}</p>
+      </div>
+    );
+  }
+
+  // Object detail view
+  if (currentView === 'object' && selectedObjectId) {
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobileObjectDetailView objectId={selectedObjectId} />
+      </Suspense>
+    );
+  }
+
+  // Inbox view
+  if (currentView === 'inbox') {
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobileInboxView />
+      </Suspense>
+    );
+  }
+
+  // Tasks view (consolidated with tabs)
+  if (
+    currentView === 'tasks' ||
+    [
+      'today',
+      'this-week',
+      'overdue',
+      'waiting',
+      'eventually',
+      'completed',
+    ].includes(currentView)
+  ) {
+    return (
+      <Suspense fallback={<TasksSkeleton />}>
+        <MobileTasksView />
+      </Suspense>
+    );
+  }
+
+  // Daily Notes view
+  if (currentView === 'daily-notes') {
+    return (
+      <Suspense fallback={<DailyNotesSkeleton />}>
+        <MobileDailyNotesView />
+      </Suspense>
+    );
+  }
+
+  // Search view - opens as modal
+  if (currentView === 'search') {
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobileSearchModal
+          opened={true}
+          onClose={() => navigateToView('inbox')}
+        />
+      </Suspense>
+    );
+  }
+
+  // Settings view
+  if (currentView === 'settings') {
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobileSettingsView />
+      </Suspense>
+    );
+  }
+
+  // Browse view - hub for organizational and advanced features
+  if (currentView === 'browse') {
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobileBrowseView />
+      </Suspense>
+    );
+  }
+
+  // Archive view
+  if (currentView === 'archive') {
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobileArchiveView />
+      </Suspense>
+    );
+  }
+
+  // Projects view
+  if (currentView === 'projects') {
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobileProjectsView />
+      </Suspense>
+    );
+  }
+
+  // Areas view
+  if (currentView === 'areas') {
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobileAreasView />
+      </Suspense>
+    );
+  }
+
+  // Tags view
+  if (currentView === 'tags') {
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobileTagsView />
+      </Suspense>
+    );
+  }
+
+  // Type Browse view - list all object types
+  if (currentView === 'type-browse') {
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobileTypeBrowseView />
+      </Suspense>
+    );
+  }
+
+  // Saved Views - show list if no specific view selected, otherwise show filtered results
+  if (currentView === 'saved-view') {
+    // For now, always show the saved views list
+    // TODO: When activeSavedViewId is set, show SavedViewContent-like filtered results
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobileSavedViewsView />
+      </Suspense>
+    );
+  }
+
+  if (currentView === 'templates') {
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobileTemplatesView />
+      </Suspense>
+    );
+  }
+
+  // Views accessible from Browse hub (show placeholder until implemented)
+  if (currentView === 'time-machine') {
+    return <PlaceholderView view={currentView} />;
+  }
+
+  // Default to inbox for other views on mobile
+  return (
+    <Suspense fallback={<InboxSkeleton />}>
+      <MobileInboxView />
+    </Suspense>
+  );
 }
 
 /**
@@ -243,9 +525,15 @@ function MainContent() {
 
 function App() {
   const { store, refreshData, saveNow } = useObjects();
-  const { isInitialized: isCryptoInitialized, hasSkeletonKey } =
-    useSkeletonKey();
+  const {
+    isInitialized: isCryptoInitialized,
+    hasSkeletonKey,
+    isLocked,
+    biometricEnabled,
+    unlock,
+  } = useSkeletonKey();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
+  const { isMobile } = usePlatform();
   const {
     splitPane,
     closeSplit,
@@ -671,6 +959,36 @@ function App() {
     return <SkeletonKeySetup />;
   }
 
+  // Show lock screen if biometric is enabled and app is locked (mobile only)
+  if (isMobile && biometricEnabled && isLocked) {
+    return (
+      <Suspense
+        fallback={
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100vh',
+            }}
+          />
+        }
+      >
+        <LockScreen onUnlock={unlock} />
+      </Suspense>
+    );
+  }
+
+  // Mobile layout - optimized views with bottom tab navigation
+  if (isMobile) {
+    return (
+      <MobileLayout inboxCount={inboxCount}>
+        <MobilePrimaryContent />
+      </MobileLayout>
+    );
+  }
+
+  // Desktop layout - full sidebar with all features
   return (
     <>
       <Layout

@@ -157,6 +157,7 @@ fn get_or_create_device_key(app_data_dir: &PathBuf) -> Result<[u8; 32], Strongho
     }
 
     // Try keychain first (only if no fallback salt exists)
+    // iOS and Android now use native keychain via keyring/android-keyring crates
     match get_key_from_keychain(app_data_dir) {
         Ok(key) => return Ok(key),
         Err(e) => {

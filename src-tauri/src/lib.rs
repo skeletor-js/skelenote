@@ -66,14 +66,27 @@ async fn crypto_init(app: AppHandle, state: State<'_, CryptoState>) -> Result<bo
 
     let manager = StrongholdManager::new(app_data).map_err(|e| e.to_string())?;
 
-    let has_key = manager.has_master_key();
+    let mut has_key = manager.has_master_key();
 
-    // If key exists, derive sync key and cache it
+    // If key exists, try to derive sync key and cache it
+    // If decryption fails (e.g., wrong device key on a new device), treat as no key
     if has_key {
-        let master_key = manager.get_master_key().map_err(|e| e.to_string())?;
-        let sync_key = derive_sync_key(&master_key);
-        *state.sync_key.lock()
-            .map_err(|e| format!("Failed to acquire sync_key lock: {}", e))? = Some(sync_key);
+        match manager.get_master_key() {
+            Ok(master_key) => {
+                let sync_key = derive_sync_key(&master_key);
+                *state.sync_key.lock()
+                    .map_err(|e| format!("Failed to acquire sync_key lock: {}", e))? = Some(sync_key);
+            }
+            Err(e) => {
+                // Key file exists but can't be decrypted - this happens when:
+                // - App is set up on a new device with different device key
+                // - Key file is corrupted
+                // - User data was copied from another device without the mnemonic
+                // Log warning and treat as no key so user can re-import their mnemonic
+                eprintln!("Warning: Could not decrypt existing key: {}. User will need to re-import Skeleton Key.", e);
+                has_key = false;
+            }
+        }
     }
 
     *state.stronghold.lock()
@@ -1840,17 +1853,41 @@ async fn cache_reconnect_device(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_http::init());
+
+    // Shell plugin only available on desktop (provides shell:allow-open for URL handling)
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_shell::init());
+    }
+
+    builder
         .manage(CryptoState {
             stronghold: Mutex::new(None),
             sync_key: Mutex::new(None),
         })
         .setup(|app| {
+            // Initialize mobile-only plugins
+            #[cfg(mobile)]
+            {
+                app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
+                // Edge-to-edge enables fullscreen mode and injects safe area CSS vars
+                app.handle().plugin(tauri_plugin_edge_to_edge::init())?;
+                // Biometric authentication (Face ID, Touch ID, fingerprint)
+                app.handle().plugin(tauri_plugin_biometric::init())?;
+            }
+
+            // Initialize Android Keyring for native Keystore access
+            #[cfg(target_os = "android")]
+            {
+                android_keyring::set_android_keyring_credential_builder()
+                    .expect("Failed to initialize Android Keyring");
+            }
+
             // Initialize NetworkState with persistent blocklist
             let app_data_dir = app.path().app_data_dir()
                 .expect("Failed to get app data directory");

@@ -94,6 +94,7 @@ export type IconName =
   | 'laptop' // Laptop (macOS/Windows/Linux)
   | 'smartphone' // Mobile (iOS/Android)
   | 'qr-code' // QR code for pairing
+  | 'camera' // Camera for scanning
 
   // Time
   | 'clock' // Clock/Timer
@@ -256,6 +257,8 @@ const VALID_ICON_NAMES: Set<string> = new Set([
   'monitor',
   'laptop',
   'smartphone',
+  'qr-code',
+  'camera',
   // Time
   'clock',
   // Close/Cancel

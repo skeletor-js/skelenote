@@ -152,6 +152,12 @@ export function getTaskFilter(
       return filterEventually;
     case 'completed':
       return filterCompleted;
+    default: {
+      // Exhaustive check - should never reach here at runtime
+      const _exhaustive: never = filter;
+      console.error('Unknown task filter:', _exhaustive);
+      return () => false;
+    }
   }
 }
 
@@ -180,6 +186,12 @@ export function getDefaultSort(filter: TaskFilter): SortConfig {
       return { field: 'dueDate', direction: 'asc' };
     case 'completed':
       return { field: 'updatedAt', direction: 'desc' };
+    default: {
+      // Exhaustive check - should never reach here at runtime
+      const _exhaustive: never = filter;
+      console.error('Unknown task filter for sort:', _exhaustive);
+      return { field: 'updatedAt', direction: 'desc' };
+    }
   }
 }
 
@@ -193,8 +205,8 @@ export function sortTasks(
   const sorted = [...tasks];
 
   sorted.sort((a, b) => {
-    let aValue: number;
-    let bValue: number;
+    let aValue = 0;
+    let bValue = 0;
 
     switch (config.field) {
       case 'priority':
@@ -211,6 +223,10 @@ export function sortTasks(
         aValue = a.updatedAt;
         bValue = b.updatedAt;
         break;
+      default:
+        // Fallback to updatedAt if field is unknown
+        aValue = a.updatedAt;
+        bValue = b.updatedAt;
     }
 
     if (config.direction === 'asc') {
