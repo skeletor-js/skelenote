@@ -23,11 +23,19 @@ function isTauri(): boolean {
  * @returns true if a Skeleton Key already exists, false if first run
  */
 export async function initCrypto(): Promise<boolean> {
+  console.log('[Crypto] initCrypto called, checking Tauri environment...');
+
   if (!isTauri()) {
+    console.log('[Crypto] Not in Tauri environment, returning false');
     return false;
   }
+
+  console.log('[Crypto] Tauri detected, invoking crypto_init...');
+
   try {
-    return await invoke<boolean>('crypto_init');
+    const result = await invoke<boolean>('crypto_init');
+    console.log('[Crypto] crypto_init succeeded, hasKey:', result);
+    return result;
   } catch (err) {
     console.error('[Crypto] initCrypto failed:', err);
     throw err;

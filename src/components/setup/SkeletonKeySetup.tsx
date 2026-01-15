@@ -25,6 +25,8 @@ import {
 } from '@mantine/core';
 import { useSkeletonKey } from '@/contexts/SkeletonKeyContext';
 import { Icon } from '@/components/ui/Icon';
+import { usePlatform, useQRScanner } from '@/hooks';
+import * as crypto from '@/lib/crypto';
 
 type SetupStep = 'choice' | 'generate' | 'confirm' | 'import' | 'complete';
 
@@ -38,6 +40,14 @@ export function SkeletonKeySetup() {
     error,
     clearError,
   } = useSkeletonKey();
+
+  const { isMobile } = usePlatform();
+  const {
+    isAvailable: canScanQR,
+    isScanning,
+    scanQR,
+    error: scanError,
+  } = useQRScanner();
 
   const [step, setStep] = useState<SetupStep>('choice');
   const [mnemonic, setMnemonic] = useState<string>('');
@@ -137,6 +147,38 @@ export function SkeletonKeySetup() {
       );
     }
   }, [verificationIndices, confirmInputs, words, mnemonic, importFromMnemonic]);
+
+  // Handle scanning QR code to import Skeleton Key
+  const handleScanQR = useCallback(async () => {
+    setLocalError(null);
+
+    try {
+      const payload = await scanQR();
+      if (!payload) {
+        // User cancelled or scan failed
+        return;
+      }
+
+      // Parse the skelenote:v1:<mnemonic> format
+      const parsedMnemonic = await crypto.parseQR(payload);
+
+      // Validate the mnemonic
+      const isValid = await validateMnemonicPhrase(parsedMnemonic);
+      if (!isValid) {
+        setLocalError('Invalid QR code - not a valid Skeleton Key');
+        return;
+      }
+
+      // Import the mnemonic
+      await importFromMnemonic(parsedMnemonic);
+      setStep('complete');
+    } catch (err) {
+      console.error('[SkeletonKeySetup] QR scan failed:', err);
+      setLocalError(
+        err instanceof Error ? err.message : 'Could not read QR code'
+      );
+    }
+  }, [scanQR, validateMnemonicPhrase, importFromMnemonic]);
 
   // Handle importing an existing Skeleton Key
   const handleImport = useCallback(async () => {
@@ -378,8 +420,32 @@ export function SkeletonKeySetup() {
         {step === 'import' && (
           <Stack gap="lg">
             <Text ta="center">
-              Enter your 24-word Skeleton Key to sync with your existing data.
+              {isMobile && canScanQR
+                ? 'Scan a QR code from your desktop, or enter your 24-word Skeleton Key manually.'
+                : 'Enter your 24-word Skeleton Key to sync with your existing data.'}
             </Text>
+
+            {/* QR Scan Button - Mobile Only */}
+            {isMobile && canScanQR && (
+              <Button
+                variant="filled"
+                color="ember"
+                size="lg"
+                leftSection={<Icon name="camera" size={20} />}
+                onClick={handleScanQR}
+                disabled={isLoading || isScanning}
+                loading={isScanning}
+                fullWidth
+              >
+                Scan QR Code from Desktop
+              </Button>
+            )}
+
+            {isMobile && canScanQR && (
+              <Text size="sm" c="dimmed" ta="center">
+                Or enter manually:
+              </Text>
+            )}
 
             <Textarea
               value={importInput}
@@ -392,9 +458,9 @@ export function SkeletonKeySetup() {
               spellCheck={false}
             />
 
-            {displayError && (
+            {(displayError || scanError) && (
               <Alert color="brick" variant="light">
-                {displayError}
+                {displayError || scanError}
               </Alert>
             )}
 

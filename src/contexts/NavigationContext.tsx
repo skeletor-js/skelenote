@@ -26,7 +26,12 @@ export type ViewType =
   | 'archive'
   | 'search'
   | 'saved-view'
-  | 'type-browse';
+  | 'type-browse'
+  | 'browse' // Mobile: Hub for Projects, Areas, Tags, Archive, Settings
+  | 'projects' // Mobile: List of projects
+  | 'areas' // Mobile: List of areas
+  | 'tags' // Mobile: List of tags
+  | 'templates'; // Mobile: Template management
 
 interface NavigationState {
   view: ViewType;

@@ -15,6 +15,18 @@
 
 :root {
   /* ==========================================================================
+     SAFE AREA INSETS - Map native env() to CSS custom properties
+
+     The tauri-plugin-edge-to-edge enables edge-to-edge display.
+     These variables map the native safe area values to CSS custom properties
+     that components can use via var(--safe-area-inset-*).
+     ========================================================================== */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+
+  /* ==========================================================================
      COZY DESIGN SYSTEM - Light Mode Surface Hierarchy
      
      The "Paper, Not Screen" philosophy:

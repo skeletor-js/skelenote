@@ -15,7 +15,6 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = ["devtools"] }
 tauri-plugin-fs = "2"
-tauri-plugin-shell = "2"
 tauri-plugin-os = "2"
 # tauri-plugin-global-shortcut = "2"  # Disabled: Quick Capture hotkey deprioritized
 # tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2.1" }  # Disabled: crashes on macOS
@@ -51,6 +50,20 @@ flume = "0.11"  # Channel types used by mdns-sd
 walkdir = "2"  # Recursive directory traversal for import
 tauri-plugin-dialog = "2.4.2"
 tauri-plugin-http = "=2.3.0"  # Pinned - v2.4+ has streamChannel bug (github.com/tauri-apps/plugins-workspace/issues/2546)
+
+# Desktop-only dependencies
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-shell = "2"  # shell:allow-open for URL handling
+
+# Mobile-only dependencies
+[target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
+tauri-plugin-barcode-scanner = "2"
+tauri-plugin-edge-to-edge = "0.3"  # Full screen edge-to-edge with safe area CSS vars
+tauri-plugin-biometric = "2"       # Biometric authentication (Face ID, Touch ID, fingerprint)
+
+# Android-only dependencies
+[target.'cfg(target_os = "android")'.dependencies]
+android-keyring = "0.2"  # Android Keystore integration for keyring crate
 
 [dev-dependencies]
 tempfile = "3.14"  # Temporary directories for tests
