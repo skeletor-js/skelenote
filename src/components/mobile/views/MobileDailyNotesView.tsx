@@ -15,12 +15,14 @@ import {
   Loader,
   Center,
 } from '@mantine/core';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Link2 } from 'lucide-react';
 import { useDailyNote, useTasks } from '@/hooks';
-import { useNavigation, useObjects } from '@/contexts';
+import { useNavigation, useObjects, useTypeRegistry } from '@/contexts';
+import { RelationHelper, type Backlink } from '@/lib/loro';
 import { MobileViewHeader, CollapsibleSection } from '../primitives';
 import { MobileTaskRow } from '../rows';
 import { Editor } from '@/components/editor';
+import { IOS_CHEVRON } from '@/lib/constants/ios-styles';
 
 // Week day labels
 const WEEKDAY_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -93,6 +95,7 @@ export function MobileDailyNotesView() {
   } = useTasks({ date: selectedDate });
   const { store, refreshData } = useObjects();
   const { navigateToObject } = useNavigation();
+  const typeRegistry = useTypeRegistry();
 
   // Week days for current week
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart]);
@@ -171,13 +174,17 @@ export function MobileDailyNotesView() {
     [dailyNote, store, refreshData]
   );
 
-  // Backlinks count (simplified for mobile)
-  const backlinksCount = 0; // TODO: Implement backlinks
+  // Get backlinks using RelationHelper
+  const backlinks = useMemo((): Backlink[] => {
+    if (!store || !dailyNote) return [];
+    const relationHelper = new RelationHelper(store, typeRegistry);
+    return relationHelper.findBacklinks(dailyNote.id);
+  }, [store, dailyNote, typeRegistry]);
 
   if (isLoading) {
     return (
       <Stack gap={0} h="100%">
-        <MobileViewHeader title="Daily Notes" showSync />
+        <MobileViewHeader title="Daily Notes" showSync showBack={false} />
         <Center style={{ flex: 1 }}>
           <Loader size="sm" color="ember" />
         </Center>
@@ -190,6 +197,8 @@ export function MobileDailyNotesView() {
       <MobileViewHeader
         title="Daily Notes"
         showSync
+        showSearch
+        showBack={false}
         rightSection={
           !isSelectedToday ? (
             <Button variant="subtle" size="xs" onClick={goToToday}>
@@ -335,10 +344,50 @@ export function MobileDailyNotesView() {
           )}
 
           {/* Backlinks */}
-          <CollapsibleSection title="Linked from" count={backlinksCount}>
-            <Text c="dimmed" size="sm">
-              No backlinks yet
-            </Text>
+          <CollapsibleSection title="Linked from" count={backlinks.length}>
+            {backlinks.length === 0 ? (
+              <Stack align="center" py="md" gap="xs">
+                <Link2
+                  size={20}
+                  style={{ color: 'var(--mantine-color-gray-4)' }}
+                />
+                <Text c="dimmed" size="sm">
+                  No backlinks yet
+                </Text>
+              </Stack>
+            ) : (
+              <Stack gap={0}>
+                {backlinks.map((link: Backlink) => {
+                  const sourceObj = store?.get(link.sourceId);
+                  if (!sourceObj) return null;
+                  return (
+                    <UnstyledButton
+                      key={link.sourceId}
+                      onClick={() => navigateToObject(link.sourceId)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '8px 0',
+                      }}
+                    >
+                      <Text size="sm" truncate style={{ flex: 1 }}>
+                        {
+                          (sourceObj.properties.title ??
+                            sourceObj.properties.name ??
+                            'Untitled') as string
+                        }
+                      </Text>
+                      <ChevronRight
+                        size={IOS_CHEVRON.disclosure.size}
+                        strokeWidth={IOS_CHEVRON.disclosure.strokeWidth}
+                        style={{ color: IOS_CHEVRON.disclosure.color }}
+                      />
+                    </UnstyledButton>
+                  );
+                })}
+              </Stack>
+            )}
           </CollapsibleSection>
         </Stack>
       </Box>

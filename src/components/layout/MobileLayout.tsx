@@ -4,14 +4,13 @@ import { BottomTabBar } from './BottomTabBar';
 
 interface MobileLayoutProps {
   children: ReactNode;
-  inboxCount?: number;
 }
 
 /**
  * Mobile-optimized layout with bottom tab navigation.
  * Used on iOS and Android instead of the desktop Layout with sidebar.
  */
-export function MobileLayout({ children, inboxCount = 0 }: MobileLayoutProps) {
+export function MobileLayout({ children }: MobileLayoutProps) {
   return (
     <Box
       style={{
@@ -38,7 +37,7 @@ export function MobileLayout({ children, inboxCount = 0 }: MobileLayoutProps) {
       </Box>
 
       {/* Bottom tab bar - flex child at bottom */}
-      <BottomTabBar inboxCount={inboxCount} />
+      <BottomTabBar />
     </Box>
   );
 }

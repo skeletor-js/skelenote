@@ -1,6 +1,6 @@
 /**
  * Mobile-optimized Saved Views List
- * Features: list of saved views with icons, tap to apply, FAB to create, swipe actions
+ * Features: list of saved views with icons, tap to apply, header add button to create, swipe actions
  */
 
 import { useMemo, useCallback, useState } from 'react';
@@ -13,23 +13,26 @@ import {
   TextInput,
   Group,
 } from '@mantine/core';
-import { Search, ChevronRight, Plus, Pencil, Trash2 } from 'lucide-react';
-import { useNavigation } from '@/contexts';
+import { Search, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+import { useNavigation, useObjects } from '@/contexts';
 import { useSavedViews, useConfirmDialog } from '@/hooks';
 import {
   MobileViewHeader,
   PullToRefresh,
-  FAB,
+  HeaderAddButton,
   SwipeableRow,
   ActionSheet,
   type ActionSheetItem,
 } from '../primitives';
+import { SavedViewEditorSheet } from '../sheets';
 import { Icon, type IconName } from '@/components/ui/Icon';
-import type { SavedView } from '@/lib/types';
+import type { SavedView, CreateSavedViewInput } from '@/lib/types';
 
 export function MobileSavedViewsView() {
   const { navigateToView, navigateToSavedView } = useNavigation();
-  const { views, deleteView, isLoading } = useSavedViews();
+  const { views, deleteView, createView, updateView, isLoading } =
+    useSavedViews();
+  const { refreshData } = useObjects();
   const { confirm } = useConfirmDialog();
 
   // Search state
@@ -39,6 +42,10 @@ export function MobileSavedViewsView() {
   const [actionSheetView, setActionSheetView] = useState<SavedView | null>(
     null
   );
+
+  // Editor sheet state
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingView, setEditingView] = useState<SavedView | null>(null);
 
   // Filter by search query
   const filteredViews = useMemo(() => {
@@ -51,8 +58,9 @@ export function MobileSavedViewsView() {
 
   // Pull to refresh handler
   const handleRefresh = useCallback(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }, []);
+    refreshData();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }, [refreshData]);
 
   // Handle view tap - apply the saved view
   const handleViewPress = useCallback(
@@ -87,16 +95,34 @@ export function MobileSavedViewsView() {
     [confirm, deleteView]
   );
 
-  // Handle edit - for now just close action sheet (TODO: implement editor sheet)
-  const handleEdit = useCallback((_view: SavedView) => {
+  // Handle edit - open editor sheet with the selected view
+  const handleEdit = useCallback((view: SavedView) => {
     setActionSheetView(null);
-    // TODO: Open SavedViewEditorSheet
+    setEditingView(view);
+    setEditorOpen(true);
   }, []);
 
-  // Handle create - navigate to create flow (TODO: implement editor sheet)
+  // Handle create - open editor sheet for new view
   const handleCreate = useCallback(() => {
-    // TODO: Open SavedViewEditorSheet for new view
+    setEditingView(null);
+    setEditorOpen(true);
   }, []);
+
+  // Handle create view from editor
+  const handleCreateView = useCallback(
+    (input: CreateSavedViewInput) => {
+      createView(input);
+    },
+    [createView]
+  );
+
+  // Handle update view from editor
+  const handleUpdateView = useCallback(
+    (id: string, name: string, icon: string) => {
+      updateView(id, { name, icon });
+    },
+    [updateView]
+  );
 
   // Render icon - either as Lucide icon name or emoji fallback
   const renderIcon = (icon: string | undefined): React.ReactNode => {
@@ -154,6 +180,9 @@ export function MobileSavedViewsView() {
         count={views.length > 0 ? views.length : undefined}
         showBack
         onBack={() => navigateToView('browse')}
+        rightSection={
+          <HeaderAddButton label="New view" onClick={handleCreate} />
+        }
       />
 
       {/* Search bar */}
@@ -280,15 +309,21 @@ export function MobileSavedViewsView() {
         </Box>
       </PullToRefresh>
 
-      {/* FAB for create */}
-      <FAB icon={Plus} label="New view" onClick={handleCreate} />
-
       {/* Action Sheet */}
       <ActionSheet
         opened={!!actionSheetView}
         onClose={() => setActionSheetView(null)}
         title={actionSheetView?.name ?? 'View Actions'}
         actions={actionSheetActions}
+      />
+
+      {/* Editor Sheet */}
+      <SavedViewEditorSheet
+        opened={editorOpen}
+        onClose={() => setEditorOpen(false)}
+        view={editingView}
+        onCreate={handleCreateView}
+        onUpdate={handleUpdateView}
       />
     </Stack>
   );

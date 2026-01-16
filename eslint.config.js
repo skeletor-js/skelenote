@@ -8,7 +8,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    ignores: ['dist', 'src-tauri'],
+    ignores: ['dist', 'src-tauri', 'sync-relay/dist'],
   },
   {
     files: ['**/*.{ts,tsx}'],
@@ -25,6 +25,30 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+    },
+  },
+  // Node.js environment for sync-relay server
+  {
+    files: ['sync-relay/src/**/*.ts'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        Buffer: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        URL: 'readonly',
+        TextEncoder: 'readonly',
+        TextDecoder: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+      },
+    },
+    rules: {
+      // Disable React-specific rules for Node.js code
+      'react-refresh/only-export-components': 'off',
     },
   },
   prettier

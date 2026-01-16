@@ -1,0 +1,145 @@
+/* BottomTabBar - Notion-inspired pill with circular buttons */
+
+/* Tab Bar Wrapper - positions pill on the right side, next to FAB */
+.tabBarWrapper {
+  position: fixed;
+  right: 80px; /* FAB width (56) + gap (8) + right padding (16) */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 100;
+}
+
+/* Pill container - glassmorphism capsule holding circular tabs */
+.tabPill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 26px;
+  background-color: rgba(250, 250, 250, 0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+[data-mantine-color-scheme='dark'] .tabPill {
+  background-color: rgba(39, 39, 42, 0.85);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Circular tab button */
+.tabCircle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--mantine-color-gray-5);
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    transform 100ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tabCircle:active {
+  transform: scale(0.9);
+}
+
+.tabCircle[data-active] {
+  background-color: rgba(184, 92, 80, 0.12);
+  color: var(--mantine-color-ember-6);
+}
+
+[data-mantine-color-scheme='dark'] .tabCircle[data-active] {
+  background-color: rgba(184, 92, 80, 0.2);
+}
+
+/* Chevron toggle button (44pt iOS HIG minimum) */
+.chevronToggle {
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: rgba(250, 250, 250, 0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  color: var(--mantine-color-gray-5);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 150ms ease,
+    transform 100ms ease;
+}
+
+.chevronToggle:active {
+  background-color: rgba(240, 240, 240, 0.9);
+}
+
+[data-mantine-color-scheme='dark'] .chevronToggle {
+  background-color: rgba(39, 39, 42, 0.85);
+  color: var(--mantine-color-gray-4);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+[data-mantine-color-scheme='dark'] .chevronToggle:active {
+  background-color: rgba(50, 50, 55, 0.9);
+}
+
+/* FAB Group - floats on the right side */
+.fabGroup {
+  position: fixed;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 100;
+}
+
+/* Floating FAB with multi-layer ember glow */
+.fab {
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+
+  /* Solid ember background */
+  background-color: var(--mantine-color-ember-5, #b85c50);
+
+  /* Multi-layer box shadow for diffused warm glow */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 16px rgba(184, 92, 80, 0.5),
+    0 0 32px rgba(184, 92, 80, 0.35),
+    0 0 48px rgba(184, 92, 80, 0.2);
+
+  transition:
+    transform 150ms ease,
+    opacity 150ms ease;
+}
+
+.fab:active {
+  transform: scale(0.92);
+  opacity: 0.9;
+}
+
+/* Enhanced glow in dark mode */
+[data-mantine-color-scheme='dark'] .fab {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 20px rgba(184, 92, 80, 0.6),
+    0 0 40px rgba(184, 92, 80, 0.4),
+    0 0 60px rgba(184, 92, 80, 0.25),
+    0 0 80px rgba(184, 92, 80, 0.15);
+}

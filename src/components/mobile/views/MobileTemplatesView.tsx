@@ -17,29 +17,36 @@ import {
 import {
   Search,
   ChevronRight,
-  Plus,
   Pencil,
   Trash2,
   Copy,
   FileText,
 } from 'lucide-react';
-import { useNavigation } from '@/contexts';
-import { useTemplates, useConfirmDialog, useTypeRegistry } from '@/hooks';
+import { useNavigation, useTypeRegistry } from '@/contexts';
+import { useTemplates, useConfirmDialog } from '@/hooks';
+import { useObjects } from '@/contexts';
 import {
   MobileViewHeader,
   PullToRefresh,
-  FAB,
+  HeaderAddButton,
   SwipeableRow,
   ActionSheet,
   type ActionSheetItem,
 } from '../primitives';
+import { TemplateEditorSheet } from '../sheets';
 import { Icon } from '@/components/ui/Icon';
 import { getIconFromEmoji, type IconName } from '@/lib/icons';
-import type { Template } from '@/lib/templates';
+import type {
+  Template,
+  CreateTemplateInput,
+  UpdateTemplateInput,
+} from '@/lib/templates';
 
 export function MobileTemplatesView() {
   const { navigateToView } = useNavigation();
-  const { templates, remove, duplicate, isLoading } = useTemplates();
+  const { templates, remove, duplicate, create, update, isLoading } =
+    useTemplates();
+  const { refreshData } = useObjects();
   const { confirm } = useConfirmDialog();
   const typeRegistry = useTypeRegistry();
 
@@ -49,6 +56,10 @@ export function MobileTemplatesView() {
   // Action sheet state
   const [actionSheetTemplate, setActionSheetTemplate] =
     useState<Template | null>(null);
+
+  // Editor sheet state
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
 
   // Filter by search query
   const filteredTemplates = useMemo(() => {
@@ -98,8 +109,9 @@ export function MobileTemplatesView() {
 
   // Pull to refresh handler
   const handleRefresh = useCallback(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }, []);
+    refreshData();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }, [refreshData]);
 
   // Handle template tap - for now just show action sheet
   const handleTemplatePress = useCallback((template: Template) => {
@@ -140,16 +152,34 @@ export function MobileTemplatesView() {
     [duplicate]
   );
 
-  // Handle edit - TODO: implement editor sheet
-  const handleEdit = useCallback((_template: Template) => {
+  // Handle edit - open editor sheet with the selected template
+  const handleEdit = useCallback((template: Template) => {
     setActionSheetTemplate(null);
-    // TODO: Open TemplateEditorSheet
+    setEditingTemplate(template);
+    setEditorOpen(true);
   }, []);
 
-  // Handle create - TODO: implement editor sheet
+  // Handle create - open editor sheet for new template
   const handleCreate = useCallback(() => {
-    // TODO: Open TemplateEditorSheet for new template
+    setEditingTemplate(null);
+    setEditorOpen(true);
   }, []);
+
+  // Handle create template from editor
+  const handleCreateTemplate = useCallback(
+    (input: CreateTemplateInput) => {
+      create(input);
+    },
+    [create]
+  );
+
+  // Handle update template from editor
+  const handleUpdateTemplate = useCallback(
+    (id: string, input: UpdateTemplateInput) => {
+      update(id, input);
+    },
+    [update]
+  );
 
   // Action sheet actions
   const actionSheetActions: ActionSheetItem[] = actionSheetTemplate
@@ -198,6 +228,9 @@ export function MobileTemplatesView() {
         count={templates.length > 0 ? templates.length : undefined}
         showBack
         onBack={() => navigateToView('browse')}
+        rightSection={
+          <HeaderAddButton label="New template" onClick={handleCreate} />
+        }
       />
 
       {/* Search bar */}
@@ -358,15 +391,21 @@ export function MobileTemplatesView() {
         </Box>
       </PullToRefresh>
 
-      {/* FAB for create */}
-      <FAB icon={Plus} label="New template" onClick={handleCreate} />
-
       {/* Action Sheet */}
       <ActionSheet
         opened={!!actionSheetTemplate}
         onClose={() => setActionSheetTemplate(null)}
         title={actionSheetTemplate?.name ?? 'Template Actions'}
         actions={actionSheetActions}
+      />
+
+      {/* Editor Sheet */}
+      <TemplateEditorSheet
+        opened={editorOpen}
+        onClose={() => setEditorOpen(false)}
+        template={editingTemplate}
+        onCreate={handleCreateTemplate}
+        onUpdate={handleUpdateTemplate}
       />
     </Stack>
   );

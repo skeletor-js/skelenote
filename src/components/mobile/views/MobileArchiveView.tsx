@@ -4,6 +4,7 @@
  */
 
 import { useMemo, useCallback, useState, Fragment } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Stack,
   Text,
@@ -14,8 +15,14 @@ import {
   Group,
 } from '@mantine/core';
 import { Archive, Search, ArchiveRestore, Trash2 } from 'lucide-react';
-import { useArchive } from '@/hooks';
-import { useNavigation } from '@/contexts';
+import {
+  useArchive,
+  useConfirmDialog,
+  useReducedMotion,
+  useUndoToast,
+} from '@/hooks';
+import { listItem } from '@/lib/animations';
+import { useNavigation, useObjects } from '@/contexts';
 import {
   MobileViewHeader,
   PullToRefresh,
@@ -71,6 +78,10 @@ function groupItemsByDate(
 export function MobileArchiveView() {
   const { items, isLoading, count, unarchiveItem, deleteItem } = useArchive();
   const { navigateToObject, navigateToView } = useNavigation();
+  const { refreshData } = useObjects();
+  const { confirm } = useConfirmDialog();
+  const reduceMotion = useReducedMotion();
+  const { showDeleteUndo } = useUndoToast();
 
   // Search/filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -107,8 +118,9 @@ export function MobileArchiveView() {
 
   // Pull to refresh handler
   const handleRefresh = useCallback(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }, []);
+    refreshData();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }, [refreshData]);
 
   // Long press handler - opens action sheet
   const handleLongPress = useCallback((item: SkelenoteObject) => {
@@ -124,12 +136,40 @@ export function MobileArchiveView() {
     [unarchiveItem]
   );
 
-  // Handle delete
+  // Handle delete with confirmation
+  const handleDeleteWithConfirm = useCallback(
+    async (item: SkelenoteObject) => {
+      setActionSheetOpen(false);
+
+      const title = (item.properties.title ??
+        item.properties.name ??
+        'Untitled') as string;
+
+      const confirmed = await confirm({
+        title: 'Delete Permanently',
+        message: `Are you sure you want to permanently delete "${title}"? This action cannot be undone.`,
+        confirmLabel: 'Delete',
+        cancelLabel: 'Cancel',
+        variant: 'danger',
+      });
+
+      if (confirmed) {
+        showDeleteUndo(item);
+        deleteItem(item.id);
+      }
+    },
+    [confirm, deleteItem, showDeleteUndo]
+  );
+
+  // Delete by ID with confirmation (for swipe actions)
   const handleDelete = useCallback(
     (itemId: string) => {
-      deleteItem(itemId);
+      const item = items.find((i) => i.id === itemId);
+      if (item) {
+        handleDeleteWithConfirm(item);
+      }
     },
-    [deleteItem]
+    [items, handleDeleteWithConfirm]
   );
 
   // Action sheet items for selected item
@@ -146,7 +186,7 @@ export function MobileArchiveView() {
           label: 'Delete Permanently',
           icon: Trash2,
           variant: 'danger',
-          onAction: () => handleDelete(selectedItem.id),
+          onAction: () => handleDeleteWithConfirm(selectedItem),
         },
       ]
     : [];
@@ -241,16 +281,26 @@ export function MobileArchiveView() {
                   </Box>
 
                   {/* Group items */}
-                  {groupedItems[group].map((item) => (
-                    <MobileArchiveRow
-                      key={item.id}
-                      item={item}
-                      onPress={() => navigateToObject(item.id)}
-                      onLongPress={() => handleLongPress(item)}
-                      onRestore={handleRestore}
-                      onDelete={handleDelete}
-                    />
-                  ))}
+                  <AnimatePresence initial={false}>
+                    {groupedItems[group].map((item) => (
+                      <motion.div
+                        key={item.id}
+                        variants={reduceMotion ? undefined : listItem}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        style={{ overflow: 'hidden' }}
+                      >
+                        <MobileArchiveRow
+                          item={item}
+                          onPress={() => navigateToObject(item.id)}
+                          onLongPress={() => handleLongPress(item)}
+                          onRestore={handleRestore}
+                          onDelete={handleDelete}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </Fragment>
               ))}
             </Stack>

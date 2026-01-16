@@ -1,34 +1,54 @@
 /**
  * Mobile-optimized Tasks View
- * Features: horizontal filter tabs, swipeable task rows, pull-to-refresh, FAB for new task
+ * Features: horizontal filter tabs, swipeable task rows, pull-to-refresh, header button for new task
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Stack,
   Box,
-  Button,
   Group,
   Badge,
   ScrollArea,
   Center,
   Loader,
   Text,
+  UnstyledButton,
 } from '@mantine/core';
-import { Plus, CheckCircle } from 'lucide-react';
-import { useTasks } from '@/hooks';
-import { useNavigation } from '@/contexts';
+import { CheckCircle, Tag, Layers, Repeat, Copy } from 'lucide-react';
+import { useTasks, useSelection, useDuplicate } from '@/hooks';
+import {
+  useNavigation,
+  useObjects,
+  useTypeRegistry,
+  useToast,
+} from '@/contexts';
 import {
   MobileViewHeader,
   PullToRefresh,
-  FAB,
   ActionSheet,
+  ConfirmDialog,
+  SelectionToolbar,
   type ActionSheetItem,
 } from '../primitives';
 import { MobileTaskRow } from '../rows';
+import {
+  DueDateSheet,
+  PriorityPickerSheet,
+  RelationPickerSheet,
+  BulkActionsSheet,
+  TagPickerSheet,
+  AreaPickerSheet,
+  RecurrenceSheet,
+  type BulkActionType,
+} from '../sheets';
 import type { SkelenoteObject } from '@/lib/types';
+import { BuiltInTypeIds } from '@/lib/types';
 import type { TaskFilter } from '@/lib/tasks/filters';
 import { Archive, Trash2, Calendar, Flag, Folder } from 'lucide-react';
+import { useHaptics, useReducedMotion, useUndoToast } from '@/hooks';
+import { springs, listItem } from '@/lib/animations';
 
 interface FilterTab {
   id: TaskFilter;
@@ -37,10 +57,8 @@ interface FilterTab {
 
 const FILTER_TABS: FilterTab[] = [
   { id: 'today', label: 'Today' },
-  { id: 'this-week', label: 'This Week' },
+  { id: 'this-week', label: 'Upcoming' },
   { id: 'overdue', label: 'Overdue' },
-  { id: 'waiting', label: 'Waiting' },
-  { id: 'eventually', label: 'Eventually' },
   { id: 'completed', label: 'Done' },
 ];
 
@@ -58,6 +76,20 @@ export function MobileTasksView() {
   const { tasks, isLoading, toggleComplete, archiveTask, deleteTask } =
     useTasks({ filter: activeFilter });
   const { navigateToObject } = useNavigation();
+  const { store, refreshData } = useObjects();
+  const typeRegistry = useTypeRegistry();
+  const { notification, selection: selectionHaptic } = useHaptics();
+  const reduceMotion = useReducedMotion();
+  const { showArchiveUndo, showDeleteUndo } = useUndoToast();
+  const { addToast } = useToast();
+  const { duplicate } = useDuplicate();
+
+  // Selection mode state
+  const taskIds = useMemo(() => tasks.map((t) => t.id), [tasks]);
+  const selection = useSelection({ allItems: taskIds });
+  const [bulkActionsSheetOpen, setBulkActionsSheetOpen] = useState(false);
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
   // Action sheet state for long-press menu
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
@@ -65,45 +97,255 @@ export function MobileTasksView() {
     null
   );
 
-  // Get task counts for each filter
+  // Sheet states
+  const [dueDateSheetOpen, setDueDateSheetOpen] = useState(false);
+  const [prioritySheetOpen, setPrioritySheetOpen] = useState(false);
+  const [projectSheetOpen, setProjectSheetOpen] = useState(false);
+  const [tagSheetOpen, setTagSheetOpen] = useState(false);
+  const [areaSheetOpen, setAreaSheetOpen] = useState(false);
+  const [recurrenceSheetOpen, setRecurrenceSheetOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  // Get task counts for each filter (only for tabs we show)
   const { tasks: todayTasks } = useTasks({ filter: 'today' });
   const { tasks: weekTasks } = useTasks({ filter: 'this-week' });
   const { tasks: overdueTasks } = useTasks({ filter: 'overdue' });
-  const { tasks: waitingTasks } = useTasks({ filter: 'waiting' });
 
-  const filterCounts: Record<TaskFilter, number> = useMemo(
+  const filterCounts: Partial<Record<TaskFilter, number>> = useMemo(
     () => ({
       today: todayTasks.length,
       'this-week': weekTasks.length,
       overdue: overdueTasks.length,
-      waiting: waitingTasks.length,
-      eventually: 0, // Not shown
-      completed: 0, // Not shown
     }),
-    [
-      todayTasks.length,
-      weekTasks.length,
-      overdueTasks.length,
-      waitingTasks.length,
-    ]
+    [todayTasks.length, weekTasks.length, overdueTasks.length]
   );
 
   // Pull to refresh handler
   const handleRefresh = useCallback(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }, []);
+    refreshData();
+    // Small delay for animation feel
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }, [refreshData]);
 
-  // Long press handler
-  const handleLongPress = useCallback((task: SkelenoteObject) => {
-    setSelectedTask(task);
-    setActionSheetOpen(true);
-  }, []);
+  // Long press handler - enters selection mode or shows action sheet
+  const handleLongPress = useCallback(
+    async (task: SkelenoteObject) => {
+      if (!selection.hasSelection) {
+        // Enter selection mode with haptic feedback
+        await notification('success');
+        selection.toggle(task.id);
+      } else {
+        // Already in selection mode, show action sheet
+        setSelectedTask(task);
+        setActionSheetOpen(true);
+      }
+    },
+    [selection, notification]
+  );
 
-  // New task handler
-  const handleNewTask = useCallback(() => {
-    // TODO: Open quick add task sheet
-    console.log('New task');
-  }, []);
+  // Archive task with undo toast
+  const handleArchiveTask = useCallback(
+    (task: SkelenoteObject) => {
+      archiveTask(task.id);
+      showArchiveUndo(task);
+    },
+    [archiveTask, showArchiveUndo]
+  );
+
+  // Archive task by ID (for MobileTaskRow)
+  const handleArchiveTaskById = useCallback(
+    (taskId: string) => {
+      const task = tasks.find((t) => t.id === taskId);
+      if (task) {
+        handleArchiveTask(task);
+      }
+    },
+    [tasks, handleArchiveTask]
+  );
+
+  // Delete confirmation handler
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!selectedTask) return;
+    await notification('warning');
+    showDeleteUndo(selectedTask);
+    deleteTask(selectedTask.id);
+    setDeleteConfirmOpen(false);
+    setSelectedTask(null);
+  }, [selectedTask, deleteTask, notification, showDeleteUndo]);
+
+  // Due date change handler
+  const handleDueDateChange = useCallback(
+    (date: number | null) => {
+      if (!selectedTask || !store) return;
+      store.update(selectedTask.id, { properties: { dueDate: date } });
+      refreshData();
+      setDueDateSheetOpen(false);
+    },
+    [selectedTask, store, refreshData]
+  );
+
+  // Priority change handler
+  const handlePriorityChange = useCallback(
+    (priority: string | null) => {
+      if (!selectedTask || !store) return;
+      store.update(selectedTask.id, {
+        properties: { priority: priority ?? 'none' },
+      });
+      refreshData();
+      setPrioritySheetOpen(false);
+    },
+    [selectedTask, store, refreshData]
+  );
+
+  // Project change handler
+  const handleProjectChange = useCallback(
+    (value: string | string[] | null) => {
+      if (!selectedTask || !store) return;
+      const projectId = Array.isArray(value) ? value[0] : value;
+      store.update(selectedTask.id, { properties: { project: projectId } });
+      refreshData();
+      setProjectSheetOpen(false);
+    },
+    [selectedTask, store, refreshData]
+  );
+
+  // Tags change handler
+  const handleTagsChange = useCallback(
+    (tags: string[]) => {
+      if (!selectedTask || !store) return;
+      store.setProperty(selectedTask.id, 'tags', tags);
+      refreshData();
+      setTagSheetOpen(false);
+    },
+    [selectedTask, store, refreshData]
+  );
+
+  // Area change handler
+  const handleAreaChange = useCallback(
+    (area: string | null) => {
+      if (!selectedTask || !store) return;
+      store.setProperty(selectedTask.id, 'area', area);
+      refreshData();
+      setAreaSheetOpen(false);
+    },
+    [selectedTask, store, refreshData]
+  );
+
+  // Recurrence change handler
+  const handleRecurrenceChange = useCallback(
+    (recurrence: string | null) => {
+      if (!selectedTask || !store) return;
+      store.setProperty(selectedTask.id, 'recurrence', recurrence);
+      refreshData();
+      setRecurrenceSheetOpen(false);
+    },
+    [selectedTask, store, refreshData]
+  );
+
+  // Duplicate handler
+  const handleDuplicate = useCallback(
+    (task: SkelenoteObject) => {
+      const duplicated = duplicate(task.id);
+      if (duplicated) {
+        addToast({ message: 'Task duplicated', type: 'success' });
+      }
+      setActionSheetOpen(false);
+    },
+    [duplicate, addToast]
+  );
+
+  // Get project property definition for RelationPickerSheet
+  const projectProperty = useMemo(() => {
+    const taskType = typeRegistry.get(BuiltInTypeIds.TASK);
+    return taskType?.schema.find((p) => p.id === 'project') ?? null;
+  }, [typeRegistry]);
+
+  // Bulk action handler
+  const handleBulkAction = useCallback(
+    async (action: BulkActionType) => {
+      if (!store || selection.selectedCount === 0) return;
+
+      setBulkActionLoading(true);
+
+      try {
+        const selectedIds = selection.selectedArray;
+
+        switch (action) {
+          case 'archive':
+            for (const id of selectedIds) {
+              archiveTask(id);
+            }
+            addToast({
+              type: 'success',
+              message: `Archived ${selectedIds.length} task${selectedIds.length !== 1 ? 's' : ''}`,
+            });
+            break;
+
+          case 'delete':
+            // Show confirmation dialog
+            setBulkActionsSheetOpen(false);
+            setTimeout(() => setBulkDeleteConfirmOpen(true), 200);
+            setBulkActionLoading(false);
+            return; // Don't clear selection yet
+
+          case 'priority-high':
+          case 'priority-medium':
+          case 'priority-low':
+          case 'priority-none': {
+            const priority = action.replace('priority-', '');
+            for (const id of selectedIds) {
+              store.update(id, { properties: { priority } });
+            }
+            refreshData();
+            addToast({
+              type: 'success',
+              message: `Updated priority for ${selectedIds.length} task${selectedIds.length !== 1 ? 's' : ''}`,
+            });
+            break;
+          }
+
+          case 'project':
+          case 'tag':
+            // TODO: Open sub-sheet for project/tag selection
+            addToast({
+              type: 'info',
+              message: 'Coming soon',
+            });
+            break;
+
+          default:
+            break;
+        }
+
+        // Clear selection and close sheet
+        selection.clear();
+        setBulkActionsSheetOpen(false);
+      } finally {
+        setBulkActionLoading(false);
+      }
+    },
+    [store, selection, archiveTask, refreshData, addToast]
+  );
+
+  // Bulk delete confirmation handler
+  const handleBulkDeleteConfirm = useCallback(async () => {
+    if (!store || selection.selectedCount === 0) return;
+
+    await notification('warning');
+
+    const selectedIds = selection.selectedArray;
+    for (const id of selectedIds) {
+      deleteTask(id);
+    }
+
+    addToast({
+      type: 'success',
+      message: `Deleted ${selectedIds.length} task${selectedIds.length !== 1 ? 's' : ''}`,
+    });
+
+    selection.clear();
+    setBulkDeleteConfirmOpen(false);
+  }, [store, selection, deleteTask, notification, addToast]);
 
   // Action sheet items
   const actionSheetItems: ActionSheetItem[] = selectedTask
@@ -122,7 +364,8 @@ export function MobileTasksView() {
           label: 'Reschedule',
           icon: Calendar,
           onAction: () => {
-            // TODO: Open date picker
+            setActionSheetOpen(false);
+            setTimeout(() => setDueDateSheetOpen(true), 200);
           },
         },
         {
@@ -130,7 +373,8 @@ export function MobileTasksView() {
           label: 'Set Priority',
           icon: Flag,
           onAction: () => {
-            // TODO: Open priority picker
+            setActionSheetOpen(false);
+            setTimeout(() => setPrioritySheetOpen(true), 200);
           },
         },
         {
@@ -138,21 +382,58 @@ export function MobileTasksView() {
           label: 'Move to Project',
           icon: Folder,
           onAction: () => {
-            // TODO: Open project picker
+            setActionSheetOpen(false);
+            setTimeout(() => setProjectSheetOpen(true), 200);
           },
+        },
+        {
+          id: 'tags',
+          label: 'Add Tags',
+          icon: Tag,
+          onAction: () => {
+            setActionSheetOpen(false);
+            setTimeout(() => setTagSheetOpen(true), 200);
+          },
+        },
+        {
+          id: 'area',
+          label: 'Assign Area',
+          icon: Layers,
+          onAction: () => {
+            setActionSheetOpen(false);
+            setTimeout(() => setAreaSheetOpen(true), 200);
+          },
+        },
+        {
+          id: 'recurrence',
+          label: 'Set Recurrence',
+          icon: Repeat,
+          onAction: () => {
+            setActionSheetOpen(false);
+            setTimeout(() => setRecurrenceSheetOpen(true), 200);
+          },
+        },
+        {
+          id: 'duplicate',
+          label: 'Duplicate',
+          icon: Copy,
+          onAction: () => handleDuplicate(selectedTask),
         },
         {
           id: 'archive',
           label: 'Archive',
           icon: Archive,
-          onAction: () => archiveTask(selectedTask.id),
+          onAction: () => handleArchiveTask(selectedTask),
         },
         {
           id: 'delete',
           label: 'Delete',
           icon: Trash2,
           variant: 'danger',
-          onAction: () => deleteTask(selectedTask.id),
+          onAction: () => {
+            setActionSheetOpen(false);
+            setTimeout(() => setDeleteConfirmOpen(true), 200);
+          },
         },
       ]
     : [];
@@ -160,7 +441,7 @@ export function MobileTasksView() {
   if (isLoading) {
     return (
       <Stack gap={0} h="100%">
-        <MobileViewHeader title="Tasks" showSync />
+        <MobileViewHeader title="Tasks" showSync showBack={false} />
         <Center style={{ flex: 1 }}>
           <Loader size="sm" color="ember" />
         </Center>
@@ -170,9 +451,9 @@ export function MobileTasksView() {
 
   return (
     <Stack gap={0} h="100%">
-      <MobileViewHeader title="Tasks" showSync />
+      <MobileViewHeader title="Tasks" showSync showSearch showBack={false} />
 
-      {/* Filter tabs */}
+      {/* Filter tabs with animated indicator */}
       <Box
         px="sm"
         py="sm"
@@ -182,44 +463,80 @@ export function MobileTasksView() {
         }}
       >
         <ScrollArea scrollbarSize={0} type="scroll" offsetScrollbars={false}>
-          <Group gap="xs" wrap="nowrap">
+          <Group gap={4} wrap="nowrap">
             {FILTER_TABS.map((filter) => {
               const isActive = activeFilter === filter.id;
-              const count = filterCounts[filter.id];
+              const count = filterCounts[filter.id] ?? 0;
               const showCount =
                 count > 0 &&
-                ['today', 'this-week', 'overdue', 'waiting'].includes(
-                  filter.id
-                );
+                ['today', 'this-week', 'overdue'].includes(filter.id);
 
               return (
-                <Button
+                <UnstyledButton
                   key={filter.id}
-                  variant={isActive ? 'filled' : 'subtle'}
-                  color={isActive ? 'ember' : 'gray'}
-                  size="sm"
-                  onClick={() => setActiveFilter(filter.id)}
-                  styles={{
-                    root: {
-                      flexShrink: 0,
-                      paddingLeft: 12,
-                      paddingRight: showCount ? 8 : 12,
-                    },
+                  onClick={async () => {
+                    if (!isActive) {
+                      await selectionHaptic();
+                      setActiveFilter(filter.id);
+                    }
+                  }}
+                  aria-selected={isActive}
+                  role="tab"
+                  style={{
+                    position: 'relative',
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    flexShrink: 0,
                   }}
                 >
-                  <Group gap={6} wrap="nowrap">
-                    <Text size="sm">{filter.label}</Text>
+                  {/* Animated background indicator */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="task-tab-indicator"
+                      transition={
+                        reduceMotion ? { duration: 0 } : springs.snappy
+                      }
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        backgroundColor: 'var(--mantine-color-ember-5)',
+                        borderRadius: 8,
+                        zIndex: 0,
+                      }}
+                    />
+                  )}
+
+                  {/* Tab content */}
+                  <Group
+                    gap={6}
+                    wrap="nowrap"
+                    style={{ position: 'relative', zIndex: 1 }}
+                  >
+                    <Text
+                      size="sm"
+                      fw={isActive ? 500 : 400}
+                      c={isActive ? 'white' : 'dimmed'}
+                    >
+                      {filter.label}
+                    </Text>
                     {showCount && (
                       <Badge
                         size="xs"
                         variant={isActive ? 'white' : 'light'}
                         color={isActive ? undefined : 'gray'}
+                        styles={{
+                          root: {
+                            color: isActive
+                              ? 'var(--mantine-color-ember-5)'
+                              : undefined,
+                          },
+                        }}
                       >
                         {count}
                       </Badge>
                     )}
                   </Group>
-                </Button>
+                </UnstyledButton>
               );
             })}
           </Group>
@@ -247,25 +564,43 @@ export function MobileTasksView() {
               </Text>
             </Stack>
           ) : (
-            // Task list
+            // Task list with AnimatePresence for smooth add/remove
             <Stack gap={0}>
-              {tasks.map((task) => (
-                <MobileTaskRow
-                  key={task.id}
-                  task={task}
-                  onPress={() => navigateToObject(task.id)}
-                  onLongPress={() => handleLongPress(task)}
-                  onToggleComplete={toggleComplete}
-                  onArchive={archiveTask}
-                />
-              ))}
+              <AnimatePresence initial={false}>
+                {tasks.map((task) => (
+                  <motion.div
+                    key={task.id}
+                    variants={reduceMotion ? undefined : listItem}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <MobileTaskRow
+                      task={task}
+                      onPress={() => navigateToObject(task.id)}
+                      onLongPress={() => handleLongPress(task)}
+                      onToggleComplete={toggleComplete}
+                      onArchive={handleArchiveTaskById}
+                      selectionMode={selection.hasSelection}
+                      isSelected={selection.isSelected(task.id)}
+                      onToggleSelection={selection.toggle}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </Stack>
           )}
         </Box>
       </PullToRefresh>
 
-      {/* FAB for new task */}
-      <FAB icon={Plus} label="New task" onClick={handleNewTask} />
+      {/* Selection toolbar */}
+      <SelectionToolbar
+        count={selection.selectedCount}
+        visible={selection.hasSelection}
+        onClear={selection.clear}
+        onActionsPress={() => setBulkActionsSheetOpen(true)}
+      />
 
       {/* Action sheet */}
       <ActionSheet
@@ -276,6 +611,91 @@ export function MobileTasksView() {
         }}
         title={selectedTask?.properties.title as string | undefined}
         actions={actionSheetItems}
+      />
+
+      {/* Due Date Sheet */}
+      <DueDateSheet
+        opened={dueDateSheetOpen}
+        onClose={() => setDueDateSheetOpen(false)}
+        value={(selectedTask?.properties.dueDate as number | null) ?? null}
+        onSelect={handleDueDateChange}
+      />
+
+      {/* Priority Sheet */}
+      <PriorityPickerSheet
+        opened={prioritySheetOpen}
+        onClose={() => setPrioritySheetOpen(false)}
+        value={(selectedTask?.properties.priority as string | null) ?? null}
+        onSelect={handlePriorityChange}
+      />
+
+      {/* Project Sheet */}
+      <RelationPickerSheet
+        opened={projectSheetOpen}
+        onClose={() => setProjectSheetOpen(false)}
+        property={projectProperty}
+        value={(selectedTask?.properties.project as string | null) ?? null}
+        onSave={handleProjectChange}
+      />
+
+      {/* Tag Picker Sheet */}
+      <TagPickerSheet
+        opened={tagSheetOpen}
+        onClose={() => setTagSheetOpen(false)}
+        value={(selectedTask?.properties.tags as string[]) ?? []}
+        onSave={handleTagsChange}
+      />
+
+      {/* Area Picker Sheet */}
+      <AreaPickerSheet
+        opened={areaSheetOpen}
+        onClose={() => setAreaSheetOpen(false)}
+        value={(selectedTask?.properties.area as string) ?? null}
+        onSave={handleAreaChange}
+      />
+
+      {/* Recurrence Sheet */}
+      <RecurrenceSheet
+        opened={recurrenceSheetOpen}
+        onClose={() => setRecurrenceSheetOpen(false)}
+        value={(selectedTask?.properties.recurrence as string) ?? null}
+        onSave={handleRecurrenceChange}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        opened={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setSelectedTask(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Task"
+        message="Are you sure you want to delete this task? This action cannot be undone."
+        confirmLabel="Delete"
+        destructive
+      />
+
+      {/* Bulk Actions Sheet */}
+      <BulkActionsSheet
+        opened={bulkActionsSheetOpen}
+        onClose={() => setBulkActionsSheetOpen(false)}
+        count={selection.selectedCount}
+        onAction={handleBulkAction}
+        isLoading={bulkActionLoading}
+      />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <ConfirmDialog
+        opened={bulkDeleteConfirmOpen}
+        onClose={() => {
+          setBulkDeleteConfirmOpen(false);
+        }}
+        onConfirm={handleBulkDeleteConfirm}
+        title={`Delete ${selection.selectedCount} Task${selection.selectedCount !== 1 ? 's' : ''}`}
+        message={`Are you sure you want to delete ${selection.selectedCount} task${selection.selectedCount !== 1 ? 's' : ''}? This action cannot be undone.`}
+        confirmLabel="Delete All"
+        destructive
       />
     </Stack>
   );

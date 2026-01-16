@@ -1,10 +1,11 @@
 import { useState, type ReactNode } from 'react';
 import { Box, UnstyledButton, Text, Badge, Collapse } from '@mantine/core';
 import { ChevronRight } from 'lucide-react';
+import { IOS_CHEVRON } from '@/lib/constants/ios-styles';
 
 interface CollapsibleSectionProps {
-  /** Section title */
-  title: string;
+  /** Section title - can be string or ReactNode */
+  title: ReactNode;
   /** Badge count next to title */
   count?: number;
   /** Whether section is open by default */
@@ -37,6 +38,10 @@ export function CollapsibleSection({
     onOpenChange?.(value);
   };
 
+  // Generate accessible label from title
+  const titleText = typeof title === 'string' ? title : 'Section';
+  const itemCount = count ?? 0;
+
   return (
     <Box>
       <UnstyledButton
@@ -49,19 +54,25 @@ export function CollapsibleSection({
           width: '100%',
         }}
         aria-expanded={isOpen}
+        aria-label={`${titleText}${itemCount > 0 ? `, ${itemCount} items` : ''}`}
       >
         <ChevronRight
-          size={14}
+          size={IOS_CHEVRON.disclosure.size}
+          strokeWidth={IOS_CHEVRON.disclosure.strokeWidth}
           style={{
-            color: 'var(--mantine-color-gray-5)',
+            color: IOS_CHEVRON.disclosure.color,
             transform: isOpen ? 'rotate(90deg)' : 'none',
             transition: 'transform 150ms ease',
             flexShrink: 0,
           }}
         />
-        <Text size="sm" fw={500} c="dimmed">
-          {title}
-        </Text>
+        {typeof title === 'string' ? (
+          <Text size="sm" fw={500} c="dimmed">
+            {title}
+          </Text>
+        ) : (
+          title
+        )}
         {count !== undefined && count > 0 && (
           <Badge size="xs" variant="light" color="gray">
             {count}

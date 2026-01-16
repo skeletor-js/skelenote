@@ -17,6 +17,8 @@ export interface SearchableItem {
   properties: string;
   /** Plain text extracted from BlockNote content */
   content: string;
+  /** Object last modified timestamp */
+  updatedAt: number;
 }
 
 /**

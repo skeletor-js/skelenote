@@ -4,6 +4,7 @@
 //! and local network sync capabilities.
 
 mod crypto;
+mod haptics;
 mod network;
 
 use crypto::{
@@ -1976,6 +1977,10 @@ pub fn run() {
             cache_prune_addresses,
             cache_reconnect_all,
             cache_reconnect_device,
+            // Haptic feedback commands (mobile only)
+            haptics::haptic_impact,
+            haptics::haptic_notification,
+            haptics::haptic_selection,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

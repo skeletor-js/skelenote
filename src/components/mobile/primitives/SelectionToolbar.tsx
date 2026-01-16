@@ -1,10 +1,17 @@
 /**
  * Selection Toolbar
- * Floating toolbar that appears at the bottom when items are selected
+ * iOS-style full-width toolbar that replaces tab bar during selection mode.
+ * Matches tab bar height (49px) and safe area handling.
  */
 
+import { motion, AnimatePresence } from 'framer-motion';
 import { Box, Group, Text, UnstyledButton } from '@mantine/core';
 import { X, MoreHorizontal } from 'lucide-react';
+import { useReducedMotion } from '@/hooks';
+import { springs } from '@/lib/animations';
+
+// iOS standard tab bar height (must match BottomTabBar)
+const TOOLBAR_HEIGHT = 49;
 
 interface SelectionToolbarProps {
   /** Number of selected items */
@@ -23,64 +30,91 @@ export function SelectionToolbar({
   onClear,
   onActionsPress,
 }: SelectionToolbarProps) {
-  if (!visible || count === 0) return null;
+  const reduceMotion = useReducedMotion();
+  const transition = reduceMotion ? { duration: 0 } : springs.snappy;
 
   return (
-    <Box
-      style={{
-        position: 'fixed',
-        bottom: 'calc(var(--safe-area-inset-bottom, 0px) + 80px)', // Above tab bar
-        left: 16,
-        right: 16,
-        zIndex: 1000,
-        backgroundColor: 'var(--mantine-color-dark-7)',
-        borderRadius: 12,
-        padding: '12px 16px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-      }}
-    >
-      <Group justify="space-between" wrap="nowrap">
-        {/* Clear button */}
-        <UnstyledButton
-          onClick={onClear}
+    <AnimatePresence>
+      {visible && count > 0 && (
+        <motion.div
+          initial={{ y: TOOLBAR_HEIGHT + 34, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: TOOLBAR_HEIGHT + 34, opacity: 0 }}
+          transition={transition}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '8px 12px',
-            borderRadius: 8,
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1001, // Above tab bar
           }}
         >
-          <X size={16} color="white" />
-          <Text size="sm" c="white">
-            Clear
-          </Text>
-        </UnstyledButton>
+          <Box
+            style={{
+              minHeight: TOOLBAR_HEIGHT,
+              paddingTop: 8,
+              paddingBottom: 'var(--safe-area-inset-bottom, 0px)',
+              paddingLeft: 16,
+              paddingRight: 16,
+              backgroundColor: 'var(--surface-paper)',
+              borderTop: '1px solid var(--border-default)',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <Group justify="space-between" wrap="nowrap" style={{ flex: 1 }}>
+              {/* Clear button */}
+              <UnstyledButton
+                onClick={onClear}
+                aria-label="Clear selection"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 44,
+                  minHeight: 44,
+                  gap: 6,
+                  color: 'var(--mantine-color-gray-6)',
+                }}
+              >
+                <X size={18} />
+                <Text size="sm">Clear</Text>
+              </UnstyledButton>
 
-        {/* Count */}
-        <Text size="sm" fw={600} c="white">
-          {count} selected
-        </Text>
+              {/* Count - with aria-live for screen readers */}
+              <Text
+                size="sm"
+                fw={600}
+                c="dimmed"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                {count} selected
+              </Text>
 
-        {/* Actions button */}
-        <UnstyledButton
-          onClick={onActionsPress}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '8px 12px',
-            borderRadius: 8,
-            backgroundColor: 'var(--mantine-color-ember-6)',
-          }}
-        >
-          <MoreHorizontal size={16} color="white" />
-          <Text size="sm" c="white" fw={500}>
-            Actions
-          </Text>
-        </UnstyledButton>
-      </Group>
-    </Box>
+              {/* Actions button */}
+              <UnstyledButton
+                onClick={onActionsPress}
+                aria-label="Actions menu"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 44,
+                  minHeight: 44,
+                  gap: 6,
+                  color: 'var(--mantine-color-ember-6)',
+                }}
+              >
+                <Text size="sm" fw={500}>
+                  Actions
+                </Text>
+                <MoreHorizontal size={18} />
+              </UnstyledButton>
+            </Group>
+          </Box>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

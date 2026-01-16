@@ -16,6 +16,7 @@ import { FileText, ChevronRight } from 'lucide-react';
 import { BottomSheet } from '../primitives';
 import { TemplatePickerSheet } from './TemplatePickerSheet';
 import { useObjects } from '@/contexts';
+import { useLinkToDaily } from '@/hooks';
 import { BuiltInTypeIds } from '@/lib/types';
 import { createFromTemplate, type Template } from '@/lib/templates';
 
@@ -31,6 +32,7 @@ export function QuickAddTaskSheet({
   onTaskCreated,
 }: QuickAddTaskSheetProps) {
   const { store, refreshData } = useObjects();
+  const { linkToDaily } = useLinkToDaily();
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState<'today' | 'tomorrow' | 'week' | null>(
     null
@@ -82,7 +84,7 @@ export function QuickAddTaskSheet({
       priority: priority ?? 'none',
     };
 
-    let taskId: string;
+    let task;
 
     if (selectedTemplate) {
       // Create from template
@@ -90,19 +92,23 @@ export function QuickAddTaskSheet({
         title: title.trim(),
         properties,
       });
-      taskId = result.objectId;
+      task = store.get(result.objectId);
     } else {
       // Create without template
-      const task = store.create({
+      task = store.create({
         typeId: BuiltInTypeIds.TASK,
         properties,
         inboxed: false,
       });
-      taskId = task.id;
+    }
+
+    // Auto-link to today's daily note (matches desktop behavior)
+    if (task) {
+      linkToDaily(task);
     }
 
     refreshData();
-    onTaskCreated?.(taskId);
+    onTaskCreated?.(task?.id ?? '');
     onClose();
   }, [
     store,
@@ -110,6 +116,7 @@ export function QuickAddTaskSheet({
     getDueDateTimestamp,
     priority,
     selectedTemplate,
+    linkToDaily,
     refreshData,
     onTaskCreated,
     onClose,

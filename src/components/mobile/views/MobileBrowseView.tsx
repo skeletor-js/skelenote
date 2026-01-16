@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Stack, Text, Box, ScrollArea } from '@mantine/core';
 import {
+  Pin,
   Folder,
   Layers,
   Tag,
@@ -13,7 +14,12 @@ import {
 } from 'lucide-react';
 import { MobileViewHeader, BrowseItem } from '../primitives';
 import { useNavigation, useObjects } from '@/contexts';
-import { useArchive, useSavedViews, useTemplates } from '@/hooks';
+import {
+  useArchive,
+  useSavedViews,
+  useTemplates,
+  usePinnedObjects,
+} from '@/hooks';
 import { BuiltInTypeIds } from '@/lib/types';
 
 /**
@@ -55,6 +61,7 @@ export function MobileBrowseView() {
   const { count: archiveCount } = useArchive();
   const { count: savedViewsCount } = useSavedViews();
   const { templates } = useTemplates();
+  const { count: pinnedCount } = usePinnedObjects();
 
   // Get counts for organizational items
   const counts = useMemo(() => {
@@ -81,11 +88,17 @@ export function MobileBrowseView() {
 
   return (
     <Stack gap={0} h="100%">
-      <MobileViewHeader title="Browse" />
+      <MobileViewHeader title="Library" showBack={false} showSearch />
 
       <ScrollArea style={{ flex: 1 }}>
         {/* Organization Section */}
         <SectionHeader>Organization</SectionHeader>
+        <BrowseItem
+          icon={Pin}
+          label="Pinned"
+          count={pinnedCount}
+          onPress={() => navigateToView('pinned')}
+        />
         <BrowseItem
           icon={Folder}
           label="Projects"

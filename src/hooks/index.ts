@@ -59,3 +59,17 @@ export {
   type BiometricStatus,
   type UseBiometricResult,
 } from './useBiometric';
+export {
+  useHaptics,
+  type HapticStyle,
+  type HapticNotification,
+  type UseHapticsResult,
+} from './useHaptics';
+export {
+  useScrollDirection,
+  type ScrollDirection,
+  type UseScrollDirectionOptions,
+  type UseScrollDirectionResult,
+} from './useScrollDirection';
+export { useReducedMotion, getAccessibleTransition } from './useReducedMotion';
+export { useUndoToast } from './useUndoToast';

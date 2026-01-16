@@ -60,7 +60,10 @@ impl StrongholdManager {
     }
 
     /// Store master key (encrypted)
-    pub fn store_master_key(&self, master_key: &[u8; MASTER_KEY_LEN]) -> Result<(), StrongholdError> {
+    pub fn store_master_key(
+        &self,
+        master_key: &[u8; MASTER_KEY_LEN],
+    ) -> Result<(), StrongholdError> {
         let encrypted = encrypt_bytes(&self.device_key, master_key)
             .map_err(|e| StrongholdError::StoreFailed(e.to_string()))?;
 
@@ -140,20 +143,40 @@ impl StrongholdManager {
 /// Get or create a device-specific encryption key
 ///
 /// Attempts to use the OS keychain first for maximum security.
-/// Falls back to path-based derivation if keychain is unavailable.
+/// Falls back to salt-based derivation if keychain is unavailable.
 ///
 /// IMPORTANT: If a fallback salt file already exists, we MUST use it to maintain
 /// consistency. This prevents issues on Linux where Secret Service availability
 /// can vary between runs (e.g., not running on first boot, then available later).
 fn get_or_create_device_key(app_data_dir: &PathBuf) -> Result<[u8; 32], StrongholdError> {
     let salt_file = app_data_dir.join(".device_salt");
+    let v3_marker = app_data_dir.join(".device_key_v3");
+
+    // Migration from v2 to v3: v2 included app_data_dir in the hash, which broke on iOS
+    // because the container path changes between rebuilds. If we have an old salt file
+    // but no v3 marker, delete the salt to force regeneration with v3.
+    if salt_file.exists() && !v3_marker.exists() {
+        println!("Migrating device key from v2 to v3 (path-independent derivation)");
+        // Remove the old salt file - user will need to re-enter Skeleton Key
+        if let Err(e) = fs::remove_file(&salt_file) {
+            eprintln!(
+                "Warning: Failed to remove old salt file during v3 migration: {}",
+                e
+            );
+        }
+        // Also remove the old encrypted key since it can't be decrypted anymore
+        let old_key_file = app_data_dir.join(MASTER_KEY_FILE);
+        if old_key_file.exists() {
+            let _ = fs::remove_file(&old_key_file);
+        }
+    }
 
     // If a fallback salt file exists, ALWAYS use it for consistency.
     // This ensures we decrypt with the same key that was used to encrypt,
     // even if keychain becomes available later.
     if salt_file.exists() {
         println!("Using existing fallback salt file for device key");
-        return get_or_create_fallback_key(app_data_dir);
+        return get_or_create_fallback_key(app_data_dir, &v3_marker);
     }
 
     // Try keychain first (only if no fallback salt exists)
@@ -166,33 +189,29 @@ fn get_or_create_device_key(app_data_dir: &PathBuf) -> Result<[u8; 32], Strongho
         }
     }
 
-    // Fallback: derive key from path + a stored random salt
+    // Fallback: derive key from a stored random salt
     // This is less secure than keychain but still provides device-binding
-    get_or_create_fallback_key(app_data_dir)
+    get_or_create_fallback_key(app_data_dir, &v3_marker)
 }
 
 /// Try to get/create key from OS keychain
-fn get_key_from_keychain(app_data_dir: &PathBuf) -> Result<[u8; 32], String> {
+fn get_key_from_keychain(_app_data_dir: &PathBuf) -> Result<[u8; 32], String> {
     use keyring::Entry;
     use rand::RngCore;
-    use sha2::{Digest, Sha256};
 
-    // Create a unique account name that includes a hash of the data directory
-    let path_hash = {
-        let mut hasher = Sha256::new();
-        hasher.update(app_data_dir.to_string_lossy().as_bytes());
-        let result = hasher.finalize();
-        hex::encode(&result[..8])
-    };
-    let account_name = format!("{}-{}", KEYCHAIN_ACCOUNT, path_hash);
+    // Use a stable account name that doesn't depend on the container path.
+    // On iOS, the container path changes between rebuilds (different UUID),
+    // which would cause the keychain lookup to miss and create a new key.
+    // The bundle ID (KEYCHAIN_SERVICE) is already unique per app.
+    let account_name = KEYCHAIN_ACCOUNT;
 
-    let entry = Entry::new(KEYCHAIN_SERVICE, &account_name)
+    let entry = Entry::new(KEYCHAIN_SERVICE, account_name)
         .map_err(|e| format!("Failed to create keychain entry: {}", e))?;
 
     // Helper to decode and return key from hex
     let decode_key = |key_hex: &str| -> Result<[u8; 32], String> {
-        let key_bytes = hex::decode(key_hex)
-            .map_err(|e| format!("Invalid key in keychain: {}", e))?;
+        let key_bytes =
+            hex::decode(key_hex).map_err(|e| format!("Invalid key in keychain: {}", e))?;
         if key_bytes.len() != 32 {
             return Err("Invalid key length in keychain".to_string());
         }
@@ -235,8 +254,11 @@ fn get_key_from_keychain(app_data_dir: &PathBuf) -> Result<[u8; 32], String> {
     }
 }
 
-/// Fallback key storage using a salt file + path derivation
-fn get_or_create_fallback_key(app_data_dir: &PathBuf) -> Result<[u8; 32], StrongholdError> {
+/// Fallback key storage using a salt file
+fn get_or_create_fallback_key(
+    app_data_dir: &PathBuf,
+    v3_marker: &PathBuf,
+) -> Result<[u8; 32], StrongholdError> {
     use rand::RngCore;
     use sha2::{Digest, Sha256};
 
@@ -247,7 +269,9 @@ fn get_or_create_fallback_key(app_data_dir: &PathBuf) -> Result<[u8; 32], Strong
         let salt_bytes = fs::read(&salt_file)
             .map_err(|e| StrongholdError::InitFailed(format!("Failed to read salt: {}", e)))?;
         if salt_bytes.len() != 32 {
-            return Err(StrongholdError::InitFailed("Invalid salt length".to_string()));
+            return Err(StrongholdError::InitFailed(
+                "Invalid salt length".to_string(),
+            ));
         }
         let mut salt = [0u8; 32];
         salt.copy_from_slice(&salt_bytes);
@@ -262,11 +286,18 @@ fn get_or_create_fallback_key(app_data_dir: &PathBuf) -> Result<[u8; 32], Strong
         salt
     };
 
-    // Derive key from salt + path
+    // Mark that we're using v3 key derivation (prevents future re-migration)
+    if !v3_marker.exists() {
+        let _ = fs::write(v3_marker, b"v3");
+    }
+
+    // Derive key from salt only (v3)
+    // Note: Previously we included app_data_dir in the hash, but on iOS the container
+    // path changes between rebuilds (different UUID), which caused decryption failures.
+    // The salt alone provides sufficient entropy and device-binding.
     let mut hasher = Sha256::new();
-    hasher.update(b"skelenote-device-key-v2:");
+    hasher.update(b"skelenote-device-key-v3:");
     hasher.update(&salt);
-    hasher.update(app_data_dir.to_string_lossy().as_bytes());
 
     let result = hasher.finalize();
     let mut key = [0u8; 32];
@@ -280,26 +311,24 @@ fn get_or_create_fallback_key(app_data_dir: &PathBuf) -> Result<[u8; 32], Strong
 /// Clears both keychain entry (if available) and fallback salt file.
 fn clear_device_key_from_keychain(app_data_dir: &PathBuf) -> Result<(), StrongholdError> {
     use keyring::Entry;
-    use sha2::{Digest, Sha256};
 
-    // Try to clear from keychain (ignore errors - might not be available)
-    let path_hash = {
-        let mut hasher = Sha256::new();
-        hasher.update(app_data_dir.to_string_lossy().as_bytes());
-        let result = hasher.finalize();
-        hex::encode(&result[..8])
-    };
-    let account_name = format!("{}-{}", KEYCHAIN_ACCOUNT, path_hash);
-
-    if let Ok(entry) = Entry::new(KEYCHAIN_SERVICE, &account_name) {
+    // Clear from keychain using the stable account name
+    if let Ok(entry) = Entry::new(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT) {
         let _ = entry.delete_credential(); // Ignore errors
     }
 
-    // Also clear the fallback salt file
+    // Clear the fallback salt file
     let salt_file = app_data_dir.join(".device_salt");
     if salt_file.exists() {
-        fs::remove_file(&salt_file)
-            .map_err(|e| StrongholdError::StoreFailed(format!("Failed to remove salt file: {}", e)))?;
+        fs::remove_file(&salt_file).map_err(|e| {
+            StrongholdError::StoreFailed(format!("Failed to remove salt file: {}", e))
+        })?;
+    }
+
+    // Clear the v3 marker file
+    let v3_marker = app_data_dir.join(".device_key_v3");
+    if v3_marker.exists() {
+        let _ = fs::remove_file(&v3_marker);
     }
 
     Ok(())

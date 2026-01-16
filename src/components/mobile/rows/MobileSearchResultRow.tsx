@@ -9,6 +9,7 @@ import { Icon } from '@/components/ui/Icon';
 import { useTypeRegistry } from '@/contexts';
 import { getIconFromEmoji, type IconName } from '@/lib/icons';
 import type { SkelenoteObject } from '@/lib/types';
+import { IOS_CHEVRON } from '@/lib/constants/ios-styles';
 
 interface SearchResult {
   item: SkelenoteObject;
@@ -116,8 +117,9 @@ export function MobileSearchResultRow({
       </Stack>
 
       <ChevronRight
-        size={16}
-        style={{ color: 'var(--mantine-color-gray-4)' }}
+        size={IOS_CHEVRON.disclosure.size}
+        strokeWidth={IOS_CHEVRON.disclosure.strokeWidth}
+        style={{ color: IOS_CHEVRON.disclosure.color }}
       />
     </UnstyledButton>
   );

@@ -428,3 +428,137 @@ export async function exportAllToZip(
 
   return finalPath;
 }
+
+/**
+ * JSON backup format for complete data export
+ */
+export interface JSONBackup {
+  version: number;
+  exportedAt: string;
+  objects: Array<{
+    id: string;
+    typeId: string;
+    properties: Record<string, unknown>;
+    content?: string;
+    hasContent: boolean;
+    inboxed: boolean;
+    pinned: boolean;
+    createdAt: number;
+    updatedAt: number;
+  }>;
+}
+
+/**
+ * Export all objects to a JSON backup file
+ *
+ * This format is suitable for complete backup and restore operations.
+ * All object data including content is preserved.
+ *
+ * @param objects - All objects to export
+ * @param getContent - Function to get content for an object
+ * @param onProgress - Progress callback
+ * @returns Path where the JSON was saved, or null if cancelled
+ */
+export async function exportAllToJSON(
+  objects: SkelenoteObject[],
+  getContent: (objectId: string) => string,
+  onProgress?: (progress: BulkExportProgress) => void
+): Promise<string | null> {
+  if (objects.length === 0) {
+    throw new Error('No objects to export');
+  }
+
+  const total = objects.length;
+
+  onProgress?.({
+    current: 0,
+    total,
+    phase: 'preparing',
+  });
+
+  // Build backup object
+  const backup: JSONBackup = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    objects: [],
+  };
+
+  // Process each object
+  for (let i = 0; i < objects.length; i++) {
+    const obj = objects[i];
+    const title = getObjectTitle(obj);
+
+    onProgress?.({
+      current: i,
+      total,
+      currentObject: title,
+      phase: 'exporting',
+    });
+
+    // Get content if object has it
+    let content: string | undefined;
+    if (obj.hasContent) {
+      try {
+        content = getContent(obj.id);
+      } catch {
+        // Content might not exist or be readable
+        content = undefined;
+      }
+    }
+
+    backup.objects.push({
+      id: obj.id,
+      typeId: obj.typeId,
+      properties: obj.properties,
+      content,
+      hasContent: obj.hasContent,
+      inboxed: obj.inboxed,
+      pinned: obj.pinned,
+      createdAt: obj.createdAt,
+      updatedAt: obj.updatedAt,
+    });
+  }
+
+  onProgress?.({
+    current: total,
+    total,
+    phase: 'compressing',
+  });
+
+  // Serialize to JSON
+  const jsonContent = JSON.stringify(backup, null, 2);
+  const jsonData = new TextEncoder().encode(jsonContent);
+
+  // Generate default filename with date
+  const date = new Date().toISOString().split('T')[0];
+  const defaultFilename = `skelenote-backup-${date}.json`;
+
+  // Open save dialog
+  const filePath = await save({
+    defaultPath: defaultFilename,
+    filters: [
+      {
+        name: 'JSON Backup',
+        extensions: ['json'],
+      },
+    ],
+  });
+
+  if (!filePath) {
+    return null;
+  }
+
+  // Ensure .json extension
+  const finalPath = filePath.endsWith('.json') ? filePath : `${filePath}.json`;
+
+  // Write the file
+  await writeFile(finalPath, jsonData);
+
+  onProgress?.({
+    current: total,
+    total,
+    phase: 'complete',
+  });
+
+  return finalPath;
+}

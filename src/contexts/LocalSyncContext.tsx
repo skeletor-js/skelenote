@@ -335,7 +335,7 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
     } catch (err) {
       console.error('[LocalSync] Failed to set up event listeners:', err);
     }
-  }, [addToast]);
+  }, [addToast, docStore]);
 
   // Clean up on unmount
   useEffect(() => {

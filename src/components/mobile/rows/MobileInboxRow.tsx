@@ -2,16 +2,21 @@
  * Mobile-optimized inbox row with swipe actions
  */
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { Text, Group, Stack, Badge, Box } from '@mantine/core';
 import { CheckCircle, Archive, Trash2, ChevronRight } from 'lucide-react';
-import { SwipeableRow, type SwipeAction } from '../primitives';
+import {
+  SwipeableRow,
+  AnimatedCheckbox,
+  type SwipeAction,
+} from '../primitives';
 import { Icon } from '@/components/ui/Icon';
 import { BuiltInTypeIds, type SkelenoteObject } from '@/lib/types';
 import { useObjects, useTypeRegistry } from '@/contexts';
 import { getIconFromEmoji, type IconName } from '@/lib/icons';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
 import type { TagColor } from '@/components/ui';
+import { IOS_CHEVRON } from '@/lib/constants/ios-styles';
 
 interface MobileInboxRowProps {
   item: SkelenoteObject;
@@ -20,6 +25,12 @@ interface MobileInboxRowProps {
   onProcess: (itemId: string) => void;
   onArchive: (itemId: string) => void;
   onDelete: (itemId: string) => void;
+  /** Whether selection mode is active */
+  selectionMode?: boolean;
+  /** Whether this item is selected (in selection mode) */
+  isSelected?: boolean;
+  /** Called when selection should be toggled (in selection mode) */
+  onToggleSelection?: (itemId: string) => void;
 }
 
 export function MobileInboxRow({
@@ -29,6 +40,9 @@ export function MobileInboxRow({
   onProcess,
   onArchive,
   onDelete,
+  selectionMode = false,
+  isSelected = false,
+  onToggleSelection,
 }: MobileInboxRowProps) {
   const { store } = useObjects();
   const typeRegistry = useTypeRegistry();
@@ -77,6 +91,22 @@ export function MobileInboxRow({
     return null;
   }, [item.typeId, item.properties.dueDate]);
 
+  // Handle press - different behavior in selection mode
+  const handlePress = useCallback(() => {
+    if (selectionMode && onToggleSelection) {
+      onToggleSelection(item.id);
+    } else {
+      onPress();
+    }
+  }, [item.id, onPress, selectionMode, onToggleSelection]);
+
+  // Handle checkbox toggle in selection mode
+  const handleCheckboxToggle = useCallback(() => {
+    if (onToggleSelection) {
+      onToggleSelection(item.id);
+    }
+  }, [item.id, onToggleSelection]);
+
   // Swipe actions
   const leftActions: SwipeAction[] = [
     {
@@ -107,20 +137,35 @@ export function MobileInboxRow({
 
   return (
     <SwipeableRow
-      leftActions={leftActions}
-      rightActions={rightActions}
-      onPress={onPress}
-      onLongPress={onLongPress}
+      leftActions={selectionMode ? [] : leftActions}
+      rightActions={selectionMode ? [] : rightActions}
+      onPress={handlePress}
+      onLongPress={selectionMode ? undefined : onLongPress}
+      style={{
+        backgroundColor: isSelected
+          ? 'var(--mantine-color-ember-0)'
+          : undefined,
+      }}
     >
       <Group gap="sm" style={{ flex: 1, minWidth: 0 }} wrap="nowrap">
-        {/* Type icon */}
-        <Box style={{ flexShrink: 0 }}>
-          <Icon
-            name={getTypeIcon()}
-            size={20}
-            style={{ color: 'var(--mantine-color-gray-5)' }}
+        {/* Selection checkbox in selection mode, otherwise type icon */}
+        {selectionMode ? (
+          <AnimatedCheckbox
+            checked={isSelected}
+            onChange={handleCheckboxToggle}
+            size={22}
+            checkedColor="var(--mantine-color-ember-6)"
+            aria-label={isSelected ? 'Deselect item' : 'Select item'}
           />
-        </Box>
+        ) : (
+          <Box style={{ flexShrink: 0 }}>
+            <Icon
+              name={getTypeIcon()}
+              size={20}
+              style={{ color: 'var(--mantine-color-gray-5)' }}
+            />
+          </Box>
+        )}
 
         {/* Title and metadata */}
         <Stack gap="xs" style={{ flex: 1, minWidth: 0 }}>
@@ -149,9 +194,10 @@ export function MobileInboxRow({
 
         {/* Chevron indicator */}
         <ChevronRight
-          size={16}
+          size={IOS_CHEVRON.disclosure.size}
+          strokeWidth={IOS_CHEVRON.disclosure.strokeWidth}
           style={{
-            color: 'var(--mantine-color-gray-4)',
+            color: IOS_CHEVRON.disclosure.color,
             flexShrink: 0,
           }}
         />
