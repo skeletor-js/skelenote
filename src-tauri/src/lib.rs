@@ -5,6 +5,7 @@
 
 mod crypto;
 mod haptics;
+mod icon;
 mod network;
 
 use crypto::{
@@ -2225,6 +2226,7 @@ pub fn run() {
             };
 
             app.manage(pairing_state);
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -2297,6 +2299,10 @@ pub fn run() {
             // Background task commands (mobile only)
             begin_background_task,
             end_background_task,
+            // Icon switching commands
+            icon::get_available_icons,
+            icon::set_app_icon,
+            icon::is_icon_switching_supported,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

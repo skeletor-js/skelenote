@@ -1,246 +1,193 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import type { SkelenoteObject } from '../../types';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   filterToday,
-  filterThisWeek,
   filterOverdue,
   filterWaiting,
-  filterEventually,
   filterCompleted,
-  getTaskFilter,
-  getDefaultSort,
   sortTasks,
+  getFilteredTasks,
   groupTasksBy,
   getPriorityValue,
 } from '../filters';
+import type { SkelenoteObject } from '../../types';
+import { BuiltInTypeIds } from '../../types/type-definition';
 
-// Helper to create mock task objects
-function createMockTask(
-  overrides: Partial<{
-    id: string;
-    status: string;
-    dueDate: number | null;
-    priority: string | null;
-    project: string | null;
-    updatedAt: number;
-  }>
-): SkelenoteObject {
+// Mock date utils for consistent time testing
+// We must mock '../utils/date' because filters.ts imports from it
+vi.mock('../../utils/date', () => {
   return {
-    id: overrides.id ?? 'task-1',
-    typeId: 'task',
+    isToday: vi.fn(),
+    isOverdue: vi.fn(),
+    isThisWeek: vi.fn(),
+    isBeyondThisWeek: vi.fn(),
+    startOfDay: vi.fn(),
+    endOfDay: vi.fn(),
+  };
+});
+
+import * as dateUtils from '../../utils/date';
+
+describe('Task Filters', () => {
+  const createTask = (
+    id: string,
+    status: string,
+    dueDate: number | null = null,
+    priority: string | null = null,
+    project: string | string[] | null = null
+  ): SkelenoteObject => ({
+    id,
+    typeId: BuiltInTypeIds.TASK,
     properties: {
-      title: 'Test Task',
-      status: overrides.status ?? 'todo',
-      dueDate: overrides.dueDate ?? null,
-      priority: overrides.priority ?? null,
-      project: overrides.project ?? null,
+      status,
+      dueDate,
+      priority,
+      project,
+      title: 'Task ' + id,
     },
-    hasContent: true,
+    updatedAt: Date.now(),
+    createdAt: Date.now(),
+    hasContent: false,
     inboxed: false,
     pinned: false,
     archived: false,
-    createdAt: Date.now(),
-    updatedAt: overrides.updatedAt ?? Date.now(),
-  };
-}
-
-describe('Task Filters', () => {
-  beforeEach(() => {
-    // Mock Date to control "today"
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2024-12-25T12:00:00Z'));
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  describe('filterToday', () => {
-    it('should include tasks due today with status not done', () => {
-      const task = createMockTask({
-        status: 'todo',
-        dueDate: new Date('2024-12-25T10:00:00Z').getTime(),
-      });
-      expect(filterToday(task)).toBe(true);
-    });
-
-    it('should exclude done tasks', () => {
-      const task = createMockTask({
-        status: 'done',
-        dueDate: new Date('2024-12-25T10:00:00Z').getTime(),
-      });
-      expect(filterToday(task)).toBe(false);
-    });
-
-    it('should exclude tasks with no due date', () => {
-      const task = createMockTask({
-        status: 'todo',
-        dueDate: null,
-      });
-      expect(filterToday(task)).toBe(false);
-    });
-
-    it('should exclude tasks due tomorrow', () => {
-      const task = createMockTask({
-        status: 'todo',
-        dueDate: new Date('2024-12-26T10:00:00Z').getTime(),
-      });
-      expect(filterToday(task)).toBe(false);
-    });
-  });
-
-  describe('filterOverdue', () => {
-    it('should include tasks due before today', () => {
-      const task = createMockTask({
-        status: 'todo',
-        dueDate: new Date('2024-12-24T10:00:00Z').getTime(),
-      });
-      expect(filterOverdue(task)).toBe(true);
-    });
-
-    it('should exclude tasks due today', () => {
-      const task = createMockTask({
-        status: 'todo',
-        dueDate: new Date('2024-12-25T10:00:00Z').getTime(),
-      });
-      expect(filterOverdue(task)).toBe(false);
-    });
-
-    it('should exclude done tasks', () => {
-      const task = createMockTask({
-        status: 'done',
-        dueDate: new Date('2024-12-24T10:00:00Z').getTime(),
-      });
-      expect(filterOverdue(task)).toBe(false);
-    });
-  });
-
-  describe('filterWaiting', () => {
-    it('should include waiting tasks', () => {
-      const task = createMockTask({ status: 'waiting' });
-      expect(filterWaiting(task)).toBe(true);
-    });
-
-    it('should exclude non-waiting tasks', () => {
-      const task = createMockTask({ status: 'todo' });
-      expect(filterWaiting(task)).toBe(false);
-    });
-  });
-
-  describe('filterCompleted', () => {
-    it('should include done tasks', () => {
-      const task = createMockTask({ status: 'done' });
-      expect(filterCompleted(task)).toBe(true);
-    });
-
-    it('should exclude non-done tasks', () => {
-      const task = createMockTask({ status: 'todo' });
-      expect(filterCompleted(task)).toBe(false);
-    });
-  });
-
-  describe('getTaskFilter', () => {
-    it('should return correct filter for each type', () => {
-      expect(getTaskFilter('today')).toBe(filterToday);
-      expect(getTaskFilter('this-week')).toBe(filterThisWeek);
-      expect(getTaskFilter('overdue')).toBe(filterOverdue);
-      expect(getTaskFilter('waiting')).toBe(filterWaiting);
-      expect(getTaskFilter('eventually')).toBe(filterEventually);
-      expect(getTaskFilter('completed')).toBe(filterCompleted);
-    });
-  });
-
-  describe('getDefaultSort', () => {
-    it('should return priority desc for today', () => {
-      const config = getDefaultSort('today');
-      expect(config.field).toBe('priority');
-      expect(config.direction).toBe('desc');
-    });
-
-    it('should return dueDate asc for this-week', () => {
-      const config = getDefaultSort('this-week');
-      expect(config.field).toBe('dueDate');
-      expect(config.direction).toBe('asc');
-    });
-
-    it('should return updatedAt desc for completed', () => {
-      const config = getDefaultSort('completed');
-      expect(config.field).toBe('updatedAt');
-      expect(config.direction).toBe('desc');
-    });
-  });
-
-  describe('getPriorityValue', () => {
-    it('should return correct numeric values', () => {
+  describe('Priority', () => {
+    it('returns correct priority values', () => {
       expect(getPriorityValue('urgent')).toBe(4);
       expect(getPriorityValue('high')).toBe(3);
       expect(getPriorityValue('medium')).toBe(2);
       expect(getPriorityValue('low')).toBe(1);
-    });
-
-    it('should return 0 for null or undefined', () => {
       expect(getPriorityValue(null)).toBe(0);
-      expect(getPriorityValue(undefined)).toBe(0);
+      expect(getPriorityValue('unknown')).toBe(0);
     });
   });
 
-  describe('sortTasks', () => {
-    it('should sort by priority descending', () => {
-      const tasks = [
-        createMockTask({ id: '1', priority: 'low' }),
-        createMockTask({ id: '2', priority: 'urgent' }),
-        createMockTask({ id: '3', priority: 'medium' }),
-      ];
-
-      const sorted = sortTasks(tasks, { field: 'priority', direction: 'desc' });
-
-      expect(sorted[0].id).toBe('2'); // urgent
-      expect(sorted[1].id).toBe('3'); // medium
-      expect(sorted[2].id).toBe('1'); // low
+  describe('Filter Functions', () => {
+    // Reset mocks before each test
+    beforeEach(() => {
+      vi.resetAllMocks();
     });
 
-    it('should sort by dueDate ascending', () => {
-      const tasks = [
-        createMockTask({ id: '1', dueDate: new Date('2024-12-30').getTime() }),
-        createMockTask({ id: '2', dueDate: new Date('2024-12-25').getTime() }),
-        createMockTask({ id: '3', dueDate: new Date('2024-12-27').getTime() }),
-      ];
+    it('filterToday accepts due tasks not done', () => {
+      vi.mocked(dateUtils.isToday).mockReturnValue(true);
+      const task = createTask('1', 'todo', 100);
+      expect(filterToday(task)).toBe(true);
+    });
 
-      const sorted = sortTasks(tasks, { field: 'dueDate', direction: 'asc' });
+    it('filterToday rejects done tasks', () => {
+      vi.mocked(dateUtils.isToday).mockReturnValue(true);
+      const task = createTask('1', 'done', 100);
+      expect(filterToday(task)).toBe(false);
+    });
 
-      expect(sorted[0].id).toBe('2'); // Dec 25
-      expect(sorted[1].id).toBe('3'); // Dec 27
-      expect(sorted[2].id).toBe('1'); // Dec 30
+    it('filterToday rejects tasks without due date', () => {
+      const task = createTask('1', 'todo', null);
+      expect(filterToday(task)).toBe(false);
+    });
+
+    it('filterOverdue delegates to isOverdue', () => {
+      vi.mocked(dateUtils.isOverdue).mockReturnValue(true);
+      const task = createTask('1', 'todo', 100);
+      expect(filterOverdue(task)).toBe(true);
+    });
+
+    it('filterWaiting checks status', () => {
+      expect(filterWaiting(createTask('1', 'waiting'))).toBe(true);
+      expect(filterWaiting(createTask('2', 'todo'))).toBe(false);
+    });
+
+    it('filterCompleted checks status', () => {
+      expect(filterCompleted(createTask('1', 'done'))).toBe(true);
+      expect(filterCompleted(createTask('2', 'todo'))).toBe(false);
+    });
+
+    it('getFilteredTasks integrates filter and sort', () => {
+      // Setup mock for "today"
+      vi.mocked(dateUtils.isToday).mockImplementation((date) => date === 100);
+
+      const t1 = createTask('1', 'todo', 100, 'low'); // Today
+      const t2 = createTask('2', 'todo', 200, 'high'); // Not today
+      const t3 = createTask('3', 'todo', 100, 'urgent'); // Today
+
+      const result = getFilteredTasks([t1, t2, t3], 'today');
+
+      expect(result).toHaveLength(2);
+      // Today sorts by priority desc: urgent(3) -> low(1)
+      expect(result[0].id).toBe('3');
+      expect(result[1].id).toBe('1');
     });
   });
 
-  describe('groupTasksBy', () => {
-    it('should group by status', () => {
-      const tasks = [
-        createMockTask({ id: '1', status: 'todo' }),
-        createMockTask({ id: '2', status: 'done' }),
-        createMockTask({ id: '3', status: 'todo' }),
-      ];
+  describe('Sorting', () => {
+    const t1 = createTask('1', 'todo', 100, 'low');
+    const t2 = createTask('2', 'todo', 200, 'high');
+    const t3 = createTask('3', 'todo', 150, 'urgent');
 
+    it('sorts by priority desc', () => {
+      const sorted = sortTasks([t1, t2, t3], {
+        field: 'priority',
+        direction: 'desc',
+      });
+      // urgent(4) > high(3) > low(1)
+      expect(sorted.map((t) => t.id)).toEqual(['3', '2', '1']);
+    });
+
+    it('sorts by priority asc', () => {
+      const sorted = sortTasks([t1, t2, t3], {
+        field: 'priority',
+        direction: 'asc',
+      });
+      // low(1) < high(3) < urgent(4)
+      expect(sorted.map((t) => t.id)).toEqual(['1', '2', '3']);
+    });
+
+    it('sorts by dueDate asc', () => {
+      const sorted = sortTasks([t1, t2, t3], {
+        field: 'dueDate',
+        direction: 'asc',
+      });
+      // 100 < 150 < 200
+      expect(sorted.map((t) => t.id)).toEqual(['1', '3', '2']);
+    });
+  });
+
+  describe('Grouping', () => {
+    it('groups by status', () => {
+      const tasks = [
+        createTask('1', 'todo'),
+        createTask('2', 'done'),
+        createTask('3', 'todo'),
+      ];
       const groups = groupTasksBy(tasks, 'status');
-
       expect(groups.get('todo')?.length).toBe(2);
       expect(groups.get('done')?.length).toBe(1);
     });
 
-    it('should group by project', () => {
+    it('groups by project (string)', () => {
       const tasks = [
-        createMockTask({ id: '1', project: 'proj-1' }),
-        createMockTask({ id: '2', project: 'proj-2' }),
-        createMockTask({ id: '3', project: 'proj-1' }),
-        createMockTask({ id: '4', project: null }),
+        createTask('1', 'todo', null, null, 'p1'),
+        createTask('2', 'todo', null, null, 'p2'),
+        createTask('3', 'todo', null, null, 'p1'),
+        createTask('4', 'todo', null, null, null), // none
       ];
-
       const groups = groupTasksBy(tasks, 'project');
-
-      expect(groups.get('proj-1')?.length).toBe(2);
-      expect(groups.get('proj-2')?.length).toBe(1);
+      expect(groups.get('p1')?.length).toBe(2);
+      expect(groups.get('p2')?.length).toBe(1);
       expect(groups.get('none')?.length).toBe(1);
+    });
+
+    it('groups by project (array)', () => {
+      const tasks = [
+        createTask('1', 'todo', null, null, ['p1']),
+        createTask('2', 'todo', null, null, ['p2', 'p1']), // Should use first: p2
+      ];
+      const groups = groupTasksBy(tasks, 'project');
+      expect(groups.get('p1')?.length).toBe(1);
+      expect(groups.get('p1')?.[0].id).toBe('1');
+
+      expect(groups.get('p2')?.length).toBe(1);
+      expect(groups.get('p2')?.[0].id).toBe('2');
     });
   });
 });

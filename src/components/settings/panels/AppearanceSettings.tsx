@@ -14,6 +14,7 @@ import {
   Divider,
 } from '@mantine/core';
 import { useTheme } from '@/contexts';
+import { IconSelector } from '../IconSelector';
 
 type ThemePreference = 'light' | 'dark' | 'system';
 type DefaultView = 'inbox' | 'daily-notes' | 'search' | 'last-used';
@@ -117,6 +118,17 @@ export function AppearanceSettings() {
           ]}
           fullWidth
         />
+      </Box>
+
+      {/* App Icon Selection */}
+      <Box>
+        <Text size="sm" fw={500} mb="xs">
+          App Icon
+        </Text>
+        <Text size="xs" c="dimmed" mb="sm">
+          Choose your preferred app icon for the dock and launcher.
+        </Text>
+        <IconSelector />
       </Box>
 
       {/* Default View */}

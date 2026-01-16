@@ -83,3 +83,9 @@ export {
   type UseBackgroundTaskResult,
 } from './useBackgroundTask';
 export { useDeepLinks } from './useDeepLinks';
+export {
+  useAppIcon,
+  type IconId,
+  type IconVariant,
+  type UseAppIconResult,
+} from './useAppIcon';
