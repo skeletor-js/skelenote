@@ -51,7 +51,7 @@ export interface UseNotificationsResult {
  */
 export function useNotifications(): UseNotificationsResult {
   const { isMobile } = usePlatform();
-  const { store, dataVersion } = useObjects();
+  const { store } = useObjects();
   const [hasPermission, setHasPermission] = useState(false);
   const hasScheduledInitial = useRef(false);
 

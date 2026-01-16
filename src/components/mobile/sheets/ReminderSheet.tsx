@@ -202,7 +202,7 @@ export function ReminderSheet({
           <Stack gap="md">
             <DateTimePicker
               value={pickerValue}
-              onChange={setPickerValue}
+              onChange={(value) => setPickerValue(value as Date | null)}
               minDate={new Date()}
               size="md"
               label="Pick date and time"

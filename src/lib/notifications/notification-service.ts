@@ -11,7 +11,6 @@ import {
   cancel,
   pending,
   Schedule,
-  type Permission,
 } from '@tauri-apps/plugin-notification';
 
 export interface ReminderNotification {
@@ -43,7 +42,7 @@ export async function checkNotificationPermission(): Promise<boolean> {
  */
 export async function requestNotificationPermission(): Promise<boolean> {
   try {
-    const permission: Permission = await requestPermission();
+    const permission = await requestPermission();
     return permission === 'granted';
   } catch {
     // Plugin not available (desktop) or error
@@ -123,11 +122,15 @@ export async function cancelReminder(taskId: string): Promise<void> {
  * Get all pending scheduled notifications
  */
 export async function getPendingReminders(): Promise<
-  Array<{ id: number; title: string; schedule?: unknown }>
+  Array<{ id: number; title?: string; schedule?: unknown }>
 > {
   try {
     const pendingNotifications = await pending();
-    return pendingNotifications;
+    return pendingNotifications.map((n) => ({
+      id: n.id,
+      title: n.title,
+      schedule: n.schedule,
+    }));
   } catch {
     return [];
   }

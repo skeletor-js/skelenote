@@ -1996,33 +1996,66 @@ async fn share_clear_pending_ios() -> Result<(), String> {
     Ok(())
 }
 
-/// Get pending shares from Android SharedPreferences
+/// Get pending shares from Android file storage
 ///
 /// Returns shares saved by the Android ShareReceiverActivity from
-/// SharedPreferences (skelenote_shares).
+/// the app's files directory (pending_shares.json).
 ///
-/// TODO: Implement using JNI to read from SharedPreferences
+/// The ShareReceiverActivity writes shares to a JSON file that we read here,
+/// avoiding the complexity of JNI/SharedPreferences access.
 #[cfg(target_os = "android")]
 #[tauri::command]
-async fn share_get_pending_android() -> Result<Vec<PendingShare>, String> {
-    // Placeholder implementation
-    // Full implementation requires JNI to:
-    // 1. Get SharedPreferences("skelenote_shares", MODE_PRIVATE)
-    // 2. Read "pendingShares" key as JSON string
-    // 3. Parse JSON and convert to Vec<PendingShare>
+async fn share_get_pending_android(app: tauri::AppHandle) -> Result<Vec<PendingShare>, String> {
+    use tauri::Manager;
 
-    // For now, return empty array
-    Ok(vec![])
+    // Get the app's data directory (corresponds to Android's filesDir)
+    let data_dir = app.path().app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    // ShareReceiverActivity writes to filesDir/pending_shares.json
+    // On Android, Tauri's app_data_dir maps to the app's internal storage
+    // We need to look in the parent directory where Android's filesDir is
+    let shares_file = data_dir.parent()
+        .unwrap_or(&data_dir)
+        .join("files")
+        .join("pending_shares.json");
+
+    // If file doesn't exist, no pending shares
+    if !shares_file.exists() {
+        return Ok(vec![]);
+    }
+
+    // Read and parse the file
+    let json_str = std::fs::read_to_string(&shares_file)
+        .map_err(|e| format!("Failed to read shares file: {}", e))?;
+
+    let shares: Vec<PendingShare> = serde_json::from_str(&json_str)
+        .unwrap_or_else(|_| vec![]);
+
+    Ok(shares)
 }
 
-/// Clear pending shares from Android SharedPreferences
+/// Clear pending shares from Android file storage
 #[cfg(target_os = "android")]
 #[tauri::command]
-async fn share_clear_pending_android() -> Result<(), String> {
-    // Placeholder implementation
-    // Full implementation requires JNI to:
-    // 1. Get SharedPreferences("skelenote_shares", MODE_PRIVATE)
-    // 2. Remove "pendingShares" key
+async fn share_clear_pending_android(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri::Manager;
+
+    // Get the app's data directory
+    let data_dir = app.path().app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    // ShareReceiverActivity writes to filesDir/pending_shares.json
+    let shares_file = data_dir.parent()
+        .unwrap_or(&data_dir)
+        .join("files")
+        .join("pending_shares.json");
+
+    // Delete the file if it exists
+    if shares_file.exists() {
+        std::fs::remove_file(&shares_file)
+            .map_err(|e| format!("Failed to delete shares file: {}", e))?;
+    }
 
     Ok(())
 }
@@ -2113,13 +2146,13 @@ async fn share_clear_pending_ios() -> Result<(), String> {
 
 #[cfg(not(target_os = "android"))]
 #[tauri::command]
-async fn share_get_pending_android() -> Result<Vec<PendingShare>, String> {
+async fn share_get_pending_android(_app: tauri::AppHandle) -> Result<Vec<PendingShare>, String> {
     Ok(vec![])
 }
 
 #[cfg(not(target_os = "android"))]
 #[tauri::command]
-async fn share_clear_pending_android() -> Result<(), String> {
+async fn share_clear_pending_android(_app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 

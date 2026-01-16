@@ -9,6 +9,9 @@ interface MobileLayoutProps {
 /**
  * Mobile-optimized layout with bottom tab navigation.
  * Used on iOS and Android instead of the desktop Layout with sidebar.
+ *
+ * Safe area handling is done by individual components via usePlatform() hook,
+ * which provides platform-specific safe area values (iOS notch, Android status bar).
  */
 export function MobileLayout({ children }: MobileLayoutProps) {
   return (

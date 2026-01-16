@@ -4887,6 +4887,7 @@ dependencies = [
  "hkdf",
  "hostname",
  "image",
+ "jni",
  "keyring",
  "local-ip-address",
  "mdns-sd",
