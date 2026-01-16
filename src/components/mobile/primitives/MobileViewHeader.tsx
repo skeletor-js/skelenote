@@ -4,6 +4,7 @@ import { ChevronLeft, Search } from 'lucide-react';
 import { MobileSyncIndicator } from './MobileSyncIndicator';
 import { useNavigation } from '@/contexts';
 import { IOS_CHEVRON } from '@/lib/constants/ios-styles';
+import { usePlatform } from '@/hooks/usePlatform';
 
 interface MobileViewHeaderProps {
   /** View title */
@@ -60,6 +61,7 @@ export function MobileViewHeader({
   showSelectButton = false,
 }: MobileViewHeaderProps) {
   const { canGoBack, navigateBack, navigateToSearch } = useNavigation();
+  const { safeAreaTop } = usePlatform();
   const height = heightMap[variant];
   const titleSize =
     variant === 'large' ? 'lg' : variant === 'compact' ? 'sm' : 'md';
@@ -75,9 +77,9 @@ export function MobileViewHeader({
     <Box
       px="md"
       style={{
-        // Use plugin's CSS variable for safe area (injected by tauri-plugin-edge-to-edge)
+        // Use platform-detected safe area value (CSS variable may not be injected on Android)
         minHeight: height,
-        paddingTop: 'var(--safe-area-inset-top, 0px)',
+        paddingTop: safeAreaTop,
         paddingBottom: 12,
         display: 'flex',
         alignItems: 'center',

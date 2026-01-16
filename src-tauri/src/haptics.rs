@@ -2,7 +2,11 @@
 //!
 //! Provides tactile feedback through native platform APIs:
 //! - iOS: UIImpactFeedbackGenerator, UINotificationFeedbackGenerator, UISelectionFeedbackGenerator
-//! - Android: VibrationEffect via HapticFeedbackConstants
+//! - Android: HapticsHelper.kt via View.performHapticFeedback (currently no-op, helper available)
+//!
+//! Android Note: HapticsHelper.kt is available at:
+//! src-tauri/gen/android/app/src/main/java/com/skelenote/app/HapticsHelper.kt
+//! Full JNI integration requires activity context access which is complex in async Rust.
 
 #[cfg(target_os = "ios")]
 use objc::{class, msg_send, sel, sel_impl};
@@ -42,13 +46,14 @@ pub async fn haptic_impact(style: String) -> Result<(), String> {
 
     #[cfg(target_os = "android")]
     {
-        // Android implementation via Tauri's Android plugin system
-        // For now, we use a no-op as Android haptics require JNI access through Tauri
-        // A full implementation would use tauri::plugin::PluginApi to access the Android View
+        // Android haptics require a View context for performHapticFeedback.
+        // HapticsHelper.kt is available for future integration via:
+        // 1. Tauri mobile plugin system (recommended)
+        // 2. Direct JNI calls with activity context
+        // 3. Frontend JavaScript calling native plugin
+        //
+        // For now, this is a no-op. The app works without haptics.
         let _ = style;
-        // TODO: Implement Android haptics via Tauri plugin system
-        // This requires creating an Android-specific Tauri plugin that calls
-        // View.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP) etc.
     }
 
     // Desktop platforms: no-op
@@ -90,9 +95,8 @@ pub async fn haptic_notification(notification_type: String) -> Result<(), String
 
     #[cfg(target_os = "android")]
     {
-        // Android: VibrationEffect with pattern based on type
+        // Android haptics - see haptic_impact for implementation notes
         let _ = notification_type;
-        // TODO: Implement Android notification haptics
     }
 
     #[cfg(not(any(target_os = "ios", target_os = "android")))]
@@ -125,8 +129,12 @@ pub async fn haptic_selection() -> Result<(), String> {
 
     #[cfg(target_os = "android")]
     {
-        // Android: CLOCK_TICK haptic constant
-        // TODO: Implement Android selection haptics
+        // Android haptics - see haptic_impact for implementation notes
+    }
+
+    #[cfg(not(any(target_os = "ios", target_os = "android")))]
+    {
+        // Desktop: no-op
     }
 
     Ok(())

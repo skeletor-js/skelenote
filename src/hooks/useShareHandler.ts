@@ -85,7 +85,7 @@ export function useShareHandler(): UseShareHandlerResult {
               properties: {
                 title: title,
               },
-              hasContent: true,
+              withContent: true,
               inboxed: true,
             });
             // Note: Full text could be set as content if needed
