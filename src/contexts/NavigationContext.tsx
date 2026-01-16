@@ -31,7 +31,8 @@ export type ViewType =
   | 'projects' // Mobile: List of projects
   | 'areas' // Mobile: List of areas
   | 'tags' // Mobile: List of tags
-  | 'templates'; // Mobile: Template management
+  | 'templates' // Mobile: Template management
+  | 'pinned'; // Mobile: Pinned items view
 
 interface NavigationState {
   view: ViewType;

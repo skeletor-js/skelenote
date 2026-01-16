@@ -128,6 +128,7 @@ function buildSearchableItem(
     title,
     properties,
     content,
+    updatedAt: obj.updatedAt,
   };
 }
 

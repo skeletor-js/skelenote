@@ -223,18 +223,19 @@ const slate: MantineColorsTuple = [
  */
 export const theme = createTheme({
   // ===== TYPOGRAPHY =====
+  // iOS HIG: Prioritize SF Pro for native iOS feel, fallback to Inter for desktop
   fontFamily:
-    'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    '-apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, "Segoe UI", sans-serif',
   fontFamilyMonospace:
     '"Fragment Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
 
-  // Font sizes matching existing design tokens
+  // Font sizes - iOS HIG aligned (increased by 1px for better mobile readability)
   fontSizes: {
-    xs: rem(11),
-    sm: rem(12),
-    md: rem(14),
-    lg: rem(16),
-    xl: rem(18),
+    xs: rem(12),
+    sm: rem(13),
+    md: rem(15),
+    lg: rem(17),
+    xl: rem(19),
   },
 
   // Line heights
@@ -257,18 +258,19 @@ export const theme = createTheme({
   },
 
   // ===== BORDER RADIUS =====
-  // Minimal aesthetic with subtle rounding
+  // iOS HIG aligned - more generous rounding for touch-friendly feel
   radius: {
-    xs: rem(2),
-    sm: rem(4),
-    md: rem(8),
-    lg: rem(12),
-    xl: rem(16),
+    xs: rem(6),
+    sm: rem(6),
+    md: rem(10),
+    lg: rem(14),
+    xl: rem(18),
   },
   defaultRadius: 'sm',
 
   // ===== SHADOWS =====
   // Carbon-tinted shadows for warmth (using #18181B = rgb(24, 24, 27))
+  // Note: Dark mode needs stronger shadows for visibility - use rgba(0, 0, 0, 0.30) overrides
   shadows: {
     xs: '0 1px 2px rgba(24, 24, 27, 0.05)',
     sm: '0 1px 3px rgba(24, 24, 27, 0.08)',

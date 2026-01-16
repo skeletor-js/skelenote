@@ -53,8 +53,9 @@ export function BottomSheet({
         },
       }}
       transitionProps={{
-        duration: 250,
-        timingFunction: 'ease-out',
+        // Refined iOS-style animation curve for natural deceleration
+        duration: 320,
+        timingFunction: 'cubic-bezier(0.22, 0.61, 0.36, 1)',
       }}
       overlayProps={{
         backgroundOpacity: 0.35,

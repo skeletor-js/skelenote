@@ -61,6 +61,10 @@ tauri-plugin-barcode-scanner = "2"
 tauri-plugin-edge-to-edge = "0.3"  # Full screen edge-to-edge with safe area CSS vars
 tauri-plugin-biometric = "2"       # Biometric authentication (Face ID, Touch ID, fingerprint)
 
+# iOS-only dependencies
+[target.'cfg(target_os = "ios")'.dependencies]
+objc = "0.2"        # Objective-C runtime bindings for haptics
+
 # Android-only dependencies
 [target.'cfg(target_os = "android")'.dependencies]
 android-keyring = "0.2"  # Android Keystore integration for keyring crate

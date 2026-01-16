@@ -1,3 +1,13 @@
+/**
+ * SwipeableRow - Swipeable list item with rubber-band effect + haptics
+ *
+ * Features:
+ * - Spring physics rubber-band on over-swipe
+ * - Haptic feedback at threshold crossing
+ * - Smooth spring animation back to rest
+ * - Respects reduced motion preferences
+ */
+
 import {
   useRef,
   useState,
@@ -5,6 +15,7 @@ import {
   type ReactNode,
   type TouchEvent,
 } from 'react';
+import { motion, useMotionValue, useSpring, animate } from 'framer-motion';
 import { Box, UnstyledButton, Text } from '@mantine/core';
 import {
   CheckCircle,
@@ -13,6 +24,7 @@ import {
   Pin,
   type LucideIcon,
 } from 'lucide-react';
+import { useHaptics, useReducedMotion } from '@/hooks';
 
 export interface SwipeAction {
   id: string;
@@ -30,7 +42,7 @@ interface SwipeableRowProps {
   rightActions?: SwipeAction[];
   /** Callback when row is tapped */
   onPress?: () => void;
-  /** Callback when row is long-pressed (600ms) */
+  /** Callback when row is long-pressed (500ms per iOS HIG) */
   onLongPress?: () => void;
   /** Priority level for left border indicator */
   priority?: 'urgent' | 'high' | 'medium' | 'low' | null;
@@ -38,11 +50,19 @@ interface SwipeableRowProps {
   minHeight?: number;
   /** Disable swipe interactions */
   disabled?: boolean;
+  /** Additional style for the row content */
+  style?: React.CSSProperties;
+  /** Separator inset from left edge (iOS standard is 16px) */
+  separatorInset?: number;
+  /** Hide bottom separator */
+  hideSeparator?: boolean;
 }
 
 // Swipe thresholds in pixels
 const SWIPE_THRESHOLD = 80;
 const ACTION_WIDTH = 72;
+// Rubber-band resistance factor (higher = more resistance)
+const RUBBER_BAND_FACTOR = 0.3;
 
 // Color mapping for actions (using darker shades for WCAG AA contrast with white text)
 const colorMap: Record<string, string> = {
@@ -69,9 +89,14 @@ export function SwipeableRow({
   priority,
   minHeight = 64,
   disabled = false,
+  style,
+  separatorInset = 16, // iOS standard inset
+  hideSeparator = false,
 }: SwipeableRowProps) {
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const { impact } = useHaptics();
+  const reduceMotion = useReducedMotion();
+
+  const [hasTriggeredHaptic, setHasTriggeredHaptic] = useState(false);
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(
     null
   );
@@ -79,8 +104,39 @@ export function SwipeableRow({
   const isSwipingRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Framer-motion spring for smooth rubber-band effect
+  const x = useMotionValue(0);
+  const springX = useSpring(x, {
+    stiffness: reduceMotion ? 1000 : 600,
+    damping: reduceMotion ? 100 : 40,
+  });
+
   const maxLeftSwipe = leftActions.length * ACTION_WIDTH;
   const maxRightSwipe = rightActions.length * ACTION_WIDTH;
+
+  // Calculate rubber-band offset for over-swipe
+  const getRubberbandOffset = useCallback(
+    (delta: number) => {
+      if (delta > 0) {
+        // Swiping right
+        if (delta <= maxLeftSwipe) {
+          return delta;
+        }
+        // Over-swipe: apply rubber-band effect
+        const overSwipe = delta - maxLeftSwipe;
+        return maxLeftSwipe + overSwipe * RUBBER_BAND_FACTOR;
+      } else {
+        // Swiping left
+        if (delta >= -maxRightSwipe) {
+          return delta;
+        }
+        // Over-swipe: apply rubber-band effect
+        const overSwipe = Math.abs(delta) - maxRightSwipe;
+        return -(maxRightSwipe + overSwipe * RUBBER_BAND_FACTOR);
+      }
+    },
+    [maxLeftSwipe, maxRightSwipe]
+  );
 
   const handleTouchStart = useCallback(
     (e: TouchEvent) => {
@@ -93,22 +149,24 @@ export function SwipeableRow({
         time: Date.now(),
       };
       isSwipingRef.current = false;
+      setHasTriggeredHaptic(false);
 
       // Set up long press detection
       if (onLongPress) {
-        longPressTimeoutRef.current = setTimeout(() => {
+        longPressTimeoutRef.current = setTimeout(async () => {
           if (!isSwipingRef.current) {
+            await impact('heavy');
             onLongPress();
             touchStartRef.current = null;
           }
-        }, 600);
+        }, 500); // iOS standard: 500ms
       }
     },
-    [disabled, onLongPress]
+    [disabled, onLongPress, impact]
   );
 
   const handleTouchMove = useCallback(
-    (e: TouchEvent) => {
+    async (e: TouchEvent) => {
       if (disabled || !touchStartRef.current) return;
 
       const touch = e.touches[0];
@@ -133,32 +191,51 @@ export function SwipeableRow({
       }
 
       if (isSwipingRef.current) {
-        // Clamp the offset to valid range
-        let newOffset = deltaX;
-        if (newOffset > 0) {
-          newOffset = Math.min(newOffset, maxLeftSwipe);
-        } else {
-          newOffset = Math.max(newOffset, -maxRightSwipe);
+        const newOffset = getRubberbandOffset(deltaX);
+        x.set(newOffset);
+
+        // Trigger haptic when crossing threshold (only once per swipe)
+        if (!hasTriggeredHaptic) {
+          const crossedThreshold =
+            (deltaX > SWIPE_THRESHOLD && leftActions.length > 0) ||
+            (deltaX < -SWIPE_THRESHOLD && rightActions.length > 0);
+
+          if (crossedThreshold) {
+            await impact('light');
+            setHasTriggeredHaptic(true);
+          }
         }
-        setSwipeOffset(newOffset);
       }
     },
-    [disabled, maxLeftSwipe, maxRightSwipe]
+    [
+      disabled,
+      getRubberbandOffset,
+      x,
+      hasTriggeredHaptic,
+      leftActions.length,
+      rightActions.length,
+      impact,
+    ]
   );
 
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = useCallback(async () => {
     if (longPressTimeoutRef.current) {
       clearTimeout(longPressTimeoutRef.current);
     }
 
     if (!touchStartRef.current) {
-      setIsAnimating(true);
-      setSwipeOffset(0);
-      setTimeout(() => setIsAnimating(false), 200);
+      // Animate back to rest
+      animate(x, 0, {
+        type: reduceMotion ? 'tween' : 'spring',
+        stiffness: 600,
+        damping: 40,
+        duration: reduceMotion ? 0 : undefined,
+      });
       return;
     }
 
     const wasSwiping = isSwipingRef.current;
+    const currentOffset = x.get();
 
     // Check if this was a tap (not a swipe)
     if (!wasSwiping && onPress) {
@@ -167,24 +244,28 @@ export function SwipeableRow({
 
     // Handle swipe action trigger
     if (wasSwiping) {
-      setIsAnimating(true);
-
-      if (swipeOffset > SWIPE_THRESHOLD && leftActions.length > 0) {
-        // Trigger the first left action (revealed on right swipe)
+      if (currentOffset > SWIPE_THRESHOLD && leftActions.length > 0) {
+        // Trigger with haptic feedback
+        await impact('medium');
         leftActions[0].onAction();
-      } else if (swipeOffset < -SWIPE_THRESHOLD && rightActions.length > 0) {
-        // Trigger the first right action (revealed on left swipe)
+      } else if (currentOffset < -SWIPE_THRESHOLD && rightActions.length > 0) {
+        await impact('medium');
         rightActions[0].onAction();
       }
 
-      // Animate back to closed position
-      setSwipeOffset(0);
-      setTimeout(() => setIsAnimating(false), 200);
+      // Animate back to closed position with spring
+      animate(x, 0, {
+        type: reduceMotion ? 'tween' : 'spring',
+        stiffness: 600,
+        damping: 40,
+        duration: reduceMotion ? 0 : undefined,
+      });
     }
 
     touchStartRef.current = null;
     isSwipingRef.current = false;
-  }, [swipeOffset, leftActions, rightActions, onPress]);
+    setHasTriggeredHaptic(false);
+  }, [x, leftActions, rightActions, onPress, impact, reduceMotion]);
 
   const priorityBorderColor = priority ? priorityColorMap[priority] : undefined;
 
@@ -216,6 +297,7 @@ export function SwipeableRow({
               <UnstyledButton
                 key={action.id}
                 onClick={action.onAction}
+                aria-label={action.label}
                 style={{
                   width: ACTION_WIDTH,
                   height: '100%',
@@ -227,7 +309,7 @@ export function SwipeableRow({
                   gap: 4,
                 }}
               >
-                <Icon size={20} color="white" />
+                <Icon size={20} color="white" aria-hidden="true" />
                 <Text size="xs" c="white" fw={500}>
                   {action.label}
                 </Text>
@@ -255,6 +337,7 @@ export function SwipeableRow({
               <UnstyledButton
                 key={action.id}
                 onClick={action.onAction}
+                aria-label={action.label}
                 style={{
                   width: ACTION_WIDTH,
                   height: '100%',
@@ -266,7 +349,7 @@ export function SwipeableRow({
                   gap: 4,
                 }}
               >
-                <Icon size={20} color="white" />
+                <Icon size={20} color="white" aria-hidden="true" />
                 <Text size="xs" c="white" fw={500}>
                   {action.label}
                 </Text>
@@ -276,29 +359,42 @@ export function SwipeableRow({
         </Box>
       )}
 
-      {/* Main content */}
-      <Box
+      {/* Main content with spring-animated transform */}
+      <motion.div
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
         style={{
+          x: springX,
           display: 'flex',
           alignItems: 'center',
           minHeight,
           padding: '16px',
           backgroundColor: 'var(--surface-paper)',
-          borderBottom: '1px solid var(--border-subtle)',
           borderLeft: priorityBorderColor
             ? `3px solid ${priorityBorderColor}`
             : 'none',
-          transform: `translateX(${swipeOffset}px)`,
-          transition: isAnimating ? 'transform 200ms ease-out' : 'none',
           cursor: disabled ? 'default' : 'pointer',
+          position: 'relative',
+          ...style,
         }}
       >
         {children}
-      </Box>
+        {/* iOS-style inset separator */}
+        {!hideSeparator && (
+          <Box
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: separatorInset,
+              right: 0,
+              height: 1,
+              backgroundColor: 'var(--border-subtle)',
+            }}
+          />
+        )}
+      </motion.div>
     </Box>
   );
 }

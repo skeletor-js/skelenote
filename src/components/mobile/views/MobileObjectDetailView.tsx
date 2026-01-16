@@ -3,7 +3,7 @@
  * Features: property chips, bottom sheet editors, action bar, collapsible backlinks
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Stack,
   Box,
@@ -34,12 +34,14 @@ import {
   ChevronUp,
   Flag,
   Repeat,
+  Sparkles,
 } from 'lucide-react';
 import {
   useNavigation,
   useObjects,
   useTypeRegistry,
   useToast,
+  useSemanticSearchSafe,
 } from '@/contexts';
 import { usePlatform, usePinnedObjects, useDuplicate } from '@/hooks';
 import {
@@ -62,10 +64,22 @@ import { linkObjectToDaily } from '@/lib/daily';
 import { formatRecurrenceDisplay } from '@/components/object/editors/RecurrenceEditor';
 import type { PropertyDefinition, PropertyValue } from '@/lib/types';
 import { BuiltInTypeIds } from '@/lib/types';
+import { getIconFromEmoji, type IconName } from '@/lib/icons';
+import { Icon } from '@/components/ui/Icon';
+import type { SemanticSearchResult } from '@/lib/semantic';
 import dayjs from 'dayjs';
 
 interface MobileObjectDetailViewProps {
   objectId: string;
+}
+
+interface SimilarItem {
+  id: string;
+  title: string;
+  typeIcon: string;
+  typeName: string;
+  typeId: string;
+  similarity: number;
 }
 
 // Status display config
@@ -97,6 +111,7 @@ export function MobileObjectDetailView({
   const { isPinned, pin, unpin } = usePinnedObjects();
   const { duplicate } = useDuplicate();
   const { addToast } = useToast();
+  const semanticContext = useSemanticSearchSafe();
 
   // Sheet states
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
@@ -108,6 +123,16 @@ export function MobileObjectDetailView({
   const [recurrenceSheetOpen, setRecurrenceSheetOpen] = useState(false);
   const [editingProperty, setEditingProperty] =
     useState<PropertyDefinition | null>(null);
+
+  // Find Similar state
+  const [similarExpanded, setSimilarExpanded] = useState(false);
+  const [similarLoading, setSimilarLoading] = useState(false);
+  const [similarItems, setSimilarItems] = useState<SimilarItem[]>([]);
+
+  // Check if semantic search is available
+  const isSemanticEnabled =
+    semanticContext?.isEnabled && semanticContext?.status === 'ready';
+  const semanticThreshold = semanticContext?.threshold ?? 0.2;
 
   // Get object
   const object = useMemo(() => {
@@ -140,6 +165,80 @@ export function MobileObjectDetailView({
     const relationHelper = new RelationHelper(store, typeRegistry);
     return relationHelper.findBacklinks(objectId);
   }, [store, objectId, typeRegistry]);
+
+  // Find similar objects (lazy load on expand)
+  const findSimilarObjects = useCallback(async () => {
+    if (!semanticContext || !store) return;
+
+    const engine = semanticContext.getEngine();
+    if (!engine || engine.status !== 'ready') return;
+
+    setSimilarLoading(true);
+
+    try {
+      const results: SemanticSearchResult[] = await engine.findSimilar(
+        objectId,
+        {
+          limit: 5,
+          threshold: semanticThreshold,
+        }
+      );
+
+      // Convert to display items
+      const items: SimilarItem[] = results
+        .filter((r) => r.objectId !== objectId) // Exclude self
+        .map((result) => {
+          const obj = store.get(result.objectId);
+          if (!obj) return null;
+
+          const typeDef = typeRegistry.get(obj.typeId);
+          const title = String(
+            obj.properties.title ?? obj.properties.name ?? 'Untitled'
+          );
+
+          return {
+            id: obj.id,
+            title,
+            typeIcon: typeDef?.icon ?? 'file',
+            typeName: typeDef?.name ?? obj.typeId,
+            typeId: obj.typeId,
+            similarity: result.score,
+          };
+        })
+        .filter((item): item is SimilarItem => item !== null);
+
+      setSimilarItems(items);
+    } catch (error) {
+      console.error('Failed to find similar objects:', error);
+      setSimilarItems([]);
+    } finally {
+      setSimilarLoading(false);
+    }
+  }, [semanticContext, store, typeRegistry, objectId, semanticThreshold]);
+
+  // Reset similar items when object changes
+  useEffect(() => {
+    setSimilarItems([]);
+    setSimilarExpanded(false);
+  }, [objectId]);
+
+  // Load similar items when expanded
+  useEffect(() => {
+    if (
+      similarExpanded &&
+      similarItems.length === 0 &&
+      !similarLoading &&
+      isSemanticEnabled
+    ) {
+      findSimilarObjects();
+    }
+  }, [
+    similarExpanded,
+    similarItems.length,
+    similarLoading,
+    isSemanticEnabled,
+    findSimilarObjects,
+  ]);
 
   // Title
   const title =
@@ -615,6 +714,80 @@ export function MobileObjectDetailView({
               </Stack>
             )}
           </CollapsibleSection>
+
+          {/* Find Similar - only show when semantic search is enabled */}
+          {isSemanticEnabled && (
+            <CollapsibleSection
+              title={
+                <Group gap="xs">
+                  <Text size="sm" c="dimmed" fw={500}>
+                    Find Similar
+                  </Text>
+                  <Badge size="xs" variant="light" color="clay" radius="sm">
+                    <Group gap={4}>
+                      <Sparkles size={10} />
+                      AI
+                    </Group>
+                  </Badge>
+                </Group>
+              }
+              count={similarItems.length > 0 ? similarItems.length : undefined}
+              defaultOpen={false}
+              onOpenChange={(open) => setSimilarExpanded(open)}
+            >
+              {similarLoading ? (
+                <Group gap="xs" py="xs">
+                  <Loader size="xs" />
+                  <Text size="sm" c="dimmed">
+                    Finding similar objects...
+                  </Text>
+                </Group>
+              ) : similarItems.length === 0 ? (
+                <Text c="dimmed" size="sm">
+                  No similar objects found
+                </Text>
+              ) : (
+                <Stack gap={0}>
+                  {similarItems.map((item) => {
+                    // Get proper icon name
+                    const iconName: IconName =
+                      item.typeIcon.length <= 2
+                        ? getIconFromEmoji(item.typeIcon)
+                        : (item.typeIcon as IconName);
+
+                    return (
+                      <UnstyledButton
+                        key={item.id}
+                        onClick={() => navigateToObject(item.id)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          padding: '8px 0',
+                        }}
+                      >
+                        <Icon
+                          name={iconName}
+                          size={16}
+                          style={{ color: 'var(--mantine-color-gray-5)' }}
+                        />
+                        <Text size="sm" truncate style={{ flex: 1 }}>
+                          {item.title}
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          {Math.round(item.similarity * 100)}%
+                        </Text>
+                        <ChevronRight
+                          size={16}
+                          style={{ color: 'var(--mantine-color-gray-4)' }}
+                        />
+                      </UnstyledButton>
+                    );
+                  })}
+                </Stack>
+              )}
+            </CollapsibleSection>
+          )}
         </Stack>
       </ScrollArea>
 

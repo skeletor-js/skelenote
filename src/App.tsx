@@ -113,6 +113,16 @@ const MobileTemplatesView = lazy(() =>
     default: m.MobileTemplatesView,
   }))
 );
+const MobilePinnedView = lazy(() =>
+  import('@/components/mobile/views/MobilePinnedView').then((m) => ({
+    default: m.MobilePinnedView,
+  }))
+);
+const MobileTimeMachineView = lazy(() =>
+  import('@/components/mobile/views/MobileTimeMachineView').then((m) => ({
+    default: m.MobileTimeMachineView,
+  }))
+);
 const LockScreen = lazy(() =>
   import('@/components/mobile/views/LockScreen').then((m) => ({
     default: m.LockScreen,
@@ -151,6 +161,8 @@ function PlaceholderView({ view }: { view: ViewType }) {
     projects: 'Projects',
     areas: 'Areas',
     tags: 'Tags',
+    templates: 'Templates',
+    pinned: 'Pinned',
   };
 
   return (
@@ -191,13 +203,7 @@ function TypeBrowseViewRouter() {
  * Uses lazy-loaded mobile views with skeleton fallbacks
  */
 function MobilePrimaryContent() {
-  // Note: activeSavedViewId will be used when we implement filtered results view
-  const {
-    currentView,
-    selectedObjectId,
-    navigateToView,
-    activeSavedViewId: _activeSavedViewId,
-  } = useNavigation();
+  const { currentView, selectedObjectId, navigateToView } = useNavigation();
   const { isLoading, error } = useObjects();
 
   if (isLoading) {
@@ -359,9 +365,22 @@ function MobilePrimaryContent() {
     );
   }
 
-  // Views accessible from Browse hub (show placeholder until implemented)
+  // Pinned view
+  if (currentView === 'pinned') {
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobilePinnedView />
+      </Suspense>
+    );
+  }
+
+  // Time Machine view
   if (currentView === 'time-machine') {
-    return <PlaceholderView view={currentView} />;
+    return (
+      <Suspense fallback={<InboxSkeleton />}>
+        <MobileTimeMachineView />
+      </Suspense>
+    );
   }
 
   // Default to inbox for other views on mobile
@@ -982,7 +1001,7 @@ function App() {
   // Mobile layout - optimized views with bottom tab navigation
   if (isMobile) {
     return (
-      <MobileLayout inboxCount={inboxCount}>
+      <MobileLayout>
         <MobilePrimaryContent />
       </MobileLayout>
     );

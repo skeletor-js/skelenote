@@ -1,5 +1,6 @@
 import { Box, UnstyledButton, Text, Badge, Group } from '@mantine/core';
 import { ChevronRight, type LucideIcon } from 'lucide-react';
+import { IOS_CHEVRON } from '@/lib/constants/ios-styles';
 
 interface BrowseItemProps {
   /** Icon component from lucide-react */
@@ -76,8 +77,9 @@ export function BrowseItem({
           </Badge>
         )}
         <ChevronRight
-          size={18}
-          style={{ color: 'var(--mantine-color-gray-5)', flexShrink: 0 }}
+          size={IOS_CHEVRON.disclosure.size}
+          strokeWidth={IOS_CHEVRON.disclosure.strokeWidth}
+          style={{ color: IOS_CHEVRON.disclosure.color, flexShrink: 0 }}
         />
       </Group>
     </UnstyledButton>

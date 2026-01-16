@@ -17,6 +17,7 @@ import {
 import { History, RotateCcw, Clock } from 'lucide-react';
 import { useObjects, useToast } from '@/contexts';
 import { BottomSheet } from '../primitives';
+import { RestoreConfirmSheet, type RestoreScope } from './RestoreConfirmSheet';
 import type { ChangePoint, ObjectVersionHistory } from '@/lib/loro/versions';
 
 interface TimeMachineSheetProps {
@@ -39,6 +40,7 @@ export function TimeMachineSheet({
     null
   );
   const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreConfirmOpen, setRestoreConfirmOpen] = useState(false);
 
   // Get version history for this object
   const history = useMemo<ObjectVersionHistory | null>(() => {
@@ -97,21 +99,39 @@ export function TimeMachineSheet({
     return formatTime(timestamp);
   };
 
-  // Handle restore
-  const handleRestore = useCallback(
-    (changePoint: ChangePoint) => {
+  // Open restore confirmation
+  const handleRestoreClick = useCallback(() => {
+    if (selectedVersion) {
+      setRestoreConfirmOpen(true);
+    }
+  }, [selectedVersion]);
+
+  // Handle confirmed restore
+  const handleRestoreConfirm = useCallback(
+    (scope: RestoreScope) => {
+      if (!selectedVersion) return;
+
       setIsRestoring(true);
       try {
-        const success = docStore.restoreFromVersion(changePoint.frontier, {
-          type: 'single',
-          objectId,
-        });
+        const restoreOptions =
+          scope === 'all'
+            ? { type: 'full' as const }
+            : { type: 'single' as const, objectId };
+
+        const success = docStore.restoreFromVersion(
+          selectedVersion.frontier,
+          restoreOptions
+        );
         if (success) {
           refreshData();
           addToast({
             type: 'success',
-            message: 'Version restored successfully',
+            message:
+              scope === 'all'
+                ? 'All objects restored to this version'
+                : 'Version restored successfully',
           });
+          setRestoreConfirmOpen(false);
           onClose();
         } else {
           addToast({
@@ -131,13 +151,14 @@ export function TimeMachineSheet({
         setIsRestoring(false);
       }
     },
-    [docStore, objectId, refreshData, addToast, onClose]
+    [docStore, objectId, selectedVersion, refreshData, addToast, onClose]
   );
 
   // Reset state when sheet closes
   const handleClose = useCallback(() => {
     setSelectedVersion(null);
     setIsRestoring(false);
+    setRestoreConfirmOpen(false);
     onClose();
   }, [onClose]);
 
@@ -249,7 +270,7 @@ export function TimeMachineSheet({
                           leftSection={<RotateCcw size={14} />}
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleRestore(cp);
+                            handleRestoreClick();
                           }}
                           loading={isRestoring}
                           mt="xs"
@@ -279,6 +300,19 @@ export function TimeMachineSheet({
           </Text>
         </Box>
       </Stack>
+
+      {/* Restore confirmation sheet */}
+      <RestoreConfirmSheet
+        opened={restoreConfirmOpen}
+        onClose={() => setRestoreConfirmOpen(false)}
+        versionName={
+          selectedVersion ? formatTime(selectedVersion.timestamp) : ''
+        }
+        objectName={objectTitle}
+        showRestoreAllOption={true}
+        onConfirm={handleRestoreConfirm}
+        isRestoring={isRestoring}
+      />
     </BottomSheet>
   );
 }

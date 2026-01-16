@@ -19,19 +19,27 @@ import {
   ScrollArea,
   Chip,
 } from '@mantine/core';
-import {
-  ArrowLeft,
-  Search,
-  X,
-  History,
-  ChevronRight,
-  Filter,
-} from 'lucide-react';
+import { Search, X, History, ChevronRight, Filter } from 'lucide-react';
 import { usePlatform, useSearch } from '@/hooks';
-import { useNavigation, useTypeRegistry } from '@/contexts';
+import {
+  useNavigation,
+  useTypeRegistry,
+  useSemanticSearchSafe,
+} from '@/contexts';
 import { getIconFromEmoji, type IconName } from '@/lib/icons';
 import { Icon } from '@/components/ui/Icon';
+import { MobileViewHeader, MatchTypeBadge } from '../primitives';
 import { BuiltInTypeIds } from '@/lib/types';
+import { TAB_BAR_HEIGHT } from '@/components/layout/BottomTabBar';
+import type { MatchType } from '@/lib/search';
+
+// Match type filter options (only shown when semantic search is enabled)
+const MATCH_TYPE_FILTERS: { id: MatchType | 'all'; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'text', label: 'Text' },
+  { id: 'semantic', label: 'AI' },
+  { id: 'hybrid', label: 'Both' },
+];
 
 // Local storage key for recent searches
 const RECENT_SEARCHES_KEY = 'skelenote:recentSearches';
@@ -107,16 +115,24 @@ interface MobileSearchModalProps {
 }
 
 export function MobileSearchModal({ opened, onClose }: MobileSearchModalProps) {
-  const { safeAreaTop } = usePlatform();
+  const { safeAreaBottom } = usePlatform();
   const { navigateToObject } = useNavigation();
   const typeRegistry = useTypeRegistry();
+  const semanticSearch = useSemanticSearchSafe();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [localQuery, setLocalQuery] = useState('');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [activeTypeFilter, setActiveTypeFilter] = useState<string | null>(null);
   const [activeDateFilter, setActiveDateFilter] = useState<DateRangeId>('any');
+  const [activeMatchTypeFilter, setActiveMatchTypeFilter] = useState<
+    MatchType | 'all'
+  >('all');
   const [showFilters, setShowFilters] = useState(false);
+
+  // Check if semantic search is enabled and ready
+  const isSemanticEnabled =
+    semanticSearch?.isEnabled && semanticSearch?.status === 'ready';
 
   // Use search hook - it manages its own internal query state
   const { results, isSearching, setQuery } = useSearch({ debounceMs: 200 });
@@ -148,6 +164,7 @@ export function MobileSearchModal({ opened, onClose }: MobileSearchModalProps) {
       setLocalQuery('');
       setActiveTypeFilter(null);
       setActiveDateFilter('any');
+      setActiveMatchTypeFilter('all');
       setShowFilters(false);
     }
   }, [opened]);
@@ -217,7 +234,7 @@ export function MobileSearchModal({ opened, onClose }: MobileSearchModalProps) {
     [typeRegistry]
   );
 
-  // Filter results by type and date
+  // Filter results by type, date, and match type
   const filteredResults = useMemo(() => {
     let filtered = results;
 
@@ -237,8 +254,31 @@ export function MobileSearchModal({ opened, onClose }: MobileSearchModalProps) {
       });
     }
 
+    // Apply match type filter (only when semantic is enabled)
+    if (isSemanticEnabled && activeMatchTypeFilter !== 'all') {
+      filtered = filtered.filter((result) => {
+        const matchType = result.matchType ?? 'text';
+        // Direct match
+        if (matchType === activeMatchTypeFilter) return true;
+        // Hybrid passes through text and semantic filters
+        if (matchType === 'hybrid') {
+          return (
+            activeMatchTypeFilter === 'text' ||
+            activeMatchTypeFilter === 'semantic'
+          );
+        }
+        return false;
+      });
+    }
+
     return filtered;
-  }, [results, activeTypeFilter, activeDateFilter]);
+  }, [
+    results,
+    activeTypeFilter,
+    activeDateFilter,
+    activeMatchTypeFilter,
+    isSemanticEnabled,
+  ]);
 
   // Group results by type
   const groupedResults = useMemo(() => {
@@ -259,21 +299,29 @@ export function MobileSearchModal({ opened, onClose }: MobileSearchModalProps) {
     <Box
       style={{
         position: 'fixed',
-        inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: TAB_BAR_HEIGHT + safeAreaBottom,
         zIndex: 200,
         backgroundColor: 'var(--surface-paper)',
         display: 'flex',
         flexDirection: 'column',
       }}
     >
-      {/* Safe area top */}
-      <Box style={{ height: safeAreaTop, flexShrink: 0 }} />
-
       {/* Search header */}
+      <MobileViewHeader
+        title="Search"
+        showBack={false}
+        rightSection={
+          <Button variant="subtle" size="xs" onClick={onClose}>
+            Cancel
+          </Button>
+        }
+      />
+
+      {/* Search input */}
       <Group gap="xs" px="sm" py="xs">
-        <ActionIcon variant="subtle" size={44} onClick={onClose}>
-          <ArrowLeft size={20} />
-        </ActionIcon>
         <TextInput
           ref={inputRef}
           value={localQuery}
@@ -304,7 +352,10 @@ export function MobileSearchModal({ opened, onClose }: MobileSearchModalProps) {
         <ActionIcon
           variant={showFilters ? 'filled' : 'subtle'}
           color={
-            showFilters || activeTypeFilter || activeDateFilter !== 'any'
+            showFilters ||
+            activeTypeFilter ||
+            activeDateFilter !== 'any' ||
+            activeMatchTypeFilter !== 'all'
               ? 'ember'
               : 'gray'
           }
@@ -393,63 +444,122 @@ export function MobileSearchModal({ opened, onClose }: MobileSearchModalProps) {
                 </Group>
               </ScrollArea>
             </Box>
+
+            {/* Match type filter chips - only show when semantic search is enabled */}
+            {isSemanticEnabled && (
+              <Box>
+                <Text size="xs" c="dimmed" fw={500} mb={4}>
+                  Match Type
+                </Text>
+                <ScrollArea type="never" offsetScrollbars={false}>
+                  <Group gap="xs" wrap="nowrap">
+                    {MATCH_TYPE_FILTERS.map((filter) => (
+                      <Chip
+                        key={filter.id}
+                        checked={activeMatchTypeFilter === filter.id}
+                        onChange={() => setActiveMatchTypeFilter(filter.id)}
+                        variant="outline"
+                        size="sm"
+                        radius="xl"
+                        styles={{
+                          label: {
+                            paddingLeft: 12,
+                            paddingRight: 12,
+                          },
+                        }}
+                      >
+                        {filter.label}
+                      </Chip>
+                    ))}
+                  </Group>
+                </ScrollArea>
+              </Box>
+            )}
           </Stack>
         </Box>
       )}
 
       {/* Active filter indicator */}
-      {(activeTypeFilter || activeDateFilter !== 'any') && !showFilters && (
-        <Box
-          px="md"
-          py="xs"
-          style={{
-            borderBottom: '1px solid var(--border-default)',
-            backgroundColor: 'var(--surface-overlay)',
-          }}
-        >
-          <Group gap="xs">
-            <Text size="xs" c="dimmed">
-              Filtering by:
-            </Text>
-            {activeTypeFilter && (
-              <Badge
-                size="sm"
-                variant="light"
-                color="ember"
-                rightSection={
-                  <ActionIcon
-                    size="xs"
-                    variant="transparent"
-                    onClick={() => setActiveTypeFilter(null)}
-                  >
-                    <X size={10} />
-                  </ActionIcon>
-                }
-              >
-                {TYPE_FILTERS.find((f) => f.typeId === activeTypeFilter)?.label}
-              </Badge>
-            )}
-            {activeDateFilter !== 'any' && (
-              <Badge
-                size="sm"
-                variant="light"
-                color="ember"
-                rightSection={
-                  <ActionIcon
-                    size="xs"
-                    variant="transparent"
-                    onClick={() => setActiveDateFilter('any')}
-                  >
-                    <X size={10} />
-                  </ActionIcon>
-                }
-              >
-                {DATE_FILTERS.find((f) => f.id === activeDateFilter)?.label}
-              </Badge>
-            )}
-          </Group>
-        </Box>
-      )}
+      {(activeTypeFilter ||
+        activeDateFilter !== 'any' ||
+        activeMatchTypeFilter !== 'all') &&
+        !showFilters && (
+          <Box
+            px="md"
+            py="xs"
+            style={{
+              borderBottom: '1px solid var(--border-default)',
+              backgroundColor: 'var(--surface-overlay)',
+            }}
+          >
+            <Group gap="xs">
+              <Text size="xs" c="dimmed">
+                Filtering by:
+              </Text>
+              {activeTypeFilter && (
+                <Badge
+                  size="sm"
+                  variant="light"
+                  color="ember"
+                  rightSection={
+                    <ActionIcon
+                      size="xs"
+                      variant="transparent"
+                      onClick={() => setActiveTypeFilter(null)}
+                    >
+                      <X size={10} />
+                    </ActionIcon>
+                  }
+                >
+                  {
+                    TYPE_FILTERS.find((f) => f.typeId === activeTypeFilter)
+                      ?.label
+                  }
+                </Badge>
+              )}
+              {activeDateFilter !== 'any' && (
+                <Badge
+                  size="sm"
+                  variant="light"
+                  color="ember"
+                  rightSection={
+                    <ActionIcon
+                      size="xs"
+                      variant="transparent"
+                      onClick={() => setActiveDateFilter('any')}
+                    >
+                      <X size={10} />
+                    </ActionIcon>
+                  }
+                >
+                  {DATE_FILTERS.find((f) => f.id === activeDateFilter)?.label}
+                </Badge>
+              )}
+              {activeMatchTypeFilter !== 'all' && (
+                <Badge
+                  size="sm"
+                  variant="light"
+                  color="ember"
+                  rightSection={
+                    <ActionIcon
+                      size="xs"
+                      variant="transparent"
+                      onClick={() => setActiveMatchTypeFilter('all')}
+                    >
+                      <X size={10} />
+                    </ActionIcon>
+                  }
+                >
+                  {
+                    MATCH_TYPE_FILTERS.find(
+                      (f) => f.id === activeMatchTypeFilter
+                    )?.label
+                  }
+                </Badge>
+              )}
+            </Group>
+          </Box>
+        )}
 
       {/* Results area */}
       <Box style={{ flex: 1, overflow: 'auto' }}>
@@ -536,18 +646,23 @@ export function MobileSearchModal({ opened, onClose }: MobileSearchModalProps) {
             />
             <Text c="dimmed" ta="center" px="md">
               {results.length > 0 &&
-              (activeTypeFilter || activeDateFilter !== 'any')
+              (activeTypeFilter ||
+                activeDateFilter !== 'any' ||
+                activeMatchTypeFilter !== 'all')
                 ? 'No matches with current filters'
                 : `No results for "${localQuery}"`}
             </Text>
             {results.length > 0 &&
-              (activeTypeFilter || activeDateFilter !== 'any') && (
+              (activeTypeFilter ||
+                activeDateFilter !== 'any' ||
+                activeMatchTypeFilter !== 'all') && (
                 <Button
                   variant="subtle"
                   size="xs"
                   onClick={() => {
                     setActiveTypeFilter(null);
                     setActiveDateFilter('any');
+                    setActiveMatchTypeFilter('all');
                   }}
                 >
                   Clear filters to see {results.length} result
@@ -600,9 +715,22 @@ export function MobileSearchModal({ opened, onClose }: MobileSearchModalProps) {
                           }}
                         />
                         <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
-                          <Text size="sm" fw={500} truncate>
-                            {title}
-                          </Text>
+                          <Group gap="xs" wrap="nowrap">
+                            <Text
+                              size="sm"
+                              fw={500}
+                              truncate
+                              style={{ flex: 1 }}
+                            >
+                              {title}
+                            </Text>
+                            {isSemanticEnabled && result.matchType && (
+                              <MatchTypeBadge
+                                matchType={result.matchType}
+                                semanticScore={result.semanticScore}
+                              />
+                            )}
+                          </Group>
                           {matchText && (
                             <Text size="xs" c="dimmed" lineClamp={2}>
                               ...{matchText}...

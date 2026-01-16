@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { open } from '@tauri-apps/plugin-shell';
 import { Stack, Box, Text, UnstyledButton, Switch } from '@mantine/core';
 import {
   ChevronRight,
@@ -17,6 +18,9 @@ import {
   Info,
   HelpCircle,
   Fingerprint,
+  Search,
+  Sliders,
+  FileText,
 } from 'lucide-react';
 import { useMantineColorScheme } from '@mantine/core';
 import { MobileViewHeader } from '../primitives';
@@ -25,6 +29,11 @@ import {
   AccountSettingsSheet,
   DataSettingsSheet,
   DangerZoneSheet,
+  SearchSettingsSheet,
+  AppearanceSettingsSheet,
+  TemplateSettingsSheet,
+  ImportSheet,
+  DeviceManagerSheet,
 } from '../sheets';
 import { useBiometric } from '@/hooks';
 import {
@@ -34,6 +43,7 @@ import {
   useObjects,
   useTypeRegistry,
   useToast,
+  useSemanticSearchSafe,
 } from '@/contexts';
 import {
   getSyncServerUrl,
@@ -41,7 +51,7 @@ import {
   getUserId,
   getDeviceId,
 } from '@/lib/sync';
-import { exportAllToZip } from '@/lib/export';
+import { exportAllToZip, exportAllToJSON } from '@/lib/export';
 
 interface SettingRowProps {
   icon: React.ElementType;
@@ -172,11 +182,18 @@ export function MobileSettingsView() {
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
 
+  const semanticSearch = useSemanticSearchSafe();
+
   // Sheet open states
   const [syncSheetOpen, setSyncSheetOpen] = useState(false);
   const [accountSheetOpen, setAccountSheetOpen] = useState(false);
   const [dataSheetOpen, setDataSheetOpen] = useState(false);
   const [dangerZoneSheetOpen, setDangerZoneSheetOpen] = useState(false);
+  const [searchSettingsOpen, setSearchSettingsOpen] = useState(false);
+  const [appearanceSheetOpen, setAppearanceSheetOpen] = useState(false);
+  const [templateSettingsOpen, setTemplateSettingsOpen] = useState(false);
+  const [importSheetOpen, setImportSheetOpen] = useState(false);
+  const [deviceManagerOpen, setDeviceManagerOpen] = useState(false);
 
   // Cloud sync state
   const [cloudRelayUrl, setCloudRelayUrl] = useState(
@@ -260,21 +277,12 @@ export function MobileSettingsView() {
 
   // Data settings handlers
   const handleExport = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async (_format: 'json' | 'markdown') => {
+    async (format: 'json' | 'markdown') => {
       if (!store || !typeRegistry) {
         throw new Error('Store not initialized');
       }
 
       const objects = store.getAll({ includeArchived: false });
-
-      // Create resolver function for object names
-      const resolveObjectName = (id: string): string | undefined => {
-        const obj = store.get(id);
-        if (!obj) return undefined;
-        const name = obj.properties.title ?? obj.properties.name;
-        return name ? String(name) : undefined;
-      };
 
       // Create content getter
       const getContent = (objectId: string): string => {
@@ -285,15 +293,29 @@ export function MobileSettingsView() {
         }
       };
 
-      // For now, both formats export as markdown ZIP
-      // TODO: Add JSON export format
-      const filePath = await exportAllToZip(
-        objects,
-        typeRegistry,
-        getContent,
-        resolveObjectName,
-        { organizeByType: true }
-      );
+      let filePath: string | null = null;
+
+      if (format === 'json') {
+        // JSON export - complete backup format
+        filePath = await exportAllToJSON(objects, getContent);
+      } else {
+        // Markdown export - human-readable format
+        // Create resolver function for object names (only needed for markdown)
+        const resolveObjectName = (id: string): string | undefined => {
+          const obj = store.get(id);
+          if (!obj) return undefined;
+          const name = obj.properties.title ?? obj.properties.name;
+          return name ? String(name) : undefined;
+        };
+
+        filePath = await exportAllToZip(
+          objects,
+          typeRegistry,
+          getContent,
+          resolveObjectName,
+          { organizeByType: true }
+        );
+      }
 
       if (filePath) {
         addToast({
@@ -306,13 +328,8 @@ export function MobileSettingsView() {
   );
 
   const handleImport = useCallback(async () => {
-    // TODO: Implement file picker and import flow for mobile
-    addToast({
-      type: 'info',
-      message: 'Import is not yet available on mobile',
-      duration: 3000,
-    });
-  }, [addToast]);
+    setImportSheetOpen(true);
+  }, []);
 
   // Danger zone handlers
   const handleResetVault = useCallback(async () => {
@@ -330,7 +347,7 @@ export function MobileSettingsView() {
 
   return (
     <Stack gap={0} h="100%">
-      <MobileViewHeader title="Settings" />
+      <MobileViewHeader title="Settings" showBack />
 
       <Box
         style={{
@@ -389,6 +406,38 @@ export function MobileSettingsView() {
                 />
               }
             />
+            <Box style={{ borderTop: '1px solid var(--border-subtle)' }}>
+              <SettingRow
+                icon={Sliders}
+                label="More Options"
+                onClick={() => setAppearanceSheetOpen(true)}
+              />
+            </Box>
+          </SettingSection>
+
+          {/* Search Section */}
+          <SettingSection title="Search">
+            <SettingRow
+              icon={Search}
+              label="Semantic Search"
+              value={
+                semanticSearch?.isEnabled
+                  ? semanticSearch?.status === 'ready'
+                    ? 'Active'
+                    : 'Loading'
+                  : 'Off'
+              }
+              onClick={() => setSearchSettingsOpen(true)}
+            />
+          </SettingSection>
+
+          {/* Templates Section */}
+          <SettingSection title="Templates">
+            <SettingRow
+              icon={FileText}
+              label="Manage Templates"
+              onClick={() => setTemplateSettingsOpen(true)}
+            />
           </SettingSection>
 
           {/* Data Section */}
@@ -423,7 +472,7 @@ export function MobileSettingsView() {
                 icon={HelpCircle}
                 label="Help & Support"
                 onClick={() => {
-                  // TODO: Open help URL
+                  open('https://github.com/skeletor-js/skelenote/issues');
                 }}
               />
             </Box>
@@ -456,12 +505,7 @@ export function MobileSettingsView() {
         localPeersCount={localSync.connectedPeerCount}
         onLocalSyncEnabledChange={handleLocalSyncEnabledChange}
         onOpenDeviceManager={() => {
-          // TODO: Navigate to device manager or open device manager sheet
-          addToast({
-            type: 'info',
-            message: 'Device manager coming soon',
-            duration: 2000,
-          });
+          setDeviceManagerOpen(true);
         }}
       />
 
@@ -486,6 +530,31 @@ export function MobileSettingsView() {
         opened={dangerZoneSheetOpen}
         onClose={() => setDangerZoneSheetOpen(false)}
         onResetVault={handleResetVault}
+      />
+
+      <SearchSettingsSheet
+        opened={searchSettingsOpen}
+        onClose={() => setSearchSettingsOpen(false)}
+      />
+
+      <AppearanceSettingsSheet
+        opened={appearanceSheetOpen}
+        onClose={() => setAppearanceSheetOpen(false)}
+      />
+
+      <TemplateSettingsSheet
+        opened={templateSettingsOpen}
+        onClose={() => setTemplateSettingsOpen(false)}
+      />
+
+      <ImportSheet
+        opened={importSheetOpen}
+        onClose={() => setImportSheetOpen(false)}
+      />
+
+      <DeviceManagerSheet
+        opened={deviceManagerOpen}
+        onClose={() => setDeviceManagerOpen(false)}
       />
     </Stack>
   );
