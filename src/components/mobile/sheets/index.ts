@@ -11,6 +11,7 @@ export { BulkActionsSheet, type BulkActionType } from './BulkActionsSheet';
 export { StatusPickerSheet, getStatusInfo } from './StatusPickerSheet';
 export { PriorityPickerSheet, getPriorityInfo } from './PriorityPickerSheet';
 export { DueDateSheet } from './DueDateSheet';
+export { ReminderSheet } from './ReminderSheet';
 export { RecurrenceSheet } from './RecurrenceSheet';
 export { TagPickerSheet } from './TagPickerSheet';
 export { AreaPickerSheet } from './AreaPickerSheet';

@@ -33,6 +33,14 @@
     "barcode-scanner:allow-request-permissions",
     "barcode-scanner:allow-open-app-settings",
     "barcode-scanner:allow-vibrate",
-    "biometric:default"
+    "biometric:default",
+    "notification:default",
+    "notification:allow-request-permission",
+    "notification:allow-is-permission-granted",
+    "notification:allow-notify",
+    "notification:allow-cancel",
+    "notification:allow-get-pending",
+    "notification:allow-remove-active",
+    "deep-link:default"
   ]
 }

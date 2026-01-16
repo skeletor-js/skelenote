@@ -50,5 +50,20 @@
 	<array>
 		<string>_skelenote._tcp</string>
 	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>processing</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.skelenote.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>skelenote</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

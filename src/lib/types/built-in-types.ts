@@ -69,7 +69,7 @@ export type MeetingDuration = (typeof MeetingDurationOptions)[number];
 
 /**
  * Task type definition
- * Properties: title, status, dueDate, priority, project, area, tags, recurrence, dailyNote
+ * Properties: title, status, dueDate, reminderTime, priority, project, area, tags, recurrence, dailyNote
  */
 export const TaskType: TypeDefinition = {
   id: BuiltInTypeIds.TASK,
@@ -101,6 +101,16 @@ export const TaskType: TypeDefinition = {
       type: 'date',
       required: false,
       multiple: false,
+    },
+    {
+      id: 'reminderTime',
+      name: 'Reminder',
+      type: 'date',
+      required: false,
+      multiple: false,
+      config: {
+        showTime: true,
+      },
     },
     {
       id: 'priority',

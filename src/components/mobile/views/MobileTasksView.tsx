@@ -16,7 +16,7 @@ import {
   Text,
   UnstyledButton,
 } from '@mantine/core';
-import { CheckCircle, Tag, Layers, Repeat, Copy } from 'lucide-react';
+import { CheckCircle, Tag, Layers, Repeat, Copy, Bell } from 'lucide-react';
 import { useTasks, useSelection, useDuplicate } from '@/hooks';
 import {
   useNavigation,
@@ -35,6 +35,7 @@ import {
 import { MobileTaskRow } from '../rows';
 import {
   DueDateSheet,
+  ReminderSheet,
   PriorityPickerSheet,
   RelationPickerSheet,
   BulkActionsSheet,
@@ -99,6 +100,7 @@ export function MobileTasksView() {
 
   // Sheet states
   const [dueDateSheetOpen, setDueDateSheetOpen] = useState(false);
+  const [reminderSheetOpen, setReminderSheetOpen] = useState(false);
   const [prioritySheetOpen, setPrioritySheetOpen] = useState(false);
   const [projectSheetOpen, setProjectSheetOpen] = useState(false);
   const [tagSheetOpen, setTagSheetOpen] = useState(false);
@@ -180,6 +182,17 @@ export function MobileTasksView() {
       store.update(selectedTask.id, { properties: { dueDate: date } });
       refreshData();
       setDueDateSheetOpen(false);
+    },
+    [selectedTask, store, refreshData]
+  );
+
+  // Reminder time change handler
+  const handleReminderChange = useCallback(
+    (time: number | null) => {
+      if (!selectedTask || !store) return;
+      store.update(selectedTask.id, { properties: { reminderTime: time } });
+      refreshData();
+      setReminderSheetOpen(false);
     },
     [selectedTask, store, refreshData]
   );
@@ -366,6 +379,15 @@ export function MobileTasksView() {
           onAction: () => {
             setActionSheetOpen(false);
             setTimeout(() => setDueDateSheetOpen(true), 200);
+          },
+        },
+        {
+          id: 'reminder',
+          label: 'Set Reminder',
+          icon: Bell,
+          onAction: () => {
+            setActionSheetOpen(false);
+            setTimeout(() => setReminderSheetOpen(true), 200);
           },
         },
         {
@@ -619,6 +641,15 @@ export function MobileTasksView() {
         onClose={() => setDueDateSheetOpen(false)}
         value={(selectedTask?.properties.dueDate as number | null) ?? null}
         onSelect={handleDueDateChange}
+      />
+
+      {/* Reminder Sheet */}
+      <ReminderSheet
+        opened={reminderSheetOpen}
+        onClose={() => setReminderSheetOpen(false)}
+        value={(selectedTask?.properties.reminderTime as number | null) ?? null}
+        dueDate={(selectedTask?.properties.dueDate as number | null) ?? null}
+        onSelect={handleReminderChange}
       />
 
       {/* Priority Sheet */}
