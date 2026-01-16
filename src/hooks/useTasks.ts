@@ -18,6 +18,7 @@ import {
 } from '@/lib/tasks/filters';
 import { prepareNextRecurringTask } from '@/lib/tasks/recurrence';
 import { removeMentionsFromContent } from '@/lib/editor';
+import { cancelReminder } from '@/lib/notifications';
 
 export interface UseTasksOptions {
   /** Which task view filter to apply (mutually exclusive with date) */
@@ -119,6 +120,9 @@ export function useTasks(options: UseTasksOptions = {}): UseTasksResult {
             inboxed: false,
           });
         }
+
+        // Cancel any pending reminder for this task
+        cancelReminder(taskId);
       }
 
       // Update the current task's status
@@ -173,6 +177,9 @@ export function useTasks(options: UseTasksOptions = {}): UseTasksResult {
           // Skip objects without content
         }
       }
+
+      // Cancel any pending reminder for this task
+      cancelReminder(taskId);
 
       // Delete the task
       store.delete(taskId);

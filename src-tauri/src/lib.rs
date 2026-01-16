@@ -1852,6 +1852,277 @@ async fn cache_reconnect_device(
     ))
 }
 
+// ============================================================================
+// Share Extension Commands
+// ============================================================================
+
+/// Pending share data from iOS Share Extension or Android Share Intent
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+struct PendingShare {
+    #[serde(rename = "type")]
+    share_type: String,
+    url: Option<String>,
+    text: Option<String>,
+    timestamp: f64,
+}
+
+/// Helper to convert NSString to Rust String
+#[cfg(target_os = "ios")]
+unsafe fn nsstring_to_string(ns_string: *mut objc::runtime::Object) -> Option<String> {
+    use objc::{msg_send, sel, sel_impl};
+
+    if ns_string.is_null() {
+        return None;
+    }
+
+    let utf8: *const i8 = msg_send![ns_string, UTF8String];
+    if utf8.is_null() {
+        return None;
+    }
+
+    let c_str = std::ffi::CStr::from_ptr(utf8);
+    c_str.to_str().ok().map(|s| s.to_string())
+}
+
+/// Get pending shares from iOS App Groups UserDefaults
+///
+/// Returns shares saved by the iOS Share Extension from the App Group
+/// storage (group.com.skelenote.app).
+#[cfg(target_os = "ios")]
+#[tauri::command]
+async fn share_get_pending_ios() -> Result<Vec<PendingShare>, String> {
+    use objc::{class, msg_send, sel, sel_impl};
+    use objc::runtime::Object;
+
+    unsafe {
+        // Get NSUserDefaults with App Group suite name
+        let ns_string_class = class!(NSString);
+        let suite_name: *mut Object = msg_send![
+            ns_string_class,
+            stringWithUTF8String: b"group.com.skelenote.app\0".as_ptr()
+        ];
+
+        let user_defaults_class = class!(NSUserDefaults);
+        let defaults: *mut Object = msg_send![user_defaults_class, alloc];
+        let defaults: *mut Object = msg_send![defaults, initWithSuiteName: suite_name];
+
+        if defaults.is_null() {
+            return Ok(vec![]);
+        }
+
+        // Get pendingShares array
+        let key: *mut Object = msg_send![
+            ns_string_class,
+            stringWithUTF8String: b"pendingShares\0".as_ptr()
+        ];
+        let array: *mut Object = msg_send![defaults, arrayForKey: key];
+
+        if array.is_null() {
+            return Ok(vec![]);
+        }
+
+        // Get count and iterate
+        let count: usize = msg_send![array, count];
+        let mut shares = Vec::with_capacity(count);
+
+        for i in 0..count {
+            let dict: *mut Object = msg_send![array, objectAtIndex: i];
+            if dict.is_null() { continue; }
+
+            // Extract "type" field
+            let type_key: *mut Object = msg_send![ns_string_class, stringWithUTF8String: b"type\0".as_ptr()];
+            let type_val: *mut Object = msg_send![dict, objectForKey: type_key];
+            let share_type = nsstring_to_string(type_val).unwrap_or_default();
+
+            // Extract "url" field
+            let url_key: *mut Object = msg_send![ns_string_class, stringWithUTF8String: b"url\0".as_ptr()];
+            let url_val: *mut Object = msg_send![dict, objectForKey: url_key];
+            let url = nsstring_to_string(url_val);
+
+            // Extract "text" field
+            let text_key: *mut Object = msg_send![ns_string_class, stringWithUTF8String: b"text\0".as_ptr()];
+            let text_val: *mut Object = msg_send![dict, objectForKey: text_key];
+            let text = nsstring_to_string(text_val);
+
+            // Extract "timestamp" field
+            let ts_key: *mut Object = msg_send![ns_string_class, stringWithUTF8String: b"timestamp\0".as_ptr()];
+            let ts_val: *mut Object = msg_send![dict, objectForKey: ts_key];
+            let timestamp: f64 = if !ts_val.is_null() {
+                msg_send![ts_val, doubleValue]
+            } else {
+                0.0
+            };
+
+            shares.push(PendingShare {
+                share_type,
+                url,
+                text,
+                timestamp,
+            });
+        }
+
+        Ok(shares)
+    }
+}
+
+/// Clear pending shares from iOS App Groups UserDefaults
+#[cfg(target_os = "ios")]
+#[tauri::command]
+async fn share_clear_pending_ios() -> Result<(), String> {
+    use objc::{class, msg_send, sel, sel_impl};
+    use objc::runtime::Object;
+
+    unsafe {
+        let ns_string_class = class!(NSString);
+        let suite_name: *mut Object = msg_send![
+            ns_string_class,
+            stringWithUTF8String: b"group.com.skelenote.app\0".as_ptr()
+        ];
+
+        let user_defaults_class = class!(NSUserDefaults);
+        let defaults: *mut Object = msg_send![user_defaults_class, alloc];
+        let defaults: *mut Object = msg_send![defaults, initWithSuiteName: suite_name];
+
+        if !defaults.is_null() {
+            let key: *mut Object = msg_send![
+                ns_string_class,
+                stringWithUTF8String: b"pendingShares\0".as_ptr()
+            ];
+            let _: () = msg_send![defaults, removeObjectForKey: key];
+            let _: () = msg_send![defaults, synchronize];
+        }
+    }
+
+    Ok(())
+}
+
+/// Get pending shares from Android SharedPreferences
+///
+/// Returns shares saved by the Android ShareReceiverActivity from
+/// SharedPreferences (skelenote_shares).
+///
+/// TODO: Implement using JNI to read from SharedPreferences
+#[cfg(target_os = "android")]
+#[tauri::command]
+async fn share_get_pending_android() -> Result<Vec<PendingShare>, String> {
+    // Placeholder implementation
+    // Full implementation requires JNI to:
+    // 1. Get SharedPreferences("skelenote_shares", MODE_PRIVATE)
+    // 2. Read "pendingShares" key as JSON string
+    // 3. Parse JSON and convert to Vec<PendingShare>
+
+    // For now, return empty array
+    Ok(vec![])
+}
+
+/// Clear pending shares from Android SharedPreferences
+#[cfg(target_os = "android")]
+#[tauri::command]
+async fn share_clear_pending_android() -> Result<(), String> {
+    // Placeholder implementation
+    // Full implementation requires JNI to:
+    // 1. Get SharedPreferences("skelenote_shares", MODE_PRIVATE)
+    // 2. Remove "pendingShares" key
+
+    Ok(())
+}
+
+// ============================================================================
+// Background Task Commands (iOS)
+// ============================================================================
+
+/// Begin a background task to allow sync to complete when app is backgrounded
+///
+/// iOS grants ~30 seconds for background execution. Call this when entering
+/// background while sync is in progress.
+///
+/// Returns a task ID that must be passed to end_background_task when done.
+#[cfg(target_os = "ios")]
+#[tauri::command]
+async fn begin_background_task() -> Result<i64, String> {
+    use objc::{class, msg_send, sel, sel_impl};
+
+    unsafe {
+        let app_class = class!(UIApplication);
+        let app: *mut objc::runtime::Object = msg_send![app_class, sharedApplication];
+
+        // Note: Passing nil as the expiration handler
+        // In production, you'd want to properly create a block for cleanup
+        let task_id: isize = msg_send![app, beginBackgroundTaskWithExpirationHandler: std::ptr::null::<objc::runtime::Object>()];
+
+        if task_id == 0 {
+            // UIBackgroundTaskInvalid
+            Err("Failed to begin background task".to_string())
+        } else {
+            println!("[BackgroundTask] Started task: {}", task_id);
+            Ok(task_id as i64)
+        }
+    }
+}
+
+/// End a background task when sync is complete
+///
+/// Must be called with the task_id returned from begin_background_task
+#[cfg(target_os = "ios")]
+#[tauri::command]
+async fn end_background_task(task_id: i64) -> Result<(), String> {
+    use objc::{class, msg_send, sel, sel_impl};
+
+    unsafe {
+        let app_class = class!(UIApplication);
+        let app: *mut objc::runtime::Object = msg_send![app_class, sharedApplication];
+
+        let _: () = msg_send![app, endBackgroundTask: task_id as isize];
+        println!("[BackgroundTask] Ended task: {}", task_id);
+    }
+
+    Ok(())
+}
+
+// Stub implementations for non-iOS platforms
+#[cfg(not(target_os = "ios"))]
+#[tauri::command]
+async fn begin_background_task() -> Result<i64, String> {
+    // No-op on non-iOS platforms
+    Ok(0)
+}
+
+#[cfg(not(target_os = "ios"))]
+#[tauri::command]
+async fn end_background_task(_task_id: i64) -> Result<(), String> {
+    // No-op on non-iOS platforms
+    Ok(())
+}
+
+// ============================================================================
+// Share Extension Stub Implementations (non-mobile platforms)
+// ============================================================================
+
+// Stub implementations for non-mobile platforms (commands still need to be registered)
+#[cfg(not(target_os = "ios"))]
+#[tauri::command]
+async fn share_get_pending_ios() -> Result<Vec<PendingShare>, String> {
+    Ok(vec![])
+}
+
+#[cfg(not(target_os = "ios"))]
+#[tauri::command]
+async fn share_clear_pending_ios() -> Result<(), String> {
+    Ok(())
+}
+
+#[cfg(not(target_os = "android"))]
+#[tauri::command]
+async fn share_get_pending_android() -> Result<Vec<PendingShare>, String> {
+    Ok(vec![])
+}
+
+#[cfg(not(target_os = "android"))]
+#[tauri::command]
+async fn share_clear_pending_android() -> Result<(), String> {
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default()
@@ -1880,6 +2151,10 @@ pub fn run() {
                 app.handle().plugin(tauri_plugin_edge_to_edge::init())?;
                 // Biometric authentication (Face ID, Touch ID, fingerprint)
                 app.handle().plugin(tauri_plugin_biometric::init())?;
+                // Local notifications for reminders
+                app.handle().plugin(tauri_plugin_notification::init())?;
+                // Deep link handling (skelenote:// URLs)
+                app.handle().plugin(tauri_plugin_deep_link::init())?;
             }
 
             // Initialize Android Keyring for native Keystore access
@@ -1981,6 +2256,14 @@ pub fn run() {
             haptics::haptic_impact,
             haptics::haptic_notification,
             haptics::haptic_selection,
+            // Share extension commands (mobile only)
+            share_get_pending_ios,
+            share_clear_pending_ios,
+            share_get_pending_android,
+            share_clear_pending_android,
+            // Background task commands (mobile only)
+            begin_background_task,
+            end_background_task,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

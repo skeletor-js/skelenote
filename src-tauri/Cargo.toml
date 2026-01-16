@@ -60,6 +60,8 @@ tauri-plugin-shell = "2"  # shell:allow-open for URL handling
 tauri-plugin-barcode-scanner = "2"
 tauri-plugin-edge-to-edge = "0.3"  # Full screen edge-to-edge with safe area CSS vars
 tauri-plugin-biometric = "2"       # Biometric authentication (Face ID, Touch ID, fingerprint)
+tauri-plugin-notification = "2"    # Local notifications for reminders
+tauri-plugin-deep-link = "2"       # Deep link handling (skelenote:// URLs)
 
 # iOS-only dependencies
 [target.'cfg(target_os = "ios")'.dependencies]

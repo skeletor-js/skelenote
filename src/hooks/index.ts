@@ -73,3 +73,13 @@ export {
 } from './useScrollDirection';
 export { useReducedMotion, getAccessibleTransition } from './useReducedMotion';
 export { useUndoToast } from './useUndoToast';
+export {
+  useNotifications,
+  type UseNotificationsResult,
+} from './useNotifications';
+export { useShareHandler, type UseShareHandlerResult } from './useShareHandler';
+export {
+  useBackgroundTask,
+  type UseBackgroundTaskResult,
+} from './useBackgroundTask';
+export { useDeepLinks } from './useDeepLinks';

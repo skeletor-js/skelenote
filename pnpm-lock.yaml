@@ -44,6 +44,9 @@ importers:
       '@tauri-apps/plugin-biometric':
         specifier: ^2.3.2
         version: 2.3.2
+      '@tauri-apps/plugin-deep-link':
+        specifier: ^2.4.6
+        version: 2.4.6
       '@tauri-apps/plugin-dialog':
         specifier: ^2.4.2
         version: 2.4.2
@@ -944,6 +947,9 @@ packages:
 
   '@tauri-apps/plugin-biometric@2.3.2':
     resolution: {integrity: sha512-RFydYGKEJ6m4UWdcPsO+vJQUb3JyyfFeNoZSPDs0uWjvwHBs03xey5wWO+uowmFFy03JAff1l2idQAwuycO8Uw==}
+
+  '@tauri-apps/plugin-deep-link@2.4.6':
+    resolution: {integrity: sha512-UUOSt0U5juK20uhO2MoHZX/IPblkrhUh+VPtIeu3RwtzI0R9Em3Auzfg/PwcZ9Pv8mLne3cQ4p9CFXD6WxqCZA==}
 
   '@tauri-apps/plugin-dialog@2.4.2':
     resolution: {integrity: sha512-lNIn5CZuw8WZOn8zHzmFmDSzg5zfohWoa3mdULP0YFh/VogVdMVWZPcWSHlydsiJhRQYaTNSYKN7RmZKE2lCYQ==}
@@ -3687,6 +3693,10 @@ snapshots:
       '@tauri-apps/api': 2.9.1
 
   '@tauri-apps/plugin-biometric@2.3.2':
+    dependencies:
+      '@tauri-apps/api': 2.9.1
+
+  '@tauri-apps/plugin-deep-link@2.4.6':
     dependencies:
       '@tauri-apps/api': 2.9.1
 

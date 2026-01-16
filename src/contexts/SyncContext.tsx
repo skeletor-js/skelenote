@@ -7,6 +7,7 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 import {
   SyncClient,
   type ConnectionStatus,
@@ -16,6 +17,7 @@ import {
 } from '@/lib/sync';
 import { useObjects } from './ObjectContext';
 import { useToast } from './ToastContext';
+import { usePlatform } from '@/hooks/usePlatform';
 
 interface SyncContextValue {
   /** The sync client instance */
@@ -51,12 +53,14 @@ interface SyncProviderProps {
 export function SyncProvider({ children }: SyncProviderProps) {
   const { docStore, store, refreshData } = useObjects();
   const { addToast } = useToast();
+  const { isMobile, isIOS } = usePlatform();
   const [syncClient, setSyncClient] = useState<SyncClient | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pendingCount, setPendingCount] = useState(0);
   const [hasError, setHasError] = useState(false);
   const autoConnectAttemptedRef = useRef(false);
+  const backgroundTaskIdRef = useRef<number | null>(null);
 
   // Track browser online/offline status
   useEffect(() => {
@@ -175,6 +179,92 @@ export function SyncProvider({ children }: SyncProviderProps) {
       connect(savedUrl, userId, deviceId);
     }
   }, [docStore, connect]);
+
+  // Background task helpers for iOS
+  const beginBackgroundTask = useCallback(async () => {
+    if (!isMobile || !isIOS) return;
+    if (backgroundTaskIdRef.current !== null) return;
+
+    try {
+      const taskId = await invoke<number>('begin_background_task');
+      if (taskId !== 0) {
+        backgroundTaskIdRef.current = taskId;
+        console.log('[SyncContext] Started background task:', taskId);
+      }
+    } catch (error) {
+      console.error('[SyncContext] Failed to begin background task:', error);
+    }
+  }, [isMobile, isIOS]);
+
+  const endBackgroundTask = useCallback(async () => {
+    if (!isMobile || !isIOS) return;
+    if (backgroundTaskIdRef.current === null) return;
+
+    try {
+      await invoke('end_background_task', {
+        taskId: backgroundTaskIdRef.current,
+      });
+      console.log(
+        '[SyncContext] Ended background task:',
+        backgroundTaskIdRef.current
+      );
+      backgroundTaskIdRef.current = null;
+    } catch (error) {
+      console.error('[SyncContext] Failed to end background task:', error);
+      backgroundTaskIdRef.current = null;
+    }
+  }, [isMobile, isIOS]);
+
+  // Handle app visibility changes for background sync (iOS only)
+  useEffect(() => {
+    if (!isMobile || !isIOS) return;
+
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'hidden') {
+        // App going to background
+        // Start background task if we're syncing or have pending updates
+        const isSyncing = status === 'syncing';
+        const hasPending = pendingCount > 0;
+
+        if (isSyncing || hasPending) {
+          console.log(
+            '[SyncContext] Starting background task for sync completion'
+          );
+          await beginBackgroundTask();
+        }
+      } else if (document.visibilityState === 'visible') {
+        // App returning to foreground - end any active background task
+        await endBackgroundTask();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [
+    isMobile,
+    isIOS,
+    status,
+    pendingCount,
+    beginBackgroundTask,
+    endBackgroundTask,
+  ]);
+
+  // End background task when sync completes
+  useEffect(() => {
+    if (!isMobile || !isIOS) return;
+
+    // If we have a background task running and sync is no longer active
+    if (
+      backgroundTaskIdRef.current !== null &&
+      status !== 'syncing' &&
+      pendingCount === 0
+    ) {
+      console.log('[SyncContext] Sync complete, ending background task');
+      endBackgroundTask();
+    }
+  }, [isMobile, isIOS, status, pendingCount, endBackgroundTask]);
 
   // Cleanup on unmount
   useEffect(() => {

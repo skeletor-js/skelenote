@@ -36,7 +36,12 @@ import {
   useUndo,
   type ViewType,
 } from '@/contexts';
-import { useTodaysDailyNote, useTemplates, usePlatform } from '@/hooks';
+import {
+  useTodaysDailyNote,
+  useTemplates,
+  usePlatform,
+  useDeepLinks,
+} from '@/hooks';
 import type { Template } from '@/lib/templates';
 import { runFirstRunSetup } from '@/lib/first-run';
 import type { TaskFilter } from '@/lib/tasks/filters';
@@ -553,6 +558,10 @@ function App() {
   } = useSkeletonKey();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
   const { isMobile } = usePlatform();
+
+  // Handle deep links (skelenote:// URLs) on mobile
+  useDeepLinks();
+
   const {
     splitPane,
     closeSplit,

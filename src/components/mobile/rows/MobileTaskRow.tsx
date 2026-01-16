@@ -4,7 +4,15 @@
 
 import { useMemo, useCallback } from 'react';
 import { Text, Group, Stack, Badge } from '@mantine/core';
-import { CheckCircle, Circle, Archive, Flag, Pin, PinOff } from 'lucide-react';
+import {
+  CheckCircle,
+  Circle,
+  Archive,
+  Flag,
+  Pin,
+  PinOff,
+  Bell,
+} from 'lucide-react';
 import {
   SwipeableRow,
   AnimatedCheckbox,
@@ -55,6 +63,7 @@ export function MobileTaskRow({
   const title = (task.properties.title ?? 'Untitled') as string;
   const priority = task.properties.priority as string | undefined;
   const dueDate = task.properties.dueDate as number | null;
+  const reminderTime = task.properties.reminderTime as number | null;
   const projectId = task.properties.project as string | null;
 
   // Get project name
@@ -72,6 +81,16 @@ export function MobileTaskRow({
       isOverdue: isOverdue(dueDate) && !isComplete,
     };
   }, [dueDate, isComplete]);
+
+  // Format reminder time (only show if in the future and task not complete)
+  const reminderInfo = useMemo(() => {
+    if (!reminderTime || isComplete) return null;
+    const now = Date.now();
+    if (reminderTime < now) return null; // Don't show past reminders
+    return {
+      text: formatRelativeDate(reminderTime),
+    };
+  }, [reminderTime, isComplete]);
 
   // Handle checkbox toggle - different behavior in selection mode
   const handleCheckboxToggle = useCallback(() => {
@@ -187,6 +206,18 @@ export function MobileTaskRow({
               <Text size="xs" c={dateInfo.isOverdue ? 'brick' : 'dimmed'}>
                 {dateInfo.text}
               </Text>
+            )}
+            {/* Reminder indicator */}
+            {reminderInfo && (
+              <Group gap={4} wrap="nowrap">
+                <Bell
+                  size={12}
+                  style={{ color: 'var(--mantine-color-ember-5)' }}
+                />
+                <Text size="xs" c="ember">
+                  {reminderInfo.text}
+                </Text>
+              </Group>
             )}
           </Group>
         </Stack>
