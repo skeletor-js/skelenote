@@ -67,6 +67,10 @@ tauri-plugin-deep-link = "2"       # Deep link handling (skelenote:// URLs)
 [target.'cfg(target_os = "ios")'.dependencies]
 objc = "0.2"        # Objective-C runtime bindings for haptics
 
+# macOS-only dependencies
+[target.'cfg(target_os = "macos")'.dependencies]
+objc = "0.2"        # Objective-C runtime bindings for dock icon
+
 # Android-only dependencies
 [target.'cfg(target_os = "android")'.dependencies]
 android-keyring = "0.2"  # Android Keystore integration for keyring crate

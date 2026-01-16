@@ -10,4 +10,6 @@
 
     <!-- Adaptive icon background (Skelenote Canvas color) -->
     <color name="ic_launcher_background">#FAFAFA</color>
+    <!-- Light icon background (for light variant) -->
+    <color name="ic_launcher_light_background">#18181B</color>
 </resources>

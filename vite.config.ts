@@ -16,12 +16,31 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    // Use jsdom for hooks and components tests
+    environmentMatchGlobs: [
+      ['src/hooks/**/*.test.ts', 'jsdom'],
+      ['src/components/**/*.test.tsx', 'jsdom'],
+    ],
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['src/lib/**/*.ts'],
-      exclude: ['src/lib/**/*.test.ts', 'src/lib/**/__tests__/**'],
+      include: [
+        'src/lib/**/*.ts',
+        'src/hooks/**/*.ts',
+        'src/contexts/**/*.ts',
+        'src/contexts/**/*.tsx',
+      ],
+      exclude: [
+        'src/lib/**/*.test.ts',
+        'src/lib/**/__tests__/**',
+        'src/hooks/**/*.test.ts',
+        'src/hooks/**/__tests__/**',
+        'src/contexts/**/*.test.ts',
+        'src/contexts/**/*.test.tsx',
+        'src/contexts/**/__tests__/**',
+        '**/index.ts',
+      ],
     },
   },
   // Prevent vite from obscuring rust errors

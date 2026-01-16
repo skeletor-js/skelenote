@@ -30,8 +30,10 @@ targets:
     sources:
       - path: Sources
       - path: Assets.xcassets
-      - path: Externals
       - path: skelenote_iOS
+      - path: skelenote_iOS/AlternateIcons
+        buildPhase: resources
+        type: folder
       - path: assets
         buildPhase: resources
         type: folder

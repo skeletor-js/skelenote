@@ -20,6 +20,14 @@
 	<string>0.2.0</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_skelenote._tcp</string>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Skelenote uses the camera to scan QR codes for secure device pairing.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Skelenote uses local networking to sync your notes with other devices on your network.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -39,31 +47,6 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>Skelenote uses the camera to scan QR codes to import your Skeleton Key and pair devices.</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>Skelenote uses local networking to sync your notes with other devices on your network.</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>Skelenote uses Face ID or Touch ID to securely unlock your encrypted notes.</string>
-	<key>NSBonjourServices</key>
-	<array>
-		<string>_skelenote._tcp</string>
-	</array>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>processing</string>
-	</array>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>com.skelenote.app</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>skelenote</string>
-			</array>
-		</dict>
 	</array>
 </dict>
 </plist>

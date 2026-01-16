@@ -201,15 +201,47 @@ export function calculateNextDueDate(
         // Find the next day in this week
         const nextDayThisWeek = sortedDays.find((d) => d > currentDay);
         if (nextDayThisWeek !== undefined) {
-          return getNextDayOfWeek(currentDate, nextDayThisWeek).getTime();
+          const result = getNextDayOfWeek(currentDate, nextDayThisWeek);
+          // Preserve time
+          result.setHours(
+            currentDate.getHours(),
+            currentDate.getMinutes(),
+            currentDate.getSeconds(),
+            currentDate.getMilliseconds()
+          );
+          return result.getTime();
         }
 
-        // Otherwise, go to first day of next week
-        const nextWeek = addDays(currentDueDate, 7);
-        const nextWeekDate = new Date(nextWeek);
-        return getNextDayOfWeek(nextWeekDate, sortedDays[0]).getTime();
+        // Otherwise, go to first recurrence day of the next interval
+
+        // Logic:
+        // 1. Find the first occurrence in the *next* week
+        // 2. Add (interval - 1) weeks to that
+
+        // Find next week's first recurrence day
+        const nextWeekStart = addDays(currentDueDate, 1); // Move to tomorrow to ensure we don't find today
+        const nextOccurrence = getNextDayOfWeek(
+          new Date(nextWeekStart),
+          sortedDays[0]
+        );
+
+        // Add the remaining weeks (interval - 1)
+        if (config.interval > 1) {
+          nextOccurrence.setDate(
+            nextOccurrence.getDate() + 7 * (config.interval - 1)
+          );
+        }
+
+        // Preserve time
+        nextOccurrence.setHours(
+          currentDate.getHours(),
+          currentDate.getMinutes(),
+          currentDate.getSeconds(),
+          currentDate.getMilliseconds()
+        );
+        return nextOccurrence.getTime();
       }
-      // Default: add 7 days
+      // Default: add 7 days * interval
       return addDays(currentDueDate, 7 * config.interval);
     }
 
@@ -225,7 +257,22 @@ export function calculateNextDueDate(
           nextYear += 1;
         }
 
-        // Find the nth weekday of the next month
+        // Add interval-1 months first?
+        // Standard monthly recurrence usually happens every N months.
+        // If we want "2nd Tuesday of every 2 months".
+        // We should skip (interval - 1) months.
+        // But the previous implementation just looked at next month.
+        // Let's assume standard behavior: Next occurrence is in (currentMonth + interval).
+
+        if (config.interval > 1) {
+          nextMonth += config.interval - 1;
+          while (nextMonth > 11) {
+            nextMonth -= 12;
+            nextYear += 1;
+          }
+        }
+
+        // Find the nth weekday of the target month
         let nthWeekday = getNthWeekdayOfMonth(
           nextYear,
           nextMonth,
@@ -234,7 +281,10 @@ export function calculateNextDueDate(
         );
 
         // If the nth weekday doesn't exist in this month (e.g., 5th Monday),
-        // try the following month
+        // try the following month? Or skip it?
+        // Simplest strategy: try next month (and respect interval?)
+        // If we miss it, we should probably stick to the schedule (e.g. +interval months again)
+        // But for skelenote MVP, let's just retry next month without complex skip logic
         if (!nthWeekday) {
           nextMonth += 1;
           if (nextMonth > 11) {
@@ -249,13 +299,23 @@ export function calculateNextDueDate(
           );
         }
 
-        return nthWeekday?.getTime() ?? addMonths(currentDueDate, 1);
+        const result = nthWeekday ?? new Date(addMonths(currentDueDate, 1)); // Fallback
+
+        // Preserve time from source
+        result.setHours(
+          currentDate.getHours(),
+          currentDate.getMinutes(),
+          currentDate.getSeconds(),
+          currentDate.getMilliseconds()
+        );
+
+        return result.getTime();
       }
 
       // Handle day of month (e.g., "15th of each month")
-      const nextMonth = addMonths(currentDueDate, 1 * config.interval);
+      const nextMonthTimestamp = addMonths(currentDueDate, 1 * config.interval);
       if (config.dayOfMonth) {
-        const nextDate = new Date(nextMonth);
+        const nextDate = new Date(nextMonthTimestamp);
         // Handle edge cases like day 31 in a 30-day month
         const lastDayOfMonth = new Date(
           nextDate.getFullYear(),
@@ -263,9 +323,18 @@ export function calculateNextDueDate(
           0
         ).getDate();
         nextDate.setDate(Math.min(config.dayOfMonth, lastDayOfMonth));
+
+        // Preserve time (addMonths preserves time, but safeguard)
+        nextDate.setHours(
+          currentDate.getHours(),
+          currentDate.getMinutes(),
+          currentDate.getSeconds(),
+          currentDate.getMilliseconds()
+        );
+
         return nextDate.getTime();
       }
-      return nextMonth;
+      return nextMonthTimestamp;
     }
 
     case 'quarterly': {
@@ -375,8 +444,8 @@ export function prepareNextRecurringTask(
     return null;
   }
 
-  const currentDueDate = task.properties.dueDate as number | null;
-  if (currentDueDate === null) {
+  const currentDueDate = task.properties.dueDate as number | null | undefined;
+  if (currentDueDate === null || currentDueDate === undefined) {
     // No due date, can't calculate next occurrence
     return null;
   }

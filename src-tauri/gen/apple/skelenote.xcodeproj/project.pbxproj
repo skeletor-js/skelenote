@@ -3,59 +3,99 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1191B6613659909FDB451A34 /* AppIcon-Light-29x29@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 2B470C885B0A44D6D8C3E3F0 /* AppIcon-Light-29x29@3x.png */; };
+		16F5A16297BE9694564887B1 /* AppIcon-Light-20x20@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = E86B29983E3628CAA262F94F /* AppIcon-Light-20x20@3x.png */; };
+		19CD8C59A4D640ED0272FC75 /* AppIcon-Light-29x29@2x-1.png in Resources */ = {isa = PBXBuildFile; fileRef = 761DCA7DE3DAA56B2F57428C /* AppIcon-Light-29x29@2x-1.png */; };
+		2720DB530978FF11B6864DD9 /* AppIcon-Light-29x29@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 6D7CD1B4B1C36CCF2C257D08 /* AppIcon-Light-29x29@2x.png */; };
 		2D7CE62A2831079058B326F8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4731EF6A1E1ED45CB65D853F /* LaunchScreen.storyboard */; };
+		31BDF7F5B78E06F7EE0A58A2 /* AppIcon-Light-20x20@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F6649C00D5117636DD23A65 /* AppIcon-Light-20x20@2x.png */; };
+		32C504D655D23B94B17FD9C0 /* AppIcon-Light-40x40@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1D667A607B8139E81EEDE630 /* AppIcon-Light-40x40@1x.png */; };
+		375CEDA48E6A51A4075C38D2 /* AppIcon-Light-40x40@2x-1.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EEBCCF5B28A3979082A5C71 /* AppIcon-Light-40x40@2x-1.png */; };
 		38B5F6C9307D90F54C781114 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C1767FEFCAE61799B8A2D40A /* Assets.xcassets */; };
+		3A42CAA8B5C2124A2520C075 /* AppIcon-Light-60x60@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4300168FE892938288BD65CA /* AppIcon-Light-60x60@3x.png */; };
+		3F12065E5469777385ECC1C7 /* AppIcon-Light-40x40@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = A279066087C04AA42DDDD369 /* AppIcon-Light-40x40@3x.png */; };
+		425E7F95F50A4F547DDF3C29 /* AlternateIcons in Resources */ = {isa = PBXBuildFile; fileRef = E70A15A6689D482BD3AF2006 /* AlternateIcons */; };
+		486023606A04A652279ABFE3 /* AppIcon-Light-512@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DA292DBFEA4689E24399D654 /* AppIcon-Light-512@2x.png */; };
+		52F82F063C427070F950515A /* AppIcon-Light-29x29@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = 632CB923CC36B532A9FF2B28 /* AppIcon-Light-29x29@1x.png */; };
 		55C8AC8B155BA7D059DCB197 /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B3569E29DC667BAB32DCD216 /* libapp.a */; };
 		63A14D413D452F85E4924402 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 644A4070ABEE4E48E97171AC /* assets */; };
+		63A418305B01F6ABEACC6A08 /* AppIcon-Light-83.5x83.5@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C1AEEE157DDD46D3151ED184 /* AppIcon-Light-83.5x83.5@2x.png */; };
 		9745027E2169B534B49E31DC /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63441005ADEE76790EC32397 /* QuartzCore.framework */; };
 		AEF820E59138E9E9B0A944E2 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 99A98EAFF7CCAD35336B37A5 /* MetalKit.framework */; };
 		B759CE211C4CDEAB34E3F4E2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB5C048F22A531E64AD0A861 /* Metal.framework */; };
 		C187D24E15F77309B476BCEC /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9574A506A48D351126DC18BF /* CoreGraphics.framework */; };
+		CE6DCAB36528AC2B3050E3D2 /* AppIcon-Light-40x40@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F1BA6CB7EB6E71CD1507EAD /* AppIcon-Light-40x40@2x.png */; };
+		D324CF611C4C04F7661DEBE3 /* AppIcon-Light-76x76@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 48FAA237EEB252DBA99CD540 /* AppIcon-Light-76x76@2x.png */; };
+		D4AC70143E774CEE5938AF79 /* AppIcon-Light-76x76@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = A24DACA1A1CA8BE0B4A32094 /* AppIcon-Light-76x76@1x.png */; };
+		DD0EA3AD38D9CF0BD951219C /* AppIcon-Light-20x20@2x-1.png in Resources */ = {isa = PBXBuildFile; fileRef = 4194A8E7766C95F7780C0E2A /* AppIcon-Light-20x20@2x-1.png */; };
 		EB69CE45E4A6D4EC0C4DC97F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEAC77C82EB5E18939433FC1 /* UIKit.framework */; };
 		F0305E160A94CE973FBBA139 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8C88B31EE51E5137BCADE69E /* main.mm */; };
+		F186A0EC39FA532012D5A6C1 /* AppIcon-Light-60x60@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B441B7686B2B29EC9B33B5E9 /* AppIcon-Light-60x60@2x.png */; };
 		F5499E9A724779CA3A94C234 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BBEF2BF87952D96459A6D59E /* WebKit.framework */; };
 		F6276849410B5A730DE0ADDE /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82A0462D2DAAEF4461F7C0E4 /* Security.framework */; };
+		F852FB7CD94002F72CE05B7A /* AppIcon-Light-20x20@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = 172C7FAF289A4EFF61971269 /* AppIcon-Light-20x20@1x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		096802B82E53A3A1064FBC75 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
-		14D9869AC8740A7012DB737A /* mdns.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = mdns.rs; sourceTree = "<group>"; };
+		14D9869AC8740A7012DB737A /* mdns.rs */ = {isa = PBXFileReference; path = mdns.rs; sourceTree = "<group>"; };
 		1713629825F748ABCC180CD4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		251A922F9C54F5D881FBDD66 /* state.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = state.rs; sourceTree = "<group>"; };
-		325A5BFAFE5834D609F6045B /* lib.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = lib.rs; sourceTree = "<group>"; };
-		364D334E35D7B72EBA3CB475 /* pairing.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = pairing.rs; sourceTree = "<group>"; };
-		3F1748112839C27758D6FB19 /* error.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = error.rs; sourceTree = "<group>"; };
+		172C7FAF289A4EFF61971269 /* AppIcon-Light-20x20@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-20x20@1x.png"; sourceTree = "<group>"; };
+		1D667A607B8139E81EEDE630 /* AppIcon-Light-40x40@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-40x40@1x.png"; sourceTree = "<group>"; };
+		1EEBCCF5B28A3979082A5C71 /* AppIcon-Light-40x40@2x-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-40x40@2x-1.png"; sourceTree = "<group>"; };
+		251A922F9C54F5D881FBDD66 /* state.rs */ = {isa = PBXFileReference; path = state.rs; sourceTree = "<group>"; };
+		2B470C885B0A44D6D8C3E3F0 /* AppIcon-Light-29x29@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-29x29@3x.png"; sourceTree = "<group>"; };
+		325A5BFAFE5834D609F6045B /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
+		364D334E35D7B72EBA3CB475 /* pairing.rs */ = {isa = PBXFileReference; path = pairing.rs; sourceTree = "<group>"; };
+		3F1748112839C27758D6FB19 /* error.rs */ = {isa = PBXFileReference; path = error.rs; sourceTree = "<group>"; };
+		4194A8E7766C95F7780C0E2A /* AppIcon-Light-20x20@2x-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-20x20@2x-1.png"; sourceTree = "<group>"; };
+		4300168FE892938288BD65CA /* AppIcon-Light-60x60@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-60x60@3x.png"; sourceTree = "<group>"; };
 		4731EF6A1E1ED45CB65D853F /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		48FAA237EEB252DBA99CD540 /* AppIcon-Light-76x76@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-76x76@2x.png"; sourceTree = "<group>"; };
 		494543972D5AA752AD817AFF /* skelenote_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = skelenote_iOS.entitlements; sourceTree = "<group>"; };
-		544552642DC8511E52BA5781 /* mod.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = mod.rs; sourceTree = "<group>"; };
-		5A123EA7EE103D8129C60B17 /* skelenote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = skelenote.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F6649C00D5117636DD23A65 /* AppIcon-Light-20x20@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-20x20@2x.png"; sourceTree = "<group>"; };
+		544552642DC8511E52BA5781 /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		5779E85E5BBD3B65916E1B5C /* icon.rs */ = {isa = PBXFileReference; path = icon.rs; sourceTree = "<group>"; };
+		5A123EA7EE103D8129C60B17 /* skelenote_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = skelenote_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E37CDA32487D26ED2462D5E /* haptics.rs */ = {isa = PBXFileReference; path = haptics.rs; sourceTree = "<group>"; };
+		5F1BA6CB7EB6E71CD1507EAD /* AppIcon-Light-40x40@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-40x40@2x.png"; sourceTree = "<group>"; };
+		632CB923CC36B532A9FF2B28 /* AppIcon-Light-29x29@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-29x29@1x.png"; sourceTree = "<group>"; };
 		63441005ADEE76790EC32397 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		644A4070ABEE4E48E97171AC /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
-		66BE567D60349830B13B00BF /* qr.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = qr.rs; sourceTree = "<group>"; };
+		66BE567D60349830B13B00BF /* qr.rs */ = {isa = PBXFileReference; path = qr.rs; sourceTree = "<group>"; };
+		6D7CD1B4B1C36CCF2C257D08 /* AppIcon-Light-29x29@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-29x29@2x.png"; sourceTree = "<group>"; };
+		761DCA7DE3DAA56B2F57428C /* AppIcon-Light-29x29@2x-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-29x29@2x-1.png"; sourceTree = "<group>"; };
 		82A0462D2DAAEF4461F7C0E4 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		8C88B31EE51E5137BCADE69E /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
-		8DD5F529918A6F8DBD8E96C0 /* protocol.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = protocol.rs; sourceTree = "<group>"; };
-		90CB2B616AFBDFEF1C6F7861 /* stronghold.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = stronghold.rs; sourceTree = "<group>"; };
+		8DD5F529918A6F8DBD8E96C0 /* protocol.rs */ = {isa = PBXFileReference; path = protocol.rs; sourceTree = "<group>"; };
+		90CB2B616AFBDFEF1C6F7861 /* stronghold.rs */ = {isa = PBXFileReference; path = stronghold.rs; sourceTree = "<group>"; };
 		9574A506A48D351126DC18BF /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		99A98EAFF7CCAD35336B37A5 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
-		9A3F29651701BAE6122A642B /* main.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.rs; sourceTree = "<group>"; };
+		9A3F29651701BAE6122A642B /* main.rs */ = {isa = PBXFileReference; path = main.rs; sourceTree = "<group>"; };
+		A24DACA1A1CA8BE0B4A32094 /* AppIcon-Light-76x76@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-76x76@1x.png"; sourceTree = "<group>"; };
+		A279066087C04AA42DDDD369 /* AppIcon-Light-40x40@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-40x40@3x.png"; sourceTree = "<group>"; };
 		B3569E29DC667BAB32DCD216 /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
+		B441B7686B2B29EC9B33B5E9 /* AppIcon-Light-60x60@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-60x60@2x.png"; sourceTree = "<group>"; };
 		BBEF2BF87952D96459A6D59E /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
-		BF341589FDA2DC729493B95C /* mod.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = mod.rs; sourceTree = "<group>"; };
+		BF341589FDA2DC729493B95C /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
 		C1767FEFCAE61799B8A2D40A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		CD23B898EAE9DB6D1153DB4B /* keys.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = keys.rs; sourceTree = "<group>"; };
-		DA51BD19EC4C537A1160F408 /* cache.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = cache.rs; sourceTree = "<group>"; };
-		DAC988B58FC8FD7B007EE972 /* signing.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = signing.rs; sourceTree = "<group>"; };
+		C1AEEE157DDD46D3151ED184 /* AppIcon-Light-83.5x83.5@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-83.5x83.5@2x.png"; sourceTree = "<group>"; };
+		CD23B898EAE9DB6D1153DB4B /* keys.rs */ = {isa = PBXFileReference; path = keys.rs; sourceTree = "<group>"; };
+		DA292DBFEA4689E24399D654 /* AppIcon-Light-512@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-512@2x.png"; sourceTree = "<group>"; };
+		DA51BD19EC4C537A1160F408 /* cache.rs */ = {isa = PBXFileReference; path = cache.rs; sourceTree = "<group>"; };
+		DAC988B58FC8FD7B007EE972 /* signing.rs */ = {isa = PBXFileReference; path = signing.rs; sourceTree = "<group>"; };
 		DB5C048F22A531E64AD0A861 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
-		DDA0BB50050A8999F848BA99 /* client.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = client.rs; sourceTree = "<group>"; };
+		DDA0BB50050A8999F848BA99 /* client.rs */ = {isa = PBXFileReference; path = client.rs; sourceTree = "<group>"; };
+		E70A15A6689D482BD3AF2006 /* AlternateIcons */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AlternateIcons; path = skelenote_iOS/AlternateIcons; sourceTree = SOURCE_ROOT; };
+		E86B29983E3628CAA262F94F /* AppIcon-Light-20x20@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-Light-20x20@3x.png"; sourceTree = "<group>"; };
 		EEAC77C82EB5E18939433FC1 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
-		F17806A5AC59C88BB494588D /* server.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = server.rs; sourceTree = "<group>"; };
-		FBC835836067B5BB62671A02 /* encryption.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = encryption.rs; sourceTree = "<group>"; };
-		FD99D8A644261F4F6259D0CA /* blocklist.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = blocklist.rs; sourceTree = "<group>"; };
+		F17806A5AC59C88BB494588D /* server.rs */ = {isa = PBXFileReference; path = server.rs; sourceTree = "<group>"; };
+		FBC835836067B5BB62671A02 /* encryption.rs */ = {isa = PBXFileReference; path = encryption.rs; sourceTree = "<group>"; };
+		FD99D8A644261F4F6259D0CA /* blocklist.rs */ = {isa = PBXFileReference; path = blocklist.rs; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,7 +120,7 @@
 		0764EEF09BB3748BB7ED1827 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5A123EA7EE103D8129C60B17 /* skelenote.app */,
+				5A123EA7EE103D8129C60B17 /* skelenote_iOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -88,6 +128,8 @@
 		4C987F50B11DE8AA38DC44AF /* src */ = {
 			isa = PBXGroup;
 			children = (
+				5E37CDA32487D26ED2462D5E /* haptics.rs */,
+				5779E85E5BBD3B65916E1B5C /* icon.rs */,
 				325A5BFAFE5834D609F6045B /* lib.rs */,
 				9A3F29651701BAE6122A642B /* main.rs */,
 				DA470B95F2578AB6BD0DC5DA /* crypto */,
@@ -123,10 +165,10 @@
 		AE44A188F46221AAABE099FF = {
 			isa = PBXGroup;
 			children = (
+				E70A15A6689D482BD3AF2006 /* AlternateIcons */,
 				644A4070ABEE4E48E97171AC /* assets */,
 				C1767FEFCAE61799B8A2D40A /* Assets.xcassets */,
 				4731EF6A1E1ED45CB65D853F /* LaunchScreen.storyboard */,
-				CA10A40A359204F4B0D778C1 /* Externals */,
 				C3AF968A58AD8F8DF8B56EEE /* skelenote_iOS */,
 				7A5069293545FAD35004D572 /* Sources */,
 				4C987F50B11DE8AA38DC44AF /* src */,
@@ -173,15 +215,9 @@
 			children = (
 				1713629825F748ABCC180CD4 /* Info.plist */,
 				494543972D5AA752AD817AFF /* skelenote_iOS.entitlements */,
+				E5F8D3CC77F77E617940DA4B /* AlternateIcons */,
 			);
 			path = skelenote_iOS;
-			sourceTree = "<group>";
-		};
-		CA10A40A359204F4B0D778C1 /* Externals */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Externals;
 			sourceTree = "<group>";
 		};
 		DA470B95F2578AB6BD0DC5DA /* crypto */ = {
@@ -196,6 +232,31 @@
 				90CB2B616AFBDFEF1C6F7861 /* stronghold.rs */,
 			);
 			path = crypto;
+			sourceTree = "<group>";
+		};
+		E5F8D3CC77F77E617940DA4B /* AlternateIcons */ = {
+			isa = PBXGroup;
+			children = (
+				172C7FAF289A4EFF61971269 /* AppIcon-Light-20x20@1x.png */,
+				4194A8E7766C95F7780C0E2A /* AppIcon-Light-20x20@2x-1.png */,
+				4F6649C00D5117636DD23A65 /* AppIcon-Light-20x20@2x.png */,
+				E86B29983E3628CAA262F94F /* AppIcon-Light-20x20@3x.png */,
+				632CB923CC36B532A9FF2B28 /* AppIcon-Light-29x29@1x.png */,
+				761DCA7DE3DAA56B2F57428C /* AppIcon-Light-29x29@2x-1.png */,
+				6D7CD1B4B1C36CCF2C257D08 /* AppIcon-Light-29x29@2x.png */,
+				2B470C885B0A44D6D8C3E3F0 /* AppIcon-Light-29x29@3x.png */,
+				1D667A607B8139E81EEDE630 /* AppIcon-Light-40x40@1x.png */,
+				1EEBCCF5B28A3979082A5C71 /* AppIcon-Light-40x40@2x-1.png */,
+				5F1BA6CB7EB6E71CD1507EAD /* AppIcon-Light-40x40@2x.png */,
+				A279066087C04AA42DDDD369 /* AppIcon-Light-40x40@3x.png */,
+				B441B7686B2B29EC9B33B5E9 /* AppIcon-Light-60x60@2x.png */,
+				4300168FE892938288BD65CA /* AppIcon-Light-60x60@3x.png */,
+				A24DACA1A1CA8BE0B4A32094 /* AppIcon-Light-76x76@1x.png */,
+				48FAA237EEB252DBA99CD540 /* AppIcon-Light-76x76@2x.png */,
+				C1AEEE157DDD46D3151ED184 /* AppIcon-Light-83.5x83.5@2x.png */,
+				DA292DBFEA4689E24399D654 /* AppIcon-Light-512@2x.png */,
+			);
+			path = AlternateIcons;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -218,7 +279,7 @@
 			packageProductDependencies = (
 			);
 			productName = skelenote_iOS;
-			productReference = 5A123EA7EE103D8129C60B17 /* skelenote.app */;
+			productReference = 5A123EA7EE103D8129C60B17 /* skelenote_iOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -240,6 +301,7 @@
 			);
 			mainGroup = AE44A188F46221AAABE099FF;
 			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -253,6 +315,25 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				425E7F95F50A4F547DDF3C29 /* AlternateIcons in Resources */,
+				F852FB7CD94002F72CE05B7A /* AppIcon-Light-20x20@1x.png in Resources */,
+				DD0EA3AD38D9CF0BD951219C /* AppIcon-Light-20x20@2x-1.png in Resources */,
+				31BDF7F5B78E06F7EE0A58A2 /* AppIcon-Light-20x20@2x.png in Resources */,
+				16F5A16297BE9694564887B1 /* AppIcon-Light-20x20@3x.png in Resources */,
+				52F82F063C427070F950515A /* AppIcon-Light-29x29@1x.png in Resources */,
+				19CD8C59A4D640ED0272FC75 /* AppIcon-Light-29x29@2x-1.png in Resources */,
+				2720DB530978FF11B6864DD9 /* AppIcon-Light-29x29@2x.png in Resources */,
+				1191B6613659909FDB451A34 /* AppIcon-Light-29x29@3x.png in Resources */,
+				32C504D655D23B94B17FD9C0 /* AppIcon-Light-40x40@1x.png in Resources */,
+				375CEDA48E6A51A4075C38D2 /* AppIcon-Light-40x40@2x-1.png in Resources */,
+				CE6DCAB36528AC2B3050E3D2 /* AppIcon-Light-40x40@2x.png in Resources */,
+				3F12065E5469777385ECC1C7 /* AppIcon-Light-40x40@3x.png in Resources */,
+				486023606A04A652279ABFE3 /* AppIcon-Light-512@2x.png in Resources */,
+				F186A0EC39FA532012D5A6C1 /* AppIcon-Light-60x60@2x.png in Resources */,
+				3A42CAA8B5C2124A2520C075 /* AppIcon-Light-60x60@3x.png in Resources */,
+				D4AC70143E774CEE5938AF79 /* AppIcon-Light-76x76@1x.png in Resources */,
+				D324CF611C4C04F7661DEBE3 /* AppIcon-Light-76x76@2x.png in Resources */,
+				63A418305B01F6ABEACC6A08 /* AppIcon-Light-83.5x83.5@2x.png in Resources */,
 				38B5F6C9307D90F54C781114 /* Assets.xcassets in Resources */,
 				2D7CE62A2831079058B326F8 /* LaunchScreen.storyboard in Resources */,
 				63A14D413D452F85E4924402 /* assets in Resources */,
@@ -420,11 +501,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ARCHS = arm64;
+				ARCHS = (
+					arm64,
+				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = skelenote_iOS/skelenote_iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = T4K7A3GPQ6;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -436,20 +518,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				"LIBRARY_SEARCH_PATHS[arch=arm64]" = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION)",
-					"$(SDKROOT)/usr/lib/swift",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
-				);
-				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION)",
-					"$(SDKROOT)/usr/lib/swift",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
-				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.skelenote.app;
 				PRODUCT_NAME = "skelenote";
 				SDKROOT = iphoneos;
@@ -462,11 +532,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ARCHS = arm64;
+				ARCHS = (
+					arm64,
+				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = skelenote_iOS/skelenote_iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = T4K7A3GPQ6;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -478,20 +549,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				"LIBRARY_SEARCH_PATHS[arch=arm64]" = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION)",
-					"$(SDKROOT)/usr/lib/swift",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
-				);
-				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION)",
-					"$(SDKROOT)/usr/lib/swift",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
-				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.skelenote.app;
 				PRODUCT_NAME = "skelenote";
 				SDKROOT = iphoneos;

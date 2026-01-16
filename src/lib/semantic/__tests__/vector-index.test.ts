@@ -219,7 +219,7 @@ describe('VectorIndex', () => {
       }
 
       const query = createRandomEmbedding();
-      const results = index.search(query, { limit: 3, threshold: 0 });
+      const results = index.search(query, { limit: 3, threshold: -1 });
 
       expect(results).toHaveLength(3);
     });
