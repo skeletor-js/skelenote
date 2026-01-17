@@ -13,14 +13,14 @@ import { getAccessibleTransition } from '../useReducedMotion';
 describe('getAccessibleTransition', () => {
   it('should return instant transition when reduced motion is enabled', () => {
     const transition = { duration: 0.3, ease: 'easeOut' };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const result = getAccessibleTransition(transition as any, true);
     expect(result).toEqual({ duration: 0 });
   });
 
   it('should return original transition when reduced motion is disabled', () => {
     const transition = { duration: 0.3, ease: 'easeOut' };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const result = getAccessibleTransition(transition as any, false);
     expect(result).toEqual(transition);
   });
@@ -31,7 +31,7 @@ describe('getAccessibleTransition', () => {
       stiffness: 500,
       damping: 30,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const result = getAccessibleTransition(springTransition as any, false);
     expect(result).toEqual(springTransition);
   });
@@ -42,7 +42,7 @@ describe('getAccessibleTransition', () => {
       stiffness: 500,
       damping: 30,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const result = getAccessibleTransition(springTransition as any, true);
     expect(result).toEqual({ duration: 0 });
   });
@@ -58,7 +58,7 @@ describe('getAccessibleTransition', () => {
       delay: 0.1,
       ease: [0.4, 0, 0.2, 1],
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const result = getAccessibleTransition(transition as any, false);
     expect(result).toEqual(transition);
   });
@@ -70,7 +70,7 @@ describe('getAccessibleTransition', () => {
       ease: 'anticipate',
       repeat: 3,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const result = getAccessibleTransition(transition as any, true);
     expect(result).toEqual({ duration: 0 });
   });

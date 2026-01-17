@@ -29,12 +29,14 @@ We test every release against existing vaults before publishing.
 | Linux | `~/.local/share/com.skelenote.app/data/` |
 
 **Key files**:
+
 - `store.loro` - Your entire vault (encrypted CRDT document)
 - `skeleton_key.enc` - Your encrypted master key
 
 ### Skeleton Key Storage
 
 Your Skeleton Key is stored in your operating system's secure keychain:
+
 - **macOS**: Keychain Access
 - **Windows**: Credential Manager
 - **Linux**: Secret Service (GNOME Keyring, KWallet)
@@ -48,16 +50,19 @@ Your Skeleton Key is stored in your operating system's secure keychain:
 The simplest backup is copying your entire data folder:
 
 **macOS**:
+
 ```bash
 cp -r ~/Library/Application\ Support/com.skelenote.app/data/ ~/Desktop/skelenote-backup-$(date +%Y%m%d)
 ```
 
 **Windows** (PowerShell):
+
 ```powershell
 Copy-Item -Recurse "$env:APPDATA\com.skelenote.app\data" "$env:USERPROFILE\Desktop\skelenote-backup-$(Get-Date -Format yyyyMMdd)"
 ```
 
 **Linux**:
+
 ```bash
 cp -r ~/.local/share/com.skelenote.app/data/ ~/skelenote-backup-$(date +%Y%m%d)
 ```
@@ -119,7 +124,7 @@ See [Export & Import Guide](../guides/export-import.md) for details.
 2. Check [Known Issues](./KNOWN_ISSUES.md) for the new version
 3. Try restarting the app
 4. If the app won't launch, your data is still safe in the data folder
-5. Report the issue on [GitHub](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml) or [Discord](https://discord.gg/4apsgSRB7D)
+5. Report the issue on [Linear](https://linear.app/skeletorjs/team/skelenote) or [Discord](https://discord.gg/4apsgSRB7D)
 
 ### "I think I lost data"
 
@@ -185,4 +190,4 @@ Planned features for better data safety:
 
 - [Troubleshooting Guide](./TROUBLESHOOTING.md)
 - [Discord](https://discord.gg/4apsgSRB7D)
-- [Report an Issue](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml)
+- [Report an Issue](https://linear.app/skeletorjs/team/skelenote)

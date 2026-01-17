@@ -9,50 +9,57 @@ import { useLinkToDaily } from '../useLinkToDaily';
 const mockStore = {};
 const mockRefreshData = vi.fn();
 
-vi.mock('@/contexts', () => ({
+vi.mock('@/contexts', async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
     useObjects: () => ({
-        store: mockStore,
-        refreshData: mockRefreshData,
+      store: mockStore,
+      refreshData: mockRefreshData,
     }),
-}));
+  };
+});
 
-vi.mock('@/lib/daily', () => ({
+vi.mock('@/lib/daily', async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
     linkObjectToDaily: vi.fn(),
     isLinkedToToday: vi.fn(),
-}));
+  };
+});
 
 import { linkObjectToDaily, isLinkedToToday } from '@/lib/daily';
 
 describe('useLinkToDaily', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const object = { id: 'obj1' } as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dailyNote = { id: 'daily1' } as any;
+  const object = { id: 'obj1' } as any;
 
-    beforeEach(() => {
-        vi.clearAllMocks();
-        vi.mocked(linkObjectToDaily).mockReturnValue(dailyNote);
-        vi.mocked(isLinkedToToday).mockReturnValue(false);
+  const dailyNote = { id: 'daily1' } as any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(linkObjectToDaily).mockReturnValue(dailyNote);
+    vi.mocked(isLinkedToToday).mockReturnValue(false);
+  });
+
+  it('should link object to daily note', () => {
+    const { result } = renderHook(() => useLinkToDaily());
+
+    let returnedNote;
+    act(() => {
+      returnedNote = result.current.linkToDaily(object);
     });
 
-    it('should link object to daily note', () => {
-        const { result } = renderHook(() => useLinkToDaily());
+    expect(linkObjectToDaily).toHaveBeenCalledWith(mockStore, object);
+    expect(mockRefreshData).toHaveBeenCalled();
+    expect(returnedNote).toBe(dailyNote);
+  });
 
-        let returnedNote;
-        act(() => {
-            returnedNote = result.current.linkToDaily(object);
-        });
+  it('should check if object is linked', () => {
+    vi.mocked(isLinkedToToday).mockReturnValue(true);
+    const { result } = renderHook(() => useLinkToDaily());
 
-        expect(linkObjectToDaily).toHaveBeenCalledWith(mockStore, object);
-        expect(mockRefreshData).toHaveBeenCalled();
-        expect(returnedNote).toBe(dailyNote);
-    });
-
-    it('should check if object is linked', () => {
-        vi.mocked(isLinkedToToday).mockReturnValue(true);
-        const { result } = renderHook(() => useLinkToDaily());
-
-        expect(result.current.isLinkedToToday(object)).toBe(true);
-        expect(isLinkedToToday).toHaveBeenCalledWith(object);
-    });
+    expect(result.current.isLinkedToToday(object)).toBe(true);
+    expect(isLinkedToToday).toHaveBeenCalledWith(object);
+  });
 });

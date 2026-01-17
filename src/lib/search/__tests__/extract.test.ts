@@ -285,4 +285,169 @@ describe('extract', () => {
       expect(extractPlainTextFromContent(content)).toBe('Title\nBody text');
     });
   });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Edge cases for improved coverage
+  // ─────────────────────────────────────────────────────────────────────────
+
+  describe('edge cases', () => {
+    it('should extract text from table blocks', () => {
+      const blocks = [
+        {
+          id: '1',
+          type: 'table',
+          props: {
+            rows: [
+              {
+                cells: [
+                  [{ type: 'text', text: 'Cell 1' }],
+                  [{ type: 'text', text: 'Cell 2' }],
+                ],
+              },
+              {
+                cells: [
+                  [{ type: 'text', text: 'Cell 3' }],
+                  [{ type: 'text', text: 'Cell 4' }],
+                ],
+              },
+            ],
+          },
+        },
+      ];
+
+      const result = extractPlainTextFromBlocks(blocks);
+      expect(result).toContain('Cell 1');
+      expect(result).toContain('Cell 2');
+      expect(result).toContain('Cell 3');
+      expect(result).toContain('Cell 4');
+    });
+
+    it('should handle table with missing cells array', () => {
+      const blocks = [
+        {
+          id: '1',
+          type: 'table',
+          props: {
+            rows: [
+              { cells: null }, // Invalid cells
+            ],
+          },
+        },
+      ];
+
+      // Should not throw
+      expect(() => extractPlainTextFromBlocks(blocks)).not.toThrow();
+    });
+
+    it('should handle table with missing rows', () => {
+      const blocks = [
+        {
+          id: '1',
+          type: 'table',
+          props: {}, // No rows property
+        },
+      ];
+
+      expect(extractPlainTextFromBlocks(blocks)).toBe('');
+    });
+
+    it('should ignore unknown inline content types', () => {
+      const blocks = [
+        {
+          id: '1',
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Hello ' },
+            { type: 'unknown-type', someData: 'ignored' },
+            { type: 'text', text: 'world' },
+          ],
+        },
+      ];
+
+      expect(extractPlainTextFromBlocks(blocks)).toBe('Hello world');
+    });
+
+    it('should handle blocks with undefined content', () => {
+      const blocks = [
+        {
+          id: '1',
+          type: 'paragraph',
+          // content is undefined
+        },
+      ];
+
+      expect(extractPlainTextFromBlocks(blocks)).toBe('');
+    });
+
+    it('should handle blocks with null content', () => {
+      const blocks = [
+        {
+          id: '1',
+          type: 'paragraph',
+          content: null,
+        },
+      ];
+
+      expect(extractPlainTextFromBlocks(blocks as unknown as [])).toBe('');
+    });
+
+    it('should handle deeply nested children', () => {
+      const blocks = [
+        {
+          id: '1',
+          type: 'bulletListItem',
+          content: [{ type: 'text', text: 'Level 1' }],
+          children: [
+            {
+              id: '1.1',
+              type: 'bulletListItem',
+              content: [{ type: 'text', text: 'Level 2' }],
+              children: [
+                {
+                  id: '1.1.1',
+                  type: 'bulletListItem',
+                  content: [{ type: 'text', text: 'Level 3' }],
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const result = extractPlainTextFromBlocks(blocks);
+      expect(result).toContain('Level 1');
+      expect(result).toContain('Level 2');
+      expect(result).toContain('Level 3');
+    });
+
+    it('should handle image blocks without caption', () => {
+      const blocks = [
+        {
+          id: '1',
+          type: 'image',
+          props: {
+            url: 'https://example.com/image.png',
+            // no caption
+          },
+        },
+      ];
+
+      expect(extractPlainTextFromBlocks(blocks)).toBe('');
+    });
+
+    it('should handle code blocks without code property', () => {
+      const blocks = [
+        {
+          id: '1',
+          type: 'codeBlock',
+          props: {
+            language: 'javascript',
+            // no code
+          },
+        },
+      ];
+
+      expect(extractPlainTextFromBlocks(blocks)).toBe('');
+    });
+  });
 });

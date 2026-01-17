@@ -71,7 +71,6 @@ describe('filter-utils', () => {
     });
 
     it('should return text operators for unknown types', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(getOperatorsForType('unknown' as any)).toEqual(TEXT_OPERATORS);
     });
   });

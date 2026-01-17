@@ -125,10 +125,7 @@ export function useAppIcon(): UseAppIconResult {
 
         // On Android, also call the JavaScript bridge for immediate icon switch
         // The bridge is injected by MainActivity.kt
-        if (
-          typeof window !== 'undefined' &&
-          'AndroidIconBridge' in window
-        ) {
+        if (typeof window !== 'undefined' && 'AndroidIconBridge' in window) {
           const bridge = (window as AndroidWindow).AndroidIconBridge;
           if (bridge && typeof bridge.setIcon === 'function') {
             bridge.setIcon(iconId);

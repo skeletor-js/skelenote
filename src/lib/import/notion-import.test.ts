@@ -7,9 +7,8 @@ const mockQueryDatabase = vi.fn();
 const mockGetPageBlocks = vi.fn();
 
 vi.mock('./notion-api', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   queryDatabase: (...args: any[]) => mockQueryDatabase(...args),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   getPageBlocks: (...args: any[]) => mockGetPageBlocks(...args),
   listStandalonePages: vi.fn().mockResolvedValue([]),
 }));
@@ -28,9 +27,8 @@ vi.mock('./notion-properties', () => ({
 }));
 
 describe('Notion Import', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockStore: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   let mockClient: any;
 
   beforeEach(() => {
@@ -62,7 +60,6 @@ describe('Notion Import', () => {
       store: mockStore,
       databases: [
         {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           database: { id: 'db-1', name: 'DB 1' } as any,
           targetTypeId: BuiltInTypeIds.NOTE,
           selected: true,
@@ -105,7 +102,6 @@ describe('Notion Import', () => {
       store: mockStore,
       databases: [
         {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           database: { id: 'db-1', name: 'DB 1' } as any,
           targetTypeId: 'note',
           selected: true,

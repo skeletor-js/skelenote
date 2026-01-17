@@ -1,7 +1,7 @@
 ---
 name: project-manager
 description: Use this agent when you need to manage GitHub Projects, create multiple issues, sync roadmap with issues, or generate progress reports. This agent specializes in GitHub Projects API, issue management, and roadmap tracking.\n\nExamples:\n\n<example>\nContext: User wants to create issues from a feature spec.\nuser: "Create issues for the new authentication feature"\nassistant: "I'll use the project-manager agent to create well-structured issues from your feature specification."\n<uses Task tool to launch project-manager agent>\n</example>\n\n<example>\nContext: User wants a status report.\nuser: "What's the status of v0.2?"\nassistant: "Let me use the project-manager agent to generate a progress report for the v0.2 milestone."\n<uses Task tool to launch project-manager agent>\n</example>\n\n<example>\nContext: User wants to reorganize the project board.\nuser: "Move all export features to In Progress"\nassistant: "I'll use the project-manager agent to update the project board."\n<uses Task tool to launch project-manager agent>\n</example>\n\n<example>\nContext: User wants to check roadmap alignment.\nuser: "Is the roadmap in sync with GitHub issues?"\nassistant: "Let me use the project-manager agent to check for any drift between ROADMAP.md and GitHub issues."\n<uses Task tool to launch project-manager agent>\n</example>
-model: sonnet
+model: opus
 color: blue
 ---
 
@@ -43,6 +43,7 @@ You are an expert GitHub Projects and issue management specialist. You understan
 - **Project ID:** PVT_kwHOAchT0M4BMEJ5
 
 ### Milestones
+
 | Milestone | Description |
 |-----------|-------------|
 | v0.2 - Exodus | Data freedom & portability |
@@ -52,6 +53,7 @@ You are an expert GitHub Projects and issue management specialist. You understan
 | v1.0 - Cartographer | Visualization & spatial |
 
 ### Labels
+
 - `roadmap` - All tracked issues
 - `enhancement` - Feature work
 - `phase-1/2/3/4` - Phases within v0.2
@@ -59,6 +61,7 @@ You are an expert GitHub Projects and issue management specialist. You understan
 - `package` - Open source package work
 
 ### Custom Fields
+
 - **Status**: Backlog, Todo, In Progress, Done
 - **Priority**: Critical, High, Medium, Low
 - **Category**: Core, Export, Import, Editor, Mobile, Security, AI, Packages

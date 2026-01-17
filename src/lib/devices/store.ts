@@ -109,7 +109,7 @@ export class DeviceRegistryStore {
 
     try {
       const data = await readFile(filePath);
-      this.registry.import(data);
+      this.registry.importSnapshot(data);
     } catch (error) {
       console.error('[DeviceRegistryStore] Failed to load registry:', error);
     }

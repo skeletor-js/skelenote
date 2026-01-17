@@ -217,13 +217,23 @@ export function MobileDailyNotesView() {
       >
         {/* Week navigation */}
         <Group justify="space-between" px="md" py="xs">
-          <ActionIcon variant="subtle" size={32} onClick={goToPreviousWeek}>
+          <ActionIcon
+            variant="subtle"
+            size={32}
+            onClick={goToPreviousWeek}
+            data-testid="prev-week"
+          >
             <ChevronLeft size={18} />
           </ActionIcon>
-          <Text size="xs" fw={500} c="dimmed">
+          <Text size="xs" fw={500} c="dimmed" data-testid="week-label">
             {formatWeekLabel(weekStart)}
           </Text>
-          <ActionIcon variant="subtle" size={32} onClick={goToNextWeek}>
+          <ActionIcon
+            variant="subtle"
+            size={32}
+            onClick={goToNextWeek}
+            data-testid="next-week"
+          >
             <ChevronRight size={18} />
           </ActionIcon>
         </Group>

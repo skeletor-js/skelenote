@@ -22,7 +22,9 @@ You're using early software. Expect rough edges:
 ### Platform Notes
 
 #### macOS
+
 The app is unsigned during alpha. To open it:
+
 1. Right-click (or Control-click) the app
 2. Select "Open" from the context menu
 3. Click "Open" in the dialog that appears
@@ -30,12 +32,16 @@ The app is unsigned during alpha. To open it:
 You only need to do this once.
 
 #### Windows
+
 Windows Defender may show a SmartScreen warning:
+
 1. Click "More info"
 2. Click "Run anyway"
 
 #### Linux
+
 Make the AppImage executable:
+
 ```bash
 chmod +x Skelenote_*.AppImage
 ./Skelenote_*.AppImage
@@ -44,32 +50,38 @@ chmod +x Skelenote_*.AppImage
 ## How to Help
 
 ### Report Bugs
-Found something broken? [Open a bug report](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml).
+
+Found something broken? [File a bug on Linear](https://linear.app/skeletorjs/team/skelenote).
 
 Before reporting:
+
 - Check [Known Issues](./KNOWN_ISSUES.md) to see if it's already documented
 - Try the [Troubleshooting Guide](./TROUBLESHOOTING.md) first
-- Search [existing issues](https://github.com/skeletor-js/skelenote/issues) to avoid duplicates
+- Search [Linear](https://linear.app/skeletorjs/team/skelenote) to avoid duplicates
 
 Good bug reports include:
+
 - Steps to reproduce
 - What you expected vs what happened
 - Your OS and app version
 - Screenshots or logs if relevant
 
 ### Request Features
-Have an idea? [Open a feature request](https://github.com/skeletor-js/skelenote/issues/new?template=feature_request.yml).
+
+Have an idea? [Share on Discord](https://discord.gg/4apsgSRB7D) or [Linear](https://linear.app/skeletorjs/team/skelenote).
 
 ### Join the Conversation
+
 **Discord**: [Join our server](https://discord.gg/4apsgSRB7D) for real-time discussion, questions, and feedback.
 
-GitHub Issues are for bugs and feature requests. Discord is for everything else.
+Linear is for bugs and feature tracking. Discord is for discussion.
 
 ## What to Test
 
 We want feedback on everything, but here are the core flows to exercise:
 
 ### Core Object Workflows
+
 - Create objects of each type (Task, Note, Project, Area, etc.)
 - Edit titles and properties
 - Use the rich text editor with @mentions
@@ -77,22 +89,26 @@ We want feedback on everything, but here are the core flows to exercise:
 - Use the Inbox workflow
 
 ### Sync
+
 - **Campfire** (local P2P): Connect two devices on the same network
 - **Cloud Relay**: Set up relay sync if available
 - Test conflict scenarios (edit the same object on two devices)
 
 ### Search
+
 - Title search in the command palette (Cmd/Ctrl+K)
 - Content search within objects
 - Semantic search (if enabled in Settings)
 
 ### Daily Notes & Templates
+
 - Let the app create today's Daily Note
 - Link objects to the daily note
 - Create and apply templates
 - Test template placeholders ({{date}}, {{title}}, etc.)
 
 ### Import/Export
+
 - Export individual objects as Markdown
 - Bulk export your vault
 - Verify exported files are readable
@@ -110,8 +126,8 @@ See the full [Testing Checklist](./TEST_PLAN.md) for detailed scenarios.
 
 | Need | Action |
 |------|--------|
-| Report a bug | [GitHub Issue](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml) |
-| Request a feature | [GitHub Issue](https://github.com/skeletor-js/skelenote/issues/new?template=feature_request.yml) |
+| Report a bug | [Linear](https://linear.app/skeletorjs/team/skelenote) |
+| Request a feature | [Linear](https://linear.app/skeletorjs/team/skelenote) |
 | Ask a question | [Discord](https://discord.gg/4apsgSRB7D) |
 | Check known issues | [Known Issues](./KNOWN_ISSUES.md) |
 | Troubleshoot | [Troubleshooting Guide](./TROUBLESHOOTING.md) |

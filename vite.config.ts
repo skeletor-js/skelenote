@@ -16,6 +16,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    sourcemap: true,
     // Use jsdom for hooks and components tests
     environmentMatchGlobs: [
       ['src/hooks/**/*.test.ts', 'jsdom'],
@@ -23,13 +24,14 @@ export default defineConfig({
     ],
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     coverage: {
-      provider: 'v8',
+      provider: 'istanbul',
       reporter: ['text', 'json', 'html'],
       include: [
         'src/lib/**/*.ts',
         'src/hooks/**/*.ts',
         'src/contexts/**/*.ts',
         'src/contexts/**/*.tsx',
+        'src/components/**/*.tsx',
       ],
       exclude: [
         'src/lib/**/*.test.ts',
@@ -39,7 +41,12 @@ export default defineConfig({
         'src/contexts/**/*.test.ts',
         'src/contexts/**/*.test.tsx',
         'src/contexts/**/__tests__/**',
+        'src/components/**/*.test.tsx',
+        'src/components/**/__tests__/**',
         '**/index.ts',
+        // Dev utilities and platform shims (not worth testing)
+        'src/lib/semantic/dev-test.ts',
+        'src/hooks/biometric-loader.ts',
       ],
     },
   },

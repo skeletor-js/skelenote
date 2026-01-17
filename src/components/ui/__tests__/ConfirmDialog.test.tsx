@@ -33,8 +33,8 @@ describe('ConfirmDialog', () => {
         isOpen={false}
         title="Confirm"
         message="Are you sure?"
-        onConfirm={() => { }}
-        onCancel={() => { }}
+        onConfirm={() => {}}
+        onCancel={() => {}}
       />
     );
     expect(screen.queryByText('Confirm')).toBeNull();
@@ -46,8 +46,8 @@ describe('ConfirmDialog', () => {
         isOpen={true}
         title="Delete Item"
         message="This action cannot be undone."
-        onConfirm={() => { }}
-        onCancel={() => { }}
+        onConfirm={() => {}}
+        onCancel={() => {}}
       />
     );
     // Mantine modals portal to body, testing-library handles this usually
@@ -63,7 +63,7 @@ describe('ConfirmDialog', () => {
         title="Confirm"
         message="Msg"
         onConfirm={handleConfirm}
-        onCancel={() => { }}
+        onCancel={() => {}}
         confirmLabel="Yes, do it"
       />
     );
@@ -79,7 +79,7 @@ describe('ConfirmDialog', () => {
         isOpen={true}
         title="Confirm"
         message="Msg"
-        onConfirm={() => { }}
+        onConfirm={() => {}}
         onCancel={handleCancel}
         cancelLabel="No, wait"
       />
@@ -98,9 +98,8 @@ describe('ConfirmDialog', () => {
         isOpen={true}
         title="Delete"
         message="Dangerous"
-        onConfirm={() => { }}
-        onCancel={() => { }}
-
+        onConfirm={() => {}}
+        onCancel={() => {}}
       />
     );
     expect(screen.getByText('Delete')).toBeDefined();

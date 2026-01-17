@@ -89,8 +89,8 @@ These features are partially implemented or coming soon:
 If your issue isn't listed here:
 
 1. Try the [Troubleshooting Guide](./TROUBLESHOOTING.md)
-2. Search [existing issues](https://github.com/skeletor-js/skelenote/issues)
-3. [Open a bug report](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml)
+2. Search [existing issues](https://linear.app/skeletorjs/team/skelenote)
+3. [File a bug report](https://linear.app/skeletorjs/team/skelenote)
 
 ---
 

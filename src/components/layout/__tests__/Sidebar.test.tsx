@@ -54,7 +54,6 @@ vi.mock('../SavedViewsSection', () => ({
   SavedViewsSection: () => <div data-testid="saved-views-section" />,
 }));
 vi.mock('../SidebarSection', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   SidebarSection: ({ title, children }: any) => (
     <div data-testid={`section-${title}`}>
       {title}
@@ -81,13 +80,11 @@ describe('Sidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (contexts.useSidebar as any).mockReturnValue({
       selectedItem: 'inbox',
       setSelectedItem: mockSetSelectedItem,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (contexts.useNavigation as any).mockReturnValue({
       navigateToView: mockNavigateToView,
       navigateToObject: mockNavigateToObject,
@@ -95,7 +92,6 @@ describe('Sidebar', () => {
       activeSavedViewId: null,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (contexts.useObjects as any).mockReturnValue({
       store: {
         getByType: vi.fn(() => []), // Return empty arrays for Project/Area/Tag tests
@@ -104,12 +100,10 @@ describe('Sidebar', () => {
       refreshData: vi.fn(),
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (contexts.useTypeRegistry as any).mockReturnValue({
       getAll: vi.fn(() => []),
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (hooks.useLinkToDaily as any).mockReturnValue({
       linkToDaily: vi.fn(),
     });

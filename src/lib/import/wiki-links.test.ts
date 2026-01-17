@@ -63,7 +63,6 @@ describe('Wiki Links', () => {
               type: 'link',
               props: { href: 'skelenote:mention:Target' }, // Correct structure
               content: 'Target',
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any,
           ],
           children: [],
@@ -97,7 +96,6 @@ describe('Wiki Links', () => {
               type: 'link',
               props: { href: 'skelenote:mention:Unknown' }, // Correct structure
               content: 'Unknown',
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any,
           ],
           children: [],

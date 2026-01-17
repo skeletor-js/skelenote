@@ -245,11 +245,11 @@ When you find a bug:
 1. Note exactly what you did
 2. Note what happened vs what you expected
 3. Check [Known Issues](./KNOWN_ISSUES.md)
-4. [Open a bug report](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml)
+4. [File a bug report](https://linear.app/skeletorjs/team/skelenote)
 
 When you have a suggestion:
 
-1. [Open a feature request](https://github.com/skeletor-js/skelenote/issues/new?template=feature_request.yml)
+1. [Request a feature](https://linear.app/skeletorjs/team/skelenote)
 
 Questions or discussion:
 

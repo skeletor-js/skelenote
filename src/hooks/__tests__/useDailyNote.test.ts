@@ -9,23 +9,31 @@ import { useDailyNote } from '../useDailyNote';
 const mockStore = {};
 const mockRefreshData = vi.fn();
 
-vi.mock('@/contexts', () => ({
-  useObjects: () => ({
-    store: mockStore,
-    isLoading: false,
-    refreshData: mockRefreshData,
-  }),
-}));
+vi.mock('@/contexts', async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+    useObjects: () => ({
+      store: mockStore,
+      isLoading: false,
+      refreshData: mockRefreshData,
+    }),
+  };
+});
 
 const mockGetDailyNoteByDate = vi.fn();
 const mockGetOrCreateDailyNote = vi.fn();
 
-vi.mock('@/lib/daily', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getDailyNoteByDate: (...args: any[]) => mockGetDailyNoteByDate(...args),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getOrCreateDailyNote: (...args: any[]) => mockGetOrCreateDailyNote(...args),
-}));
+vi.mock('@/lib/daily', async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+
+    getDailyNoteByDate: (...args: any[]) => mockGetDailyNoteByDate(...args),
+
+    getOrCreateDailyNote: (...args: any[]) => mockGetOrCreateDailyNote(...args),
+  };
+});
 
 describe('useDailyNote', () => {
   beforeEach(() => {

@@ -9,8 +9,8 @@ Thank you for your interest in contributing to Skelenote! This guide will help y
 We're in alpha and actively seeking testers. This is one of the most valuable contributions right now:
 
 1. **Test the app** - Download from [Releases](https://github.com/skeletor-js/skelenote/releases) and use it
-2. **Report bugs** - [Open a bug report](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml) with steps to reproduce
-3. **Request features** - [Open a feature request](https://github.com/skeletor-js/skelenote/issues/new?template=feature_request.yml) with your ideas
+2. **Report bugs** - [File a bug](https://linear.app/skeletorjs/team/skelenote) with steps to reproduce
+3. **Request features** - [Request a feature](https://linear.app/skeletorjs/team/skelenote) with your ideas
 4. **Join Discord** - Chat with other testers and provide real-time feedback
 
 See the [Alpha Tester Guide](docs/user/alpha/README.md) for detailed instructions.
@@ -30,15 +30,18 @@ For code contributions, continue reading below for setup and workflow.
 ### Platform-Specific Dependencies
 
 #### macOS
+
 ```bash
 xcode-select --install
 ```
 
 #### Windows
+
 - [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 - [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (usually pre-installed on Windows 10/11)
 
 #### Linux (Debian/Ubuntu)
+
 ```bash
 sudo apt update
 sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
@@ -95,6 +98,7 @@ Produces platform-specific binaries in `src-tauri/target/release/bundle/`.
 ### Design System
 
 Before making UI changes, review `docs/design/style-guide.md`. Key principles:
+
 - Light and Dark modes (warm palette: ember, clay, sage, ochre, brick, slate)
 - No emojis in the interface
 - Linear-inspired minimal aesthetic
@@ -142,6 +146,7 @@ cargo clippy
 ### Commit Messages
 
 Use clear, descriptive commit messages:
+
 ```
 feat: add keyboard shortcut for quick create
 fix: resolve sync conflict in object store
@@ -149,36 +154,14 @@ docs: update contributing guide
 refactor: simplify object context provider
 ```
 
-## GitHub Projects Workflow
-
-We use GitHub Projects to track all roadmap work. Every feature in `ROADMAP.md` has a corresponding GitHub issue.
-
+## Project Management
+  
+  We use **Linear** for issue tracking and project management.
+  
 ### Finding Work
-
-1. View the [Skelenote Roadmap](https://github.com/users/skeletor-js/projects/1) project board
-2. Look at "Todo" column for unassigned items
-3. Or filter by milestone: `gh issue list --milestone "v0.2 - Exodus" --state open`
-
-### Claiming an Issue
-
-1. Assign yourself to the issue
-2. Move it to "In Progress" on the project board
-3. Create a feature branch: `git checkout -b feature/<issue-number>-<short-name>`
-
-### Linking PRs to Issues
-
-Include in your PR description:
-- `Closes #<issue-number>` - Auto-closes issue when PR merges
-- `Relates to #<issue-number>` - Links without auto-close
-
-### Labels
-
-| Label | Meaning |
-|-------|---------|
-| `roadmap` | Tracked in product roadmap |
-| `phase-1`, `phase-2`, etc. | Phase within release |
-| `competitive-gap` | Feature identified from competitor analysis |
-| `package` | Open source package extraction |
+  
+  1. Check our [Linear Roadmap](https://linear.app/skeletorjs/team/skelenote)
+  2. Join our [Discord](https://discord.gg/4apsgSRB7D) to discuss what to work on
 
 ## Pull Request Process
 
@@ -192,6 +175,7 @@ Include in your PR description:
 8. Open a Pull Request against `main`
 
 GitHub Actions will automatically:
+
 - Run tests on Ubuntu
 - Run linting and type checking
 - Build for macOS (ARM + Intel), Windows, and Linux
@@ -237,14 +221,17 @@ skelenote/
 ## Debugging
 
 ### Frontend
+
 - Use browser DevTools (Cmd+Option+I in the Tauri window)
 - React DevTools extension works normally
 
 ### Rust/Tauri
+
 - Add `println!` or use the `dbg!` macro
 - Output appears in the terminal running `pnpm tauri dev`
 
 ### Data Location
+
 - **macOS**: `~/Library/Application Support/com.skelenote.app/`
 - **Windows**: `%APPDATA%\com.skelenote.app\`
 - **Linux**: `~/.local/share/com.skelenote.app/`
@@ -262,6 +249,7 @@ Skelenote uses GitHub Actions for continuous integration and deployment. See [do
 ### Cross-Platform Testing
 
 Skelenote is fully tested and supported on:
+
 - macOS (ARM64 and x86_64)
 - Windows (x86_64)
 - Linux (Ubuntu, Fedora, and other distros via AppImage)
@@ -270,10 +258,10 @@ The CI pipeline builds and tests on all platforms automatically.
 
 ## Getting Help
 
-- **Bugs**: [Open a bug report](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml)
-- **Features**: [Open a feature request](https://github.com/skeletor-js/skelenote/issues/new?template=feature_request.yml)
+- **Bugs**: [File a bug](https://linear.app/skeletorjs/team/skelenote)
+- **Features**: [Request a feature](https://linear.app/skeletorjs/team/skelenote)
 - **Questions**: Join our [Discord](https://discord.gg/4apsgSRB7D)
-- Check [existing issues](https://github.com/skeletor-js/skelenote/issues) before creating new ones
+- Check [Linear Roadmap](https://linear.app/skeletorjs/team/skelenote) before creating new ones
 
 ## License
 
