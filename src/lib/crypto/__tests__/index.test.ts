@@ -7,7 +7,6 @@ import * as crypto from '../index';
 // Mock Tauri invoke
 const mockInvoke = vi.fn();
 vi.mock('@tauri-apps/api/core', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   invoke: (...args: any[]) => mockInvoke(...args),
 }));
 
@@ -15,7 +14,7 @@ describe('Crypto Module', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Simulate Tauri environment by default
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (window as any).__TAURI_INTERNALS__ = {};
   });
 
@@ -28,7 +27,6 @@ describe('Crypto Module', () => {
     });
 
     it('should return false if not in Tauri', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (window as any).__TAURI_INTERNALS__;
       const result = await crypto.initCrypto();
       expect(result).toBe(false);
@@ -47,7 +45,7 @@ describe('Crypto Module', () => {
     it('should throw if invoke fails', async () => {
       const consoleSpy = vi
         .spyOn(console, 'error')
-        .mockImplementation(() => { });
+        .mockImplementation(() => {});
       mockInvoke.mockRejectedValue(new Error('Failed'));
       await expect(crypto.generateKey()).rejects.toThrow('Failed');
       consoleSpy.mockRestore();
@@ -73,7 +71,7 @@ describe('Crypto Module', () => {
     it('should return false on error', async () => {
       const consoleSpy = vi
         .spyOn(console, 'error')
-        .mockImplementation(() => { });
+        .mockImplementation(() => {});
       mockInvoke.mockRejectedValue(new Error('Failed'));
       expect(await crypto.hasKey()).toBe(false);
       consoleSpy.mockRestore();

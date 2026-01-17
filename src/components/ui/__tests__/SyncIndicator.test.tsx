@@ -37,14 +37,14 @@ describe('SyncIndicator', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default mocks
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (contexts.useSyncContextSafe as any).mockReturnValue({
       status: 'disconnected',
       pendingCount: 0,
       hasError: false,
       reconnect: vi.fn(),
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (contexts.useLocalSyncSafe as any).mockReturnValue({
       isEnabled: true,
       connectedPeerCount: 0,
@@ -52,7 +52,6 @@ describe('SyncIndicator', () => {
   });
 
   it('should render "Offline" when disconnected', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (contexts.useSyncContextSafe as any).mockReturnValue({
       status: 'disconnected',
       pendingCount: 0,
@@ -65,7 +64,6 @@ describe('SyncIndicator', () => {
   });
 
   it('should render "Synced" when connected', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (contexts.useSyncContextSafe as any).mockReturnValue({
       status: 'connected',
       pendingCount: 0,
@@ -78,7 +76,6 @@ describe('SyncIndicator', () => {
   });
 
   it('should render local sync status', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (contexts.useLocalSyncSafe as any).mockReturnValue({
       isEnabled: true,
       connectedPeerCount: 3,
@@ -89,14 +86,13 @@ describe('SyncIndicator', () => {
   });
 
   it('should render mixed status (Cloud + Local)', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (contexts.useSyncContextSafe as any).mockReturnValue({
       status: 'connected',
       pendingCount: 0,
       hasError: false,
       reconnect: vi.fn(),
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (contexts.useLocalSyncSafe as any).mockReturnValue({
       isEnabled: true,
       connectedPeerCount: 2,
@@ -107,7 +103,6 @@ describe('SyncIndicator', () => {
   });
 
   it('should render "Local only" when provider missing', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (contexts.useSyncContextSafe as any).mockReturnValue(null);
 
     renderWithProvider(<SyncIndicator />);
@@ -115,7 +110,6 @@ describe('SyncIndicator', () => {
   });
 
   it('should render error state', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (contexts.useSyncContextSafe as any).mockReturnValue({
       status: 'disconnected',
       hasError: true,
@@ -128,7 +122,7 @@ describe('SyncIndicator', () => {
 
   it('should call reconnect on click when allowed', () => {
     const reconnect = vi.fn();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (contexts.useSyncContextSafe as any).mockReturnValue({
       status: 'disconnected',
       reconnect,
@@ -143,7 +137,6 @@ describe('SyncIndicator', () => {
   });
 
   it('should show pending count', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (contexts.useSyncContextSafe as any).mockReturnValue({
       status: 'connected',
       pendingCount: 5,

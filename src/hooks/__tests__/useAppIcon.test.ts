@@ -7,10 +7,14 @@ import { useAppIcon } from '../useAppIcon';
 
 // Mock Tauri invoke
 const mockInvoke = vi.fn();
-vi.mock('@tauri-apps/api/core', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  invoke: (...args: any[]) => mockInvoke(...args),
-}));
+vi.mock('@tauri-apps/api/core', async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+
+    invoke: (...args: any[]) => mockInvoke(...args),
+  };
+});
 
 describe('useAppIcon', () => {
   beforeEach(() => {
@@ -65,9 +69,9 @@ describe('useAppIcon', () => {
   });
 
   it('should handle errors gracefully', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     // We also expect a warning from the failed init
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     mockInvoke.mockRejectedValue(new Error('Failed'));
     const { result } = renderHook(() => useAppIcon());

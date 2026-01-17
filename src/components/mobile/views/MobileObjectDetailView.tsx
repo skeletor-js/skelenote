@@ -508,6 +508,7 @@ export function MobileObjectDetailView({
             color="gray"
             size={44}
             onClick={() => setActionSheetOpen(true)}
+            aria-label="More options"
           >
             <MoreHorizontal size={20} />
           </ActionIcon>

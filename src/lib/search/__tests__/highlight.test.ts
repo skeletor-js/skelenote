@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  highlightText,
-  createSnippet,
-  getBestSnippet,
-
-} from '../highlight';
+import { highlightText, createSnippet, getBestSnippet } from '../highlight';
 import type { SearchMatch } from '../types';
 
 describe('highlight', () => {

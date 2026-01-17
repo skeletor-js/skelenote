@@ -27,6 +27,14 @@ export default tseslint.config(
       ],
     },
   },
+  // Test files - relax some rules for mocking
+  {
+    files: ['**/*.test.ts', '**/*.test.tsx', '**/__tests__/**/*.ts', '**/__tests__/**/*.tsx'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+    },
+  },
   // Node.js environment for sync-relay server
   {
     files: ['sync-relay/src/**/*.ts'],

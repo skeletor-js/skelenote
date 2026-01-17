@@ -6,6 +6,7 @@ import {
   getAffectedObjectIds,
   filterChangePointsByObject,
   getVersionHistory,
+  getVersionHistoryForObject,
   aggregateByDate,
   getDaysWithChanges,
   getChangesForDate,
@@ -15,7 +16,6 @@ import {
 } from '../versions';
 
 // Helper for delays
-
 
 describe('Version History', () => {
   let docA: LoroDoc;
@@ -280,6 +280,175 @@ describe('Version History', () => {
       const history = getVersionHistory(docA);
       expect(history.earliest).not.toBeNull();
       expect(history.latest).not.toBeNull();
+    });
+
+    it('getVersionHistory with empty doc should have null timestamps', () => {
+      const emptyDoc = new LoroDoc();
+      const history = getVersionHistory(emptyDoc);
+      expect(history.earliest).toBeNull();
+      expect(history.latest).toBeNull();
+      expect(history.changePoints).toHaveLength(0);
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('should return empty array when filtering empty change points', async () => {
+      const filtered = filterChangePointsByObject(docA, [], 'any-id');
+      expect(filtered).toEqual([]);
+    });
+
+    it('should handle frontier with empty frontier array', async () => {
+      const points: ChangePoint[] = [
+        { timestamp: 1000, frontier: [], peerId: '1', changeCount: 1 },
+      ];
+      const frontier = findFrontierAt(points, 1000);
+      // Empty frontier should return null since we can't build a valid frontier
+      expect(frontier).toBeNull();
+    });
+
+    it('should handle cache hit for affected objects', async () => {
+      const map = docA.getMap('objects');
+      map.set('obj1', JSON.stringify({ id: 'obj1' }));
+      docA.commit();
+      await sync();
+
+      const frontier1 = docB.frontiers();
+
+      map.set('obj2', JSON.stringify({ id: 'obj2' }));
+      docA.commit();
+      await sync();
+
+      const frontier2 = docB.frontiers();
+
+      // Call twice to test cache hit
+      const first = getAffectedObjectIds(docB, frontier1, frontier2);
+      const second = getAffectedObjectIds(docB, frontier1, frontier2);
+
+      expect(first).toEqual(second);
+    });
+
+    it('should handle changes for non-existent date', () => {
+      const byDate = aggregateByDate([]);
+      const changes = getChangesForDate(byDate, 2024, 0, 15);
+      expect(changes).toEqual([]);
+    });
+
+    it('should return empty set for month with no changes', () => {
+      const points: ChangePoint[] = [
+        {
+          timestamp: new Date(2024, 0, 1, 12).getTime(),
+          frontier: [],
+          peerId: '1',
+          changeCount: 1,
+        },
+      ];
+      const byDate = aggregateByDate(points);
+      // Query for February (month 1), no changes
+      const days = getDaysWithChanges(byDate, 2024, 1);
+      expect(days.size).toBe(0);
+    });
+
+    it('should skip duplicate timestamps in filterChangePointsByObject', async () => {
+      const map = docA.getMap('objects');
+
+      // Create changes with same timestamp
+      vi.setSystemTime(new Date('2024-01-01T12:00:00Z'));
+      map.set('obj1', JSON.stringify({ id: 'obj1', v: 1 }));
+      docA.commit();
+
+      // Two more changes at exact same time (simulated)
+      map.set('obj1', JSON.stringify({ id: 'obj1', v: 2 }));
+      docA.commit();
+
+      await sync();
+
+      const allPoints = extractChangePoints(docB);
+      const filtered = filterChangePointsByObject(docB, allPoints, 'obj1');
+
+      // Should filter properly even with same timestamps
+      expect(filtered.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should handle getAffectedObjectIds with null prevFrontier', async () => {
+      const map = docA.getMap('objects');
+      map.set('obj1', JSON.stringify({ id: 'obj1' }));
+      docA.commit();
+      await sync();
+
+      const frontier = docB.frontiers();
+
+      // null prevFrontier means start from empty state
+      const affected = getAffectedObjectIds(docB, null, frontier);
+      expect(affected).toContain('obj1');
+    });
+
+    it('should get version history for specific object', async () => {
+      const map = docA.getMap('objects');
+      map.set(
+        'obj1',
+        JSON.stringify({ id: 'obj1', properties: { title: 'Test Object' } })
+      );
+      docA.commit();
+
+      vi.advanceTimersByTime(1000);
+
+      map.set(
+        'obj2',
+        JSON.stringify({ id: 'obj2', properties: { title: 'Other' } })
+      );
+      docA.commit();
+
+      await sync();
+
+      const history = getVersionHistoryForObject(docB, 'obj1');
+      expect(history.objectId).toBe('obj1');
+      expect(history.objectTitle).toBe('Test Object');
+    });
+
+    it('should get version history for deleted object', async () => {
+      const map = docA.getMap('objects');
+      map.set('obj1', JSON.stringify({ id: 'obj1' }));
+      docA.commit();
+      await sync();
+
+      // Delete the object
+      map.delete('obj1');
+      docA.commit();
+      await sync();
+
+      const history = getVersionHistoryForObject(docB, 'obj1');
+      expect(history.objectId).toBe('obj1');
+      expect(history.objectTitle).toBe('Deleted Object');
+    });
+
+    it('should handle object with name property instead of title', async () => {
+      const map = docA.getMap('objects');
+      map.set(
+        'obj1',
+        JSON.stringify({ id: 'obj1', properties: { name: 'Named Object' } })
+      );
+      docA.commit();
+      await sync();
+
+      const history = getVersionHistoryForObject(docB, 'obj1');
+      expect(history.objectTitle).toBe('Named Object');
+    });
+
+    it('should default to Untitled for object without title or name', async () => {
+      const map = docA.getMap('objects');
+      map.set('obj1', JSON.stringify({ id: 'obj1', properties: {} }));
+      docA.commit();
+      await sync();
+
+      const history = getVersionHistoryForObject(docB, 'obj1');
+      expect(history.objectTitle).toBe('Untitled');
+    });
+
+    it('should handle version history for non-existent object', async () => {
+      const history = getVersionHistoryForObject(docA, 'non-existent');
+      expect(history.objectId).toBe('non-existent');
+      expect(history.objectTitle).toBe('Deleted Object');
+      expect(history.changePoints).toEqual([]);
     });
   });
 });

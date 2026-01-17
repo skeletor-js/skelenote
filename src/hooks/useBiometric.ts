@@ -1,20 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePlatform } from './usePlatform';
-
-// Lazy import to avoid errors on desktop
-let biometricModule: typeof import('@tauri-apps/plugin-biometric') | null =
-  null;
-
-async function getBiometricModule() {
-  if (!biometricModule) {
-    try {
-      biometricModule = await import('@tauri-apps/plugin-biometric');
-    } catch {
-      return null;
-    }
-  }
-  return biometricModule;
-}
+import { getBiometricModule } from './biometric-loader';
 
 export interface BiometricStatus {
   /** Whether biometric authentication is available on this device */

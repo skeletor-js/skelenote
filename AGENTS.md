@@ -36,39 +36,37 @@ git checkout -b feature/descriptive-name
 - `refactor/` - Code improvements
 - `docs/` - Documentation updates
 
-## GitHub Projects & Issue Tracking
+## Project Management (Linear)
 
-Skelenote uses GitHub Projects to track development progress. The roadmap in `ROADMAP.md` is mirrored in GitHub for real-time tracking.
+Skelenote uses **Linear** for issue tracking and project management.
 
-### Project Structure
+### Structure
 
-- **Project:** "Skelenote Roadmap" ([View Board](https://github.com/users/skeletor-js/projects/1))
-- **Milestones:** One per release (v0.2, v0.3, etc.)
-- **Labels:** `roadmap`, `phase-1`/`phase-2`/etc., `competitive-gap`, `package`
+- **Projects**: Maps to releases (e.g., `v0.2 - Exodus`, `v0.35 - Architect`).
+- **Epics**: Modeled as **Parent Issues** containing sub-issues.
+- **Cycles**: 2-week sprints (enable in Linear team settings if using).
 
-### Custom Fields
+### Key Labels
 
-| Field | Values |
-|-------|--------|
-| Status | Backlog, Todo, In Progress, Done |
-| Priority | Critical, High, Medium, Low |
-| Category | Core, Export, Import, Editor, Mobile, Security, AI, Packages |
-| Effort | XS, S, M, L, XL |
+| Label | Usage |
+|-------|-------|
+| `Feature` | New functionality (enhancements) |
+| `Bug` | Defect fixes |
+| `Improvement` | Technical debt, refactoring |
+| `competitive-gap` | Features present in competitor apps |
+| `package` | Candidates for extraction to OSS packages |
 
-### Working with Issues
+### Workflow
 
-When starting work on a roadmap item:
-
-1. Find the issue in the project board or via `gh issue list --milestone "v0.2 - Exodus"`
-2. Move it to "In Progress" on the board
-3. Create a branch referencing the issue: `git checkout -b feature/123-pdf-export`
-4. Link PR to issue in description: `Closes #123`
+1. **Pick an issue**: Assign yourself to an issue in the current Cycle or Project.
+2. **Create a branch**: Use Linear's "Copy git branch name" (Cmd+Shift+.) or format `name/linear-id-title`.
+   - Example: `jordan/NOTE-123-add-pdf-export`
+3. **Link PR**: Add `Fixes NOTE-123` or `Closes NOTE-123` in PR description to auto-close.
 
 ### Skills Available
 
-- `/project` - View project board, list items, move between columns
-- `/issue` - Create/view/close issues
-- `/roadmap-sync` - Check roadmap<->issue alignment
+- `/linear` - Create or update Linear issues
+- `/issue` - Context-aware issue search
 
 ## CI/CD Pipeline
 

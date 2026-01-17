@@ -34,9 +34,14 @@ export function useDeepLinks() {
 
           if (url.protocol !== 'skelenote:') continue;
 
-          // Get the path (e.g., "//task/abc123" or "//inbox")
-          const path = url.pathname.replace(/^\/\//, ''); // Remove leading //
-          const segments = path.split('/').filter(Boolean);
+          // Combine host and pathname to handle various URL formats:
+          // skelenote://task/123 -> host=task, pathname=/123
+          // skelenote:///task/123 -> host="", pathname=/task/123
+          // skelenote:task/123 -> host="", pathname=task/123
+          const segments = [
+            url.host,
+            ...url.pathname.split('/').filter(Boolean),
+          ].filter(Boolean);
 
           if (segments.length === 0) continue;
 

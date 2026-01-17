@@ -81,12 +81,11 @@ describe('ObjectHeader', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (contexts.useNavigation as any).mockReturnValue({
       openInSplit: mockOpenInSplit,
       splitPane: { isOpen: false, mode: 'default' },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (contexts.useTypeRegistry as any).mockReturnValue({
       get: vi.fn((typeId) => ({ name: typeId, icon: 'icon' })),
     });
@@ -95,9 +94,7 @@ describe('ObjectHeader', () => {
   it('should render title and icon', () => {
     renderWithProvider(
       <ObjectHeader
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         object={mockObject as any}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         typeDef={mockTypeDef as any}
         {...mockHandlers}
       />
@@ -110,9 +107,7 @@ describe('ObjectHeader', () => {
   it('should start editing title on click', () => {
     renderWithProvider(
       <ObjectHeader
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         object={mockObject as any}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         typeDef={mockTypeDef as any}
         {...mockHandlers}
       />
@@ -127,9 +122,7 @@ describe('ObjectHeader', () => {
   it('should save title on blur', () => {
     renderWithProvider(
       <ObjectHeader
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         object={mockObject as any}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         typeDef={mockTypeDef as any}
         {...mockHandlers}
       />
@@ -147,9 +140,7 @@ describe('ObjectHeader', () => {
   it('should cancel edit on Escape', () => {
     renderWithProvider(
       <ObjectHeader
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         object={mockObject as any}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         typeDef={mockTypeDef as any}
         {...mockHandlers}
       />
@@ -168,9 +159,7 @@ describe('ObjectHeader', () => {
   it('should show quick actions in primary pane', () => {
     renderWithProvider(
       <ObjectHeader
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         object={mockObject as any}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         typeDef={mockTypeDef as any}
         {...mockHandlers}
         paneType="primary"
@@ -185,9 +174,7 @@ describe('ObjectHeader', () => {
     const onCloseSplit = vi.fn();
     renderWithProvider(
       <ObjectHeader
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         object={mockObject as any}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         typeDef={mockTypeDef as any}
         {...mockHandlers}
         paneType="secondary"
@@ -203,9 +190,7 @@ describe('ObjectHeader', () => {
   it('should handle type change', async () => {
     renderWithProvider(
       <ObjectHeader
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         object={mockObject as any}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         typeDef={mockTypeDef as any}
         {...mockHandlers}
         canChangeType={true}

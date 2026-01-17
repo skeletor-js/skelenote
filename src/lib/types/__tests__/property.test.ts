@@ -69,7 +69,7 @@ describe('isPropertyValue', () => {
     });
 
     it('should reject functions', () => {
-      expect(isPropertyValue(() => { })).toBe(false);
+      expect(isPropertyValue(() => {})).toBe(false);
     });
 
     it('should reject symbols', () => {
@@ -223,7 +223,6 @@ describe('validatePropertyValue', () => {
     });
 
     it('should reject array with non-string values', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = validatePropertyValue([123] as any, singleRelationDef);
       expect(result.valid).toBe(false);
       expect(result.error).toContain('string IDs');
@@ -282,8 +281,8 @@ describe('validatePropertyValue', () => {
 
     it('should reject non-strings', () => {
       expect(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        validatePropertyValue({ frequency: 'daily' } as any, recurrenceDef).valid
+        validatePropertyValue({ frequency: 'daily' } as any, recurrenceDef)
+          .valid
       ).toBe(false);
     });
   });

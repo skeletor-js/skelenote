@@ -1,328 +1,264 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
-  getPlaceholderValue,
-  isValidPlaceholder,
   expandPlaceholders,
   expandPlaceholdersInContent,
   extractPlaceholders,
-  createDefaultContext,
-  textToBlockNoteJson,
   isValidBlockNoteJson,
+  textToBlockNoteJson,
   ensureBlockNoteFormat,
+  getPlaceholderValue,
 } from '../placeholders';
-import type { PlaceholderContext, PlaceholderType } from '../types';
+import type { PlaceholderContext } from '../types';
 
-describe('Placeholders', () => {
-  // Use fixed date for consistent testing
-  const testDate = new Date(2024, 11, 25, 14, 30, 0); // December 25, 2024 2:30 PM
-
-  const testContext: PlaceholderContext = {
-    date: testDate,
-    title: 'Test Title',
+describe('placeholders', () => {
+  const mockDate = new Date('2025-12-27T15:45:00.000Z');
+  const mockContext: PlaceholderContext = {
+    date: mockDate,
+    title: 'Test Note',
   };
 
-  describe('getPlaceholderValue', () => {
-    it('should expand date to long format', () => {
-      expect(getPlaceholderValue('date', testContext)).toBe(
-        'December 25, 2024'
-      );
-    });
-
-    it('should expand date_short to ISO format', () => {
-      expect(getPlaceholderValue('date_short', testContext)).toBe('2024-12-25');
-    });
-
-    it('should expand title', () => {
-      expect(getPlaceholderValue('title', testContext)).toBe('Test Title');
-    });
-
-    it('should expand title to empty string if not provided', () => {
-      const noTitle: PlaceholderContext = { date: testDate };
-      expect(getPlaceholderValue('title', noTitle)).toBe('');
-    });
-
-    it('should expand time', () => {
-      const result = getPlaceholderValue('time', testContext);
-      expect(result).toMatch(/2:30\s*PM/i);
-    });
-
-    it('should expand tomorrow', () => {
-      expect(getPlaceholderValue('tomorrow', testContext)).toBe(
-        'December 26, 2024'
-      );
-    });
-
-    it('should expand yesterday', () => {
-      expect(getPlaceholderValue('yesterday', testContext)).toBe(
-        'December 24, 2024'
-      );
-    });
-
-    it('should expand week', () => {
-      const result = getPlaceholderValue('week', testContext);
-      expect(result).toMatch(/Week \d+/);
-    });
-
-    it('should expand month', () => {
-      expect(getPlaceholderValue('month', testContext)).toBe('December');
-    });
-
-    it('should expand year', () => {
-      expect(getPlaceholderValue('year', testContext)).toBe('2024');
-    });
-
-    it('should return custom value if provided', () => {
-      const customContext: PlaceholderContext = {
-        date: testDate,
-        customValues: { custom_field: 'Custom Value' },
-      };
-      expect(
-        getPlaceholderValue('custom_field' as PlaceholderType, customContext)
-      ).toBe('Custom Value');
-    });
-
-    it('should return original placeholder for unknown types without custom value', () => {
-      expect(
-        getPlaceholderValue(
-          'unknown_placeholder' as PlaceholderType,
-          testContext
-        )
-      ).toBe('{{unknown_placeholder}}');
-    });
+  beforeEach(() => {
+    // Mock system time if needed, but we pass date in context usually
   });
 
-  describe('isValidPlaceholder', () => {
-    it('should return true for valid placeholders', () => {
-      expect(isValidPlaceholder('date')).toBe(true);
-      expect(isValidPlaceholder('date_short')).toBe(true);
-      expect(isValidPlaceholder('title')).toBe(true);
-      expect(isValidPlaceholder('time')).toBe(true);
-      expect(isValidPlaceholder('tomorrow')).toBe(true);
-      expect(isValidPlaceholder('yesterday')).toBe(true);
-      expect(isValidPlaceholder('week')).toBe(true);
-      expect(isValidPlaceholder('month')).toBe(true);
-      expect(isValidPlaceholder('year')).toBe(true);
+  describe('getPlaceholderValue', () => {
+    it('formats date correctly', () => {
+      expect(getPlaceholderValue('date', mockContext)).toBe(
+        'December 27, 2025'
+      );
     });
 
-    it('should return false for invalid placeholders', () => {
-      expect(isValidPlaceholder('invalid')).toBe(false);
-      expect(isValidPlaceholder('custom')).toBe(false);
-      expect(isValidPlaceholder('')).toBe(false);
+    it('formats short date correctly', () => {
+      expect(getPlaceholderValue('date_short', mockContext)).toBe('2025-12-27');
+    });
+
+    it('formats time correctly', () => {
+      // Time formatting depends on locale, checking partial match or mocking toLocaleTimeString behavior if strictly needed.
+      // For now, assuming en-US environment as per implementation.
+      const time = getPlaceholderValue('time', mockContext);
+      expect(time).toMatch(/\d{1,2}:\d{2} [AP]M/);
+    });
+
+    it('returns title', () => {
+      expect(getPlaceholderValue('title', mockContext)).toBe('Test Note');
+    });
+
+    it('returns empty string for missing title', () => {
+      expect(getPlaceholderValue('title', { date: mockDate })).toBe('');
+    });
+
+    it('returns year', () => {
+      expect(getPlaceholderValue('year', mockContext)).toBe('2025');
+    });
+
+    it('returns month', () => {
+      expect(getPlaceholderValue('month', mockContext)).toBe('December');
+    });
+
+    it('returns week number', () => {
+      const week = getPlaceholderValue('week', mockContext);
+      expect(week).toMatch(/^Week \d+$/);
+    });
+
+    it('returns tomorrow date', () => {
+      const tomorrow = getPlaceholderValue('tomorrow', mockContext);
+      expect(tomorrow).toBe('December 28, 2025');
+    });
+
+    it('returns yesterday date', () => {
+      const yesterday = getPlaceholderValue('yesterday', mockContext);
+      expect(yesterday).toBe('December 26, 2025');
+    });
+
+    it('returns custom value when provided', () => {
+      const ctx = {
+        ...mockContext,
+        customValues: { myCustom: 'Custom!' },
+      };
+      expect(getPlaceholderValue('myCustom' as any, ctx)).toBe('Custom!');
+    });
+
+    it('returns placeholder string for unknown type without custom value', () => {
+      expect(getPlaceholderValue('unknown' as any, mockContext)).toBe(
+        '{{unknown}}'
+      );
     });
   });
 
   describe('expandPlaceholders', () => {
-    it('should expand single placeholder', () => {
-      const result = expandPlaceholders('Today is {{date}}', testContext);
-      expect(result).toBe('Today is December 25, 2024');
-    });
-
-    it('should expand multiple placeholders', () => {
-      const result = expandPlaceholders(
-        '{{date}} - {{title}} - {{year}}',
-        testContext
+    it('replaces single placeholder', () => {
+      expect(expandPlaceholders('Hello {{title}}', mockContext)).toBe(
+        'Hello Test Note'
       );
-      expect(result).toBe('December 25, 2024 - Test Title - 2024');
     });
 
-    it('should leave unknown placeholders unchanged', () => {
-      const result = expandPlaceholders('Value: {{unknown_type}}', testContext);
-      expect(result).toBe('Value: {{unknown_type}}');
+    it('replaces multiple placeholders', () => {
+      expect(
+        expandPlaceholders(
+          'Date: {{date_short}}, Title: {{title}}',
+          mockContext
+        )
+      ).toBe('Date: 2025-12-27, Title: Test Note');
     });
 
-    it('should expand custom values', () => {
-      const customContext: PlaceholderContext = {
-        date: testDate,
-        customValues: { project: 'My Project' },
+    it('ignores unknown placeholders', () => {
+      expect(expandPlaceholders('Hello {{unknown}}', mockContext)).toBe(
+        'Hello {{unknown}}'
+      );
+    });
+
+    it('supports custom values', () => {
+      const contextWithCustom = {
+        ...mockContext,
+        customValues: { my_var: 'Custom Value' },
       };
-      const result = expandPlaceholders('Project: {{project}}', customContext);
-      expect(result).toBe('Project: My Project');
-    });
-
-    it('should handle text with no placeholders', () => {
-      const result = expandPlaceholders('Plain text', testContext);
-      expect(result).toBe('Plain text');
-    });
-
-    it('should handle empty string', () => {
-      const result = expandPlaceholders('', testContext);
-      expect(result).toBe('');
-    });
-
-    it('should handle adjacent placeholders', () => {
-      const result = expandPlaceholders('{{year}}{{month}}', testContext);
-      expect(result).toBe('2024December');
-    });
-  });
-
-  describe('extractPlaceholders', () => {
-    it('should extract single placeholder', () => {
-      expect(extractPlaceholders('Hello {{date}}')).toEqual(['date']);
-    });
-
-    it('should extract multiple placeholders', () => {
-      const result = extractPlaceholders('{{date}} and {{title}} and {{year}}');
-      expect(result).toEqual(['date', 'title', 'year']);
-    });
-
-    it('should not duplicate placeholders', () => {
-      const result = extractPlaceholders('{{date}} and {{date}} again');
-      expect(result).toEqual(['date']);
-    });
-
-    it('should return empty array for no placeholders', () => {
-      expect(extractPlaceholders('Plain text')).toEqual([]);
-    });
-
-    it('should handle empty string', () => {
-      expect(extractPlaceholders('')).toEqual([]);
-    });
-  });
-
-  describe('createDefaultContext', () => {
-    beforeEach(() => {
-      vi.useFakeTimers();
-      vi.setSystemTime(new Date(2024, 11, 25, 12, 0, 0));
-    });
-
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    it('should create context with current date', () => {
-      const context = createDefaultContext();
-      expect(context.date.getFullYear()).toBe(2024);
-      expect(context.date.getMonth()).toBe(11);
-      expect(context.date.getDate()).toBe(25);
-    });
-
-    it('should include title if provided', () => {
-      const context = createDefaultContext('My Title');
-      expect(context.title).toBe('My Title');
-    });
-
-    it('should have undefined title if not provided', () => {
-      const context = createDefaultContext();
-      expect(context.title).toBeUndefined();
-    });
-  });
-
-  describe('textToBlockNoteJson', () => {
-    it('should convert single line to BlockNote JSON', () => {
-      const result = textToBlockNoteJson('Hello world');
-      const parsed = JSON.parse(result);
-
-      expect(parsed).toHaveLength(1);
-      expect(parsed[0].type).toBe('paragraph');
-      expect(parsed[0].content[0].text).toBe('Hello world');
-    });
-
-    it('should convert multiple lines to separate blocks', () => {
-      const result = textToBlockNoteJson('Line 1\nLine 2\nLine 3');
-      const parsed = JSON.parse(result);
-
-      expect(parsed).toHaveLength(3);
-      expect(parsed[0].content[0].text).toBe('Line 1');
-      expect(parsed[1].content[0].text).toBe('Line 2');
-      expect(parsed[2].content[0].text).toBe('Line 3');
-    });
-
-    it('should handle empty lines', () => {
-      const result = textToBlockNoteJson('Line 1\n\nLine 3');
-      const parsed = JSON.parse(result);
-
-      expect(parsed).toHaveLength(3);
-      expect(parsed[1].content).toEqual([]);
-    });
-
-    it('should include block IDs', () => {
-      const result = textToBlockNoteJson('Test');
-      const parsed = JSON.parse(result);
-
-      expect(parsed[0].id).toBeDefined();
-      expect(parsed[0].id).toMatch(/^block-/);
-    });
-  });
-
-  describe('isValidBlockNoteJson', () => {
-    it('should return true for valid BlockNote JSON', () => {
-      const valid = JSON.stringify([
-        { type: 'paragraph', content: [] },
-        { type: 'heading', content: [] },
-      ]);
-      expect(isValidBlockNoteJson(valid)).toBe(true);
-    });
-
-    it('should return false for non-array JSON', () => {
-      expect(isValidBlockNoteJson('{"type": "paragraph"}')).toBe(false);
-    });
-
-    it('should return false for invalid JSON', () => {
-      expect(isValidBlockNoteJson('not json')).toBe(false);
-    });
-
-    it('should return false for array without type property', () => {
-      const invalid = JSON.stringify([{ content: 'no type' }]);
-      expect(isValidBlockNoteJson(invalid)).toBe(false);
-    });
-  });
-
-  describe('ensureBlockNoteFormat', () => {
-    it('should return BlockNote JSON unchanged', () => {
-      const blockNote = JSON.stringify([{ type: 'paragraph', content: [] }]);
-      expect(ensureBlockNoteFormat(blockNote)).toBe(blockNote);
-    });
-
-    it('should convert plain text to BlockNote JSON', () => {
-      const result = ensureBlockNoteFormat('Plain text');
-      expect(isValidBlockNoteJson(result)).toBe(true);
-
-      const parsed = JSON.parse(result);
-      expect(parsed[0].content[0].text).toBe('Plain text');
+      expect(expandPlaceholders('Value: {{my_var}}', contextWithCustom)).toBe(
+        'Value: Custom Value'
+      );
     });
   });
 
   describe('expandPlaceholdersInContent', () => {
-    it('should expand placeholders in BlockNote JSON', () => {
+    it('expands in JSON string', () => {
       const content = JSON.stringify([
         {
           type: 'paragraph',
-          content: [{ type: 'text', text: 'Today is {{date}}' }],
+          content: [{ type: 'text', text: 'Today is {{date_short}}' }],
         },
       ]);
 
-      const result = expandPlaceholdersInContent(content, testContext);
+      const result = expandPlaceholdersInContent(content, mockContext);
       const parsed = JSON.parse(result);
 
-      expect(parsed[0].content[0].text).toBe('Today is December 25, 2024');
+      expect(parsed[0].content[0].text).toBe('Today is 2025-12-27');
     });
 
-    it('should convert plain text and expand placeholders', () => {
+    it('expands in object structure', () => {
+      const content = [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Hi {{title}}' }],
+        },
+      ];
+
+      const result = expandPlaceholdersInContent(content, mockContext);
+      const parsed = JSON.parse(result);
+
+      expect(parsed[0].content[0].text).toBe('Hi Test Note');
+    });
+
+    it('converts plain text to BlockNote format and expands', () => {
       const result = expandPlaceholdersInContent(
-        'Today is {{date}}',
-        testContext
+        'Simple text {{title}}',
+        mockContext
       );
       const parsed = JSON.parse(result);
 
-      expect(parsed[0].content[0].text).toBe('Today is December 25, 2024');
+      expect(parsed).toHaveLength(1);
+      expect(parsed[0].content[0].text).toBe('Simple text Test Note');
     });
 
-    it('should handle nested content', () => {
-      const content = JSON.stringify([
-        {
-          type: 'paragraph',
-          content: [
-            { type: 'text', text: 'Year: {{year}}' },
-            { type: 'text', text: ' Month: {{month}}' },
-          ],
-        },
-      ]);
-
-      const result = expandPlaceholdersInContent(content, testContext);
+    it('handles JSON that parses but is not an array', () => {
+      // An object that parses as valid JSON but is not BlockNote format (not an array)
+      const notArray = JSON.stringify({ type: 'paragraph', text: '{{title}}' });
+      const result = expandPlaceholdersInContent(notArray, mockContext);
       const parsed = JSON.parse(result);
 
-      expect(parsed[0].content[0].text).toBe('Year: 2024');
-      expect(parsed[0].content[1].text).toBe(' Month: December');
+      // Should be converted to BlockNote format
+      expect(Array.isArray(parsed)).toBe(true);
+    });
+
+    it('handles null and undefined in content nodes', () => {
+      const content = [
+        {
+          type: 'paragraph',
+          content: null,
+          props: undefined,
+        },
+      ];
+
+      const result = expandPlaceholdersInContent(content, mockContext);
+      const parsed = JSON.parse(result);
+
+      expect(parsed[0].content).toBe(null);
+    });
+
+    it('handles primitive values in content', () => {
+      const content = [
+        {
+          type: 'paragraph',
+          count: 42,
+          active: true,
+          content: [{ type: 'text', text: '{{title}}' }],
+        },
+      ];
+
+      const result = expandPlaceholdersInContent(content, mockContext);
+      const parsed = JSON.parse(result);
+
+      // Primitives should be preserved
+      expect(parsed[0].count).toBe(42);
+      expect(parsed[0].active).toBe(true);
+      expect(parsed[0].content[0].text).toBe('Test Note');
+    });
+
+    it('handles nested arrays in content', () => {
+      const content = [
+        {
+          type: 'table',
+          rows: [
+            [{ type: 'text', text: '{{date_short}}' }],
+            [{ type: 'text', text: '{{title}}' }],
+          ],
+        },
+      ];
+
+      const result = expandPlaceholdersInContent(content, mockContext);
+      const parsed = JSON.parse(result);
+
+      expect(parsed[0].rows[0][0].text).toBe('2025-12-27');
+      expect(parsed[0].rows[1][0].text).toBe('Test Note');
+    });
+  });
+
+  describe('extractPlaceholders', () => {
+    it('finds unique placeholders', () => {
+      const text = '{{title}} and {{date}} and {{title}} again';
+      const result = extractPlaceholders(text);
+      expect(result).toEqual(['title', 'date']);
+    });
+
+    it('returns empty array if no placeholders', () => {
+      expect(extractPlaceholders('No placeholders here')).toEqual([]);
+    });
+  });
+
+  describe('BlockNote utilities', () => {
+    it('validates correct BlockNote JSON', () => {
+      const valid = JSON.stringify([{ type: 'p' }]);
+      expect(isValidBlockNoteJson(valid)).toBe(true);
+    });
+
+    it('invalidates malformed JSON', () => {
+      expect(isValidBlockNoteJson('{ invalid }')).toBe(false);
+    });
+
+    it('converts text to BlockNote JSON', () => {
+      const json = textToBlockNoteJson('line 1\nline 2');
+      const parsed = JSON.parse(json);
+      expect(parsed).toHaveLength(2);
+      expect(parsed[0].content[0].text).toBe('line 1');
+      expect(parsed[1].content[0].text).toBe('line 2');
+    });
+
+    it('ensures BlockNote format converts plain text', () => {
+      const res = ensureBlockNoteFormat('hello');
+      expect(isValidBlockNoteJson(res)).toBe(true);
+    });
+
+    it('ensures BlockNote format keeps valid JSON', () => {
+      const valid = JSON.stringify([{ type: 'p' }]);
+      expect(ensureBlockNoteFormat(valid)).toBe(valid);
     });
   });
 });

@@ -39,7 +39,7 @@ Skelenote is currently in **alpha**. We're looking for testers to help shape the
 1. Download from [Releases](https://github.com/skeletor-js/skelenote/releases)
 2. Read the [Alpha Tester Guide](docs/user/alpha/README.md)
 3. Join our [Discord](https://discord.gg/4apsgSRB7D) for discussion
-4. Report bugs via [GitHub Issues](https://github.com/skeletor-js/skelenote/issues/new?template=bug_report.yml)
+4. Report bugs via [Linear](https://linear.app/skeletorjs/team/skelenote)
 
 See also:
 

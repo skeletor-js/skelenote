@@ -9,19 +9,23 @@ Ship your first PR in 30 minutes.
 ### Prerequisites
 
 **All platforms**:
+
 - [Node.js 18+](https://nodejs.org/)
 - [Rust (stable)](https://rustup.rs/)
 - [pnpm](https://pnpm.io/installation)
 
 **macOS**:
+
 ```bash
 xcode-select --install
 ```
 
 **Windows**:
+
 - [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 
 **Linux (Ubuntu/Debian)**:
+
 ```bash
 sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libssl-dev libayatana-appindicator3-dev librsvg2-dev
 ```
@@ -45,6 +49,7 @@ pnpm tauri dev
 This starts Vite + Tauri with hot reload. The app window should open in ~30 seconds.
 
 **Expected output**:
+
 ```
   VITE v5.x.x  ready in xxx ms
   ➜  Local:   http://localhost:1420/
@@ -53,6 +58,7 @@ This starts Vite + Tauri with hot reload. The app window should open in ~30 seco
 ```
 
 **Common issues**:
+
 - `error: linker 'cc' not found` → Install build tools (see above)
 - `Error: Unable to find WebView2` (Windows) → Install [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
 - Rust compilation slow → First build takes 2-5 min, subsequent builds are fast
@@ -94,6 +100,7 @@ Let's add `Cmd+Shift+D` to toggle debug mode (just an example).
 ### Example: Add a Tauri Command
 
 **Rust side** (`src-tauri/src/lib.rs`):
+
 ```rust
 #[tauri::command]
 fn my_command(input: String) -> String {
@@ -108,6 +115,7 @@ fn my_command(input: String) -> String {
 ```
 
 **Frontend side**:
+
 ```typescript
 import { invoke } from '@tauri-apps/api/core';
 
@@ -184,7 +192,7 @@ src/
 ## Getting Help
 
 - [Discord](https://discord.gg/4apsgSRB7D) - Quick questions
-- [GitHub Issues](https://github.com/skeletor-js/skelenote/issues) - Bug reports
+- [Linear](https://linear.app/skeletorjs/team/skelenote) - Bug reports
 - [CONTRIBUTING.md](../../CONTRIBUTING.md) - Full guide
 - [Architecture](./architecture.md) - How it all fits together
 

@@ -27,11 +27,11 @@ vi.mock('@gfazioli/mantine-split-pane', () => {
   const Split = ({ children }: { children: React.ReactNode }) => (
     <div data-testid="split-container">{children}</div>
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   (Split as any).Pane = ({ children }: { children: React.ReactNode }) => (
     <div data-testid="split-pane">{children}</div>
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   (Split as any).Resizer = () => <div data-testid="split-resizer" />;
   return { Split };
 });

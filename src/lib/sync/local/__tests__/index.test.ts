@@ -8,12 +8,10 @@ const mockInvoke = vi.fn();
 const mockListen = vi.fn();
 
 vi.mock('@tauri-apps/api/core', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   invoke: (...args: any[]) => mockInvoke(...args),
 }));
 
 vi.mock('@tauri-apps/api/event', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   listen: (...args: any[]) => mockListen(...args),
 }));
 

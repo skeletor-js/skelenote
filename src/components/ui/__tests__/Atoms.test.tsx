@@ -29,7 +29,7 @@ const renderWithProvider = (ui: React.ReactNode) => {
 };
 
 // Mock console.warn for Icon test
-const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
 describe('UI Atoms', () => {
   describe('Badge', () => {
@@ -59,7 +59,6 @@ describe('UI Atoms', () => {
     });
 
     it('should warn and return null for unknown icon', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       renderWithProvider(<Icon name={'unknown-icon' as any} />);
       expect(consoleSpy).toHaveBeenCalled();
       // Should not find an SVG (icon) or text

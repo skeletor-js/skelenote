@@ -14,7 +14,7 @@ export interface UseBackgroundTaskResult {
   /** Begin a background task - returns task ID */
   beginTask: () => Promise<number | null>;
   /** End a background task by ID */
-  endTask: (taskId: number) => Promise<void>;
+  endTask: (taskId?: number) => Promise<void>;
   /** Check if a background task is currently active */
   isTaskActive: () => boolean;
   /** Get the current task ID if active */

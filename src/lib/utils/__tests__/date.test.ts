@@ -11,6 +11,8 @@ import {
   addMonths,
   addYears,
   formatRelativeDate,
+  formatISODate,
+  parseISODate,
 } from '../date';
 
 describe('Date Utilities', () => {
@@ -208,6 +210,43 @@ describe('Date Utilities', () => {
     it('should return overdue days for past dates', () => {
       const pastDate = new Date('2024-12-20T10:00:00Z').getTime();
       expect(formatRelativeDate(pastDate)).toMatch(/\d+d overdue/);
+    });
+    it('should return day name for this week', () => {
+      // Dec 25 is Wednesday. Friday Dec 27 is within this week.
+      const friday = new Date('2024-12-27T10:00:00Z').getTime();
+      expect(formatRelativeDate(friday)).toBe('Fri');
+    });
+
+    it('should return short date for future date in same year but next week', () => {
+      // Dec 30 is correct but end of year edge case.
+      // Let's pick a date that is definitely next week but same year if possible,
+      // OR a date far enough in future.
+      // Dec 25 is Wed. Week ends Dec 29 (Sun).
+      // Dec 30 (Mon) is next week, same year.
+      const nextWeek = new Date('2024-12-30T10:00:00Z').getTime();
+      expect(formatRelativeDate(nextWeek)).toBe('Dec 30');
+    });
+
+    it('should return full date for different year', () => {
+      const nextYear = new Date('2025-01-01T10:00:00Z').getTime();
+      expect(formatRelativeDate(nextYear)).toBe('Jan 1, 2025');
+    });
+  });
+
+  describe('formatISODate', () => {
+    it('should format date as YYYY-MM-DD', () => {
+      const date = new Date('2024-12-25T12:00:00Z').getTime();
+      expect(formatISODate(date)).toBe('2024-12-25');
+    });
+  });
+
+  describe('parseISODate', () => {
+    it('should parse YYYY-MM-DD to timestamp', () => {
+      const timestamp = parseISODate('2024-12-25');
+      const date = new Date(timestamp);
+      expect(date.getUTCFullYear()).toBe(2024);
+      expect(date.getUTCMonth()).toBe(11);
+      expect(date.getUTCDate()).toBe(25);
     });
   });
 });
