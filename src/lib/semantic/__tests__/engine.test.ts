@@ -209,7 +209,7 @@ describe('SemanticEngine', () => {
       const items = [{ objectId: '1', title: 'Long', content: 'Content...' }];
       vi.mocked(needsChunking).mockReturnValue(true);
       vi.mocked(chunkText).mockReturnValue([
-        { text: 'Chunk 1', start: 0, end: 7 },
+        { text: 'Chunk 1', startIndex: 0, endIndex: 7, chunkIndex: 0 },
       ]);
       vi.mocked(embedBatch).mockResolvedValue([new Float32Array(384)]);
 
@@ -322,7 +322,7 @@ describe('SemanticEngine', () => {
       const item = { objectId: '1', title: 'Long', content: 'Content...' };
       vi.mocked(needsChunking).mockReturnValue(true);
       vi.mocked(chunkText).mockReturnValue([
-        { text: 'Chunk 1', start: 0, end: 7 },
+        { text: 'Chunk 1', startIndex: 0, endIndex: 7, chunkIndex: 0 },
       ]);
       vi.mocked(embedText).mockResolvedValue(new Float32Array(384));
 

@@ -82,7 +82,6 @@ const renderWithProvider = (ui: React.ReactNode) => {
 
 describe('SwipeableRow', () => {
   const mockOnPress = vi.fn();
-  const mockOnLongPress = vi.fn();
 
   const mockLeftActions: SwipeAction[] = [
     {
@@ -178,7 +177,7 @@ describe('SwipeableRow', () => {
   });
 
   it('should hide separator when hideSeparator is true', () => {
-    const { container } = renderWithProvider(
+    renderWithProvider(
       <SwipeableRow hideSeparator={true}>
         <div>Row content</div>
       </SwipeableRow>

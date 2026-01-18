@@ -579,24 +579,37 @@ export function MobileSearchModal({ opened, onClose }: MobileSearchModalProps) {
                   Recent Searches
                 </Text>
                 {recentSearches.map((search) => (
-                  <UnstyledButton
+                  <Box
                     key={search}
-                    onClick={() => setLocalQuery(search)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: 12,
                       padding: '12px 16px',
                       borderBottom: '1px solid var(--border-subtle)',
+                      cursor: 'pointer',
                     }}
                   >
-                    <History
-                      size={16}
-                      style={{ color: 'var(--mantine-color-gray-5)' }}
-                    />
-                    <Text size="sm" style={{ flex: 1 }}>
-                      {search}
-                    </Text>
+                    <UnstyledButton
+                      onClick={() => setLocalQuery(search)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        flex: 1,
+                        // Reset padding since container handles it mostly, or adjust structure
+                        // Actually, easier to make the container the interactive shell?
+                        // No, nesting issue.
+                      }}
+                    >
+                      <History
+                        size={16}
+                        style={{ color: 'var(--mantine-color-gray-5)' }}
+                      />
+                      <Text size="sm" style={{ flex: 1, textAlign: 'left' }}>
+                        {search}
+                      </Text>
+                    </UnstyledButton>
                     <ActionIcon
                       variant="subtle"
                       size="sm"
@@ -607,7 +620,7 @@ export function MobileSearchModal({ opened, onClose }: MobileSearchModalProps) {
                     >
                       <X size={14} />
                     </ActionIcon>
-                  </UnstyledButton>
+                  </Box>
                 ))}
                 <Button
                   variant="subtle"

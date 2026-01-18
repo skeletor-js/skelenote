@@ -128,6 +128,7 @@ describe('CascadingRelationSheet', () => {
     properties: {},
     hasContent: false,
     inboxed: false,
+    archived: false,
     pinned: false,
     createdAt: Date.now(),
     updatedAt: Date.now(),

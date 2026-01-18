@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MobileTemplatesView } from '../MobileTemplatesView';
 import { MantineProvider } from '@mantine/core';
@@ -50,7 +50,7 @@ vi.mock('@/contexts', () => ({
     refreshData: mocks.refreshData,
   })),
   useTypeRegistry: vi.fn(() => ({
-    get: (id: string) => ({ name: 'Note', icon: '📝' }),
+    get: () => ({ name: 'Note', icon: '📝' }),
   })),
 }));
 

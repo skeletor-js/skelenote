@@ -108,6 +108,8 @@ describe('PropertyEditorSheet', () => {
           id: 'title',
           name: 'Title',
           type: 'text',
+          required: false,
+          multiple: false,
         }}
         value="My Title"
         onSave={mockOnSave}
@@ -128,6 +130,8 @@ describe('PropertyEditorSheet', () => {
           id: 'priority',
           name: 'Priority',
           type: 'number',
+          required: false,
+          multiple: false,
         }}
         value={5}
         onSave={mockOnSave}
@@ -146,6 +150,8 @@ describe('PropertyEditorSheet', () => {
           id: 'website',
           name: 'Website',
           type: 'url',
+          required: false,
+          multiple: false,
         }}
         value="https://example.com"
         onSave={mockOnSave}
@@ -164,6 +170,8 @@ describe('PropertyEditorSheet', () => {
           id: 'email',
           name: 'Email',
           type: 'email',
+          required: false,
+          multiple: false,
         }}
         value="test@example.com"
         onSave={mockOnSave}
@@ -182,6 +190,8 @@ describe('PropertyEditorSheet', () => {
           id: 'phone',
           name: 'Phone',
           type: 'phone',
+          required: false,
+          multiple: false,
         }}
         value="+1 (555) 123-4567"
         onSave={mockOnSave}
@@ -201,6 +211,8 @@ describe('PropertyEditorSheet', () => {
           name: 'Status',
           type: 'select',
           config: { options: ['todo', 'in-progress', 'done'] },
+          required: false,
+          multiple: false,
         }}
         value="todo"
         onSave={mockOnSave}
@@ -221,6 +233,8 @@ describe('PropertyEditorSheet', () => {
           id: 'completed',
           name: 'Completed',
           type: 'checkbox',
+          required: false,
+          multiple: false,
         }}
         value={true}
         onSave={mockOnSave}
@@ -243,6 +257,8 @@ describe('PropertyEditorSheet', () => {
           name: 'Project',
           type: 'relation',
           config: { targetTypeIds: ['built-in:project'] },
+          required: false,
+          multiple: false,
         }}
         value={null}
         onSave={mockOnSave}
@@ -262,6 +278,8 @@ describe('PropertyEditorSheet', () => {
           id: 'title',
           name: 'Title',
           type: 'text',
+          required: false,
+          multiple: false,
         }}
         value="My Title"
         onSave={mockOnSave}
@@ -280,6 +298,8 @@ describe('PropertyEditorSheet', () => {
           id: 'title',
           name: 'Title',
           type: 'text',
+          required: false,
+          multiple: false,
         }}
         value="My Title"
         onSave={mockOnSave}
@@ -302,6 +322,7 @@ describe('PropertyEditorSheet', () => {
           name: 'Title',
           type: 'text',
           required: false,
+          multiple: false,
         }}
         value="My Title"
         onSave={mockOnSave}
@@ -322,6 +343,8 @@ describe('PropertyEditorSheet', () => {
           id: 'recurrence',
           name: 'Recurrence',
           type: 'recurrence',
+          required: false,
+          multiple: false,
         }}
         value={null}
         onSave={mockOnSave}
@@ -342,6 +365,8 @@ describe('PropertyEditorSheet', () => {
           name: 'Project',
           type: 'relation',
           config: { targetTypeIds: ['built-in:project'] },
+          required: false,
+          multiple: false,
         }}
         value="project-123"
         onSave={mockOnSave}

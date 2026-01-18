@@ -5,7 +5,7 @@
  * Features success animation with haptic feedback on unlock.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Stack, Box, Text, Button } from '@mantine/core';
 import { Lock, Fingerprint, Check } from 'lucide-react';
@@ -31,33 +31,48 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Track mounted state to prevent state updates/callbacks after unmount
+  const isMounted = useRef(true);
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   const handleAuthenticate = useCallback(async () => {
+    if (!isMounted.current) return;
     setIsAuthenticating(true);
     setError(null);
 
     try {
       const success = await authenticate('Unlock Skelenote');
+      if (!isMounted.current) return;
+
       if (success) {
         // Show success animation with haptic
         await notification('success');
-        setIsSuccess(true);
+        if (isMounted.current) setIsSuccess(true);
         // Delay unlock to show success animation
         setTimeout(
           () => {
-            onUnlock();
+            if (isMounted.current) onUnlock();
           },
           reduceMotion ? 0 : 600
         );
       } else {
         await notification('error');
-        setError('Authentication failed. Please try again.');
+        if (isMounted.current)
+          setError('Authentication failed. Please try again.');
       }
     } catch (err) {
+      if (!isMounted.current) return;
       await notification('error');
       setError('Authentication failed. Please try again.');
       console.error('[LockScreen] Auth error:', err);
     } finally {
-      setIsAuthenticating(false);
+      if (isMounted.current) {
+        setIsAuthenticating(false);
+      }
     }
   }, [authenticate, onUnlock, notification, reduceMotion]);
 
@@ -65,7 +80,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
   useEffect(() => {
     if (!biometricLoading) {
       const timer = setTimeout(() => {
-        handleAuthenticate();
+        if (isMounted.current) handleAuthenticate();
       }, 300);
       return () => clearTimeout(timer);
     }

@@ -202,12 +202,7 @@ describe('SkeletonKeyContext', () => {
   });
 
   it('should clear error', () => {
-    const { result } = renderHook(() => useSkeletonKey(), { wrapper });
-
-    act(() => {
-      // The error property is read-only from the hook, so we need to trigger an error via the context
-      // Actually, let's trigger a real error to be safe
-    });
+    renderHook(() => useSkeletonKey(), { wrapper });
 
     // Trigger error via simple mechanism, e.g. gen key fail
     (crypto.generateKey as unknown as MockInstance).mockRejectedValue(

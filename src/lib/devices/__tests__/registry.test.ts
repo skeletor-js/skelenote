@@ -189,11 +189,11 @@ describe('DeviceRegistry', () => {
       });
       registry.registerDevice(record);
 
-      const info = registry.getDeviceInfo('current', 'current', 'online');
+      const info = registry.getDeviceInfo('current', 'current', 'connected');
 
       expect(info).toBeDefined();
       expect(info?.isCurrentDevice).toBe(true);
-      expect(info?.status).toBe('online');
+      expect(info?.status).toBe('connected');
       expect(info?.isRevoked).toBe(false);
     });
 
@@ -207,10 +207,10 @@ describe('DeviceRegistry', () => {
       });
       registry.registerDevice(record);
 
-      const info = registry.getDeviceInfo('other', 'current', 'syncing');
+      const info = registry.getDeviceInfo('other', 'current', 'connecting');
 
       expect(info?.isCurrentDevice).toBe(false);
-      expect(info?.status).toBe('syncing');
+      expect(info?.status).toBe('connecting');
     });
 
     it('should get device info with default offline status', () => {
@@ -270,14 +270,14 @@ describe('DeviceRegistry', () => {
       registry.registerDevice(d1);
       registry.registerDevice(d2);
 
-      const statuses = new Map([['d1', 'online' as const]]);
+      const statuses = new Map([['d1', 'connected' as const]]);
       const allInfo = registry.getAllDeviceInfo('d1', statuses);
 
       expect(allInfo).toHaveLength(2);
       const info1 = allInfo.find((i) => i.deviceId === 'd1');
       const info2 = allInfo.find((i) => i.deviceId === 'd2');
       expect(info1?.isCurrentDevice).toBe(true);
-      expect(info1?.status).toBe('online');
+      expect(info1?.status).toBe('connected');
       expect(info2?.isCurrentDevice).toBe(false);
       expect(info2?.status).toBe('offline');
     });

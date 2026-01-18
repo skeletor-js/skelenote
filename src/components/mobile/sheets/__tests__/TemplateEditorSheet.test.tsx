@@ -95,7 +95,6 @@ const renderWithProvider = (ui: React.ReactNode) => {
 describe('TemplateEditorSheet', () => {
   const mockOnClose = vi.fn();
   const mockOnCreate = vi.fn();
-  const mockOnUpdate = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -128,6 +127,10 @@ describe('TemplateEditorSheet', () => {
           name: 'My Template',
           targetTypeId: 'built-in:note',
           isDailyNoteTemplate: false,
+          defaultProperties: {},
+          hasContent: false,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
         }}
       />
     );
@@ -195,6 +198,10 @@ describe('TemplateEditorSheet', () => {
           name: 'My Template',
           targetTypeId: 'built-in:note',
           isDailyNoteTemplate: false,
+          defaultProperties: {},
+          hasContent: false,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
         }}
       />
     );
@@ -269,6 +276,10 @@ describe('TemplateEditorSheet', () => {
           name: 'My Template',
           targetTypeId: 'built-in:note',
           isDailyNoteTemplate: false,
+          defaultProperties: {},
+          hasContent: false,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
         }}
       />
     );

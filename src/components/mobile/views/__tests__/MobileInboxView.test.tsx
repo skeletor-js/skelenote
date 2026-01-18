@@ -34,7 +34,8 @@ Object.defineProperty(window, 'matchMedia', {
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, layoutId: _layoutId, ...props }: any) => (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    div: ({ children, layoutId, ...props }: any) => (
       <div {...props}>{children}</div>
     ),
   },

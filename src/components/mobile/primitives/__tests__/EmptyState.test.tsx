@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { EmptyState } from '../EmptyState';
 import { MantineProvider } from '@mantine/core';
-import { Search, FileText } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {

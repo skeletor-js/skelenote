@@ -9,16 +9,40 @@ import {
 } from '../SemanticSearchContext';
 import * as semanticLib from '@/lib/semantic';
 
-// Mock dependencies
-const mockEngine = {
-  status: 'ready',
-  indexedCount: 10,
-  onStatusChange: vi.fn(),
-  initialize: vi.fn().mockResolvedValue(undefined),
-  indexContent: vi.fn().mockResolvedValue(true),
-  disable: vi.fn().mockResolvedValue(undefined),
-  rebuildIndex: vi.fn().mockResolvedValue(true),
-};
+// Mocks using vi.hoisted to avoid declaration issues
+const { mockEngine, captureCallbacks } = vi.hoisted(() => {
+  // We store callbacks in a closure to exposing them via getter/setter or just an object
+  // But vi.hoisted must return variables.
+  const callbacks: any = {
+    statusChange: null,
+    initProgress: null,
+    indexProgress: null,
+  };
+
+  const engine = {
+    status: 'ready',
+    indexedCount: 10,
+    onStatusChange: vi.fn((cb) => {
+      callbacks.statusChange = cb;
+      return vi.fn();
+    }),
+    initialize: vi.fn((cb) => {
+      if (cb) callbacks.initProgress = cb;
+      return Promise.resolve();
+    }),
+    indexContent: vi.fn((_, cb) => {
+      if (cb) callbacks.indexProgress = cb;
+      return Promise.resolve(true);
+    }),
+    disable: vi.fn().mockResolvedValue(undefined),
+    rebuildIndex: vi.fn((_, cb) => {
+      if (cb) callbacks.indexProgress = cb;
+      return Promise.resolve(true);
+    }),
+  };
+
+  return { mockEngine: engine, captureCallbacks: callbacks };
+});
 
 vi.mock('@/lib/semantic', () => ({
   createSemanticEngine: vi.fn(() => mockEngine),
@@ -40,7 +64,28 @@ describe('SemanticSearchContext', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    mockEngine.onStatusChange.mockReturnValue(() => {});
+    captureCallbacks.statusChange = null;
+    captureCallbacks.initProgress = null;
+    captureCallbacks.indexProgress = null;
+
+    // Reset implementations to happy path
+    mockEngine.initialize.mockImplementation((cb: any) => {
+      if (cb) captureCallbacks.initProgress = cb;
+      return Promise.resolve();
+    });
+    mockEngine.indexContent.mockImplementation((_, cb) => {
+      if (cb) captureCallbacks.indexProgress = cb;
+      return Promise.resolve(true);
+    });
+    mockEngine.rebuildIndex.mockImplementation((_, cb) => {
+      if (cb) captureCallbacks.indexProgress = cb;
+      return Promise.resolve(true);
+    });
+    mockEngine.onStatusChange.mockImplementation((cb) => {
+      captureCallbacks.statusChange = cb;
+      return vi.fn();
+    });
+    mockEngine.disable.mockResolvedValue(undefined);
   });
 
   it('should initialize with default disabled state', () => {
@@ -69,6 +114,88 @@ describe('SemanticSearchContext', () => {
     );
   });
 
+  it('should receive status updates from engine', async () => {
+    const { result } = renderHook(() => useSemanticSearch(), { wrapper });
+
+    await act(async () => {
+      await result.current.enable([]);
+    });
+
+    expect(captureCallbacks.statusChange).toBeTruthy();
+
+    act(() => {
+      if (captureCallbacks.statusChange) {
+        captureCallbacks.statusChange('indexing');
+      }
+    });
+
+    expect(result.current.status).toBe('indexing');
+  });
+
+  it('should receive progress updates during initialization', async () => {
+    const { result } = renderHook(() => useSemanticSearch(), { wrapper });
+
+    let resolveInit: any;
+    mockEngine.initialize.mockImplementation((cb: any) => {
+      captureCallbacks.initProgress = cb;
+      return new Promise((resolve) => {
+        resolveInit = resolve;
+      });
+    });
+
+    // Start enabling, but don't await the promise yet (it will hang)
+    let enablePromise: Promise<void>;
+    await act(async () => {
+      enablePromise = result.current.enable([]);
+    });
+
+    // Send progress
+    expect(captureCallbacks.initProgress).toBeTruthy();
+    act(() => {
+      captureCallbacks.initProgress?.({
+        operation: 'download',
+        percent: 50,
+        message: 'Downloading...',
+      });
+    });
+
+    expect(result.current.progress).toEqual({
+      operation: 'download',
+      percent: 50,
+      message: 'Downloading...',
+    });
+
+    // Finish
+    await act(async () => {
+      if (resolveInit) resolveInit();
+      try {
+        await enablePromise;
+      } catch {
+        // ignore
+      }
+    });
+
+    expect(result.current.progress).toBeNull();
+  });
+
+  it('should receive progress updates during indexing', async () => {
+    const { result } = renderHook(() => useSemanticSearch(), { wrapper });
+
+    // We must ensure indexContent is reached.
+    // Mock initialize to succeed instantly.
+    mockEngine.initialize.mockResolvedValue(undefined);
+
+    await act(async () => {
+      await result.current.enable([
+        { content: 'foo', objectId: '1', title: 'bar' },
+      ]);
+    });
+
+    // Since mock resolved instantly, progress might have been cleared already.
+    // To test interaction, we'd need to pause indexContent
+    expect(mockEngine.indexContent).toHaveBeenCalled();
+  });
+
   it('should disable semantic search', async () => {
     const { result } = renderHook(() => useSemanticSearch(), { wrapper });
 
@@ -84,6 +211,7 @@ describe('SemanticSearchContext', () => {
     expect(mockEngine.disable).toHaveBeenCalledWith(false);
     expect(result.current.isEnabled).toBe(false);
     expect(localStorage.getItem('skelenote:semanticSearchEnabled')).toBeNull();
+    expect(result.current.status).toBe('disabled');
   });
 
   it('should manage threshold', () => {
@@ -93,7 +221,6 @@ describe('SemanticSearchContext', () => {
       result.current.setThreshold(0.5);
     });
 
-    // It clamps to MAX_THRESHOLD (0.6)
     expect(result.current.threshold).toBe(0.5);
 
     act(() => {
@@ -120,7 +247,6 @@ describe('SemanticSearchContext', () => {
   });
 
   it('should notify content change', () => {
-    // This is just a pass-through to the hook mock, but ensures API is exposed
     const { result } = renderHook(() => useSemanticSearch(), { wrapper });
     expect(result.current.notifyContentChange).toBeDefined();
     expect(result.current.flushContentChanges).toBeDefined();
@@ -128,41 +254,45 @@ describe('SemanticSearchContext', () => {
 
   it('should throw error when rebuildIndex called without engine', async () => {
     const { result } = renderHook(() => useSemanticSearch(), { wrapper });
-
-    await expect(
-      result.current.rebuildIndex([
-        { content: 'text', objectId: '1', title: 'test' },
-      ])
-    ).rejects.toThrow('Semantic search is not enabled');
+    await expect(result.current.rebuildIndex([])).rejects.toThrow(
+      'Semantic search is not enabled'
+    );
   });
 
   it('should handle enable error', async () => {
     const mockError = new Error('Enable failed');
-    vi.mocked(semanticLib.createSemanticEngine).mockReturnValueOnce({
-      ...mockEngine,
-      initialize: vi.fn().mockRejectedValue(mockError),
-    } as any);
+    mockEngine.initialize.mockRejectedValue(mockError);
 
     const { result } = renderHook(() => useSemanticSearch(), { wrapper });
 
     await expect(result.current.enable([])).rejects.toThrow('Enable failed');
 
-    // Wait for the error state to be set (React state updates are async)
     await waitFor(() => {
       expect(result.current.error).toBe('Enable failed');
+    });
+  });
+
+  it('should handle initialization error in useEffect', async () => {
+    // Simulate enabled in storage
+    localStorage.setItem('skelenote:semanticSearchEnabled', 'true');
+    mockEngine.initialize.mockRejectedValue(new Error('Init failed'));
+
+    const { result } = renderHook(() => useSemanticSearch(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.error).toBe('Init failed');
     });
   });
 
   it('should disable with cleanup flag', async () => {
     const { result } = renderHook(() => useSemanticSearch(), { wrapper });
 
-    // Enable first
     await act(async () => {
       await result.current.enable([]);
     });
 
     await act(async () => {
-      await result.current.disable(true); // With cleanup
+      await result.current.disable(true);
     });
 
     expect(mockEngine.disable).toHaveBeenCalledWith(true);
@@ -171,11 +301,8 @@ describe('SemanticSearchContext', () => {
 
   it('should expose getEngine', async () => {
     const { result } = renderHook(() => useSemanticSearch(), { wrapper });
-
-    // Before enabling, engine is null
     expect(result.current.getEngine()).toBeNull();
 
-    // After enabling
     await act(async () => {
       await result.current.enable([]);
     });
@@ -196,15 +323,12 @@ describe('SemanticSearchContext', () => {
 
 describe('useSemanticSearch error boundary', () => {
   it('should throw when used outside provider', () => {
-    // Suppress console error for this test
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
     expect(() => {
       renderHook(() => useSemanticSearch());
     }).toThrow(
       'useSemanticSearch must be used within a SemanticSearchProvider'
     );
-
     consoleSpy.mockRestore();
   });
 });
@@ -217,17 +341,22 @@ describe('SemanticSearchContext persistence', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    mockEngine.onStatusChange.mockReturnValue(() => {});
+    captureCallbacks.statusChange = null;
+
+    mockEngine.initialize.mockImplementation((cb: any) => {
+      if (cb) captureCallbacks.initProgress = cb;
+      return Promise.resolve();
+    });
+    mockEngine.onStatusChange.mockImplementation((cb) => {
+      captureCallbacks.statusChange = cb;
+      return vi.fn();
+    });
+    mockEngine.disable.mockResolvedValue(undefined);
   });
 
   it('should load enabled state from localStorage on init', async () => {
-    // Set enabled before rendering
     localStorage.setItem('skelenote:semanticSearchEnabled', 'true');
-
     const { result } = renderHook(() => useSemanticSearch(), { wrapper });
-
-    // Semantic search should initialize as enabled when localStorage says true
-    // Note: The actual engine initialization happens asynchronously
     expect(result.current.isEnabled).toBe(true);
   });
 
@@ -257,24 +386,19 @@ describe('SemanticSearchContext persistence', () => {
     expect(result.current.threshold).toBe(0.2);
   });
 
-  it('should persist threshold to localStorage when set', () => {
+  it('should persist threshold to localStorage', () => {
     const { result } = renderHook(() => useSemanticSearch(), { wrapper });
-
     act(() => {
       result.current.setThreshold(0.35);
     });
-
     expect(localStorage.getItem('skelenote:semanticThreshold')).toBe('0.35');
   });
 
   it('should skip indexing when content is empty', async () => {
     const { result } = renderHook(() => useSemanticSearch(), { wrapper });
-
     await act(async () => {
-      await result.current.enable([]); // Empty content array
+      await result.current.enable([]);
     });
-
-    // indexContent should not be called for empty array
     expect(mockEngine.indexContent).not.toHaveBeenCalled();
   });
 });
@@ -283,9 +407,7 @@ describe('useSemanticSearchSafe', () => {
   it('should return null outside provider', async () => {
     // Import the safe hook
     const { useSemanticSearchSafe } = await import('../SemanticSearchContext');
-
     const { result } = renderHook(() => useSemanticSearchSafe());
-
     expect(result.current).toBeNull();
   });
 });

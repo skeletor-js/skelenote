@@ -109,6 +109,8 @@ describe('RelationPickerSheet', () => {
       name: 'Project',
       type: 'relation' as const,
       config: { targetTypeIds: ['built-in:project'] },
+      required: false,
+      multiple: false,
     },
     value: null,
     onSave: mockOnSave,
