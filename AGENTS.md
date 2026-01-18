@@ -12,11 +12,12 @@ The GitHub organization is **skeletor-js**. All GitHub URLs should use:
 
 ```bash
 pnpm install             # Install dependencies
-pnpm tauri dev           # Start dev server with Tauri app (hot reload)
-pnpm tauri build         # Build production binaries
+pnpm tauri:dev           # Start dev server with Tauri app (hot reload)
+pnpm tauri:build         # Build production binaries
 pnpm test                # Run tests in watch mode
 pnpm test:run            # Run tests once (CI mode)
 pnpm lint                # Run ESLint
+pnpm format              # Format code with Prettier
 ```
 
 ## Git Workflow
@@ -80,7 +81,7 @@ Skelenote uses GitHub Actions for continuous integration and cross-platform buil
 | Workflow | Trigger | What it does |
 |----------|---------|--------------|
 | `test.yml` | Push to main | Lint (`pnpm lint`), frontend tests (`pnpm test:run`), Rust tests (`cargo test`) on Ubuntu |
-| `build.yml` | Push to main | Build for macOS (ARM + Intel), Windows, Linux; upload artifacts |
+| `build.yml` | Manual dispatch | Build for macOS (ARM + Intel), Windows, Linux; upload artifacts |
 | `release.yml` | Version tags (`v*`) | Create draft GitHub release with all platform binaries |
 
 ### Platform Support
@@ -141,10 +142,35 @@ skelenote/
 ├── .github/workflows/      # CI/CD (test, build, release)
 ├── src/                    # Frontend (React/TypeScript)
 │   ├── components/         # React components by feature
-│   │   └── mobile/         # Mobile-specific components
+│   │   ├── actions/        # Bulk action components
+│   │   ├── daily/          # Daily notes components
+│   │   ├── editor/         # BlockNote editor components
+│   │   ├── export/         # Export modal and options
+│   │   ├── help/           # Keyboard shortcuts modal
+│   │   ├── history/        # Time Machine, timeline, diff views
+│   │   ├── import/         # Import wizard components
+│   │   ├── layout/         # App layout, sidebar, navigation
+│   │   ├── mobile/         # Mobile-specific components
+│   │   │   ├── primitives/ # Reusable mobile UI primitives
+│   │   │   ├── rows/       # List row components
+│   │   │   ├── sheets/     # Bottom sheet modals
+│   │   │   ├── skeletons/  # Loading skeleton screens
+│   │   │   └── views/      # Full-screen mobile views
+│   │   ├── object/         # Object detail, property editors
+│   │   ├── search/         # Search UI components
+│   │   ├── settings/       # Settings panels
+│   │   ├── setup/          # First-run setup wizard
+│   │   ├── sync/           # Device pairing UI
+│   │   ├── templates/      # Template picker/editor
+│   │   ├── ui/             # Generic UI components
+│   │   └── views/          # Main view components
 │   ├── contexts/           # React Context providers (12 contexts)
 │   ├── hooks/              # Custom React hooks
 │   ├── lib/                # Core business logic
+│   │   ├── animations.ts   # Framer Motion animation utilities
+│   │   ├── shortcuts.ts    # Keyboard shortcut definitions
+│   │   ├── constants/      # Platform-specific constants
+│   │   │   └── ios-styles.ts  # iOS HIG style constants
 │   │   ├── loro/           # CRDT store, object queries, relations
 │   │   ├── sync/           # P2P sync client/protocol
 │   │   ├── crypto/         # Encryption wrapper (calls Tauri)
@@ -154,15 +180,15 @@ skelenote/
 │   │   ├── palette/        # Command palette
 │   │   ├── templates/      # Template management
 │   │   ├── import/         # Notion, Obsidian, Markdown importers
-│   │   ├── export/         # Export formats (MD, HTML, JSON, PDF)
+│   │   ├── export/         # Export formats (Markdown, PDF)
 │   │   ├── tasks/          # Task system, recurrence, filters
 │   │   ├── daily/          # Daily notes system
 │   │   ├── devices/        # Device management, revocation
 │   │   ├── views/          # Saved views
-│   │   ├── notifications/  # System notifications
+│   │   ├── notifications/  # System notifications, reminders
 │   │   ├── share/          # Share handler utilities
 │   │   ├── first-run/      # First-run detection, welcome content
-│   │   ├── diff/           # Diff/patch utilities
+│   │   ├── diff/           # Block-level diff utilities
 │   │   ├── migration/      # Data migration
 │   │   ├── editor/         # BlockNote editor integration
 │   │   └── utils/          # Shared utilities
@@ -173,6 +199,8 @@ skelenote/
 │   ├── src/
 │   │   ├── crypto/         # BIP39, HKDF, XChaCha20, Stronghold
 │   │   ├── network/        # mDNS discovery, TCP server/client, QR pairing
+│   │   ├── haptics.rs      # Mobile haptic feedback
+│   │   ├── icon.rs         # Dynamic app icon switching
 │   │   └── lib.rs          # Tauri command handlers
 │   ├── gen/                # Generated mobile platform code
 │   │   ├── android/        # Android project (Gradle, Kotlin)
@@ -181,7 +209,7 @@ skelenote/
 │   └── tauri.conf.json     # Tauri config (window, permissions, bundling)
 │
 ├── docs/                   # Documentation
-│   ├── design/             # Brand bible, style guide, feature list
+│   ├── product/design/     # Brand bible, style guide
 │   ├── developer/          # Architecture, API reference, testing
 │   └── user/               # User guides, getting started
 │
@@ -272,9 +300,14 @@ Both modes use the same CRDT merge - Loro handles conflict resolution automatica
 
 Frontend calls Rust via `invoke()`. Key command prefixes:
 
-- `crypto_*` - Encryption, key management
-- `network_*` - P2P server, discovery, connections, QR pairing
-- `device_*` - Device management, revocation
+- `crypto_*` - Encryption, key management, QR generation
+- `network_*` - P2P server, discovery, connections
+- `device_*` - Device management, revocation, blocklist
+- `pairing_*` - QR pairing (generate, parse, connect)
+- `cache_*` - Paired device cache (reconnect, prune)
+- `haptic_*` - Mobile haptic feedback (impact, notification, selection)
+- `share_*` - Mobile share handler (get/clear pending intents)
+- `begin_background_task` / `end_background_task` - iOS background tasks
 
 ## Mobile Platform Support
 
@@ -325,31 +358,24 @@ const { safeAreaInsets } = usePlatform();
 
 ## Export System
 
-Skelenote supports multiple export formats via `src/lib/export/`.
+Skelenote supports export via `src/lib/export/`.
 
 ### Export Formats
 
 | Format | Description |
 |--------|-------------|
 | **Markdown** | With YAML frontmatter containing properties |
-| **HTML** | Single styled file, self-contained |
-| **JSON** | Full backup format with all metadata |
-| **Plain Text** | Content only, no formatting |
-| **PDF** | Formatted document (lazy-loaded) |
+| **PDF** | Styled document with Skelenote typography |
 
 ### Export API
 
 ```typescript
-import { exportObject, exportBulk } from '@/lib/export';
+import { exportToMarkdown } from '@/lib/export/markdown';
 
-// Single object
-const markdown = await exportObject(object, content, 'markdown');
-
-// Bulk export with progress
-await exportBulk(objects, {
-  format: 'markdown',
-  includeAttachments: true,
-  onProgress: (current, total) => console.log(`${current}/${total}`),
+// Export to Markdown with frontmatter
+const markdown = exportToMarkdown(object, content, typeDef, {
+  includeFrontmatter: true,
+  includeTitle: true,
 });
 ```
 
@@ -374,7 +400,7 @@ tags:
 
 ## Development Notes
 
-- Run `pnpm tauri dev` for full app development with hot reload
+- Run `pnpm tauri:dev` for full app development with hot reload
 - TypeScript strict mode enabled with `noUnusedLocals`/`noUnusedParameters`
 - BlockNote editor content stored as Loro Text at key `content:<objectId>`
 
@@ -765,7 +791,6 @@ For complete design specs, see `docs/product/design/style-guide.md`.
 
 - `docs/product/design/style-guide.md` - **Complete UI component specs**, colors, typography, spacing, Mantine config
 - `docs/product/design/skelenote-brand-bible.md` - Brand positioning, voice, strategic narrative
-- `docs/product/design/skelenote-feature-list.md` - Feature inventory and status
 
 ### Developer Reference
 
