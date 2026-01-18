@@ -79,6 +79,96 @@ Changes propagate within seconds on a typical local network.
 
 ---
 
+## QR Code Pairing
+
+### Why QR Pairing?
+
+While mDNS discovery works automatically on most networks, some environments make it difficult:
+
+- **Mobile devices** may not support mDNS reliably
+- **Corporate networks** often block multicast traffic
+- **VPN configurations** can interfere with local discovery
+- **Complex network setups** with multiple subnets or VLANs
+
+QR code pairing solves these problems by encoding connection information directly. Point, scan, connect—no network configuration required.
+
+### Generating a QR Code (Desktop)
+
+1. Open **Settings > Devices**
+2. Click **Show Pairing QR**
+3. A QR code appears on screen
+4. The QR code remains valid for 5 minutes
+
+The QR code contains your device's connection information, encrypted so that only devices with your Skeleton Key can read it.
+
+### Scanning a QR Code (Mobile)
+
+1. Open **Settings > Devices** on your mobile device
+2. Tap the **QR scanner icon** (camera icon next to "Add Device")
+3. Point your camera at the QR code on the other device
+4. Connection establishes automatically
+
+Once paired, devices remember each other and reconnect automatically when on the same network.
+
+### What the QR Contains
+
+The QR code encodes:
+
+| Field | Purpose |
+|-------|---------|
+| Device IP address | Where to connect |
+| TCP port | Which port to use |
+| Device ID | Unique identifier |
+| Device name | Human-readable name |
+| Protocol version | Ensures compatibility |
+
+**All fields are encrypted** with a key derived from your Skeleton Key. The QR code is useless to anyone who does not have your Skeleton Key.
+
+### QR Security
+
+QR pairing maintains Skelenote's zero-knowledge security model:
+
+- **Encrypted payload:** QR data is encrypted with XChaCha20-Poly1305
+- **Key-bound:** Only devices with your Skeleton Key can decrypt the QR
+- **Time-limited:** QR codes expire after 5 minutes
+- **No secrets exposed:** Even if photographed, the QR reveals nothing without your Skeleton Key
+
+**Scenario:** You display a pairing QR at a coffee shop. Someone photographs it. They cannot extract any useful information—the encrypted payload requires your Skeleton Key to decrypt.
+
+### QR Pairing Troubleshooting
+
+**Camera not working:**
+
+- Check that Skelenote has camera permissions in your device settings
+- On iOS: Settings > Skelenote > Camera
+- On Android: Settings > Apps > Skelenote > Permissions > Camera
+
+**QR code not scanning:**
+
+- Ensure adequate lighting on the QR code
+- Hold the camera steady at reading distance (6-12 inches)
+- Clean your camera lens
+- Try regenerating the QR code on the source device
+
+**"QR Expired" error:**
+
+- QR codes are valid for 5 minutes
+- Generate a fresh QR code and try again
+
+**"Connection Failed" after scanning:**
+
+- Verify both devices are on the same network
+- Check that the source device is still running Skelenote
+- Ensure no firewall is blocking the connection
+- Try disabling VPN on both devices temporarily
+
+**"Invalid QR Code" error:**
+
+- Ensure you are scanning a Skelenote pairing QR, not another app's QR
+- Verify both devices have the same Skeleton Key configured
+
+---
+
 ## Security Guarantees
 
 ### Why Proximity = Security

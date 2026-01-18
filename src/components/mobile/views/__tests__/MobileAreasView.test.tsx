@@ -77,6 +77,10 @@ vi.mock('@/contexts', () => ({
     isLoading: false,
     dataVersion: 1,
   })),
+  useToast: vi.fn(() => ({
+    message: vi.fn(),
+    error: vi.fn(),
+  })),
 }));
 
 vi.mock('@/hooks', () => ({
@@ -126,6 +130,8 @@ vi.mock('../../primitives', () => ({
     </div>
   ),
   EmptyState: ({ title }: any) => <div data-testid="empty-state">{title}</div>,
+  BottomSheet: ({ children, opened }: any) =>
+    opened ? <div data-testid="bottom-sheet">{children}</div> : null,
 }));
 
 const renderWithProvider = (ui: React.ReactNode) => {

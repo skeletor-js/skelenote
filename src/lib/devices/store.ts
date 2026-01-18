@@ -413,10 +413,21 @@ export class DeviceRegistryStore {
 
   /**
    * Handle incoming registry sync data
+   *
+   * Uses importSnapshot for initial sync when registry is empty,
+   * and import for subsequent syncs to merge changes via CRDT.
    */
   handleSyncUpdate(data: Uint8Array): void {
     try {
-      this.registry.import(data);
+      // If registry is empty (no devices yet), use importSnapshot for clean initial sync
+      // This ensures we properly adopt the remote state without CRDT merge conflicts
+      const isEmptyRegistry = this.registry.isEmpty();
+
+      if (isEmptyRegistry) {
+        this.registry.importSnapshot(data);
+      } else {
+        this.registry.import(data);
+      }
 
       // Update local blocklist from new revocations
       const revocations = this.registry.getAllRevocations();

@@ -4,29 +4,55 @@
 
 A local-first, zero-knowledge private study. Your vault lives on your device, encrypted with keys only you control.
 
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](https://github.com/skeletor-js/skelenote/releases)
-[![License](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-green)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux%20%7C%20iOS%20%7C%20Android-blue)](https://github.com/skeletor-js/skelenote/releases)
+[![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
 [![Version](https://img.shields.io/badge/version-0.2.0-orange)](https://github.com/skeletor-js/skelenote/releases)
-[![Roadmap](https://img.shields.io/badge/roadmap-v0.3%20Pocket-yellow)](ROADMAP.md)
 [![Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?logo=discord&logoColor=white)](https://discord.gg/4apsgSRB7D)
 [![Encryption](https://img.shields.io/badge/encryption-XChaCha20--Poly1305-purple)](docs/user/about/security-privacy.md)
-[![Zero Knowledge](https://img.shields.io/badge/zero--knowledge-E2E%20encrypted-purple)](docs/user/about/security-faq.md)
-[![Local First](https://img.shields.io/badge/local--first-your%20device-red)](docs/user/about/philosophy-manifesto.md)
 
 ---
 
-## Vision & Philosophy
+## Download
 
-Skelenote is built for the "Digital Study"—a quiet room you own, not a noisy service you visit.
+**Desktop:**
 
-- **Local. Encrypted. Yours.** — Physical proximity is the ultimate encryption.
-- **Structure is Freedom** — PARA method by default, your way by choice.
-- **No Lock-in** — Your data lives in files, not a database we control.
+- [macOS (Apple Silicon)](https://github.com/skeletor-js/skelenote/releases) - `.dmg`
+- [macOS (Intel)](https://github.com/skeletor-js/skelenote/releases) - `.dmg`
+- [Windows](https://github.com/skeletor-js/skelenote/releases) - `.exe`
+- [Linux](https://github.com/skeletor-js/skelenote/releases) - `.deb`, `.rpm`, `.AppImage`
 
-For a deeper dive into our vision and how we handle ownership, see:
+**Mobile (Coming Soon):**
 
-- [Philosophy & Manifesto](docs/user/about/philosophy-manifesto.md)
-- [Ownership & Pricing](docs/user/about/ownership-pricing.md)
+- iOS - TestFlight beta
+- Android - APK download
+
+[View all releases](https://github.com/skeletor-js/skelenote/releases)
+
+---
+
+## Why Skelenote?
+
+Skelenote is built for the "Digital Study" - a quiet room you own, not a noisy service you visit.
+
+### Core Principles
+
+- **Local. Encrypted. Yours.** - Your data never leaves your device unencrypted
+- **Zero-Knowledge Sync** - Even our servers can't read your notes
+- **No Lock-in** - Export everything as Markdown, HTML, JSON, or PDF anytime
+- **Free & Open Source** - Core app is 100% free, cloud sync optional ($8/mo)
+
+### Key Features
+
+| Feature | Description |
+| ------- | ----------- |
+| **Object Graph** | Everything is connected - tasks, notes, projects, people |
+| **Campfire Sync** | Peer-to-peer sync on your local network |
+| **Cloud Relay** | Optional encrypted sync across the internet |
+| **Skeleton Key** | 24-word mnemonic you control - lose it, lose access |
+| **PARA Method** | Built-in Projects, Areas, Resources, Archives structure |
+| **Rich Editor** | BlockNote-powered with @mentions and backlinks |
+| **Full Export** | Markdown, HTML, JSON, Plain Text, PDF |
+| **Import** | Bring your data from Notion, Obsidian, or Markdown |
 
 ---
 
@@ -41,7 +67,7 @@ Skelenote is currently in **alpha**. We're looking for testers to help shape the
 3. Join our [Discord](https://discord.gg/4apsgSRB7D) for discussion
 4. Report bugs via [Linear](https://linear.app/skeletorjs/team/skelenote)
 
-See also:
+**Alpha Resources:**
 
 - [Known Issues](docs/user/alpha/KNOWN_ISSUES.md)
 - [Troubleshooting](docs/user/alpha/TROUBLESHOOTING.md)
@@ -49,159 +75,31 @@ See also:
 
 ---
 
-## Core Features
-
-- **Object Graph**: Everything is an object (tasks, notes, projects) with typed relations.
-- **Campfire Sync**: Local-first P2P synchronization via mDNS/Bonjour.
-- **Time Machine**: Infinite history built on Loro CRDTs.
-- **Quiet Interface**: High-density UI designed for flow states.
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| Desktop Shell | [Tauri 2.0](https://tauri.app/) (Rust) |
-| Frontend | React 18 + TypeScript |
-| Editor | [BlockNote](https://www.blocknotejs.org/) |
-| Data Layer | [Loro CRDT](https://loro.dev/) |
-| Encryption | XChaCha20-Poly1305, BIP39 |
-| P2P Sync | mDNS/Bonjour + Direct TCP |
-
----
-
 ## Platform Support
 
-Skelenote is fully tested and works on:
-
-- **macOS** - Apple Silicon (ARM64) and Intel (x86_64), macOS 10.15+
-- **Windows** - Windows 10/11 (x86_64)
-- **Linux** - Ubuntu, Fedora, and other distros via .deb, .rpm, or AppImage
-
-All platforms are automatically built and tested via GitHub Actions CI/CD.
-
-## Getting Started
-
-### Prerequisites
-
-- **Node.js** 18+
-- **Rust** (latest stable) — [Install Rust](https://rustup.rs/)
-- **pnpm** (recommended) or npm/yarn
-- Platform-specific dependencies (see [CONTRIBUTING.md](CONTRIBUTING.md#platform-specific-dependencies))
-
-### Clone & Install
-
-```bash
-git clone https://github.com/skeletor-js/skelenote.git
-cd skelenote
-pnpm install
-```
-
-### Development
-
-```bash
-pnpm tauri dev
-```
-
-This starts the Vite dev server and launches the Tauri app with hot reload.
-
-### Build
-
-```bash
-pnpm tauri build
-```
-
-Produces platform-specific binaries in `src-tauri/target/release/bundle/`.
-
-For cross-platform builds and CI/CD details, see [docs/developer/ci-cd.md](docs/developer/ci-cd.md).
-
-### Testing
-
-```bash
-pnpm test        # Run tests (watch mode)
-pnpm test:run    # Run tests once (CI mode)
-pnpm test:ui     # Run tests with UI
-```
-
----
-
-## Project Structure
-
-```
-skelenote/
-├── src/                    # React frontend
-│   ├── components/         # UI components
-│   ├── contexts/           # React contexts (sync, objects, navigation)
-│   ├── hooks/              # Custom React hooks
-│   ├── lib/                # Core libraries
-│   │   ├── sync/           # P2P sync client (discovery, pairing, protocol)
-│   │   ├── crypto/         # Encryption wrapper (calls Tauri)
-│   │   └── loro/           # CRDT document store
-│   └── styles/             # CSS
-├── src-tauri/              # Rust backend
-│   └── src/
-│       ├── crypto/         # BIP39, HKDF, XChaCha20-Poly1305
-│       ├── network/        # mDNS discovery, TCP server/client
-│       └── lib.rs          # Tauri commands
-└── docs/                   # Documentation
-```
+| Platform | Status | Notes |
+| -------- | ------ | ----- |
+| macOS (Apple Silicon) | Stable | macOS 10.15+ |
+| macOS (Intel) | Stable | macOS 10.15+ |
+| Windows | Stable | Windows 10/11 |
+| Linux | Stable | .deb, .rpm, AppImage |
+| iOS | Beta | TestFlight |
+| Android | Beta | APK download |
 
 ---
 
 ## Roadmap
 
-Skelenote follows a structured release roadmap. See [ROADMAP.md](ROADMAP.md) for the full plan.
-
 | Version | Codename | Theme | Status |
-|---------|----------|-------|--------|
-| **v0.1** | Foundation | Core productivity system | ✅ Shipped |
-| **v0.2** | Exodus | Data freedom & portability | ✅ Shipped |
-| **v0.3** | Pocket | Mobile apps & notifications | 🔨 Next |
-| **v0.35** | Architect | Custom object types & extensibility | 📋 Planned |
-| **v0.4** | Oracle | Sovereign AI on-device | 📋 Planned |
-| **v0.5** | Sentinel | Security hardening | 📋 Planned |
-| **v1.0** | Cartographer | Visualization & spatial | 💭 Exploring |
+| ------- | -------- | ----- | ------ |
+| **v0.1** | Foundation | Core productivity system | Shipped |
+| **v0.2** | Exodus | Data freedom & portability | Shipped |
+| **v0.3** | Pocket | Mobile apps & notifications | In Progress |
+| **v0.35** | Architect | Custom object types | Planned |
+| **v0.4** | Oracle | On-device AI | Planned |
+| **v0.5** | Sentinel | Security hardening | Planned |
 
-**Next up (v0.3 Pocket):**
-
-- Native mobile apps (iOS & Android via Tauri 2.0)
-- Secure device linking (QR-based key transfer)
-- Reminders & push notifications
-- Graph view for vault visualization
-
----
-
-## Contributing
-
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed setup instructions.
-
-Quick start:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Run tests (`pnpm test`)
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to your branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
-
-Please ensure your code follows the existing style and includes tests where appropriate.
-
----
-
-## License
-
-Skelenote is licensed under **Apache 2.0 with Commons Clause**.
-
-**What this means:**
-
-- **You can** use Skelenote for personal or commercial work
-- **You can** fork, modify, and contribute back
-- **You can** run it for your team or company internally
-- **You cannot** sell Skelenote or offer it as a paid service
-
-See [LICENSE](LICENSE) for the full text.
+See [ROADMAP.md](ROADMAP.md) for the full plan.
 
 ---
 
@@ -209,28 +107,46 @@ See [LICENSE](LICENSE) for the full text.
 
 ### User Guides
 
-- [Getting Started](docs/user/getting-started.md) — Your first day in the Study
-- [Export & Import](docs/user/guides/export-import.md) — Backups and data portability
-- [Sharing Your Vault](docs/user/guides/sharing-vault.md) — Skeleton Key vs Export
-- [Campfire Mode](docs/user/guides/campfire-guide.md) — Local P2P sync setup and use cases
-- [Cloud Sync](docs/user/guides/cloud-sync-guide.md) — Optional relay server configuration
+- [Getting Started](docs/user/getting-started.md) - Your first day in the Study
+- [Mobile Guide](docs/user/guides/mobile-guide.md) - Using Skelenote on iOS/Android
+- [Export & Import](docs/user/guides/export-import.md) - Backups and data portability
+- [Campfire Mode](docs/user/guides/campfire-guide.md) - Local P2P sync
+- [Cloud Sync](docs/user/guides/cloud-sync-guide.md) - Relay server configuration
+- [Keyboard Shortcuts](docs/user/guides/keyboard-shortcuts.md) - Power user tips
 
 ### About Skelenote
 
-- [Philosophy & Manifesto](docs/user/about/philosophy-manifesto.md) — The Core Narrative and Three Laws
-- [Security & Privacy](docs/user/about/security-privacy.md) — Encryption, threat model, zero-knowledge design
-- [Ownership & Pricing](docs/user/about/ownership-pricing.md) — The Sovereign Business Model
+- [Philosophy & Manifesto](docs/user/about/philosophy-manifesto.md)
+- [Security & Privacy](docs/user/about/security-privacy.md)
+- [Ownership & Pricing](docs/user/about/ownership-pricing.md)
 
 ### For Contributors
 
-- [Contributing Guide](CONTRIBUTING.md) — Setup, workflow, and PR process
-- [CI/CD Pipeline](docs/developer/ci-cd.md) — GitHub Actions workflows and cross-platform builds
-- [Design System](docs/design/style-guide.md) — UI components and patterns
-- [Brand Bible](docs/design/skelenote-brand-bible.md) — Voice, lexicon, and strategic positioning
-- [Roadmap](ROADMAP.md) — Release plans and feature priorities
-- [Competitive Analysis](docs/competitive/) — How we compare to alternatives
-- [Architecture](docs/developer/architecture.md) — Data flow and system design
-- [Tauri API](docs/developer/tauri-api.md) — Rust command reference
+- [Developer Documentation](docs/developer/README.md) - Tech stack, setup, architecture
+- [Contributing Guide](CONTRIBUTING.md) - How to contribute
+- [AGENTS.md](AGENTS.md) - AI assistant context
+
+---
+
+## License
+
+Skelenote is **open source** under the **Apache 2.0** license.
+
+- You **can** use, modify, and distribute Skelenote freely
+- You **can** fork and build your own version
+- You **can** use Skelenote for personal or commercial work
+- You **can** contribute back to the project
+
+See [LICENSE](LICENSE) for the full text.
+
+### Cloud Sync (Optional Paid Service)
+
+The core app is free. For cross-network sync, we offer an optional **encrypted cloud relay** at $8/month. This funds development while keeping the app sustainable.
+
+- **Free**: Full app functionality, P2P local sync
+- **$8/mo**: Encrypted cloud sync across all your devices
+
+You can also self-host your own sync relay if you prefer.
 
 ---
 

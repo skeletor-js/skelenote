@@ -39,6 +39,7 @@ import {
   SwipeableRow,
   EmptyState,
 } from '../primitives';
+import { QuickCreateTagSheet } from '../sheets';
 import { BuiltInTypeIds, type SkelenoteObject } from '@/lib/types';
 import type { TagColor } from '@/lib/types/built-in-types';
 
@@ -70,6 +71,9 @@ export function MobileTagsView() {
 
   // Sort state
   const [sortBy, setSortBy] = useState<SortOption>('usage');
+
+  // Create sheet state
+  const [createSheetOpen, setCreateSheetOpen] = useState(false);
 
   // Get tags with usage counts
   const tags = useMemo(() => {
@@ -149,7 +153,7 @@ export function MobileTagsView() {
 
   // Handle create tag
   const handleCreateTag = useCallback(() => {
-    // TODO: Open quick create sheet for tags
+    setCreateSheetOpen(true);
   }, []);
 
   // Handle edit tag - navigate to detail view
@@ -361,6 +365,15 @@ export function MobileTagsView() {
           )}
         </Box>
       </PullToRefresh>
+
+      {/* Quick Create Tag Sheet */}
+      <QuickCreateTagSheet
+        opened={createSheetOpen}
+        onClose={() => setCreateSheetOpen(false)}
+        onTagCreated={() => {
+          refreshData();
+        }}
+      />
     </Stack>
   );
 }

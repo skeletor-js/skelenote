@@ -11,5 +11,6 @@ export { MobileAreasView } from './MobileAreasView';
 export { MobileTagsView } from './MobileTagsView';
 export { MobileTypeBrowseView } from './MobileTypeBrowseView';
 export { MobileSavedViewsView } from './MobileSavedViewsView';
+export { MobileSavedViewResultsView } from './MobileSavedViewResultsView';
 export { MobileTemplatesView } from './MobileTemplatesView';
 export { LockScreen } from './LockScreen';

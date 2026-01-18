@@ -48,6 +48,35 @@ sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
   libssl-dev libayatana-appindicator3-dev librsvg2-dev
 ```
 
+### Mobile Development (Optional)
+
+For iOS and Android development:
+
+#### iOS
+
+- **Xcode 15+** - Install from Mac App Store
+- **iOS Simulator** - Installed with Xcode
+- **CocoaPods** - `sudo gem install cocoapods`
+- **Rust iOS targets**:
+
+```bash
+rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
+```
+
+#### Android
+
+- **Android Studio** - [Download](https://developer.android.com/studio)
+- **Android SDK** (API 24+) - Install via Android Studio SDK Manager
+- **Android NDK** - Install via Android Studio SDK Manager
+- **Java 17** - Required for Gradle
+- **Rust Android targets**:
+
+```bash
+rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android
+```
+
+See [docs/developer/mobile-development.md](docs/developer/mobile-development.md) for detailed setup.
+
 ## Development Setup
 
 ### 1. Clone the Repository
@@ -111,9 +140,12 @@ pnpm test                   # Run all tests (watch mode)
 pnpm test:run               # Run all tests once (CI mode)
 pnpm test -- path/to/test   # Run specific test file
 pnpm test:ui                # Run tests with Vitest UI
+pnpm bench                  # Run benchmark suites
 ```
 
 Test files are co-located with source files using `.test.ts` or `.spec.ts` suffix.
+
+See [docs/developer/testing.md](docs/developer/testing.md) for comprehensive testing guide including test patterns, benchmarks, and Rust tests.
 
 ### Running the Full Test Suite
 
@@ -253,6 +285,8 @@ Skelenote is fully tested and supported on:
 - macOS (ARM64 and x86_64)
 - Windows (x86_64)
 - Linux (Ubuntu, Fedora, and other distros via AppImage)
+- iOS (via Tauri 2.0 mobile)
+- Android (via Tauri 2.0 mobile)
 
 The CI pipeline builds and tests on all platforms automatically.
 
@@ -265,4 +299,15 @@ The CI pipeline builds and tests on all platforms automatically.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the same license as the project (Apache 2.0 with Commons Clause).
+By contributing, you agree that your contributions will be licensed under the Apache 2.0 license.
+
+### Contributor License Agreement (CLA)
+
+Before we can accept your contribution, you must sign our CLA. This is a one-time process:
+
+1. Open a pull request
+2. The CLA bot will comment with instructions
+3. Sign by commenting "I have read the CLA and agree to its terms"
+4. Future PRs skip this step
+
+The CLA ensures you have the right to contribute and protects both you and the project. See [.github/CLA.md](.github/CLA.md) for the full agreement.

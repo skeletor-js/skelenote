@@ -1,36 +1,67 @@
 # Ownership & Pricing
 
-Skelenote aligns our incentives with your well-being, not your addiction. We don't want your data, and we don't want you stuck in a subscription you can't leave.
+Skelenote aligns our incentives with your well-being, not your addiction. We don't want your data, and we don't want you stuck in software you can't leave.
 
 ---
 
-## Built to Own
+## Free Forever
 
-Skelenote costs **$19.99—once**. No subscription, no account required.
+Skelenote is **100% free and open source**. The complete app—including all features, local sync, encryption, and export—costs nothing.
 
-You own version 1 forever. Future major versions are separate purchases. We only charge recurring fees for optional infrastructure services. Technical users can self-host everything.
+### What's Free
 
-### Why this model?
-For the last decade, we traded ownership for access. We stopped buying software and started paying landlords. Skelenote is the rejection of that era.
+- Full desktop app (macOS, Windows, Linux)
+- Full mobile app (iOS, Android)
+- All local features (encryption, AI, graph, PARA)
+- **Campfire Mode**: P2P sync on your local network
+- Unlimited notes, tasks, projects, and objects
+- Full export (Markdown, JSON, HTML, PDF)
+- All future updates
+
+### Why Free?
+
+Skelenote is open source under the Apache 2.0 license. You can inspect the code, verify our encryption claims, and even fork it if you want. We believe privacy software should be auditable.
 
 ---
 
-## The Sovereign Business Model
+## Optional Cloud Sync
 
-Our pricing strategy is our biggest differentiator.
+For users who want encrypted sync across networks (home, office, mobile data), we offer an optional cloud relay service:
 
-### 1. Buy the Tool ($19.99 Version License)
-This is the buy once, own forever model. For less than a month of most productivity subscriptions, you get:
-* The full Desktop (Tauri/Rust) and Mobile apps.
-* All local features (XChaCha20 Encryption, AI, Graph, PARA).
-* **Campfire Mode:** Serverless P2P sync (LAN sync).
-* Lifetime access to v1.x updates.
+**$8/month** — Encrypted Cloud Sync
 
-**Philosophy:** You own version 1 forever. When version 2 arrives (typically every year), you decide whether the new features are worth another purchase. No forced upgrades, no feature degradation, no subscription anxiety. And of course, in between we'll ship tons of smaller bug fixes, minor features, and performance improvements.
+- Sync across all your devices over the internet
+- End-to-end encrypted (we can't read your data)
+- Unlimited devices
+- Cancel anytime
 
-### 2. Rent the Infrastructure (Optional Subscription)
-We only charge recurring fees for recurring costs.
-* **Cloud Relay:** For users who want us to host the encrypted bridge for internet syncing.
-* **Skelenote Publish:** For users who want us to host their public web pages.
+### Why Pay?
 
-**The Kicker:** Technical users can self-host these services for free. We monetize convenience, not necessity.
+The cloud relay has real infrastructure costs (servers, bandwidth, storage). Your subscription funds ongoing development and keeps the project sustainable.
+
+### Self-Hosting
+
+Technical users can run their own sync relay. The client is open source and can connect to any compatible WebSocket server. We'll publish documentation for self-hosting.
+
+---
+
+## No Lock-In
+
+Whether you pay or not:
+
+- Your data is always yours
+- Export everything as Markdown, JSON, HTML, or PDF
+- Switch to local-only mode anytime
+- Fork the code if you want
+
+---
+
+## The Sovereign Model
+
+Our pricing philosophy is simple:
+
+1. **The app is free** — Everyone deserves privacy tools
+2. **Cloud sync costs money** — Because servers cost money
+3. **Self-hosting is always an option** — We monetize convenience, not necessity
+
+We don't sell your data. We don't show you ads. We don't lock you in. The only thing we charge for is the infrastructure to sync your encrypted data across the internet—and even that is optional.

@@ -18,6 +18,8 @@ export { AreaPickerSheet } from './AreaPickerSheet';
 export { ProjectPickerSheet } from './ProjectPickerSheet';
 export { TemplatePickerSheet } from './TemplatePickerSheet';
 export { QuickCreateProjectSheet } from './QuickCreateProjectSheet';
+export { QuickCreateTagSheet } from './QuickCreateTagSheet';
+export { QuickCreateAreaSheet } from './QuickCreateAreaSheet';
 export { SavedViewEditorSheet } from './SavedViewEditorSheet';
 export { TemplateEditorSheet } from './TemplateEditorSheet';
 export { QuickActionsSheet } from './QuickActionsSheet';

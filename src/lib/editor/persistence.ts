@@ -3,9 +3,10 @@
  * Handles serialization/deserialization of editor content
  */
 
-// Using any[] for block types to support custom schemas
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type BlockArray = any[];
+import type { PartialBlock } from '@blocknote/core';
+
+// Using PartialBlock[] for block types to support custom schemas
+type BlockArray = PartialBlock[];
 
 /**
  * Serialize BlockNote document to JSON string for storage
@@ -23,8 +24,10 @@ const UNSUPPORTED_BLOCK_TYPES = ['image', 'video', 'audio', 'file'];
  * - Converts unsupported media blocks to paragraphs with links
  * - Ensures mentions have all required props
  */
+// We use a loose type for input to allow repairing malformed blocks
+// We use a loose type for input to allow repairing malformed blocks
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function repairBlock(block: any): any {
+function repairBlock(block: any): PartialBlock {
   // Fix incorrect block type: blockquote -> quote
   if (block.type === 'blockquote') {
     block.type = 'quote';
@@ -51,7 +54,7 @@ function repairBlock(block: any): any {
         { type: 'text', text: ']' },
       ],
       children: block.children ? block.children.map(repairBlock) : undefined,
-    };
+    } as any as PartialBlock;
   }
 
   // Repair inline content (mentions)
@@ -136,8 +139,7 @@ export function removeMentionsFromContent(
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function processBlock(block: any): void {
+  function processBlock(block: PartialBlock): void {
     // Process inline content
     if (Array.isArray(block.content)) {
       block.content = processContent(block.content);

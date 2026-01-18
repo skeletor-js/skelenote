@@ -38,6 +38,7 @@ import {
   SwipeableRow,
   EmptyState,
 } from '../primitives';
+import { QuickCreateAreaSheet } from '../sheets';
 import { BuiltInTypeIds, type SkelenoteObject } from '@/lib/types';
 
 interface AreaWithCounts extends SkelenoteObject {
@@ -69,6 +70,9 @@ export function MobileAreasView() {
 
   // Sort state
   const [sortBy, setSortBy] = useState<SortOption>('name-asc');
+
+  // Create sheet state
+  const [createSheetOpen, setCreateSheetOpen] = useState(false);
 
   // Get areas with object counts
   const areas = useMemo(() => {
@@ -152,7 +156,7 @@ export function MobileAreasView() {
 
   // Handle create area
   const handleCreateArea = useCallback(() => {
-    // TODO: Open quick create sheet for areas
+    setCreateSheetOpen(true);
   }, []);
 
   // Handle edit area - navigate to detail view
@@ -380,6 +384,15 @@ export function MobileAreasView() {
           )}
         </Box>
       </PullToRefresh>
+
+      {/* Quick Create Area Sheet */}
+      <QuickCreateAreaSheet
+        opened={createSheetOpen}
+        onClose={() => setCreateSheetOpen(false)}
+        onAreaCreated={() => {
+          refreshData();
+        }}
+      />
     </Stack>
   );
 }

@@ -18,8 +18,8 @@ import {
 import { Icon } from '@/components/ui';
 import { KeyboardShortcutsModal } from '@/components/help';
 
-// Version is defined in package.json
-const APP_VERSION = '0.1.0';
+// Version is injected at build time from package.json by Vite
+const APP_VERSION = __APP_VERSION__;
 
 export function AboutSettings() {
   const [showShortcuts, setShowShortcuts] = useState(false);
