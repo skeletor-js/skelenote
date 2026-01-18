@@ -6,6 +6,7 @@
  */
 
 import type { LoroDoc, Frontiers, PeerID } from 'loro-crdt';
+import { getDeviceRegistryStore } from '@/lib/devices';
 
 /**
  * Loro's native Change type from getAllChanges()
@@ -291,14 +292,34 @@ function formatDateKey(date: Date): string {
  * @returns Device info object
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function resolveDeviceInfo(_peerId: string): {
+export function resolveDeviceInfo(peerId: string): {
   deviceId?: string;
   deviceName?: string;
   isFromRevokedDevice?: boolean;
 } {
-  // Basic implementation - can be enhanced later with device registry lookup
-  // For now, we just return empty values
-  // TODO: Look up device info from devices.loro registry
+  try {
+    const registry = getDeviceRegistryStore();
+    if (!registry.isInitialized()) {
+      return {};
+    }
+
+    // Attempt to lookup device by ID
+    // Note: peerId from Loro might be the device ID if we set it that way,
+    // or we might need a mapping table in the future.
+    const device = registry.getDevice(peerId);
+
+    if (device) {
+      return {
+        deviceId: device.deviceId,
+        deviceName: device.name,
+        isFromRevokedDevice: registry.isRevoked(device.deviceId),
+      };
+    }
+  } catch (error) {
+    // Registry might not be ready or other error
+    console.debug('Failed to resolve device info:', error);
+  }
+
   return {};
 }
 

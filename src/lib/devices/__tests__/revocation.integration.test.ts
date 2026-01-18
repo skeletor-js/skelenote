@@ -292,10 +292,9 @@ describe('Device Revocation Integration', () => {
       // Export initial shared state
       const sharedState = storeA.exportForSync();
 
-      // Create store C from the same shared state
-      resetDeviceRegistryStore();
-      memoryFs.clear();
-
+      // Create store C as a new independent instance
+      // Note: We create a new store directly rather than resetting global state
+      // to avoid race conditions with other tests sharing the mocked filesystem
       const storeC = new DeviceRegistryStore();
       await storeC.initialize('device-c');
       storeC.handleSyncUpdate(sharedState); // Start from same base
@@ -307,7 +306,12 @@ describe('Device Revocation Integration', () => {
       storeA.revokeDevice(
         createMockRevocation('device-b', 'device-a', 'Compromised')
       );
+
+      // Export the updated state (includes revocation)
       const updatedState = storeA.exportForSync();
+
+      // Ensure we actually got a newer state
+      expect(updatedState.length).not.toEqual(sharedState.length);
 
       // Store C receives the updated state
       storeC.handleSyncUpdate(updatedState);

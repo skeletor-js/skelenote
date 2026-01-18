@@ -90,6 +90,8 @@ All platforms are fully tested and built in CI:
 - **macOS**: ARM64 (Apple Silicon) and x86_64 (Intel) - `.dmg` and `.app`
 - **Windows**: x86_64 - `.exe` NSIS installer
 - **Linux**: `.deb` (Debian/Ubuntu), `.rpm` (Fedora/RHEL), `.AppImage` (universal)
+- **iOS**: Via Tauri 2.0 mobile (TestFlight distribution)
+- **Android**: Via Tauri 2.0 mobile (APK/Play Store)
 
 ### Before Merging (REQUIRED)
 
@@ -139,30 +141,48 @@ skelenote/
 ├── .github/workflows/      # CI/CD (test, build, release)
 ├── src/                    # Frontend (React/TypeScript)
 │   ├── components/         # React components by feature
-│   ├── contexts/           # React Context providers
+│   │   └── mobile/         # Mobile-specific components
+│   ├── contexts/           # React Context providers (12 contexts)
 │   ├── hooks/              # Custom React hooks
 │   ├── lib/                # Core business logic
 │   │   ├── loro/           # CRDT store, object queries, relations
 │   │   ├── sync/           # P2P sync client/protocol
 │   │   ├── crypto/         # Encryption wrapper (calls Tauri)
 │   │   ├── types/          # Type definitions, built-in types
-│   │   ├── search/         # Fuzzy + semantic search
+│   │   ├── search/         # Fuzzy search (Fuse.js)
+│   │   ├── semantic/       # ML-powered semantic search
+│   │   ├── palette/        # Command palette
 │   │   ├── templates/      # Template management
-│   │   └── import/         # Notion, Obsidian, Markdown importers
+│   │   ├── import/         # Notion, Obsidian, Markdown importers
+│   │   ├── export/         # Export formats (MD, HTML, JSON, PDF)
+│   │   ├── tasks/          # Task system, recurrence, filters
+│   │   ├── daily/          # Daily notes system
+│   │   ├── devices/        # Device management, revocation
+│   │   ├── views/          # Saved views
+│   │   ├── notifications/  # System notifications
+│   │   ├── share/          # Share handler utilities
+│   │   ├── first-run/      # First-run detection, welcome content
+│   │   ├── diff/           # Diff/patch utilities
+│   │   ├── migration/      # Data migration
+│   │   ├── editor/         # BlockNote editor integration
+│   │   └── utils/          # Shared utilities
 │   ├── theme/              # Mantine theme config
 │   └── styles/             # Global CSS, design tokens
 │
 ├── src-tauri/              # Backend (Rust/Tauri)
 │   ├── src/
 │   │   ├── crypto/         # BIP39, HKDF, XChaCha20, Stronghold
-│   │   ├── network/        # mDNS discovery, TCP server/client
+│   │   ├── network/        # mDNS discovery, TCP server/client, QR pairing
 │   │   └── lib.rs          # Tauri command handlers
+│   ├── gen/                # Generated mobile platform code
+│   │   ├── android/        # Android project (Gradle, Kotlin)
+│   │   └── apple/          # iOS/macOS project (Xcode)
 │   ├── Cargo.toml          # Rust dependencies
 │   └── tauri.conf.json     # Tauri config (window, permissions, bundling)
 │
 ├── docs/                   # Documentation
 │   ├── design/             # Brand bible, style guide, feature list
-│   ├── developer/          # Architecture, API reference
+│   ├── developer/          # Architecture, API reference, testing
 │   └── user/               # User guides, getting started
 │
 ├── vite.config.ts          # Vite build config
@@ -191,7 +211,8 @@ interface SkelenoteObject {
   properties: Record<string, PropertyValue>;
   hasContent: boolean;  // Has rich text body
   inboxed: boolean;     // In inbox until triaged
-  pinned: boolean;
+  pinned: boolean;      // Pinned to sidebar
+  archived: boolean;    // Hidden from default views
   createdAt: number;
   updatedAt: number;
 }
@@ -201,11 +222,22 @@ interface SkelenoteObject {
 
 ### Key Contexts
 
-- **ObjectContext** - CRUD operations via `useObjects()`, provides `store: ObjectStore`
-- **NavigationContext** - App navigation, split pane, view state via `useNavigation()`
-- **SkeletonKeyContext** - Encryption key state via `useSkeletonKey()`
-- **SyncContext** / **LocalSyncContext** - Cloud and P2P sync
-- **KeyboardShortcutsContext** - Global hotkey registration
+Skelenote uses 12 React contexts for state management:
+
+| Context | Hook | Purpose |
+|---------|------|---------|
+| **ThemeContext** | `useTheme()` | Dark/light mode |
+| **SidebarContext** | `useSidebar()` | Sidebar collapse state |
+| **NavigationContext** | `useNavigation()` | App navigation, split pane, view state |
+| **ObjectContext** | `useObjects()` | CRUD operations, provides `store: ObjectStore` |
+| **SyncContext** | `useSyncContext()` | Cloud relay sync state |
+| **ToastContext** | `useToast()` | Toast notifications |
+| **SkeletonKeyContext** | `useSkeletonKey()` | Encryption key state |
+| **LocalSyncContext** | `useLocalSync()` | P2P sync, QR pairing |
+| **DeviceRegistryContext** | `useDeviceRegistry()` | Device management, revocation |
+| **KeyboardShortcutsContext** | `useKeyboardShortcuts()` | Global hotkey registration |
+| **SemanticSearchContext** | `useSemanticSearch()` | ML-powered semantic search |
+| **UndoContext** | `useUndo()` | Undo/redo operations |
 
 ### Data Flow
 
@@ -228,15 +260,117 @@ Two sync modes:
 1. **Cloud Relay** - WebSocket to relay server (optional)
 2. **Local P2P** - mDNS discovery + direct TCP on local network
 
-Both use the same CRDT merge - Loro handles conflict resolution automatically.
+**P2P Connection Methods:**
+
+- **mDNS Discovery** - Automatic discovery on same subnet via `_skelenote._tcp`
+- **QR Code Pairing** - Scan QR to connect mobile to desktop (uses `generatePairingQr()` / `parsePairingQr()`)
+- **Paired Device Cache** - Previously paired devices auto-reconnect
+
+Both modes use the same CRDT merge - Loro handles conflict resolution automatically.
 
 ### Rust/Tauri Commands
 
 Frontend calls Rust via `invoke()`. Key command prefixes:
 
 - `crypto_*` - Encryption, key management
-- `network_*` - P2P server, discovery, connections
+- `network_*` - P2P server, discovery, connections, QR pairing
 - `device_*` - Device management, revocation
+
+## Mobile Platform Support
+
+Skelenote supports iOS and Android via Tauri 2.0 mobile.
+
+### Mobile Build Commands
+
+```bash
+pnpm tauri ios dev          # Run on iOS simulator
+pnpm tauri ios build        # Build iOS release
+pnpm tauri android dev      # Run on Android emulator
+pnpm tauri android build    # Build Android release
+```
+
+### Platform Detection
+
+Use `usePlatform()` hook for platform-specific behavior:
+
+```typescript
+const { platform, isMobile, isDesktop, safeAreaInsets } = usePlatform();
+// platform: 'ios' | 'android' | 'macos' | 'windows' | 'linux'
+```
+
+### Mobile-Specific Hooks
+
+| Hook | Purpose |
+|------|---------|
+| `usePlatform()` | Platform detection, safe area insets |
+| `useHaptics()` | Haptic feedback (vibration) |
+| `useBiometric()` | Biometric authentication (Face ID, fingerprint) |
+| `useQRScanner()` | QR code scanning for device pairing |
+| `useNotifications()` | Push notifications |
+| `useAppIcon()` | Dynamic app icon switching |
+| `useShareHandler()` | Handle share intents from other apps |
+| `useBackgroundTask()` | Background task scheduling |
+| `useDeepLinks()` | Deep link handling |
+| `useScrollDirection()` | Scroll direction detection (show/hide toolbars) |
+| `useReducedMotion()` | Accessibility: respect reduced motion preference |
+
+### Safe Area Handling
+
+Mobile components must respect safe areas (notch, home indicator):
+
+```typescript
+const { safeAreaInsets } = usePlatform();
+// { top: number, bottom: number, left: number, right: number }
+```
+
+## Export System
+
+Skelenote supports multiple export formats via `src/lib/export/`.
+
+### Export Formats
+
+| Format | Description |
+|--------|-------------|
+| **Markdown** | With YAML frontmatter containing properties |
+| **HTML** | Single styled file, self-contained |
+| **JSON** | Full backup format with all metadata |
+| **Plain Text** | Content only, no formatting |
+| **PDF** | Formatted document (lazy-loaded) |
+
+### Export API
+
+```typescript
+import { exportObject, exportBulk } from '@/lib/export';
+
+// Single object
+const markdown = await exportObject(object, content, 'markdown');
+
+// Bulk export with progress
+await exportBulk(objects, {
+  format: 'markdown',
+  includeAttachments: true,
+  onProgress: (current, total) => console.log(`${current}/${total}`),
+});
+```
+
+### Frontmatter Structure
+
+Markdown exports include YAML frontmatter:
+
+```yaml
+---
+id: abc-123
+type: task
+title: My Task
+status: todo
+priority: high
+created: 2024-01-15T10:30:00Z
+updated: 2024-01-16T14:20:00Z
+tags:
+  - work
+  - important
+---
+```
 
 ## Development Notes
 
@@ -246,16 +380,19 @@ Frontend calls Rust via `invoke()`. Key command prefixes:
 
 ### Testing
 
-Tests use Vitest. Run tests with:
+Tests use Vitest. See `docs/developer/testing.md` for comprehensive testing guide.
 
 ```bash
 pnpm test                   # Run all tests in watch mode
 pnpm test:run               # Run all tests once (CI mode)
 pnpm test -- path/to/test   # Run specific test file
 pnpm test:ui                # Run tests with Vitest UI
+pnpm bench                  # Run benchmark suites
 ```
 
 Test files are co-located with source files using `.test.ts` or `.spec.ts` suffix.
+
+**Benchmark Suites:** ObjectStore CRUD, bulk operations, CRDT merge, Fuse.js search indexing, vector/semantic search, task recurrence, markdown import/export, templates, daily notes, sync operations.
 
 **Rust tests:**
 
@@ -263,6 +400,7 @@ Test files are co-located with source files using `.test.ts` or `.spec.ts` suffi
 cd src-tauri
 cargo test                  # Run all Rust tests
 cargo test -- --nocapture   # Show println! output
+cargo tarpaulin             # Generate coverage report
 ```
 
 ### Debugging
@@ -634,6 +772,8 @@ For complete design specs, see `docs/design/style-guide.md`.
 - `docs/developer/architecture.md` - System architecture and data flow
 - `docs/developer/tauri-api.md` - Rust/Tauri command reference
 - `docs/developer/ci-cd.md` - CI/CD workflows, cross-platform builds, release process
+- `docs/developer/testing.md` - Testing guide, benchmark suites, coverage
+- `docs/developer/mobile-development.md` - iOS/Android development setup
 - `CONTRIBUTING.md` - Setup instructions, code style, PR process
 
 ### User Documentation

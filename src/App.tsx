@@ -113,6 +113,11 @@ const MobileSavedViewsView = lazy(() =>
     default: m.MobileSavedViewsView,
   }))
 );
+const MobileSavedViewResultsView = lazy(() =>
+  import('@/components/mobile/views/MobileSavedViewResultsView').then((m) => ({
+    default: m.MobileSavedViewResultsView,
+  }))
+);
 const MobileTemplatesView = lazy(() =>
   import('@/components/mobile/views/MobileTemplatesView').then((m) => ({
     default: m.MobileTemplatesView,
@@ -353,8 +358,13 @@ function MobilePrimaryContent() {
 
   // Saved Views - show list if no specific view selected, otherwise show filtered results
   if (currentView === 'saved-view') {
-    // For now, always show the saved views list
-    // TODO: When activeSavedViewId is set, show SavedViewContent-like filtered results
+    if (activeSavedViewId) {
+      return (
+        <Suspense fallback={<InboxSkeleton />}>
+          <MobileSavedViewResultsView />
+        </Suspense>
+      );
+    }
     return (
       <Suspense fallback={<InboxSkeleton />}>
         <MobileSavedViewsView />

@@ -6,27 +6,31 @@ Skelenote lets you export your data to standard formats and import from other to
 
 ## Export Overview
 
-All exports produce Markdown files that work with:
+Skelenote supports multiple export formats to suit different needs:
+
+| Format | Extension | Best For |
+|--------|-----------|----------|
+| **Markdown** | `.md` | Obsidian, Notion, Bear, Git repos |
+| **HTML** | `.html` | Sharing, printing, email |
+| **JSON** | `.json` | Complete backups, data migration |
+| **Plain Text** | `.txt` | Simple text extraction |
+| **PDF** | `.pdf` | Formal documents, archiving |
+
+---
+
+## Export Formats
+
+### Markdown
+
+The default export format. Produces standard Markdown files with YAML frontmatter that work with:
+
 - Obsidian
 - Notion (via import)
 - Bear
 - Any Markdown editor
 - Git repositories
 
----
-
-## Single Object Export
-
-Export individual objects as Markdown.
-
-### How to Export
-
-1. Open the object you want to export
-2. Press `Cmd+Shift+E` or use the object menu
-3. Choose save location
-4. File saves as `{title}.md`
-
-### Export Format
+**Example output:**
 
 ```markdown
 ---
@@ -49,22 +53,155 @@ Your content here with formatting preserved.
 Mentions become [[wiki-links]] that work in Obsidian.
 ```
 
+**Options:**
+
+- **Include frontmatter** - Adds YAML metadata at the top
+- **Include title** - Adds the title as an H1 heading
+
 ---
 
-## Bulk Export (All Objects)
+### HTML
 
-Export everything as a ZIP archive.
+Creates a self-contained HTML file with embedded styling. Perfect for:
+
+- Sharing with non-technical users
+- Printing from a browser
+- Email attachments
+- Offline viewing
+
+The HTML export includes:
+
+- Complete styling (no external CSS required)
+- Proper typography matching Skelenote's aesthetic
+- Responsive layout for different screen sizes
+- All images embedded as base64 data
+
+---
+
+### JSON
+
+Full backup format that preserves all metadata. Use this for:
+
+- Complete data backups
+- Migrating to another device
+- Data analysis
+- Programmatic access
+
+**JSON structure:**
+
+```json
+{
+  "version": 1,
+  "exportedAt": "2024-01-15T10:30:00Z",
+  "objects": [
+    {
+      "id": "abc123-def456",
+      "typeId": "built-in:task",
+      "properties": {
+        "title": "Finish report",
+        "status": "in_progress",
+        "priority": "high",
+        "dueDate": 1705276800000
+      },
+      "content": "[{\"type\":\"paragraph\",...}]",
+      "hasContent": true,
+      "inboxed": false,
+      "pinned": false,
+      "createdAt": 1704067200000,
+      "updatedAt": 1704931800000
+    }
+  ]
+}
+```
+
+The JSON format includes:
+
+- All object properties exactly as stored
+- Rich text content in BlockNote JSON format
+- System metadata (created, updated, pinned, inboxed)
+- Version number for future compatibility
+
+---
+
+### Plain Text
+
+Extracts content without any formatting. Useful for:
+
+- Copying text to other applications
+- Text analysis tools
+- Accessibility needs
+- Maximum compatibility
+
+Plain text export strips:
+
+- All formatting (bold, italic, etc.)
+- Images and embeds
+- Links (keeps link text only)
+- Frontmatter metadata
+
+---
+
+### PDF
+
+Creates a professionally styled PDF document. Ideal for:
+
+- Formal documentation
+- Long-term archiving
+- Printing
+- Sharing as read-only
+
+**PDF options:**
+
+- **Theme** - Light or dark background
+- **Include title** - Show title at the top
+- **Include metadata** - Add type, dates, and properties
+- **Page size** - A4 or Letter
+
+PDF exports use Skelenote's typography and maintain visual fidelity with the app.
+
+---
+
+## Single Object Export
+
+Export individual objects in any format.
+
+### How to Export
+
+1. Open the object you want to export
+2. Press `Cmd+Shift+E` or use the object menu (three dots)
+3. Select your preferred format
+4. Configure format-specific options
+5. Choose save location
+6. File saves as `{title}.{ext}`
+
+### Keyboard Shortcut
+
+| Platform | Shortcut |
+|----------|----------|
+| macOS | `Cmd+Shift+E` |
+| Windows/Linux | `Ctrl+Shift+E` |
+
+---
+
+## Bulk Export
+
+Export multiple objects at once to a ZIP archive.
 
 ### How to Export
 
 1. Open Settings (`Cmd+,`)
 2. Go to **Data** section
-3. Configure options:
+3. Select export format:
+   - **Markdown ZIP** - All objects as .md files
+   - **PDF ZIP** - All objects as .pdf files
+   - **JSON Backup** - Complete backup (single file)
+4. Configure options:
    - **Organize by type** - Creates folders for each type
    - **Include archived** - Adds archived objects
-4. Click **Export All**
-5. Choose save location
-6. Wait for completion
+   - **Filter by type** - Export only specific types
+5. Click **Export**
+6. Choose save location
+7. Monitor progress indicator
 
 ### ZIP Structure
 
@@ -72,6 +209,10 @@ With "Organize by type" enabled:
 
 ```
 skelenote-export-2024-01-15/
+├── attachments/
+│   ├── image-abc123.png
+│   ├── screenshot-def456.jpg
+│   └── ...
 ├── tasks/
 │   ├── finish-report.md
 │   ├── call-client.md
@@ -91,15 +232,95 @@ skelenote-export-2024-01-15/
     └── ...
 ```
 
-Without organization (flat):
+Without organization (flat structure):
 
 ```
 skelenote-export-2024-01-15/
+├── attachments/
+│   └── ...
 ├── finish-report.md
 ├── call-client.md
 ├── meeting-notes-jan-10.md
 └── ...
 ```
+
+---
+
+## Progress Tracking
+
+For large exports (100+ objects), Skelenote shows real-time progress:
+
+### Progress Phases
+
+| Phase | Description |
+|-------|-------------|
+| **Preparing** | Counting objects, initializing export |
+| **Exporting** | Converting each object to the target format |
+| **Compressing** | Creating the ZIP archive |
+| **Complete** | Export finished, file saved |
+
+### Progress Indicator
+
+The progress dialog shows:
+
+- Current object being processed
+- Progress bar (X of Y objects)
+- Current phase
+- Cancel button (stops export gracefully)
+
+**Tip:** Large exports with many images take longer due to image processing. The "Exporting" phase shows which object is currently being converted.
+
+---
+
+## Attachment Handling
+
+Images and file attachments are handled differently depending on the export format.
+
+### Markdown Export
+
+**Single object:**
+
+- Creates an `attachments/` folder next to the .md file
+- Copies images to the attachments folder
+- Updates image links to relative paths: `![](./attachments/image.png)`
+
+**Bulk export:**
+
+- Single shared `attachments/` folder in the ZIP root
+- Duplicate images are stored only once
+- All objects reference the shared folder
+
+### HTML Export
+
+- Images are embedded directly as base64 data URIs
+- No external files needed
+- Results in a fully self-contained HTML file
+- Larger file size but maximum portability
+
+### PDF Export
+
+- Images are embedded in the PDF
+- Supports PNG, JPEG, GIF, and WebP formats
+- Images are scaled to fit page width
+- Original aspect ratios are preserved
+
+### JSON Export
+
+- Image URLs are preserved as-is (not embedded)
+- Local file:// URLs point to original locations
+- Suitable for backup/restore on the same machine
+- For cross-machine backups, use Markdown ZIP
+
+### What Gets Exported
+
+| Content Type | Markdown | HTML | PDF | JSON | Plain Text |
+|--------------|----------|------|-----|------|------------|
+| Text content | Yes | Yes | Yes | Yes | Yes |
+| Formatting | Yes | Yes | Yes | Yes (raw) | No |
+| Images | Copied | Embedded | Embedded | URLs | No |
+| Links | Wiki-links | Clickable | Clickable | Raw | Text only |
+| Properties | Frontmatter | Header | Optional | Full | No |
+| Mentions | Wiki-links | Links | Text | Raw | Text |
 
 ---
 
@@ -454,11 +675,11 @@ Exported YAML frontmatter includes:
 
 ### Export is slow
 
-Large vaults (1000+ objects) may take a minute. The progress bar shows status.
+Large vaults (1000+ objects) may take a minute. The progress bar shows status. PDF exports are slower than Markdown due to rendering overhead.
 
-### Some content missing
+### Images not appearing
 
-Rich embeds (images, files) are referenced but not embedded. The text content is always preserved.
+For Markdown exports, check that the `attachments/` folder was created alongside the .md file. For HTML and PDF exports, images should be embedded automatically.
 
 ### File name conflicts
 
@@ -467,3 +688,14 @@ If multiple objects have the same title, files are numbered: `note.md`, `note-1.
 ### Special characters in titles
 
 Titles are sanitized for file systems. Characters like `/`, `\`, `:` become `-`.
+
+### Export format recommendations
+
+| Situation | Recommended Format |
+|-----------|-------------------|
+| Backup for restore | JSON |
+| Moving to Obsidian | Markdown ZIP |
+| Sharing with others | PDF or HTML |
+| Archiving projects | Markdown ZIP |
+| Printing | PDF |
+| Data analysis | JSON |

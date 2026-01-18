@@ -91,6 +91,8 @@ export function MobileTasksView() {
   const [bulkActionsSheetOpen, setBulkActionsSheetOpen] = useState(false);
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [bulkProjectSheetOpen, setBulkProjectSheetOpen] = useState(false);
+  const [bulkTagSheetOpen, setBulkTagSheetOpen] = useState(false);
 
   // Action sheet state for long-press menu
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
@@ -318,13 +320,16 @@ export function MobileTasksView() {
           }
 
           case 'project':
+            setBulkActionsSheetOpen(false);
+            setTimeout(() => setBulkProjectSheetOpen(true), 200);
+            setBulkActionLoading(false);
+            return; // Don't clear selection yet
+
           case 'tag':
-            // TODO: Open sub-sheet for project/tag selection
-            addToast({
-              type: 'info',
-              message: 'Coming soon',
-            });
-            break;
+            setBulkActionsSheetOpen(false);
+            setTimeout(() => setBulkTagSheetOpen(true), 200);
+            setBulkActionLoading(false);
+            return; // Don't clear selection yet
 
           default:
             break;
@@ -359,6 +364,59 @@ export function MobileTasksView() {
     selection.clear();
     setBulkDeleteConfirmOpen(false);
   }, [store, selection, deleteTask, notification, addToast]);
+
+  // Bulk project change handler
+  const handleBulkProjectChange = useCallback(
+    (value: string | string[] | null) => {
+      if (!store || selection.selectedCount === 0) return;
+      const projectId = Array.isArray(value) ? value[0] : value;
+      const selectedIds = selection.selectedArray;
+
+      for (const id of selectedIds) {
+        store.update(id, { properties: { project: projectId } });
+      }
+
+      refreshData();
+      addToast({
+        type: 'success',
+        message: `Moving ${selectedIds.length} tasks to project`,
+      });
+
+      selection.clear();
+      setBulkProjectSheetOpen(false);
+    },
+    [store, selection, refreshData, addToast]
+  );
+
+  // Bulk tags change handler
+  const handleBulkTagsChange = useCallback(
+    (tags: string[]) => {
+      if (!store || selection.selectedCount === 0) return;
+      const selectedIds = selection.selectedArray;
+
+      // For bulk tags, we append the new tags to existing ones
+      // This is safer than replacing all tags
+      for (const id of selectedIds) {
+        const task = store.get(id);
+        if (!task) continue;
+
+        const currentTags = (task.properties.tags as string[]) || [];
+        const newTags = [...new Set([...currentTags, ...tags])];
+
+        store.setProperty(id, 'tags', newTags);
+      }
+
+      refreshData();
+      addToast({
+        type: 'success',
+        message: `Added tags to ${selectedIds.length} tasks`,
+      });
+
+      selection.clear();
+      setBulkTagSheetOpen(false);
+    },
+    [store, selection, refreshData, addToast]
+  );
 
   // Action sheet items
   const actionSheetItems: ActionSheetItem[] = selectedTask
@@ -727,6 +785,24 @@ export function MobileTasksView() {
         message={`Are you sure you want to delete ${selection.selectedCount} task${selection.selectedCount !== 1 ? 's' : ''}? This action cannot be undone.`}
         confirmLabel="Delete All"
         destructive
+      />
+
+      {/* Bulk Project Sheet */}
+      <RelationPickerSheet
+        opened={bulkProjectSheetOpen}
+        onClose={() => setBulkProjectSheetOpen(false)}
+        property={projectProperty}
+        value={null} // No initial value for bulk action
+        onSave={handleBulkProjectChange}
+        title="Move to Project"
+      />
+
+      {/* Bulk Tag Sheet */}
+      <TagPickerSheet
+        opened={bulkTagSheetOpen}
+        onClose={() => setBulkTagSheetOpen(false)}
+        value={[]} // No initial value for bulk action
+        onSave={handleBulkTagsChange}
       />
     </Stack>
   );

@@ -339,7 +339,7 @@ export function DeviceRegistryProvider({
       store.registerCurrentDevice({
         name: deviceName,
         platform,
-        appVersion: '0.1.0', // TODO: Get from app config
+        appVersion: __APP_VERSION__,
         publicSigningKey: signingPublicKey,
       });
 
