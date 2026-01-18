@@ -90,7 +90,7 @@ export function LocalSyncSettings() {
     <>
       <Box component="section">
         <Group justify="space-between" mb="xs">
-          <Title order={4}>Local Sync</Title>
+          <Title order={4}>Hearth</Title>
           <Switch
             checked={isEnabled}
             onChange={handleToggle}
@@ -99,8 +99,7 @@ export function LocalSyncSettings() {
         </Group>
 
         <Text size="sm" c="dimmed" mb="md">
-          Sync your vault across devices on the same network. All data stays
-          local - no cloud required.
+          Sync devices on the same network — no internet required.
         </Text>
 
         {isEnabled && (

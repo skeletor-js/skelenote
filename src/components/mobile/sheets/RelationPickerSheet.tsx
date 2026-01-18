@@ -26,6 +26,8 @@ interface RelationPickerSheetProps {
   property: PropertyDefinition | null;
   value: string | string[] | null;
   onSave: (value: string | string[] | null) => void;
+  /** Optional custom title (defaults to "Select {property.name}") */
+  title?: string;
 }
 
 export function RelationPickerSheet({
@@ -34,6 +36,7 @@ export function RelationPickerSheet({
   property,
   value,
   onSave,
+  title: customTitle,
 }: RelationPickerSheetProps) {
   const { store, isLoading } = useObjects();
   const typeRegistry = useTypeRegistry();
@@ -123,7 +126,7 @@ export function RelationPickerSheet({
     <BottomSheet
       opened={opened}
       onClose={handleClose}
-      title={`Select ${property.name}`}
+      title={customTitle ?? `Select ${property.name}`}
       size="lg"
     >
       <Stack gap="md">

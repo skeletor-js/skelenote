@@ -5,22 +5,8 @@
 
 import type { ObjectStore } from '@/lib/loro';
 import type { SkelenoteObject } from '@/lib/types';
+import { blockNoteAdapter } from '@/lib/editor/adapter';
 import { getOrCreateDailyNote, getDailyNoteId } from './daily-notes';
-
-/**
- * Block structure for a paragraph with a mention
- */
-interface MentionBlock {
-  type: 'paragraph';
-  content: Array<{
-    type: 'mention';
-    props: {
-      objectId: string;
-      objectName: string;
-      objectTypeId: string;
-    };
-  }>;
-}
 
 /**
  * Get the display name for an object based on its type
@@ -33,48 +19,8 @@ function getObjectDisplayName(object: SkelenoteObject): string {
 }
 
 /**
- * Create a mention block for an object
- */
-function createMentionBlock(object: SkelenoteObject): MentionBlock {
-  return {
-    type: 'paragraph',
-    content: [
-      {
-        type: 'mention',
-        props: {
-          objectId: object.id,
-          objectName: getObjectDisplayName(object),
-          objectTypeId: object.typeId,
-        },
-      },
-    ],
-  };
-}
-
-/**
- * Check if a block is empty (no content or only empty content)
- */
-function isEmptyBlock(block: unknown): boolean {
-  if (!block || typeof block !== 'object') return true;
-  const b = block as { type?: string; content?: unknown[] };
-  if (b.type === 'paragraph') {
-    // Empty if no content array or content is empty/only whitespace
-    if (!b.content || !Array.isArray(b.content) || b.content.length === 0) {
-      return true;
-    }
-    // Check if content is only whitespace text
-    if (b.content.length === 1) {
-      const item = b.content[0] as { type?: string; text?: string };
-      if (item.type === 'text' && (!item.text || item.text.trim() === '')) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-/**
  * Append a mention to the daily note's content
+ * Delegates to EditorContentAdapter for implementation.
  */
 function appendMentionToContent(
   store: ObjectStore,
@@ -89,29 +35,15 @@ function appendMentionToContent(
     // Content may not exist yet
   }
 
-  // Parse existing blocks or start with empty array
-  let blocks: unknown[] = [];
-  if (existingContent) {
-    try {
-      const parsed = JSON.parse(existingContent);
-      if (Array.isArray(parsed)) {
-        // Filter out trailing empty blocks to prevent extra line breaks
-        blocks = parsed;
-        while (blocks.length > 0 && isEmptyBlock(blocks[blocks.length - 1])) {
-          blocks.pop();
-        }
-      }
-    } catch {
-      // Invalid content, start fresh
-    }
-  }
-
-  // Create mention block and append
-  const mentionBlock = createMentionBlock(object);
-  blocks.push(mentionBlock);
+  // Append mention using the adapter
+  const updatedContent = blockNoteAdapter.appendMention(existingContent, {
+    objectId: object.id,
+    objectName: getObjectDisplayName(object),
+    objectTypeId: object.typeId,
+  });
 
   // Save updated content
-  store.setContent(dailyNoteId, JSON.stringify(blocks));
+  store.setContent(dailyNoteId, updatedContent);
 }
 
 /**

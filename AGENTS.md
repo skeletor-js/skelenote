@@ -119,7 +119,7 @@ Or use the `/check` skill to run all validations at once.
 
 ## Important: Frontend & UI Work
 
-**ALWAYS review `docs/design/style-guide.md` before making any UI or frontend changes.** This comprehensive design system defines colors, typography, spacing, component patterns, and interaction behaviors for the Linear-inspired minimal aesthetic.
+**ALWAYS review `docs/product/design/style-guide.md` before making any UI or frontend changes.** This comprehensive design system defines colors, typography, spacing, component patterns, and interaction behaviors for the Linear-inspired minimal aesthetic.
 
 ## Architecture Overview
 
@@ -757,15 +757,15 @@ Skelenote combines the high-density efficiency of a code editor with the warmth 
 | Campfire | Collaboration, Multiplayer |
 | Relay | Cloud Storage |
 
-For complete design specs, see `docs/design/style-guide.md`.
+For complete design specs, see `docs/product/design/style-guide.md`.
 
 ## Documentation Map
 
 ### Design & Brand
 
-- `docs/design/style-guide.md` - **Complete UI component specs**, colors, typography, spacing, Mantine config
-- `docs/design/skelenote-brand-bible.md` - Brand positioning, voice, strategic narrative
-- `docs/design/skelenote-feature-list.md` - Feature inventory and status
+- `docs/product/design/style-guide.md` - **Complete UI component specs**, colors, typography, spacing, Mantine config
+- `docs/product/design/skelenote-brand-bible.md` - Brand positioning, voice, strategic narrative
+- `docs/product/design/skelenote-feature-list.md` - Feature inventory and status
 
 ### Developer Reference
 

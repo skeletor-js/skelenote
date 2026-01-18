@@ -26,8 +26,8 @@ For detailed comparisons with other tools in the privacy-focused note-taking spa
 
 | Document | Description |
 |----------|-------------|
-| [Notesnook Comparison](./docs/competitive/notesnook-comparison.md) | Feature-by-feature analysis vs. our closest encrypted competitor |
-| [Competitive Landscape](./docs/competitive/competitive-landscape.md) | Comprehensive overview of 20+ tools across privacy, sync, pricing |
+| [Notesnook Comparison](./docs/product/competitive/notesnook-comparison.md) | Feature-by-feature analysis vs. our closest encrypted competitor |
+| [Competitive Landscape](./docs/product/competitive/competitive-landscape.md) | Comprehensive overview of 20+ tools across privacy, sync, pricing |
 
 **Key Gaps Identified:**
 
@@ -290,7 +290,7 @@ Verify with `vite-plugin-visualizer` before/after.
 
 *One-time, time-bound, visually-verified device pairing.*
 
-[Detailed planning](./docs/planning/data-portability/05-secure-device-linking.md)
+[Detailed planning](./docs/product/planning/data-portability/05-secure-device-linking.md)
 
 **Problem:** Transferring 24-word mnemonic is risky (shoulder surfing, no expiration, no verification).
 
@@ -686,7 +686,7 @@ Beyond the core app, we're extracting reusable components as open-source package
 
 *BIP39 mnemonic key management with HKDF derivation.*
 
-[Detailed planning](./docs/planning/packages/zero-knowledge-sync-package.md)
+[Detailed planning](./docs/product/planning/packages/zero-knowledge-sync-package.md)
 
 ```rust
 use skeleton_key::{generate_mnemonic, mnemonic_to_master_key, derive_key, encrypt};
@@ -712,7 +712,7 @@ let ciphertext = encrypt(&sync_key, plaintext)?;
 
 *Binary wire protocol for encrypted CRDT sync.*
 
-[Detailed planning](./docs/planning/packages/zero-knowledge-sync-package.md)
+[Detailed planning](./docs/product/planning/packages/zero-knowledge-sync-package.md)
 
 | Message | Code | Description |
 |---------|------|-------------|
@@ -732,7 +732,7 @@ let ciphertext = encrypt(&sync_key, plaintext)?;
 
 *Block-level diffing for BlockNote documents.*
 
-[Detailed planning](./docs/planning/packages/blocknote-diff-package.md)
+[Detailed planning](./docs/product/planning/packages/blocknote-diff-package.md)
 
 ```typescript
 import { computeContentDiff } from 'blocknote-diff';
@@ -778,7 +778,7 @@ Have feature requests or feedback?
 1. **Open an issue** on [GitHub](https://github.com/skeletor-js/skelenote/issues) with `feature-request` label
 2. **Vote on ideas** in [GitHub Discussions](https://github.com/skeletor-js/skelenote/discussions)
 3. **Join Discord** for real-time discussion
-4. **Check planning docs** in [`docs/planning/`](./docs/planning/) for detailed specs
+4. **Check planning docs** in [`docs/product/planning/`](./docs/product/planning/) for detailed specs
 
 ### Prioritization Framework
 

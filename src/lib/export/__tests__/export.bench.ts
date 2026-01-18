@@ -7,9 +7,12 @@ import { bench, describe, beforeAll } from 'vitest';
 import { convertBlockNoteToMarkdown } from '../markdown';
 import type { BlockNoteBlock } from '../types';
 
+// Extended block type for benchmarks that allows flexible inline content
+type BenchmarkBlock = BlockNoteBlock & { content?: unknown[] };
+
 // Generate sample BlockNote content
-function generateBlocks(count: number): BlockNoteBlock[] {
-  const blocks: BlockNoteBlock[] = [];
+function generateBlocks(count: number): BenchmarkBlock[] {
+  const blocks: BenchmarkBlock[] = [];
 
   for (let i = 0; i < count; i++) {
     if (i % 10 === 0) {

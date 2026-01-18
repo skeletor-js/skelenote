@@ -2,7 +2,9 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import 'fake-indexeddb/auto';
 import { SyncClient } from '../client';
+import { PersistentOfflineQueue } from '../persistent-queue';
 import {
   MessageType,
   encodeMessage,
@@ -81,16 +83,22 @@ describe('SyncClient Integration', () => {
     userId: 'user-1',
   };
 
-  beforeEach(() => {
-    vi.useFakeTimers();
+  beforeEach(async () => {
+    // Create client and wait for queue initialization BEFORE enabling fake timers
+    // IndexedDB operations don't work with fake timers
     global.WebSocket = ManualMockWebSocket as any;
     client = new SyncClient(config);
+    await client.waitForReady();
+    // Now enable fake timers for WebSocket timing
+    vi.useFakeTimers();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     if (client) client.disconnect();
     vi.useRealTimers();
     vi.clearAllMocks();
+    // Clean up IndexedDB
+    await PersistentOfflineQueue.deleteDatabase();
   });
 
   const getSocket = () => (client as any).ws as ManualMockWebSocket;
@@ -144,8 +152,12 @@ describe('SyncClient Integration', () => {
   });
 
   it('should queue updates when disconnected', async () => {
+    // Switch to real timers for IndexedDB operation
+    vi.useRealTimers();
     await client.sendUpdate(new Uint8Array([1]));
     expect(client.getPendingCount()).toBe(1);
+    vi.useFakeTimers();
+
     client.connect();
     await vi.advanceTimersByTimeAsync(100);
     const ws = getSocket();
@@ -155,16 +167,24 @@ describe('SyncClient Integration', () => {
       MessageType.HELLO
     );
 
-    // Ack to update
+    // Ack triggers async flush - switch to real timers for IndexedDB
+    vi.useRealTimers();
     const ackMsg = encodeMessage(MessageType.ACK, encodeJsonPayload({}));
     ws.receive(ackMsg);
 
-    expect(client.getPendingCount()).toBe(0);
+    // Wait for async flush to complete
+    await vi.waitFor(() => {
+      expect(client.getPendingCount()).toBe(0);
+    });
+
     expect(ws.send).toHaveBeenCalledTimes(2);
     const updateCall = ws.send.mock.calls[1][0];
     expect(decodeMessage(toArrayBuffer(updateCall)).type).toBe(
       MessageType.UPDATE
     );
+
+    // Restore fake timers for cleanup
+    vi.useFakeTimers();
   });
 
   it('should handle offline/reconnect cycle', async () => {

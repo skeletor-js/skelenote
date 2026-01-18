@@ -6,18 +6,18 @@
 import { bench, describe, beforeAll } from 'vitest';
 import { LoroDoc } from 'loro-crdt';
 import { ObjectStore } from '@/lib/loro/objects';
-import { registerBuiltInTypes, BuiltInTypeIds } from '@/lib/types';
+import { createTypeRegistry, builtInTypes } from '@/lib/types';
 import {
-  generateDailyNoteId,
-  formatDailyNoteTitle,
-  createDailyNote,
-  getDailyNote,
+  getDailyNoteId,
+  getOrCreateDailyNote,
+  getDailyNoteByDate,
   getAllDailyNotes,
 } from '../daily-notes';
+import { formatDateTitle } from '../date-utils';
 
 describe('Daily Note ID Generation', () => {
   bench('generate daily note ID', () => {
-    generateDailyNoteId(new Date());
+    getDailyNoteId(new Date());
   });
 
   bench('generate 100 daily note IDs', () => {
@@ -25,14 +25,14 @@ describe('Daily Note ID Generation', () => {
     for (let i = 0; i < 100; i++) {
       const date = new Date(baseDate);
       date.setDate(date.getDate() + i);
-      generateDailyNoteId(date);
+      getDailyNoteId(date);
     }
   });
 });
 
 describe('Daily Note Title Formatting', () => {
   bench('format title', () => {
-    formatDailyNoteTitle(new Date());
+    formatDateTitle(new Date());
   });
 
   bench('format 365 titles', () => {
@@ -40,7 +40,7 @@ describe('Daily Note Title Formatting', () => {
     for (let i = 0; i < 365; i++) {
       const date = new Date(baseDate);
       date.setDate(date.getDate() + i);
-      formatDailyNoteTitle(date);
+      formatDateTitle(date);
     }
   });
 });
@@ -50,10 +50,10 @@ describe('Daily Note Creation', () => {
     'create daily note',
     () => {
       const doc = new LoroDoc();
-      const store = new ObjectStore(doc);
-      registerBuiltInTypes(store);
+      const typeRegistry = createTypeRegistry(builtInTypes);
+      const store = new ObjectStore(doc, typeRegistry);
 
-      createDailyNote(store, new Date());
+      getOrCreateDailyNote(store, new Date());
     },
     { iterations: 20 }
   );
@@ -64,20 +64,20 @@ describe('Daily Note Retrieval', () => {
 
   beforeAll(() => {
     const doc = new LoroDoc();
-    store = new ObjectStore(doc);
-    registerBuiltInTypes(store);
+    const typeRegistry = createTypeRegistry(builtInTypes);
+    store = new ObjectStore(doc, typeRegistry);
 
     // Create 30 days of daily notes
     const baseDate = new Date();
     for (let i = 0; i < 30; i++) {
       const date = new Date(baseDate);
       date.setDate(date.getDate() - i);
-      createDailyNote(store, date);
+      getOrCreateDailyNote(store, date);
     }
   });
 
   bench('get daily note by date', () => {
-    getDailyNote(store, new Date());
+    getDailyNoteByDate(store, new Date());
   });
 
   bench('get all daily notes (30)', () => {
@@ -90,14 +90,14 @@ describe('Daily Note Stress Test', () => {
     'create 100 daily notes',
     () => {
       const doc = new LoroDoc();
-      const store = new ObjectStore(doc);
-      registerBuiltInTypes(store);
+      const typeRegistry = createTypeRegistry(builtInTypes);
+      const store = new ObjectStore(doc, typeRegistry);
 
       const baseDate = new Date();
       for (let i = 0; i < 100; i++) {
         const date = new Date(baseDate);
         date.setDate(date.getDate() + i);
-        createDailyNote(store, date);
+        getOrCreateDailyNote(store, date);
       }
     },
     { iterations: 3 }

@@ -1,9 +1,12 @@
 /**
  * Plain text extraction from BlockNote content
  * Traverses block structure to extract searchable text
+ *
+ * This module delegates to the EditorContentAdapter for the primary extraction,
+ * while maintaining backward-compatible exports for direct block processing.
  */
 
-import { deserializeBlockNoteDocument } from '@/lib/editor';
+import { blockNoteAdapter } from '@/lib/editor/adapter';
 
 /**
  * BlockNote inline content types
@@ -149,18 +152,11 @@ export function extractPlainTextFromBlocks(blocks: Block[]): string {
 
 /**
  * Extract plain text from serialized BlockNote content string
+ * Delegates to EditorContentAdapter for implementation.
+ *
  * @param content - JSON string of BlockNote document
  * @returns Plain text string
  */
 export function extractPlainTextFromContent(content: string | null): string {
-  if (!content) {
-    return '';
-  }
-
-  const blocks = deserializeBlockNoteDocument(content);
-  if (!blocks) {
-    return '';
-  }
-
-  return extractPlainTextFromBlocks(blocks);
+  return blockNoteAdapter.extractPlainText(content);
 }

@@ -118,7 +118,7 @@ src-tauri/target/
 
 ### Release Workflow (`.github/workflows/release.yml`)
 
-**Runs on:** Git tags matching `v*` (e.g., `v0.1.0-alpha.1`)
+**Runs on:** Git tags matching `v*` (e.g., `vX.Y.Z`)
 
 **Steps:**
 1. Same build matrix as Build workflow (macOS, Windows, Linux)
@@ -128,11 +128,9 @@ src-tauri/target/
 
 **Release notes template:**
 ```markdown
-## Skelenote v0.1.0-alpha.1
+## Skelenote vX.Y.Z
 
 See the assets below to download and install.
-
-**Note:** This is an alpha release. Binaries are not code-signed and may show security warnings on macOS and Windows.
 
 ### Downloads
 - **macOS**: `.dmg` (both Apple Silicon and Intel)
@@ -145,10 +143,10 @@ See the assets below to download and install.
 # Bump version in package.json and src-tauri/tauri.conf.json
 # Commit changes
 git add package.json src-tauri/tauri.conf.json
-git commit -m "chore: bump version to 0.1.0-alpha.2"
+git commit -m "chore: bump version to X.Y.Z"
 
 # Create and push tag
-git tag v0.1.0-alpha.2
+git tag vX.Y.Z
 git push origin main --tags
 
 # GitHub Actions will automatically build and create the release
@@ -156,7 +154,6 @@ git push origin main --tags
 
 **Release settings:**
 - `releaseDraft: true` - Releases are created as drafts for manual review before publishing
-- `prerelease: true` - All releases are marked as pre-release during alpha
 
 ## Cross-Platform Support
 
@@ -167,14 +164,12 @@ Skelenote is fully tested and supported on the following platforms:
 - **Minimum version**: macOS 10.15 (Catalina)
 - **Format**: `.dmg` installer and `.app` bundle
 - **Dependencies**: Xcode Command Line Tools
-- **Note**: Unsigned builds will show "unidentified developer" warnings
 
 ### Windows
 - **Architecture**: x86_64
 - **Minimum version**: Windows 10
 - **Format**: `.exe` NSIS installer
 - **Dependencies**: WebView2 (usually pre-installed on Windows 10/11)
-- **Note**: Unsigned builds will show SmartScreen warnings
 
 ### Linux
 - **Tested distributions**: Ubuntu 22.04, Fedora (latest)

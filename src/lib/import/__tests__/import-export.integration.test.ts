@@ -19,10 +19,7 @@ import {
   createTypeRegistry,
   BuiltInTypeIds,
   builtInTypes,
-  NoteType,
-  TaskType,
-  ProjectType,
-  TagType,
+  type PropertyValue,
 } from '../../types';
 import { generateMarkdownContent, type JSONBackup } from '../../export';
 import {
@@ -31,7 +28,6 @@ import {
   convertFrontmatterToProperties,
   mapTypeToSkelenote,
 } from '../index';
-import type { SkelenoteObject } from '../../types';
 
 // Mock localStorage
 const localStorageMock = (function () {
@@ -134,7 +130,7 @@ describe('Import/Export Integration Tests', () => {
       expect(markdown).toContain('- Second item');
 
       // 4. Re-import the markdown
-      const { properties: _frontmatter } = parseFrontmatter(markdown);
+      parseFrontmatter(markdown); // We just verify it doesn't throw
       const contentWithoutFrontmatter = markdown.replace(
         /---\n[\s\S]*?\n---\n/,
         ''
@@ -145,17 +141,22 @@ describe('Import/Export Integration Tests', () => {
       expect(blocks.length).toBeGreaterThan(0);
 
       // Find the heading block
-      const headingBlock = blocks.find(
-        (b) => b.type === 'heading' && b.content?.[0]?.text === 'Introduction'
-      );
+      const headingBlock = blocks.find((b) => {
+        if (b.type !== 'heading') return false;
+        const content = b.content as Array<{ text?: string }> | undefined;
+        return content?.[0]?.text === 'Introduction';
+      });
       expect(headingBlock).toBeDefined();
 
       // Find paragraph
       const paragraphBlocks = blocks.filter((b) => b.type === 'paragraph');
       expect(
-        paragraphBlocks.some((p) =>
-          p.content?.some((c) => c.text?.includes('This is a test paragraph'))
-        )
+        paragraphBlocks.some((p) => {
+          const content = p.content as Array<{ text?: string }> | undefined;
+          return content?.some((c) =>
+            c.text?.includes('This is a test paragraph')
+          );
+        })
       ).toBe(true);
 
       // Find list items
@@ -305,7 +306,7 @@ describe('Import/Export Integration Tests', () => {
         inboxed: true,
       });
 
-      const note = store.create({
+      store.create({
         typeId: BuiltInTypeIds.NOTE,
         properties: {
           title: 'Project Notes',
@@ -375,7 +376,7 @@ describe('Import/Export Integration Tests', () => {
         const imported = store2.create({
           id: objData.id,
           typeId: objData.typeId,
-          properties: objData.properties as Record<string, unknown>,
+          properties: objData.properties as Record<string, PropertyValue>,
           withContent: objData.hasContent,
           inboxed: objData.inboxed,
         });
@@ -457,7 +458,7 @@ describe('Import/Export Integration Tests', () => {
       store2.create({
         id: objData.id,
         typeId: objData.typeId,
-        properties: objData.properties as Record<string, unknown>,
+        properties: objData.properties as Record<string, PropertyValue>,
         withContent: objData.hasContent,
         inboxed: objData.inboxed,
       });
@@ -507,9 +508,8 @@ describe('Import/Export Integration Tests', () => {
         })),
       };
 
-      // Find the note and task in backup
+      // Find the note in backup
       const noteBackup = backup.objects.find((o) => o.id === note.id);
-      const taskBackup = backup.objects.find((o) => o.id === oldTask.id);
 
       expect(noteBackup?.pinned).toBe(true);
       // Note: archived isn't in JSONBackup interface, would need to add if needed
@@ -600,7 +600,7 @@ describe('Import/Export Integration Tests', () => {
       store2.create({
         id: objData.id,
         typeId: objData.typeId,
-        properties: objData.properties as Record<string, unknown>,
+        properties: objData.properties as Record<string, PropertyValue>,
         withContent: objData.hasContent,
         inboxed: objData.inboxed,
       });

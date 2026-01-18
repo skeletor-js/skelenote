@@ -6,7 +6,7 @@ Skelenote aligns our incentives with your well-being, not your addiction. We don
 
 ## Free Forever
 
-Skelenote is **100% free and open source**. The complete app—including all features, local sync, encryption, and export—costs nothing.
+Skelenote is **100% free and open source**. The complete app—including all features, local sync, encryption, and export—costs nothing. We don't artificially limit features to push you into a subscription.
 
 ### What's Free
 
@@ -20,15 +20,15 @@ Skelenote is **100% free and open source**. The complete app—including all fea
 
 ### Why Free?
 
-Skelenote is open source under the Apache 2.0 license. You can inspect the code, verify our encryption claims, and even fork it if you want. We believe privacy software should be auditable.
+Skelenote is open source under the Apache 2.0 license. You can inspect the code, verify our encryption claims, and even fork it if you want. We believe privacy software should be auditable and accessible to everyone.
 
 ---
 
 ## Optional Cloud Sync
 
-For users who want encrypted sync across networks (home, office, mobile data), we offer an optional cloud relay service:
+For users who want encrypted sync across networks (home, office, mobile data) but don't want to self-host, we offer a managed cloud relay service:
 
-**$8/month** — Encrypted Cloud Sync
+**$8/month** — Managed Encrypted Cloud Sync
 
 - Sync across all your devices over the internet
 - End-to-end encrypted (we can't read your data)
@@ -37,11 +37,16 @@ For users who want encrypted sync across networks (home, office, mobile data), w
 
 ### Why Pay?
 
-The cloud relay has real infrastructure costs (servers, bandwidth, storage). Your subscription funds ongoing development and keeps the project sustainable.
+The cloud relay has real infrastructure costs (servers, bandwidth, storage). Your subscription funds ongoing development and keeps the project sustainable. It's strictly for convenience—you aren't paying for "features," you're paying for us to run the infrastructure for you.
 
-### Self-Hosting
+### Self-Hosting (Free)
 
-Technical users can run their own sync relay. The client is open source and can connect to any compatible WebSocket server. We'll publish documentation for self-hosting.
+Technical users can run their own sync relay for free. We provide a **Docker container** that you can deploy on any VPS or home server.
+
+- **Client**: Connects to any compatible WebSocket server
+- **Server**: Open source, lightweight, easy to deploy via Docker
+
+We monetize convenience, not necessity. If you can host it, you don't need to pay us.
 
 ---
 

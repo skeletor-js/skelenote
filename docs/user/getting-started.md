@@ -1,6 +1,38 @@
 # Getting Started
 
+> [!NOTE]
+> **Active Development**: Skelenote is under active development. Your data is safe and backwards-compatible. New features and improvements ship regularly.
+
 Close the door. The room is yours.
+
+---
+
+## Installation & Setup
+
+1. **Download** the latest release from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases).
+2. **Install** for your platform:
+
+**macOS**
+
+Open the downloaded `.dmg` and drag Skelenote to Applications.
+
+**Windows**
+
+Run the downloaded installer (`.exe`).
+
+**Linux**
+
+Native packages (recommended):
+
+- `.deb` for Debian/Ubuntu: `sudo dpkg -i skelenote_*.deb`
+- `.rpm` for Fedora/RHEL: `sudo rpm -i skelenote_*.rpm`
+
+AppImage (fallback):
+
+```bash
+chmod +x Skelenote_*.AppImage
+./Skelenote_*.AppImage
+```
 
 ---
 
@@ -24,7 +56,7 @@ Write it down. Store it somewhere safe. This is not a password you can reset.
 
 **We cannot recover your Skeleton Key.** That's not a limitation—that's the point. If we could recover it, so could someone else. Your privacy depends on this key staying in your hands alone.
 
-When you set up another device, you'll enter this same phrase. That's how your vault follows you—not through our servers, but through your memory or your secure backup.
+When you set up another device, you'll enter this same phrase. That's how your vault follows you—not through our servers, but through your secure backup.
 
 ---
 
@@ -66,6 +98,7 @@ New objects land in your **Inbox** by default.
 The inbox is not a to-do list. It's a holding area—a place for thoughts to wait until you're ready to decide where they belong.
 
 **The ritual:**
+
 1. Capture freely throughout the day
 2. Set aside time to process
 3. Move each object to its proper place (Project, Area, Resource) or archive it
@@ -76,15 +109,9 @@ Your study stays quiet. The noise stays in the inbox until you choose to let it 
 
 ## Daily Notes
 
-Every day gets its own object, created automatically.
+Every day gets its own object, created automatically. Use Daily Notes for morning intentions, meeting notes, or ephemeral thoughts.
 
-Use Daily Notes for:
-- Morning intentions
-- Meeting notes tied to a specific date
-- Evening reflections
-- Anything ephemeral
-
-Mention other objects in your daily notes with `@`, and those connections persist. Your daily log becomes a timeline through your vault's history.
+Mention other objects with `@` to create a timeline of your work.
 
 ---
 
@@ -92,58 +119,46 @@ Mention other objects in your daily notes with `@`, and those connections persis
 
 ### Command Palette
 
-Press `Cmd+K` (or `Ctrl+K`) to open the Command Palette. Search objects, run commands, navigate anywhere. Keyboard-first design for flow states.
+Press `Cmd+K` (or `Ctrl+K`) to open the Command Palette. Search objects, run commands, navigate anywhere.
 
 ### Semantic Search
 
-If enabled in Settings, Skelenote builds a local understanding of your vault's meaning—not just keywords. Search for concepts, not just words.
-
-This happens entirely on your device. Your thoughts never leave to be analyzed elsewhere.
+If enabled, Skelenote builds a local understanding of your vault's meaning. Search for concepts, not just words. This happens entirely on your device.
 
 ### Backlinks
 
-Every object shows what links to it. Follow the threads of your thinking backward and forward through your work.
+Every object shows what links to it. Follow the threads of your thinking.
 
 ---
 
-## Syncing Your Devices
+## Syncing & Backup
 
-Skelenote offers two paths to keep devices in harmony.
-
-### Campfire: Same Room, Same Network
-
-When devices share a network—your home WiFi, your office LAN—they find each other and sync directly. No internet. No relay. No possibility of interception.
-
-Physical proximity is the ultimate encryption.
-
-→ [Campfire Mode Guide](campfire-guide.md)
-
-### Cloud Relay: Different Locations
-
-For devices in different cities, an encrypted relay bridges the gap. The relay sees only encrypted blobs—it cannot read your content.
-
-You can self-host the relay for complete control, or use the hosted option for convenience.
-
-→ [Cloud Sync Setup](cloud-sync-guide.md)
+- **Campfire**: Local P2P sync for devices on the same network. [Guide](guides/campfire-guide.md).
+- **Cloud Relay**: Encrypted sync for remote devices. [Guide](guides/cloud-sync-guide.md).
+- **Data Safety**: Learn how to backup your vault. [Guide](guides/data-safety.md).
 
 ---
 
 ## The Time Machine
 
-Made a mistake? Deleted something important? Skelenote records the history of your vault.
-
-Navigate to any object's history and restore it to any previous state. Revert a single paragraph or your entire vault to how it looked last Tuesday at 2 PM.
-
-Fear of breaking things stops people from refining their work. The Time Machine removes that fear.
+Made a mistake? Skelenote records the history of your vault. Navigate to any object's history and restore it to any previous state.
 
 ---
 
-## What Comes Next
+## Feedback & Community
 
-You now have the essentials. The study is yours to arrange.
+Your feedback shapes Skelenote's development.
 
-For deeper understanding:
-- [Security & Privacy Architecture](security-privacy.md) — How encryption protects you
-- [Philosophy & Manifesto](philosophy-manifesto.md) — The philosophy behind the design
+- **Report Issues**: [Linear](https://linear.app/skeletorjs/team/skelenote)
+- **Discuss**: [Discord](https://discord.gg/4apsgSRB7D)
+- **Known Issues**: [Status](known-issues.md)
+
+---
+
+## Next Steps
+
+- [Keyboard Shortcuts](guides/keyboard-shortcuts.md)
+- [Troubleshooting](troubleshooting.md)
+- [Philosophy & Manifesto](about/philosophy-manifesto.md)
 
 **Local. Encrypted. Yours.**

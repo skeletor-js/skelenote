@@ -63,15 +63,15 @@ Skelenote is currently in **alpha**. We're looking for testers to help shape the
 **Want to help test?**
 
 1. Download from [Releases](https://github.com/skeletor-js/skelenote/releases)
-2. Read the [Alpha Tester Guide](docs/user/alpha/README.md)
+2. Read the [Getting Started Guide](docs/user/getting-started.md)
 3. Join our [Discord](https://discord.gg/4apsgSRB7D) for discussion
 4. Report bugs via [Linear](https://linear.app/skeletorjs/team/skelenote)
 
 **Alpha Resources:**
 
-- [Known Issues](docs/user/alpha/KNOWN_ISSUES.md)
-- [Troubleshooting](docs/user/alpha/TROUBLESHOOTING.md)
-- [Testing Checklist](docs/user/alpha/TEST_PLAN.md)
+- [Known Issues](docs/user/known-issues.md)
+- [Troubleshooting](docs/user/troubleshooting.md)
+- [Testing Checklist](docs/user/test-plan.md)
 
 ---
 
@@ -113,6 +113,12 @@ See [ROADMAP.md](ROADMAP.md) for the full plan.
 - [Campfire Mode](docs/user/guides/campfire-guide.md) - Local P2P sync
 - [Cloud Sync](docs/user/guides/cloud-sync-guide.md) - Relay server configuration
 - [Keyboard Shortcuts](docs/user/guides/keyboard-shortcuts.md) - Power user tips
+
+### Design Documentation
+
+- `docs/product/design/style-guide.md` - **Complete UI component specs**, colors, typography, spacing, Mantine config
+- `docs/product/design/skelenote-brand-bible.md` - Brand positioning, voice, strategic narrative
+- `docs/product/design/skelenote-feature-list.md` - Feature inventory and status
 
 ### About Skelenote
 

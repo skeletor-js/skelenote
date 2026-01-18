@@ -1,4 +1,8 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import 'fake-indexeddb/auto';
 import { SyncClient } from '../client';
 import {
   MessageType,
@@ -7,6 +11,7 @@ import {
   encodeJsonPayload,
   isDeviceManagementMessage,
 } from '../protocol';
+import { PersistentOfflineQueue } from '../persistent-queue';
 
 // Mock crypto
 vi.mock('@/lib/crypto', () => ({
@@ -70,18 +75,21 @@ describe('SyncClient', () => {
     deviceId: 'device-1',
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     MockWebSocket.instances = []; // Clear mock instances
     client = new SyncClient(config);
+    await client.waitForReady();
     // Mock crypto defaults
     vi.mocked(hasKey).mockResolvedValue(false);
     vi.mocked(encrypt).mockImplementation(async (data: Uint8Array) => data);
     vi.mocked(decrypt).mockImplementation(async (data: Uint8Array) => data);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     client.disconnect();
+    // Clean up IndexedDB
+    await PersistentOfflineQueue.deleteDatabase();
   });
 
   it('should initialize with disconnected status', () => {
@@ -909,7 +917,7 @@ describe('SyncClient', () => {
       const ws = MockWebSocket.instances[0];
       ws.simulateOpen();
 
-      // ACK triggers flush
+      // ACK triggers flush (async, fire-and-forget)
       const ackPayload = encodeJsonPayload({
         sessionCount: 1,
         currentSequence: 0,
@@ -919,9 +927,13 @@ describe('SyncClient', () => {
           data: encodeMessage(MessageType.ACK, ackPayload).buffer,
         });
 
+      // Wait for async flush to complete
+      await vi.waitFor(() => {
+        expect(client.getPendingCount()).toBe(0);
+      });
+
       // Should have sent HELLO + 2 updates
       expect(ws.send).toHaveBeenCalledTimes(3);
-      expect(client.getPendingCount()).toBe(0);
     });
   });
 

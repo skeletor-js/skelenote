@@ -169,7 +169,7 @@ export function MobileSyncIndicator() {
           <Box py="sm" style={{ borderTop: '1px solid var(--border-default)' }}>
             <Group justify="space-between" mb="xs">
               <Text size="sm" c="dimmed">
-                Cloud Sync
+                Courier
               </Text>
               <Text
                 size="sm"
@@ -194,7 +194,7 @@ export function MobileSyncIndicator() {
 
             <Group justify="space-between">
               <Text size="sm" c="dimmed">
-                Local Network
+                Hearth
               </Text>
               <Text
                 size="sm"

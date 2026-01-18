@@ -44,7 +44,6 @@ vi.mock('../ObjectContext', async (importOriginal) => {
 // Mock lib/sync/local events
 let peerDiscoveredCallback: any = null;
 let peerConnectedCallback: any = null;
-let peerDisconnectedCallback: any = null;
 let syncMessageCallback: any = null;
 
 const mockStartServer = vi.fn().mockResolvedValue(12345);
@@ -86,7 +85,7 @@ vi.mock('@/lib/sync/local', () => ({
     return vi.fn();
   },
   onPeerDisconnected: (cb: any) => {
-    (window as any)._peerDisconnectedCallback = cb;
+    (window as any).__peerDisconnectedCallback = cb;
     return vi.fn();
   },
   onSyncMessage: (cb: any) => {
@@ -144,8 +143,9 @@ describe('LocalSyncContext Integration', () => {
     vi.clearAllMocks();
     peerDiscoveredCallback = null;
     peerConnectedCallback = null;
-    peerDisconnectedCallback = null;
     syncMessageCallback = null;
+    // Reset window-stored callback
+    (window as any).__peerDisconnectedCallback = null;
     vi.mocked(mockGetServerInfo).mockResolvedValue({
       running: false,
       port: null,
@@ -479,7 +479,7 @@ describe('LocalSyncContext Integration', () => {
 
     // Disconnect
     await act(async () => {
-      const callback = (window as any)._peerDisconnectedCallback;
+      const callback = (window as any).__peerDisconnectedCallback;
       if (callback) {
         await callback({ deviceId: 'peer-1' });
       }

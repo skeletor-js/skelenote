@@ -2,10 +2,16 @@
  * Offline Queue
  *
  * Queues updates when the device is offline and flushes them when reconnected.
+ *
+ * @deprecated Use PersistentOfflineQueue instead for durability across app restarts.
+ * This in-memory queue loses all pending updates if the app crashes while offline.
  */
 
 import type { QueuedUpdate } from './types';
 
+/**
+ * @deprecated Use PersistentOfflineQueue for persistence across app restarts.
+ */
 export class OfflineQueue {
   private queue: QueuedUpdate[] = [];
   private nextId = 1;

@@ -6,7 +6,7 @@
 import { bench, describe, beforeAll } from 'vitest';
 import { LoroDoc } from 'loro-crdt';
 import { ObjectStore } from '@/lib/loro/objects';
-import { registerBuiltInTypes, BuiltInTypeIds } from '@/lib/types';
+import { createTypeRegistry, builtInTypes, BuiltInTypeIds } from '@/lib/types';
 import {
   getTemplates,
   getTemplatesForType,
@@ -20,8 +20,8 @@ describe('Template Query Performance', () => {
 
   beforeAll(() => {
     const doc = new LoroDoc();
-    store = new ObjectStore(doc);
-    registerBuiltInTypes(store);
+    const typeRegistry = createTypeRegistry(builtInTypes);
+    store = new ObjectStore(doc, typeRegistry);
 
     // Create 50 templates of various types
     const types = [
@@ -57,8 +57,8 @@ describe('Template Creation Performance', () => {
     'create template',
     () => {
       const doc = new LoroDoc();
-      const store = new ObjectStore(doc);
-      registerBuiltInTypes(store);
+      const typeRegistry = createTypeRegistry(builtInTypes);
+      const store = new ObjectStore(doc, typeRegistry);
 
       createTemplate(store, {
         name: 'Test Template',
@@ -67,7 +67,7 @@ describe('Template Creation Performance', () => {
           title: '{{date}} - New Note',
           priority: 2,
         },
-        hasContent: true,
+        content: '[]', // Empty BlockNote content
       });
     },
     { iterations: 50 }
@@ -80,8 +80,8 @@ describe('Create from Template Performance', () => {
 
   beforeAll(() => {
     const doc = new LoroDoc();
-    store = new ObjectStore(doc);
-    registerBuiltInTypes(store);
+    const typeRegistry = createTypeRegistry(builtInTypes);
+    store = new ObjectStore(doc, typeRegistry);
 
     const template = createTemplate(store, {
       name: 'Meeting Notes',
@@ -90,7 +90,7 @@ describe('Create from Template Performance', () => {
         title: '{{date}} - Meeting Notes',
         attendees: '{{time}} meeting',
       },
-      hasContent: true,
+      content: '[]', // Empty BlockNote content
     });
     templateId = template.id;
   });
@@ -105,7 +105,7 @@ describe('Create from Template Performance', () => {
     createFromTemplate(store, templateId, {
       context: {
         date: new Date(),
-        customFields: { project: 'Skelenote' },
+        customValues: { project: 'Skelenote' },
       },
     });
   });

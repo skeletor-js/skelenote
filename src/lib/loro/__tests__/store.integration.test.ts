@@ -6,7 +6,6 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { LoroDocStore } from '../store';
-import { LoroDoc } from 'loro-crdt';
 
 // In-memory file storage for testing
 let memoryFs: Map<string, Uint8Array>;

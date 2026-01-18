@@ -164,7 +164,11 @@ export function Editor({
     isExternalUpdateRef.current = true;
     const newBlocks = deserializeBlockNoteDocument(initialContent);
     if (newBlocks) {
-      editor.replaceBlocks(editor.document, newBlocks);
+      // Cast to match editor schema - blocks are compatible but types differ due to custom schema
+      editor.replaceBlocks(
+        editor.document,
+        newBlocks as typeof editor.document
+      );
     } else {
       // Clear editor for new/empty content
       editor.replaceBlocks(editor.document, []);
@@ -187,7 +191,11 @@ export function Editor({
     isExternalUpdateRef.current = true;
     const newBlocks = deserializeBlockNoteDocument(initialContent);
     if (newBlocks) {
-      editor.replaceBlocks(editor.document, newBlocks);
+      // Cast to match editor schema - blocks are compatible but types differ due to custom schema
+      editor.replaceBlocks(
+        editor.document,
+        newBlocks as typeof editor.document
+      );
     } else {
       editor.replaceBlocks(editor.document, []);
     }

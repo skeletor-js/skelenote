@@ -26,7 +26,7 @@ import { exists, mkdir, readFile, writeFile } from '@tauri-apps/plugin-fs';
 // Mock SyncClient
 const mockSyncClient = {
   getStatus: vi.fn(),
-  sendUpdate: vi.fn(),
+  sendUpdate: vi.fn().mockResolvedValue(undefined),
   sendSnapshot: vi.fn(),
   requestCompaction: vi.fn(),
   onUpdate: vi.fn(),

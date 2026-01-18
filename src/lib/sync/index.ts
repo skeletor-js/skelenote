@@ -6,6 +6,10 @@
 
 export { SyncClient } from './client';
 export { OfflineQueue } from './queue';
+export {
+  PersistentOfflineQueue,
+  createPersistentOfflineQueue,
+} from './persistent-queue';
 export { ConnectionManager } from './connection';
 export * from './types';
 export * from './protocol';

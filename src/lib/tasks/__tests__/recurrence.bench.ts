@@ -31,6 +31,7 @@ function createMockRecurringTask(
     hasContent: false,
     inboxed: false,
     pinned: false,
+    archived: false,
     createdAt: Date.now() - 86400000,
     updatedAt: Date.now(),
   };

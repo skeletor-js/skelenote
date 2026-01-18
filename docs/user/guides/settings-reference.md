@@ -14,7 +14,7 @@ Shows your 24-word Skeleton Key mnemonic. This is your master encryption key.
 
 **Warning:** Anyone with your Skeleton Key has full access to your data. Store it securely.
 
-### QR Code *(Coming in v0.3)*
+### QR Code
 
 Generate a QR code for secure device pairing without exposing your Skeleton Key.
 
