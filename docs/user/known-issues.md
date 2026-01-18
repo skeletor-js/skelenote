@@ -77,7 +77,7 @@ These features are partially implemented or coming soon:
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Mobile apps | Planned | Desktop-first for now |
+| Mobile apps | Beta | iOS via TestFlight, Android via APK |
 | Graph view | Planned | Backlinks work; visualization later |
 
 ---

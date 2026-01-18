@@ -12,7 +12,7 @@
 |---------|----------|-------|--------|
 | **v0.1** | Foundation | Core productivity system | ✅ Shipped |
 | **v0.2** | Exodus | Data freedom & portability | ✅ Shipped |
-| **v0.3** | Pocket | Mobile apps & notifications | 🔨 Next |
+| **v0.3** | Pocket | Mobile apps & notifications | ✅ Shipped |
 | **v0.35** | Architect | Custom object types & extensibility | 📋 Planned |
 | **v0.4** | Oracle | Sovereign AI on-device | 📋 Planned |
 | **v0.5** | Sentinel | Security hardening | 📋 Planned |
@@ -33,8 +33,8 @@ For detailed comparisons with other tools in the privacy-focused note-taking spa
 
 | Gap | Priority | Target Release |
 |-----|----------|----------------|
-| Mobile apps | Critical | v0.3 |
-| Reminders & notifications | High | v0.3 |
+| Mobile apps | Critical | ✅ v0.3 |
+| Reminders & notifications | High | ✅ v0.3 |
 | Import wizards (Notion, Obsidian) | High | ✅ v0.2 |
 | PDF export | Medium | ✅ v0.2 |
 | App lock (auto-lock) | Medium | v0.5 |
@@ -248,11 +248,11 @@ Verify with `vite-plugin-visualizer` before/after.
 
 *Skelenote in your pocket.*
 
-**Status:** 🔨 Next  
+**Status:** ✅ Shipped  
 **Version:** `0.3.0`
 
-> [!IMPORTANT]
-> Mobile is the #1 competitive gap. This release delivers native iOS/Android apps with full feature parity—not a companion app, the real thing.
+> [!NOTE]
+> v0.3 Pocket delivered native iOS/Android apps with full feature parity—not a companion app, the real thing. Mobile is available via TestFlight (iOS) and APK download (Android).
 
 ### Native Mobile Apps
 

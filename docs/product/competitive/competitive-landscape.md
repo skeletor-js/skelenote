@@ -135,7 +135,8 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 - Massive plugin ecosystem (2,000+ community plugins)
 - Graph visualization (today)
 - Community themes and customization
-- Mobile apps (today)
+- Mobile apps (now in Beta)
+- Mobile support (via TestFlight/APK)
 - Markdown power users who want raw files
 
 **Skelenote is better for:**
@@ -346,7 +347,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 | Offline-first | Yes | Limited | Yes | Yes | Yes | Limited |
 | One-time purchase | N/A (Free) | No | Yes (app) | Free | Free | No |
 | Graph View | Planned | No | Yes | Yes | Yes | No |
-| Mobile Apps | Planned | Yes | Yes | Yes | Yes | Yes |
+| Mobile Apps | Yes (Beta) | Yes | Yes | Yes | Yes | Yes |
 | Task Management | Native | Native | Plugin | Plugin | Native | Plugin |
 | Daily Notes | Yes | Template | Plugin | Native | Yes | No |
 | Templates | Yes | Yes | Yes | Yes | Yes | Limited |
@@ -372,7 +373,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 
 | Feature | Current Status | Notes |
 |---------|---------------|-------|
-| Mobile apps | In development | Native Tauri iOS/Android coming |
+| Mobile apps | Yes (Beta) | Native Tauri iOS/Android now available |
 | Graph visualization | Planned | Visual map of connections |
 | Web clipper | Not planned | Use export/import instead |
 | Real-time collaboration | Not planned | Unapologetically single-player |
@@ -399,7 +400,6 @@ We believe in building fewer features well rather than everything poorly. If a f
 ### Not Ideal (Yet)
 
 - **Teams needing real-time collaboration** (Skelenote is single-player by design)
-- **Heavy mobile users** (until our mobile apps ship)
 - **Plugin tinkerers** (Obsidian's ecosystem is unmatched)
 - **Visual/spatial thinkers** (Heptabase or Kosmik may suit you better)
 - **Organizations requiring SSO/admin controls** (enterprise features are future)
