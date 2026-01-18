@@ -14,7 +14,7 @@
 | **Architecture** | Tauri/Rust (native) | Electron/React Native |
 | **Sync Model** | CRDT + P2P first | Server-based sync |
 | **Pricing** | Free (optional $8/mo cloud) | Subscription $2-9/mo |
-| **Mobile Apps** | Planned | Available |
+| **Mobile Apps** | Available | Available |
 | **GitHub Stars** | Early stage | 13.4k |
 
 **Key Insight:** Notesnook is a mature, feature-rich encrypted notepad. Skelenote is an encrypted productivity system with superior sync architecture but less platform coverage.
@@ -104,12 +104,12 @@
 | Windows | Yes | Yes | = | |
 | macOS | Yes | Yes | = | |
 | Linux | Yes | Yes | = | |
-| iOS | Planned | Yes | N>S | **Gap: Notesnook has mobile** |
-| Android | Planned | Yes | N>S | **Gap: Notesnook has mobile** |
+| iOS | Yes | Yes | = | Native via Tauri 2.0 mobile |
+| Android | Yes | Yes | = | Native via Tauri 2.0 mobile |
 | Web app | Not planned | Yes | N>S | Skelenote desktop-only by design |
 | Browser extension | No | Yes (Web Clipper) | N>S | |
 
-**Gap Analysis:** Mobile is Skelenote's biggest platform gap. Notesnook's mobile apps are full-featured.
+**Gap Analysis:** Mobile is now available (Beta). Skelenote should add Secondary Vault (v0.5), 2FA, and App Lock to match Notesnook's remaining security features.
 
 ---
 
@@ -300,10 +300,10 @@
 
 | Feature | Skelenote | Notesnook | Parity | Notes |
 |---------|:---------:|:---------:|:------:|-------|
-| Home screen widgets | Planned (v0.3) | Yes | N>S | Quick access widgets |
-| Pin notes to notifications | Planned (v0.3) | Yes | N>S | Persistent note access |
-| Quick notes from notification | Planned (v0.3) | Yes | N>S | Create notes from drawer |
-| Share sheet integration | Planned (v0.3) | Yes | N>S | Receive from other apps |
+| Home screen widgets | Yes | Yes | = | Quick access widgets |
+| Pin notes to notifications | Yes | Yes | = | Persistent note access |
+| Quick notes from notification | Yes | Yes | = | Create notes from drawer |
+| Share sheet integration | Yes | Yes | = | Receive from other apps |
 
 ---
 
@@ -366,10 +366,10 @@ These features would bring Skelenote to parity with Notesnook's strongest offeri
 
 | Feature | Effort | Impact | Target |
 |---------|--------|--------|--------|
-| **Mobile apps** | High | Critical | v0.3 |
-| **Reminders** | Medium | High | v0.3 |
-| **PDF/HTML export** | Low | Medium | v0.2 |
-| **Import wizards** | Medium | High | v0.2 |
+| **Mobile apps** | High | Critical | ✅ v0.3 (Beta) |
+| **Reminders** | Medium | High | ✅ v0.3 |
+| **PDF/HTML export** | Low | Medium | ✅ v0.2 |
+| **Import wizards** | Medium | High | ✅ v0.2 |
 
 ### Priority 2: Security Parity
 
@@ -436,7 +436,7 @@ Features where Skelenote is already ahead—don't regress:
 
 | User Type | Better Choice | Why |
 |-----------|---------------|-----|
-| Mobile-heavy users | Notesnook | Mobile apps available |
+| Mobile-heavy users | Either | Both now have mobile apps |
 | Task-focused workers | Skelenote | Native task management |
 | PARA practitioners | Skelenote | Built-in methodology |
 | Academic writers | Notesnook | LaTeX support |

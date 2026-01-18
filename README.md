@@ -21,10 +21,10 @@ A local-first, zero-knowledge private study. Your vault lives on your device, en
 - [Windows](https://github.com/skeletor-js/skelenote/releases) - `.exe`
 - [Linux](https://github.com/skeletor-js/skelenote/releases) - `.deb`, `.rpm`, `.AppImage`
 
-**Mobile (Coming Soon):**
+**Mobile:**
 
-- iOS - TestFlight beta
-- Android - APK download
+- [iOS (TestFlight)](https://testflight.apple.com/join/skelenote) - Requires TestFlight app
+- [Android (APK)](https://github.com/skeletor-js/skelenote/releases) - Direct download
 
 [View all releases](https://github.com/skeletor-js/skelenote/releases)
 
@@ -94,7 +94,7 @@ Skelenote is currently in **alpha**. We're looking for testers to help shape the
 | ------- | -------- | ----- | ------ |
 | **v0.1** | Foundation | Core productivity system | Shipped |
 | **v0.2** | Exodus | Data freedom & portability | Shipped |
-| **v0.3** | Pocket | Mobile apps & notifications | In Progress |
+| **v0.3** | Pocket | Mobile apps & notifications | Shipped |
 | **v0.35** | Architect | Custom object types | Planned |
 | **v0.4** | Oracle | On-device AI | Planned |
 | **v0.5** | Sentinel | Security hardening | Planned |

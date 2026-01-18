@@ -22,7 +22,7 @@ Notesnook is Skelenote's most direct competitor: both use XChaCha20-Poly1305 enc
 | **Pricing** | Free (optional $8/mo cloud) | Subscription $2-9/mo |
 | **Focus** | Productivity system | Note-taking app |
 | **Tasks** | First-class objects | Checklists only |
-| **Mobile** | Planned (v0.3) | Available |
+| **Mobile** | Beta | Available |
 
 ---
 
@@ -52,7 +52,7 @@ Categories covered:
 
 | Gap | Status | Target |
 |-----|--------|--------|
-| Mobile apps | In development | v0.3 |
+| Mobile apps | Beta | ✅ v0.3 |
 | Reminders | Planned | v0.3 |
 | Import wizards | In development | v0.2 |
 | App lock / 2FA | Planned | v0.5 |
@@ -73,7 +73,6 @@ Categories covered:
 ### Not Ideal (Yet)
 
 - Teams needing real-time collaboration (Skelenote is single-player)
-- Heavy mobile users (until v0.3 ships)
 - Plugin tinkerers (Obsidian's ecosystem is unmatched)
 - Visual/spatial thinkers (until Canvas in v1.0)
 

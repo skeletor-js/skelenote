@@ -12,6 +12,8 @@ Close the door. The room is yours.
 1. **Download** the latest release from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases).
 2. **Install** for your platform:
 
+### Desktop
+
 **macOS**
 
 Open the downloaded `.dmg` and drag Skelenote to Applications.
@@ -33,6 +35,23 @@ AppImage (fallback):
 chmod +x Skelenote_*.AppImage
 ./Skelenote_*.AppImage
 ```
+
+### Mobile
+
+**iOS** (via TestFlight)
+
+1. Install [TestFlight](https://apps.apple.com/app/testflight/id899247664) from the App Store
+2. Open the [Skelenote TestFlight link](https://testflight.apple.com/join/skelenote)
+3. Tap **Accept** and install
+
+**Android** (APK)
+
+1. Download the `.apk` from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases)
+2. Enable **Install from unknown sources** in Settings > Security
+3. Open the APK and tap **Install**
+
+> [!TIP]
+> See the [Mobile Guide](guides/mobile-guide.md) for detailed setup, QR pairing, and mobile-specific features.
 
 ---
 
