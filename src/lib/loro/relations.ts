@@ -10,6 +10,7 @@ import type {
   PropertyDefinition,
 } from '../types';
 import type { ObjectStore } from './objects';
+import { blockNoteAdapter } from '../editor/adapter';
 
 /**
  * Represents a backlink from one object to another
@@ -26,49 +27,11 @@ export interface Backlink {
 /**
  * Extract all mentioned object IDs from BlockNote content JSON
  * Recursively searches for inline mention content
+ *
+ * Delegates to EditorContentAdapter for implementation.
  */
 export function extractMentionsFromContent(content: string | null): string[] {
-  if (!content) return [];
-
-  try {
-    const blocks = JSON.parse(content);
-    const mentions: string[] = [];
-
-    // Recursively find mentions in blocks
-    function searchBlocks(items: unknown[]): void {
-      for (const item of items) {
-        if (typeof item !== 'object' || item === null) continue;
-
-        const block = item as Record<string, unknown>;
-
-        // Check if this is a mention inline content
-        if (block.type === 'mention' && block.props) {
-          const props = block.props as Record<string, unknown>;
-          if (typeof props.objectId === 'string') {
-            mentions.push(props.objectId);
-          }
-        }
-
-        // Search in content array (inline content)
-        if (Array.isArray(block.content)) {
-          searchBlocks(block.content);
-        }
-
-        // Search in children array (nested blocks)
-        if (Array.isArray(block.children)) {
-          searchBlocks(block.children);
-        }
-      }
-    }
-
-    if (Array.isArray(blocks)) {
-      searchBlocks(blocks);
-    }
-
-    return mentions;
-  } catch {
-    return [];
-  }
+  return blockNoteAdapter.extractMentionIds(content);
 }
 
 /**
@@ -160,11 +123,20 @@ export class RelationHelper {
    * Find all objects that reference the given object ID (backlinks)
    * Includes both relation properties and @-mentions in content
    *
+   * Uses the BacklinkIndex if available (O(1) lookup), otherwise
+   * falls back to O(n) scan for backwards compatibility.
+   *
    * @param targetId - The object ID to find backlinks for
    * @param dataVersion - Optional version number for cache invalidation.
    *   If provided, cached results are returned when version matches.
    */
   findBacklinks(targetId: string, dataVersion?: number): Backlink[] {
+    // Use BacklinkIndex if available (O(1) lookup)
+    const backlinkIndex = this.store.getBacklinkIndex();
+    if (backlinkIndex) {
+      return backlinkIndex.getBacklinks(targetId);
+    }
+
     // Check cache if dataVersion is provided
     if (dataVersion !== undefined) {
       const cached = this.backlinksCache.get(targetId);
@@ -173,7 +145,7 @@ export class RelationHelper {
       }
     }
 
-    // Compute backlinks (O(n) scan)
+    // Fallback: Compute backlinks (O(n) scan)
     const backlinks: Backlink[] = [];
 
     for (const obj of this.store.getAll()) {

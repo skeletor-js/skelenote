@@ -149,13 +149,13 @@ export function SyncSettings() {
 
       <Divider />
 
-      {/* Cloud Relay */}
+      {/* Courier */}
       <Box>
         <Title order={4} mb="xs">
-          Cloud Relay
+          Courier
         </Title>
         <Text size="sm" c="dimmed" mb="md">
-          Sync through a relay server when devices aren't on the same network.
+          Sync devices anywhere — encrypted end-to-end.
         </Text>
 
         <Stack gap="sm">

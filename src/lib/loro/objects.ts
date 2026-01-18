@@ -13,6 +13,7 @@ import type {
 } from '../types';
 import { removeMentionsFromContent } from '../editor';
 import { generateId, validatePropertyValue } from '../types';
+import type { BacklinkIndex } from './backlink-index';
 import {
   getObjectsMap,
   getContentText,
@@ -60,11 +61,45 @@ export class ObjectStore {
   private typeRegistry: TypeRegistry;
   /** Cache for getAll() results to avoid repeated objectsMap.toJSON() calls */
   private objectsCache: ObjectsCache | null = null;
+  /** Optional backlink index for O(1) backlink lookups */
+  private backlinkIndex: BacklinkIndex | null = null;
 
   constructor(doc: LoroDoc, typeRegistry: TypeRegistry) {
     this.doc = doc;
     this.typeRegistry = typeRegistry;
     initializeDocument(doc);
+  }
+
+  /**
+   * Set the backlink index for O(1) backlink lookups.
+   * The index will be notified of all mutations.
+   */
+  setBacklinkIndex(index: BacklinkIndex): void {
+    this.backlinkIndex = index;
+  }
+
+  /**
+   * Get the backlink index if one has been set.
+   */
+  getBacklinkIndex(): BacklinkIndex | null {
+    return this.backlinkIndex;
+  }
+
+  /**
+   * Notify the backlink index of an object change.
+   * Called after mutations that might affect backlinks.
+   */
+  private notifyBacklinkIndex(
+    objectId: string,
+    deleted: boolean = false
+  ): void {
+    if (!this.backlinkIndex) return;
+
+    if (deleted) {
+      this.backlinkIndex.removeObject(objectId);
+    } else {
+      this.backlinkIndex.updateObject(objectId);
+    }
   }
 
   /**
@@ -122,6 +157,9 @@ export class ObjectStore {
 
     // Invalidate cache after mutation
     this.invalidateCache();
+
+    // Notify backlink index of new object
+    this.notifyBacklinkIndex(obj.id);
 
     return obj;
   }
@@ -229,6 +267,9 @@ export class ObjectStore {
     // Invalidate cache after mutation
     this.invalidateCache();
 
+    // Notify backlink index of property changes
+    this.notifyBacklinkIndex(id);
+
     return updated;
   }
 
@@ -265,6 +306,9 @@ export class ObjectStore {
 
       // Invalidate cache after mutation
       this.invalidateCache();
+
+      // Notify backlink index of deletion
+      this.notifyBacklinkIndex(id, true);
     }
 
     return exists;
@@ -310,7 +354,7 @@ export class ObjectStore {
     }
     contentText.insert(0, content);
 
-    // Update timestamp
+    // Update timestamp (this also notifies backlink index via update())
     this.update(id, {});
   }
 

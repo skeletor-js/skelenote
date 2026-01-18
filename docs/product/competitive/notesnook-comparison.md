@@ -13,7 +13,7 @@
 | **Primary Focus** | Encrypted productivity system | Encrypted note-taking |
 | **Architecture** | Tauri/Rust (native) | Electron/React Native |
 | **Sync Model** | CRDT + P2P first | Server-based sync |
-| **Pricing** | One-time $19.99 | Subscription $2-9/mo |
+| **Pricing** | Free (optional $8/mo cloud) | Subscription $2-9/mo |
 | **Mobile Apps** | Planned | Available |
 | **GitHub Stars** | Early stage | 13.4k |
 
@@ -51,6 +51,7 @@
 ## Feature Parity Matrix
 
 ### Legend
+
 - **S**: Skelenote has this feature
 - **N**: Notesnook has this feature
 - **S>N**: Skelenote's implementation is superior
@@ -311,13 +312,13 @@
 | Plan | Skelenote | Notesnook |
 |------|-----------|-----------|
 | **Free tier** | Alpha (all features) | Limited (100MB storage) |
-| **Entry** | $19.99 one-time | $1.99/mo ($24/yr) Essential |
+| **Entry** | Free (Core App) | $1.99/mo ($24/yr) Essential |
 | **Standard** | Included | $6.99/mo ($70/yr) Pro |
 | **Premium** | N/A | $8.99/mo ($90/yr) Believer |
 | **Storage** | Unlimited local | 1-25GB cloud |
 | **File size limit** | None | 50MB-1GB |
 
-**Business Model Advantage:** Skelenote's one-time purchase is more user-friendly than Notesnook's subscription model.
+**Business Model Advantage:** Skelenote's free core offering is more accessible than Notesnook's subscription model.
 
 ---
 
@@ -326,6 +327,7 @@
 Based on [Notesnook's public roadmap](https://notesnook.com/roadmap/):
 
 ### In Progress (as of April 2025)
+
 | Feature | Completion | Impact on Skelenote |
 |---------|------------|---------------------|
 | Self-hosting sync server | 75% | Reduces Skelenote's server-free advantage |
@@ -334,6 +336,7 @@ Based on [Notesnook's public roadmap](https://notesnook.com/roadmap/):
 | More app stores | 78% (7/9) | Platform distribution |
 
 ### Planned
+
 | Feature | Notes |
 |---------|-------|
 | ProductHunt launch | Marketing milestone |
@@ -342,6 +345,7 @@ Based on [Notesnook's public roadmap](https://notesnook.com/roadmap/):
 | Third-party security audit | Both planning this |
 
 ### Recently Completed
+
 | Feature | Version | Relevance |
 |---------|---------|-----------|
 | Markdown pasting | v3.0.27 | Skelenote should add |
@@ -416,7 +420,7 @@ Features where Skelenote is already ahead—don't regress:
 - **Daily notes with templates** — Deterministic IDs, auto-creation
 - **Semantic search** — Local ML, no cloud
 - **Time Machine** — Granular CRDT history
-- **One-time pricing** — No subscriptions
+- **Free core app** — No subscriptions for core features
 
 ---
 
@@ -437,7 +441,7 @@ Features where Skelenote is already ahead—don't regress:
 | PARA practitioners | Skelenote | Built-in methodology |
 | Academic writers | Notesnook | LaTeX support |
 | Privacy maximalists | Skelenote | P2P sync, no servers |
-| Subscription-averse | Skelenote | One-time purchase |
+| Subscription-averse | Skelenote | Free core app |
 | Web clipper users | Notesnook | Has web clipper |
 | Local network sync | Skelenote | Campfire P2P |
 
@@ -448,18 +452,21 @@ Features where Skelenote is already ahead—don't regress:
 Skelenote and Notesnook occupy similar positions in the privacy-focused note-taking space but serve different user needs:
 
 **Notesnook excels at:**
+
 - Cross-platform availability (mobile, web)
 - Traditional cloud sync reliability
 - Note-specific features (math, web clipper, sharing)
 - Lower entry price point
 
 **Skelenote excels at:**
+
 - Sync architecture (CRDT + P2P)
 - Productivity features (tasks, projects, templates)
 - Data ownership (no server dependency)
-- Business model (one-time purchase)
+- Business model (free core app, optional cloud)
 
 **Path to Victory:**
+
 1. Ship mobile apps (closes biggest gap)
 2. Add reminders (completes task management)
 3. Execute on local AI (creates new advantage)

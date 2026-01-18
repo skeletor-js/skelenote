@@ -11,11 +11,13 @@ This document is an honest look at where Skelenote sits in that landscape—what
 Before diving into feature tables, understand that these tools fall into two camps:
 
 ### The Cloud Landlords
+
 Notion, Roam, Tana, Capacities, Mem, Craft, Den, Reflect, Heptabase.
 
 Your data lives on their servers. You pay monthly to access it. They can read it (or claim they can't, but you're trusting their word). If they shut down, raise prices, or get acquired—you scramble.
 
 ### The Sovereignty Tools
+
 Skelenote, Obsidian, Logseq, Anytype, Joplin, AppFlowy, AFFiNE, Notesnook, Standard Notes, SiYuan, TriliumNext.
 
 Your data lives on your device first. Some offer optional cloud sync. Many are open-source. You own what you create.
@@ -77,7 +79,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 
 | Tool | Model | Typical Cost | One-Time Option |
 |------|-------|--------------|-----------------|
-| **Skelenote** | One-time purchase | $19.99 | Yes |
+| **Skelenote** | Free + optional cloud sync | $0 (app) / $8/mo (cloud) | N/A (Free) |
 | **Obsidian** | Free + paid sync | $0 (app) / $96/yr (sync) | Yes (app only) |
 | **Logseq** | Free (open-source) | $0 | N/A |
 | **Anytype** | Free (open-source) | $0 | N/A |
@@ -107,6 +109,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 ### vs. Notion
 
 **Notion is better for:**
+
 - Large team collaboration with permissions and guests
 - Complex relational databases with multiple views
 - Public websites and wikis
@@ -114,10 +117,11 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 - Mobile apps that exist today
 
 **Skelenote is better for:**
+
 - Privacy (we literally cannot read your Vault)
 - Offline reliability (no spinners, no "reconnecting...")
 - Data longevity (your files outlive any company)
-- One-time cost ($19.99 vs. $120+/year)
+- One-time cost (Free vs. $120+/year)
 - Local network sync without touching the internet
 
 **The core difference:** Notion is a workspace you visit. Skelenote is a Study you own.
@@ -127,6 +131,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 ### vs. Obsidian
 
 **Obsidian is better for:**
+
 - Massive plugin ecosystem (2,000+ community plugins)
 - Graph visualization (today)
 - Community themes and customization
@@ -134,12 +139,13 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 - Markdown power users who want raw files
 
 **Skelenote is better for:**
+
 - Built-in encryption (no plugins, no configuration)
 - P2P sync without third-party services or DIY setup
 - CRDT sync (true merge vs. "last write wins" conflicts)
 - Native task management (not plugin-dependent)
 - Structured Objects (typed data, not just markdown files)
-- One-time purchase includes sync
+- Core app is free (features not locked behind paywall)
 
 **The core difference:** Obsidian is a markdown editor you extend with plugins. Skelenote is an encrypted Object database with structure built in.
 
@@ -148,12 +154,14 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 ### vs. Logseq
 
 **Logseq is better for:**
+
 - Outliner-style thinking (everything is bullets)
 - Open-source transparency (audit the code yourself)
 - Free forever (no purchase required)
 - Strong community and development momentum
 
 **Skelenote is better for:**
+
 - Document-style writing (not just outlines)
 - Built-in encryption without configuration
 - P2P sync that works out of the box
@@ -167,15 +175,17 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 ### vs. Anytype
 
 **Anytype is better for:**
+
 - Fully open-source (audit everything)
 - Free forever with no purchase
 - Similar object-based philosophy
 - Established longer (more mature)
 
 **Skelenote is better for:**
+
 - Simpler onboarding (PARA defaults vs. blank canvas)
 - Native Tauri/Rust performance (lighter than Electron)
-- One-time purchase with optional paid services (vs. entirely free with unclear monetization)
+- Clear business model: Free core app + optional paid cloud relay (vs. completely free with unclear future monetization)
 - Time Machine with Loro CRDTs (revert any Object to any point)
 
 **The core difference:** Anytype and Skelenote share DNA—local-first, encrypted, object-based, P2P sync. Anytype is fully free and open-source. Skelenote offers a clearer structure and business model.
@@ -185,15 +195,17 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 ### vs. Standard Notes & Notesnook
 
 **They are better for:**
+
 - Pure encrypted notes (simpler, focused)
 - Security audits completed (Standard Notes)
 - Longer track record
 - Mobile apps (today)
 
 **Skelenote is better for:**
+
 - Richer Object types (tasks, projects, areas, not just notes)
 - P2P sync without any server
-- One-time purchase (vs. subscription)
+- Free core app (vs. subscription)
 - CRDT-based sync (better conflict handling)
 - PARA methodology built in
 
@@ -204,14 +216,16 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 ### vs. Roam Research & Tana
 
 **They are better for:**
+
 - Pioneering networked thought (Roam invented modern backlinking UX)
 - AI-native features (Tana's supertags, voice transcription)
 - Cloud convenience (no setup, no sync configuration)
 
 **Skelenote is better for:**
+
 - Privacy (they store and can access your data)
 - Offline-first (Roam barely works offline; Tana requires connection)
-- Cost ($19.99 once vs. $180+/year for Roam)
+- Cost (Free vs. $180+/year for Roam)
 - Data ownership (export and leave anytime)
 
 **The core difference:** Roam and Tana are cloud-native thinking tools. Skelenote is a local-first system that happens to sync.
@@ -221,16 +235,18 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 ### vs. Craft
 
 **Craft is better for:**
+
 - Apple ecosystem integration (beautiful on Mac/iOS)
 - Document design and sharing
 - On-device AI that respects privacy
 - Mobile experience (today)
 
 **Skelenote is better for:**
+
 - Cross-platform (Windows, Linux, not just Apple)
 - True local-first (Craft still relies on cloud)
 - P2P sync without iCloud
-- One-time purchase
+- Free core app
 - Structured task/project management
 
 **The core difference:** Craft is a beautiful document tool for Apple users. Skelenote is a cross-platform productivity system.
@@ -240,15 +256,17 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 ### vs. Heptabase & Kosmik
 
 **They are better for:**
+
 - Visual/spatial thinking (whiteboards, canvases)
 - Arranging ideas in 2D space
 - Mind mapping and diagramming
 
 **Skelenote is better for:**
+
 - Document and task-based workflows
 - Privacy (both store data on their servers)
 - Offline-first reliability
-- One-time cost
+- Free core app
 
 **The core difference:** Heptabase and Kosmik are visual canvases for spatial thinkers. Skelenote is a structured workspace for linear thinkers.
 
@@ -257,12 +275,14 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 ### vs. Den
 
 **Den is better for:**
+
 - AI agent workflows (agents that work while you sleep)
 - Team communication (Slack-like features)
 - Deep integrations (50+ tools)
 - Collaborative documentation
 
 **Skelenote is better for:**
+
 - Privacy (Den is cloud-based and AI-processes your data)
 - Solo deep work (Den is built for teams)
 - Offline capability (Den requires internet)
@@ -275,11 +295,13 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 ### vs. Joplin, SiYuan & TriliumNext
 
 **They are better for:**
+
 - Self-hosting everything (full control)
 - Free and open-source (no purchase required)
 - Technical users comfortable with setup
 
 **Skelenote is better for:**
+
 - Zero-configuration P2P sync
 - Native encryption without setup
 - CRDT conflict resolution (Joplin uses last-write-wins)
@@ -293,12 +315,14 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 ### vs. Apple Notes & Bear
 
 **They are better for:**
+
 - Apple ecosystem (deep integration, Handoff, Shortcuts)
 - Zero setup (just works)
 - Handwriting and sketching (Apple Notes)
 - Beautiful design (Bear)
 
 **Skelenote is better for:**
+
 - Cross-platform (Windows, Linux)
 - True zero-knowledge encryption
 - P2P sync without iCloud
@@ -320,7 +344,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 | P2P Sync | Yes | No | No | No | Yes | No |
 | CRDT Merge | Yes (Loro) | Server | No | No | Yes | No |
 | Offline-first | Yes | Limited | Yes | Yes | Yes | Limited |
-| One-time purchase | Yes | No | Yes (app) | Free | Free | No |
+| One-time purchase | N/A (Free) | No | Yes (app) | Free | Free | No |
 | Graph View | Planned | No | Yes | Yes | Yes | No |
 | Mobile Apps | Planned | Yes | Yes | Yes | Yes | Yes |
 | Task Management | Native | Native | Plugin | Plugin | Native | Plugin |
@@ -385,11 +409,13 @@ We believe in building fewer features well rather than everything poorly. If a f
 ## The Skelenote Difference
 
 Most tools in this space make you choose:
+
 - **Privacy OR features** (encrypted notepads are basic; full-featured tools are cloud-based)
 - **Ownership OR convenience** (self-hosted is powerful but complex; cloud is easy but rented)
 - **Structure OR flexibility** (opinionated systems are rigid; blank canvases are overwhelming)
 
 Skelenote refuses these trade-offs:
+
 - **Privacy AND features:** Full encryption with a complete productivity system
 - **Ownership AND convenience:** Local-first with zero-configuration P2P sync
 - **Structure AND flexibility:** PARA defaults you can rearrange

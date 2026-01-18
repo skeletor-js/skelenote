@@ -162,7 +162,7 @@ export function ShowPairingCodeModal({
                 style={{ margin: 0 }}
               >
                 <li>Open Skelenote</li>
-                <li>Go to Settings → Sync → Local Sync</li>
+                <li>Go to Settings → Sync → Hearth</li>
                 <li>Tap "Pair New Device"</li>
                 <li>Scan this code</li>
               </Text>

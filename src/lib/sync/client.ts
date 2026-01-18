@@ -6,7 +6,7 @@
  * offline queuing, automatic reconnection, and E2E encryption.
  */
 
-import { OfflineQueue } from './queue';
+import { PersistentOfflineQueue } from './persistent-queue';
 import { ConnectionManager } from './connection';
 import {
   MessageType,
@@ -39,7 +39,8 @@ const PING_INTERVAL = 30000; // 30 seconds
 
 export class SyncClient {
   private ws: WebSocket | null = null;
-  private queue: OfflineQueue;
+  private queue: PersistentOfflineQueue;
+  private queueReady: Promise<void>;
   private connectionManager: ConnectionManager;
   private config: SyncConfig;
   private status: ConnectionStatus = 'disconnected';
@@ -71,8 +72,19 @@ export class SyncClient {
 
   constructor(config: SyncConfig) {
     this.config = config;
-    this.queue = new OfflineQueue();
+    this.queue = new PersistentOfflineQueue();
+    this.queueReady = this.queue.initialize().catch((err) => {
+      console.error('[SyncClient] Failed to initialize queue:', err);
+    });
     this.connectionManager = new ConnectionManager();
+  }
+
+  /**
+   * Wait for the client to be fully initialized (queue ready).
+   * Call this before using the client in tests or when initialization timing matters.
+   */
+  async waitForReady(): Promise<void> {
+    await this.queueReady;
   }
 
   /**
@@ -150,6 +162,9 @@ export class SyncClient {
       this.ws = null;
     }
 
+    // Close the queue connection to allow database deletion in tests
+    this.queue.close();
+
     this.setStatus('disconnected');
   }
 
@@ -157,8 +172,12 @@ export class SyncClient {
    * Send a Loro update to other connected devices
    *
    * If encryption is enabled, the update is encrypted before sending.
+   * If offline, the update is queued persistently for later sync.
    */
   async sendUpdate(update: Uint8Array): Promise<void> {
+    // Ensure queue is ready before any operations
+    await this.queueReady;
+
     let payload = update;
 
     // Encrypt if encryption is enabled
@@ -177,7 +196,8 @@ export class SyncClient {
       this.ws.send(message);
     } else {
       // Queue the (possibly encrypted) update for when we reconnect
-      this.queue.enqueue(payload);
+      // Queue is now persistent - survives app restarts
+      await this.queue.enqueue(payload);
     }
   }
 
@@ -444,7 +464,10 @@ export class SyncClient {
       }
 
       this.setStatus('connected');
-      this.flushQueue();
+      // Flush queue asynchronously (fire and forget with error handling)
+      this.flushQueue().catch((err) => {
+        console.error('[SyncClient] Error flushing queue:', err);
+      });
     } catch (err) {
       console.error('[SyncClient] Error handling ACK:', err);
     }
@@ -597,19 +620,31 @@ export class SyncClient {
   /**
    * Flush queued updates to the server
    */
-  private flushQueue(): void {
+  private async flushQueue(): Promise<void> {
+    // Ensure queue is ready
+    await this.queueReady;
+
     if (this.queue.isEmpty) {
       return;
     }
 
     this.setStatus('syncing');
 
-    while (!this.queue.isEmpty) {
-      const update = this.queue.dequeue();
-      if (update && this.ws?.readyState === WebSocket.OPEN) {
+    // Use flushAll for atomic batch operation
+    const updates = await this.queue.flushAll();
+
+    for (const update of updates) {
+      if (this.ws?.readyState === WebSocket.OPEN) {
         // Queue already contains encrypted data if encryption was enabled when queued
         const message = encodeMessage(MessageType.UPDATE, update.data);
         this.ws.send(message);
+      } else {
+        // Connection dropped mid-flush, re-queue remaining updates
+        const remainingIndex = updates.indexOf(update);
+        for (let i = remainingIndex; i < updates.length; i++) {
+          await this.queue.enqueue(updates[i].data);
+        }
+        break;
       }
     }
 

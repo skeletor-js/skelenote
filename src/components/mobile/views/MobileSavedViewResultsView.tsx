@@ -4,17 +4,8 @@
  */
 
 import { useMemo, useCallback } from 'react';
-import {
-  Stack,
-  Text,
-  Box,
-  Center,
-  Loader,
-  Badge,
-  Group,
-  UnstyledButton,
-} from '@mantine/core';
-import { ChevronRight } from 'lucide-react';
+import { Stack, Text, Box, Center, Loader, Badge, Group } from '@mantine/core';
+import { ChevronRight, Clipboard } from 'lucide-react';
 import { useNavigation, useObjects, useTypeRegistry } from '@/contexts';
 import { useSavedViews } from '@/hooks';
 import { executeQuery, type FilterCondition } from '@/lib/loro';
@@ -134,18 +125,6 @@ export function MobileSavedViewResultsView() {
     [getTypeDef]
   );
 
-  // Render icon - either as Lucide icon name or emoji fallback
-  const renderViewIcon = (icon: string | undefined) => {
-    const iconValue = icon || 'clipboard';
-    if (/^[a-z-]+$/.test(iconValue)) {
-      // It's likely a Lucide icon name
-      // We need to render it as a component, but Icon utility handles mapping
-      // Here we just pass the name
-      return iconValue;
-    }
-    return iconValue; // Emoji
-  };
-
   if (isLoading) {
     return (
       <Stack gap={0} h="100%">
@@ -219,7 +198,7 @@ export function MobileSavedViewResultsView() {
         <Box style={{ minHeight: '100%' }}>
           {filteredObjects.length === 0 ? (
             <EmptyState
-              icon={renderViewIcon(view.icon)}
+              icon={Clipboard}
               title="No matching items"
               description="No items match this view's filters."
             />

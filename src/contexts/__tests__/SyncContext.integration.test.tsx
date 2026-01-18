@@ -10,9 +10,9 @@
  * - Error handling and reconnection
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { SyncProvider, useSyncContext } from '../SyncContext';
-import { ObjectProvider, useObjects } from '../ObjectContext';
+import { ObjectProvider } from '../ObjectContext';
 import { ToastProvider } from '../ToastContext';
 import { LoroDoc } from 'loro-crdt';
 import type { ReactNode } from 'react';
@@ -57,8 +57,8 @@ vi.mock('@/lib/crypto', () => ({
 
 // Mock sync config functions
 let mockSavedUrl: string | null = null;
-let mockUserId = 'test-user-id';
-let mockDeviceId = 'test-device-id';
+const mockUserId = 'test-user-id';
+const mockDeviceId = 'test-device-id';
 
 vi.mock('@/lib/sync', async (importOriginal) => {
   const original = await importOriginal<any>();

@@ -6,7 +6,7 @@
 import { bench, describe, beforeAll } from 'vitest';
 import { LoroDoc } from 'loro-crdt';
 import { ObjectStore } from '@/lib/loro/objects';
-import { registerBuiltInTypes, BuiltInTypeIds } from '@/lib/types';
+import { createTypeRegistry, builtInTypes, BuiltInTypeIds } from '@/lib/types';
 
 // Generate objects for sync testing
 function createTestStore(objectCount: number): {
@@ -14,8 +14,8 @@ function createTestStore(objectCount: number): {
   store: ObjectStore;
 } {
   const doc = new LoroDoc();
-  const store = new ObjectStore(doc);
-  registerBuiltInTypes(store);
+  const typeRegistry = createTypeRegistry(builtInTypes);
+  const store = new ObjectStore(doc, typeRegistry);
 
   for (let i = 0; i < objectCount; i++) {
     store.create({
@@ -101,10 +101,10 @@ describe('CRDT Merge Performance', () => {
       const doc1 = new LoroDoc();
       const doc2 = new LoroDoc();
 
-      const store1 = new ObjectStore(doc1);
-      const store2 = new ObjectStore(doc2);
-      registerBuiltInTypes(store1);
-      registerBuiltInTypes(store2);
+      const typeRegistry1 = createTypeRegistry(builtInTypes);
+      const typeRegistry2 = createTypeRegistry(builtInTypes);
+      const store1 = new ObjectStore(doc1, typeRegistry1);
+      const store2 = new ObjectStore(doc2, typeRegistry2);
 
       // Each creates 50 objects
       for (let i = 0; i < 50; i++) {
@@ -133,8 +133,8 @@ describe('Incremental Sync', () => {
     'export updates only',
     () => {
       const doc = new LoroDoc();
-      const store = new ObjectStore(doc);
-      registerBuiltInTypes(store);
+      const typeRegistry = createTypeRegistry(builtInTypes);
+      const store = new ObjectStore(doc, typeRegistry);
 
       // Initial state
       for (let i = 0; i < 100; i++) {
@@ -156,7 +156,7 @@ describe('Incremental Sync', () => {
       }
 
       // Export only the changes
-      doc.export({ mode: 'updates', from: versionBefore });
+      doc.export({ mode: 'update', from: versionBefore });
     },
     { iterations: 10 }
   );

@@ -15,7 +15,8 @@
  * Uses two simulated clients with a mock relay server.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { LoroDoc } from 'loro-crdt';
+import 'fake-indexeddb/auto';
+import { PersistentOfflineQueue } from '../persistent-queue';
 import { LoroDocStore } from '../../loro/store';
 import { SyncClient } from '../client';
 import {
@@ -96,7 +97,10 @@ class MockWebSocket {
     if (this.readyState !== MockWebSocket.OPEN) return;
     const buffer =
       data instanceof Uint8Array
-        ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)
+        ? (data.buffer.slice(
+            data.byteOffset,
+            data.byteOffset + data.byteLength
+          ) as ArrayBuffer)
         : data;
     MockWebSocket.server?.onMessage(this, buffer);
   }
@@ -205,10 +209,12 @@ describe('End-to-End Sync Integration', () => {
     (global as any).WebSocket = MockWebSocket;
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     vi.useRealTimers();
     server.reset();
     MockWebSocket.instances = [];
+    // Clean up IndexedDB
+    await PersistentOfflineQueue.deleteDatabase();
   });
 
   describe('two-client sync', () => {
@@ -223,17 +229,23 @@ describe('End-to-End Sync Integration', () => {
       const docB = storeB.createDocument('main');
 
       // 2. Create two SyncClient instances
+      // Temporarily use real timers for IndexedDB initialization
+      vi.useRealTimers();
       const clientA = new SyncClient({
         serverUrl: 'ws://localhost:1234',
         deviceId: 'device-a',
         userId: 'user-1',
       });
+      await clientA.waitForReady();
 
       const clientB = new SyncClient({
         serverUrl: 'ws://localhost:1234',
         deviceId: 'device-b',
         userId: 'user-1',
       });
+      await clientB.waitForReady();
+      // Re-enable fake timers for WebSocket simulation
+      vi.useFakeTimers();
 
       // Wire up update handlers
       clientB.onUpdate((update) => {
@@ -555,6 +567,9 @@ describe('End-to-End Sync Integration', () => {
     });
 
     it('queues local changes while offline and syncs when reconnected', async () => {
+      // Switch to real timers for SyncClient initialization and IndexedDB
+      vi.useRealTimers();
+
       const storeA = new LoroDocStore();
       await storeA.initialize();
       const docA = storeA.createDocument('main');
@@ -564,6 +579,7 @@ describe('End-to-End Sync Integration', () => {
         deviceId: 'device-a',
         userId: 'user-1',
       });
+      await clientA.waitForReady();
 
       // Queue changes before connecting
       docA
@@ -582,15 +598,22 @@ describe('End-to-End Sync Integration', () => {
       // Should be queued (client not connected)
       expect(clientA.getPendingCount()).toBe(1);
 
-      // Connect
+      // Connect (using real timers)
       clientA.connect();
-      await vi.advanceTimersByTimeAsync(100);
+      // Wait for WebSocket to open
+      await new Promise((r) => setTimeout(r, 50));
 
-      // After connection, queue should be flushed
-      expect(clientA.getPendingCount()).toBe(0);
+      // Wait for queue to be flushed after ACK
+      await vi.waitFor(() => {
+        expect(clientA.getPendingCount()).toBe(0);
+      });
+
       expect(server.messageHistory.length).toBe(1);
 
       clientA.disconnect();
+
+      // Restore fake timers for other tests
+      vi.useFakeTimers();
     });
   });
 

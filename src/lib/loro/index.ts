@@ -48,6 +48,9 @@ export {
   createRelationHelper,
 } from './relations';
 
+// Backlink Index
+export { BacklinkIndex, createBacklinkIndex } from './backlink-index';
+
 // Queries
 export type {
   SortDirection,

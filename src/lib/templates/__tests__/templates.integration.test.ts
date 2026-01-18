@@ -29,7 +29,7 @@ import {
   getDailyNoteTemplateId,
   TEMPLATE_TYPE_ID,
 } from '../manager';
-import type { Template, CreateTemplateInput } from '../types';
+import type { CreateTemplateInput } from '../types';
 
 describe('Template Integration Tests', () => {
   let doc: LoroDoc;

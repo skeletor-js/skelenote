@@ -213,7 +213,8 @@ function TypeBrowseViewRouter() {
  * Uses lazy-loaded mobile views with skeleton fallbacks
  */
 function MobilePrimaryContent() {
-  const { currentView, selectedObjectId, navigateToView } = useNavigation();
+  const { currentView, selectedObjectId, navigateToView, activeSavedViewId } =
+    useNavigation();
   const { isLoading, error } = useObjects();
 
   if (isLoading) {

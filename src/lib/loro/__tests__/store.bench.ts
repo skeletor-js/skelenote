@@ -5,8 +5,13 @@
  */
 import { bench, describe, beforeAll } from 'vitest';
 import { LoroDoc } from 'loro-crdt';
-import { ObjectStore, type CreateObjectInput } from '../objects';
-import { registerBuiltInTypes, BuiltInTypeIds } from '@/lib/types';
+import { ObjectStore } from '../objects';
+import {
+  createTypeRegistry,
+  builtInTypes,
+  BuiltInTypeIds,
+  type CreateObjectInput,
+} from '@/lib/types';
 
 // Test fixtures
 function createMockObject(i: number): CreateObjectInput {
@@ -36,8 +41,8 @@ describe('ObjectStore Performance', () => {
 
   beforeAll(() => {
     const doc = new LoroDoc();
-    store = new ObjectStore(doc);
-    registerBuiltInTypes(store);
+    const typeRegistry = createTypeRegistry(builtInTypes);
+    store = new ObjectStore(doc, typeRegistry);
   });
 
   // Benchmark: Create single objects
@@ -56,8 +61,8 @@ describe('ObjectStore Stress Tests', () => {
     'create 100 objects',
     () => {
       const doc = new LoroDoc();
-      const testStore = new ObjectStore(doc);
-      registerBuiltInTypes(testStore);
+      const typeRegistry = createTypeRegistry(builtInTypes);
+      const testStore = new ObjectStore(doc, typeRegistry);
 
       for (let i = 0; i < 100; i++) {
         testStore.create(createMockObject(i));
@@ -70,8 +75,8 @@ describe('ObjectStore Stress Tests', () => {
     'create 500 objects',
     () => {
       const doc = new LoroDoc();
-      const testStore = new ObjectStore(doc);
-      registerBuiltInTypes(testStore);
+      const typeRegistry = createTypeRegistry(builtInTypes);
+      const testStore = new ObjectStore(doc, typeRegistry);
 
       for (let i = 0; i < 500; i++) {
         testStore.create(createMockObject(i));
@@ -84,8 +89,8 @@ describe('ObjectStore Stress Tests', () => {
     'create 1000 objects',
     () => {
       const doc = new LoroDoc();
-      const testStore = new ObjectStore(doc);
-      registerBuiltInTypes(testStore);
+      const typeRegistry = createTypeRegistry(builtInTypes);
+      const testStore = new ObjectStore(doc, typeRegistry);
 
       for (let i = 0; i < 1000; i++) {
         testStore.create(createMockObject(i));
@@ -103,10 +108,10 @@ describe('Loro CRDT Merge Performance', () => {
       const doc1 = new LoroDoc();
       const doc2 = new LoroDoc();
 
-      const store1 = new ObjectStore(doc1);
-      const store2 = new ObjectStore(doc2);
-      registerBuiltInTypes(store1);
-      registerBuiltInTypes(store2);
+      const typeRegistry1 = createTypeRegistry(builtInTypes);
+      const typeRegistry2 = createTypeRegistry(builtInTypes);
+      const store1 = new ObjectStore(doc1, typeRegistry1);
+      const store2 = new ObjectStore(doc2, typeRegistry2);
 
       // Add objects to each
       for (let i = 0; i < 100; i++) {
@@ -127,10 +132,10 @@ describe('Loro CRDT Merge Performance', () => {
       const doc1 = new LoroDoc();
       const doc2 = new LoroDoc();
 
-      const store1 = new ObjectStore(doc1);
-      const store2 = new ObjectStore(doc2);
-      registerBuiltInTypes(store1);
-      registerBuiltInTypes(store2);
+      const typeRegistry1 = createTypeRegistry(builtInTypes);
+      const typeRegistry2 = createTypeRegistry(builtInTypes);
+      const store1 = new ObjectStore(doc1, typeRegistry1);
+      const store2 = new ObjectStore(doc2, typeRegistry2);
 
       for (let i = 0; i < 500; i++) {
         store1.create(createMockObject(i));
@@ -149,8 +154,8 @@ describe('ObjectStore Query Performance', () => {
 
   beforeAll(() => {
     const doc = new LoroDoc();
-    queryStore = new ObjectStore(doc);
-    registerBuiltInTypes(queryStore);
+    const typeRegistry = createTypeRegistry(builtInTypes);
+    queryStore = new ObjectStore(doc, typeRegistry);
 
     // Pre-populate with 500 objects
     for (let i = 0; i < 250; i++) {

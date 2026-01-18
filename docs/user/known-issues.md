@@ -1,8 +1,6 @@
 # Known Issues
 
-This document tracks known bugs and limitations in the current alpha release. Check here before reporting an issue.
-
-**Current Version**: 0.2.0
+This document tracks known bugs and limitations. Check here before reporting an issue.
 
 ---
 
@@ -18,19 +16,19 @@ This document tracks known bugs and limitations in the current alpha release. Ch
 
 | Issue | Status | Workaround |
 |-------|--------|------------|
-| App shows "unidentified developer" warning | Expected | Right-click > Open (see [Alpha README](./README.md)) |
+| *No issues currently documented* | | |
 
 ### Windows
 
 | Issue | Status | Workaround |
 |-------|--------|------------|
-| SmartScreen blocks app | Expected | Click "More info" > "Run anyway" |
+| *No issues currently documented* | | |
 
 ### Linux
 
 | Issue | Status | Workaround |
 |-------|--------|------------|
-| AppImage requires executable permission | Expected | Run `chmod +x Skelenote_*.AppImage` |
+| AppImage requires executable permission | Expected | Run `chmod +x Skelenote_*.AppImage` or use native packages |
 
 ---
 

@@ -419,7 +419,7 @@ export function MobileSettingsView() {
           <SettingSection title="Search">
             <SettingRow
               icon={Search}
-              label="Semantic Search"
+              label="Lantern"
               value={
                 semanticSearch?.isEnabled
                   ? semanticSearch?.status === 'ready'

@@ -6,37 +6,19 @@ Try these fixes before reporting a bug. If the issue persists, [file a bug repor
 
 ## App Won't Launch
 
-### macOS: "App is damaged" or "unidentified developer"
+### macOS: App won't open
 
-The app is unsigned during alpha. To bypass Gatekeeper:
+If the app fails to launch, try reinstalling from the `.dmg` file. Ensure you're running macOS 11 (Big Sur) or later.
 
-1. Right-click (or Control-click) the app in Finder
-2. Select **Open** from the context menu
-3. Click **Open** in the confirmation dialog
+### Windows: App won't start
 
-You only need to do this once. macOS will remember your choice.
+Ensure you have the latest Visual C++ Redistributable installed. Reinstall from the official installer if issues persist.
 
-If that doesn't work:
+### Linux: Missing dependencies
 
-```bash
-xattr -cr /Applications/Skelenote.app
-```
+Native packages (`.deb`, `.rpm`) are recommended and include dependencies.
 
-### Windows: SmartScreen blocks the app
-
-1. Click **More info** on the SmartScreen warning
-2. Click **Run anyway**
-
-### Linux: AppImage won't run
-
-Make it executable:
-
-```bash
-chmod +x Skelenote_*.AppImage
-./Skelenote_*.AppImage
-```
-
-If you see library errors, install dependencies:
+For AppImage, install required libraries:
 
 ```bash
 # Ubuntu/Debian
@@ -44,6 +26,13 @@ sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0
 
 # Fedora
 sudo dnf install webkit2gtk4.1 gtk3
+```
+
+Make the AppImage executable:
+
+```bash
+chmod +x Skelenote_*.AppImage
+./Skelenote_*.AppImage
 ```
 
 ---

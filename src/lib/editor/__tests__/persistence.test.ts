@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import * as persistence from '../persistence';
 
+type TestBlocks = Parameters<typeof persistence.serializeBlockNoteDocument>[0];
+
 describe('Editor Persistence', () => {
   describe('serializeBlockNoteDocument', () => {
     it('should stringify blocks', () => {
-      const blocks = [{ type: 'paragraph' }];
+      const blocks: TestBlocks = [{ type: 'paragraph' }];
       expect(persistence.serializeBlockNoteDocument(blocks)).toBe(
         '[{"type":"paragraph"}]'
       );
@@ -55,7 +57,11 @@ describe('Editor Persistence', () => {
         },
       ]);
       const result = persistence.deserializeBlockNoteDocument(json);
-      const mention = result![0].content[0];
+      const content = result![0].content as unknown as Array<{
+        type: string;
+        props: { objectTypeId: string };
+      }>;
+      const mention = content[0];
       expect(mention.props.objectTypeId).toBe('built-in:note');
     });
   });

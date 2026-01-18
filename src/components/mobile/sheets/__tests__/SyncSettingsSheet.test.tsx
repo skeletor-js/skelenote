@@ -106,10 +106,10 @@ describe('SyncSettingsSheet', () => {
     expect(connectedBadges.length).toBe(2);
   });
 
-  it('should show local network sync section', () => {
+  it('should show Hearth (local sync) section', () => {
     renderWithProvider(<SyncSettingsSheet {...defaultProps} />);
 
-    expect(screen.getByText('Local Network Sync')).toBeDefined();
+    expect(screen.getByText('Hearth')).toBeDefined();
   });
 
   it('should show peers count when local sync is enabled', () => {

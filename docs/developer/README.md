@@ -2,7 +2,81 @@
 
 Technical reference for Skelenote contributors.
 
-## Tech Stack
+## Quick Start
+
+Ship your first PR in 30 minutes.
+
+### 1. Environment Setup
+
+**Prerequisites**:
+
+- **Node.js** 18+
+- **Rust** (latest stable) - [Install Rust](https://rustup.rs/)
+- **pnpm** (recommended) or npm/yarn
+
+**Platform Specifics**:
+
+- **macOS**: `xcode-select --install`
+- **Windows**: [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
+- **Linux**: `sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libssl-dev libayatana-appindicator3-dev librsvg2-dev`
+- **Mobile**: Xcode 15+ (iOS), Android Studio (Android) - see [Mobile Development](mobile-development.md)
+
+### 2. Clone & Install
+
+```bash
+git clone https://github.com/skeletor-js/skelenote.git
+cd skelenote
+pnpm install
+```
+
+### 3. Run the App
+
+```bash
+pnpm tauri dev              # Desktop app with hot reload
+# OR
+pnpm tauri ios dev          # iOS simulator
+pnpm tauri android dev      # Android emulator
+```
+
+The desktop app window should open in ~30 seconds.
+**Note**: Rust changes require restarting the dev server. React changes hot reload instantly.
+
+### 4. Make a Change
+
+**Example: Add a Keyboard Shortcut**
+Edit `src/contexts/KeyboardShortcutsContext.tsx`:
+
+```typescript
+{
+  key: 'd',
+  modifiers: ['meta', 'shift'],
+  action: () => console.log('Debug mode toggled!'),
+  description: 'Toggle debug mode',
+}
+```
+
+**Example: Add a Tauri Command**
+
+1. **Rust**: Add function in `src-tauri/src/lib.rs` and register in `invoke_handler`.
+2. **Frontend**: Call it with `invoke('my_command', { ... })`.
+
+### 5. Test & Submit
+
+Before pushing, ensure these pass:
+
+```bash
+pnpm lint                    # ESLint
+pnpm exec tsc --noEmit       # TypeScript
+pnpm test:run                # Vitest
+```
+
+Then create a PR using the template.
+
+---
+
+## Project Overview
+
+### Tech Stack
 
 | Layer | Technology |
 | ----- | ---------- |
@@ -15,47 +89,7 @@ Technical reference for Skelenote contributors.
 | Encryption | XChaCha20-Poly1305, BIP39 |
 | P2P Sync | mDNS/Bonjour + Direct TCP |
 
-## Getting Started
-
-### Prerequisites
-
-- **Node.js** 18+
-- **Rust** (latest stable) - [Install Rust](https://rustup.rs/)
-- **pnpm** (recommended) or npm/yarn
-- Platform-specific dependencies (see [CONTRIBUTING.md](../../CONTRIBUTING.md#platform-specific-dependencies))
-
-**For mobile development:**
-
-- **iOS**: Xcode 15+, iOS Simulator
-- **Android**: Android Studio, Android SDK
-
-### Clone & Install
-
-```bash
-git clone https://github.com/skeletor-js/skelenote.git
-cd skelenote
-pnpm install
-```
-
-### Development
-
-```bash
-pnpm tauri dev              # Desktop app with hot reload
-pnpm tauri ios dev          # iOS simulator
-pnpm tauri android dev      # Android emulator
-```
-
-### Build
-
-```bash
-pnpm tauri build            # Desktop production binaries
-pnpm tauri ios build        # iOS release
-pnpm tauri android build    # Android release
-```
-
-Produces platform-specific binaries in `src-tauri/target/release/bundle/`.
-
-## Project Structure
+### Project Structure
 
 ```
 skelenote/
@@ -68,10 +102,8 @@ skelenote/
 │   │   ├── sync/           # P2P sync client
 │   │   ├── crypto/         # Encryption wrapper
 │   │   ├── export/         # Export formats (MD, HTML, JSON, PDF)
-│   │   ├── import/         # Notion, Obsidian importers
-│   │   ├── semantic/       # ML-powered search
 │   │   └── ...             # See AGENTS.md for full list
-│   └── styles/             # CSS
+│   └── styles/             # Global CSS
 ├── src-tauri/              # Rust backend
 │   ├── src/
 │   │   ├── crypto/         # BIP39, HKDF, XChaCha20-Poly1305
@@ -81,35 +113,35 @@ skelenote/
 └── docs/                   # Documentation
 ```
 
+## Key Conventions
+
+### Code Style
+
+- **Path aliases**: Use `@/` (e.g., `import { useObjects } from '@/contexts'`).
+- **UI**: Use [Mantine](https://mantine.dev/) components, not raw HTML.
+- **Icons**: Use `lucide-react`.
+- **Design**: See [Style Guide](../design/style-guide.md).
+
 ## Testing
 
 ```bash
 pnpm test                   # Run tests (watch mode)
 pnpm test:run               # Run tests once (CI mode)
-pnpm test:ui                # Vitest UI
 pnpm bench                  # Run benchmarks
 ```
 
-**Rust tests:**
+**Rust tests:** `cd src-tauri && cargo test`
 
-```bash
-cd src-tauri
-cargo test                  # Run Rust tests
-cargo tarpaulin             # Coverage report
-```
+See [testing.md](testing.md) for the comprehensive testing guide.
 
-See [testing.md](testing.md) for comprehensive testing guide.
-
-## Documentation
+## Documentation Index
 
 | Guide | Description |
 | ----- | ----------- |
-| [Quick Start](QUICK_START.md) | Ship your first PR in 30 minutes |
 | [Architecture](architecture.md) | System design and data flow |
 | [Tauri API](tauri-api.md) | Rust command reference |
 | [CI/CD Pipeline](ci-cd.md) | GitHub Actions and releases |
 | [Testing](testing.md) | Testing guide and benchmarks |
 | [Mobile Development](mobile-development.md) | iOS/Android setup |
 | [AGENTS.md](../../AGENTS.md) | Development patterns and gotchas |
-| [CONTRIBUTING.md](../../CONTRIBUTING.md) | Setup and contribution workflow |
-| [Style Guide](../design/style-guide.md) | UI components and design system |
+| [CONTRIBUTING.md](../../CONTRIBUTING.md) | Workflow details |

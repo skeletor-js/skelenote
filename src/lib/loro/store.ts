@@ -189,7 +189,9 @@ export class LoroDocStore {
         this.syncDebounceTimer = null;
         if (this.syncClient && this.isSyncConnected() && !this.isImporting) {
           const data = this.exportAll();
-          this.syncClient.sendUpdate(data);
+          this.syncClient.sendUpdate(data).catch((err) => {
+            console.warn('[LoroDocStore] Cloud sync update failed:', err);
+          });
         }
       }, 100);
     }
@@ -399,7 +401,9 @@ export class LoroDocStore {
    */
   sendUpdate(update: Uint8Array): void {
     if (this.syncClient && !this.isImporting) {
-      this.syncClient.sendUpdate(update);
+      this.syncClient.sendUpdate(update).catch((err) => {
+        console.warn('[LoroDocStore] Send update failed:', err);
+      });
     }
   }
 

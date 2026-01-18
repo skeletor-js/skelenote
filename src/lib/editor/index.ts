@@ -12,3 +12,12 @@ export {
   isMentionClipboardText,
   type MentionClipboardData,
 } from './mention-clipboard';
+
+// Editor content adapter (abstracts BlockNote JSON structure)
+export {
+  blockNoteAdapter,
+  extractMentionsFromContent,
+  extractPlainTextFromContent,
+  type EditorContentAdapter,
+  type ContentMention,
+} from './adapter';

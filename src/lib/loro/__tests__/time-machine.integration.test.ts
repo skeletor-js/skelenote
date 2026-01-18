@@ -239,6 +239,7 @@ describe('Time Machine Integration', () => {
         const affected = getAffectedObjectIds(doc, null, point.frontier);
         // Note: With cumulative frontiers this may include more,
         // but target should be present at some point
+        expect(affected).toBeDefined();
       }
     });
 

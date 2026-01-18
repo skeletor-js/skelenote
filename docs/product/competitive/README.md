@@ -19,7 +19,7 @@ Notesnook is Skelenote's most direct competitor: both use XChaCha20-Poly1305 enc
 | Aspect | Skelenote | Notesnook |
 |--------|-----------|-----------|
 | **Sync** | CRDT + P2P first | Server-based |
-| **Pricing** | One-time $19.99 | Subscription $2-9/mo |
+| **Pricing** | Free (optional $8/mo cloud) | Subscription $2-9/mo |
 | **Focus** | Productivity system | Note-taking app |
 | **Tasks** | First-class objects | Checklists only |
 | **Mobile** | Planned (v0.3) | Available |
@@ -33,6 +33,7 @@ Notesnook is Skelenote's most direct competitor: both use XChaCha20-Poly1305 enc
 | [Competitive Landscape](competitive-landscape.md) | Comprehensive overview of 20+ tools across privacy, sync, and pricing |
 
 Categories covered:
+
 - **Cloud Landlords** — Notion, Roam, Tana, Capacities, Mem, Craft, Heptabase
 - **Sovereignty Tools** — Obsidian, Logseq, Anytype, Joplin, Standard Notes, SiYuan
 
@@ -44,7 +45,7 @@ Categories covered:
 2. **P2P Sync (Campfire)** — Sync without servers, on local network
 3. **Native Task Management** — First-class tasks with status, priority, recurrence
 4. **PARA Structure** — Built-in methodology, not just blank pages
-5. **One-Time Pricing** — No subscriptions, own your software
+5. **Free Core App** — No subscriptions, own your software. Optional cloud relay only expenses.
 6. **Local AI** — All AI runs on-device, zero cloud dependency (v0.4)
 
 ## Key Gaps (Being Addressed)

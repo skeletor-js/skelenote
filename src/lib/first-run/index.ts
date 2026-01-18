@@ -4,6 +4,7 @@
  * Handles detection of first app launch and creates welcome content.
  */
 
+import type { PartialBlock } from '@blocknote/core';
 import type { ObjectStore } from '@/lib/loro';
 import { serializeBlockNoteDocument } from '@/lib/editor';
 import { getWelcomeNoteBlocks } from './welcome-content';
@@ -45,7 +46,10 @@ export function createWelcomeNote(
   });
 
   // Set the welcome content with link to daily note
-  const blocks = getWelcomeNoteBlocks(dailyNoteId, dailyNoteName);
+  const blocks = getWelcomeNoteBlocks(
+    dailyNoteId,
+    dailyNoteName
+  ) as PartialBlock[];
   const content = serializeBlockNoteDocument(blocks);
   store.setContent(welcomeNote.id, content);
 

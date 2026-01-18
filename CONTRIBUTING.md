@@ -13,7 +13,7 @@ We're in alpha and actively seeking testers. This is one of the most valuable co
 3. **Request features** - [Request a feature](https://linear.app/skeletorjs/team/skelenote) with your ideas
 4. **Join Discord** - Chat with other testers and provide real-time feedback
 
-See the [Alpha Tester Guide](docs/user/alpha/README.md) for detailed instructions.
+See the [Getting Started Guide](docs/user/getting-started.md) for detailed instructions.
 
 ### Code Contributions
 
@@ -126,7 +126,7 @@ Produces platform-specific binaries in `src-tauri/target/release/bundle/`.
 
 ### Design System
 
-Before making UI changes, review `docs/design/style-guide.md`. Key principles:
+Before making UI changes, review `docs/product/design/style-guide.md`. Key principles:
 
 - Light and Dark modes (warm palette: ember, clay, sage, ochre, brick, slate)
 - No emojis in the interface

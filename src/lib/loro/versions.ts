@@ -291,7 +291,7 @@ function formatDateKey(date: Date): string {
  * @param peerId - Loro peer ID
  * @returns Device info object
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 export function resolveDeviceInfo(peerId: string): {
   deviceId?: string;
   deviceName?: string;
