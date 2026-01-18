@@ -1,59 +1,69 @@
-# Skelenote Documentation
+# Welcome to Skelenote
 
-All documentation for Skelenote, organized by audience.
+**The Permanent Operating System for Your Mind**
 
----
-
-## 📚 For Users
-
-**Start Here:**
-
-- [Getting Started](user/getting-started.md) — Installation, first steps, and core concepts
-- [Troubleshooting](user/troubleshooting.md) — Common fixes
-- [Known Issues](user/known-issues.md) — Current alpha limitations
-
-**Guides:**
-
-- [Keyboard Shortcuts](user/guides/keyboard-shortcuts.md)
-- [Campfire Sync](user/guides/campfire-guide.md) — Local P2P sync
-- [Cloud Sync](user/guides/cloud-sync-guide.md) — Relay server setup
-- [Export & Import](user/guides/export-import.md)
-- [Data Safety](user/guides/data-safety.md) — Backups and recovery
-
-**About:**
-
-- [Philosophy & Manifesto](user/about/philosophy-manifesto.md)
-- [Security & Privacy](user/about/security-privacy.md)
-- [Ownership & Pricing](user/about/ownership-pricing.md)
+Skelenote is a local-first, zero-knowledge note-taking app. Your vault lives on your device, encrypted with keys only you control.
 
 ---
 
-## 🛠️ For Developers
+## Core Principles
 
-**Start Here:**
-
-- [Developer README](developer/README.md) — Quick start, tech stack, and setup
-
-**References:**
-
-- [Architecture](developer/architecture.md)
-- [Tauri API](developer/tauri-api.md)
-- [CI/CD Pipeline](developer/ci-cd.md)
-- [Testing Guide](developer/testing.md)
-- [Mobile Development](developer/mobile-development.md)
+- **Local. Encrypted. Yours.** — Your data never leaves your device unencrypted
+- **Zero-Knowledge Sync** — Even our servers can't read your notes
+- **No Lock-in** — Export everything as Markdown, HTML, JSON, or PDF anytime
+- **Free & Open Source** — Core app is 100% free, cloud sync optional ($8/mo)
 
 ---
 
-## 🧭 Product Strategy
+## Key Features
 
-Internal documentation for planning and design.
-
-- [Product Strategy](product/README.md) *(Moved from planning)*
-- [Competitive Analysis](product/competitive/README.md)
-- [Design System](product/design/style-guide.md)
-- [Brand Bible](product/design/skelenote-brand-bible.md)
-- [Origin Story](user/about/origin.md) (Preserved in User/About)
+| Feature | Description |
+| ------- | ----------- |
+| **Object Graph** | Everything is connected — tasks, notes, projects, people |
+| **Campfire Sync** | Peer-to-peer sync on your local network |
+| **Cloud Relay** | Optional encrypted sync across the internet |
+| **Skeleton Key** | 24-word mnemonic you control |
+| **Rich Editor** | BlockNote-powered with @mentions and backlinks |
+| **Full Export** | Markdown, HTML, JSON, Plain Text, PDF |
+| **Import** | Bring your data from Notion, Obsidian, or Markdown |
 
 ---
 
-*See also: [CONTRIBUTING.md](/CONTRIBUTING.md) for contribution guidelines*
+## Quick Links
+
+### Getting Started
+
+New to Skelenote? Start here:
+
+- [**Getting Started Guide**](user/getting-started.md) — Installation, first steps, and core concepts
+- [**Troubleshooting**](user/troubleshooting.md) — Common fixes for issues you might encounter
+- [**Known Issues**](user/known-issues.md) — Current alpha limitations
+
+### Platform Support
+
+Skelenote runs on **macOS**, **Windows**, **Linux**, **iOS**, and **Android**.
+
+Download from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases) or join [TestFlight for iOS](https://testflight.apple.com/join/skelenote).
+
+---
+
+## Alpha Testing
+
+Skelenote is currently in **alpha**. We're looking for testers to help shape the app.
+
+1. Download from [Releases](https://github.com/skeletor-js/skelenote/releases)
+2. Read the [Getting Started Guide](user/getting-started.md)
+3. Join our [Discord](https://discord.gg/4apsgSRB7D) for discussion
+4. Report bugs via [Linear](https://linear.app/skeletorjs/team/skelenote)
+
+---
+
+## Contributing
+
+Interested in contributing to Skelenote? Check out the [Developer Documentation](developer/README.md) and our [Contributing Guide](https://github.com/skeletor-js/skelenote/blob/main/CONTRIBUTING.md).
+
+---
+
+<p align="center">
+  <strong>Local. Encrypted. Yours.</strong>
+</p>
