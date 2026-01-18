@@ -33,7 +33,7 @@
 | **Contributors** | 43 |
 | **Commits** | 14,585+ |
 | **Founded** | 2020 |
-| **Latest Release** | v3.3.7 (December 2025) |
+| **Latest Release** | v3.3.7 (January 2026) |
 | **Tech Stack** | TypeScript (84.5%), JavaScript (13.6%), React, Electron, React Native |
 
 ### Skelenote
@@ -42,7 +42,7 @@
 |-----------|---------|
 | **GitHub** | [skeletor-js/skelenote](https://github.com/skeletor-js/skelenote) |
 | **License** | Proprietary (alpha) |
-| **Founded** | 2024 |
+| **Founded** | December 2025 |
 | **Stage** | Alpha |
 | **Tech Stack** | TypeScript, React, Tauri 2.0, Rust, Loro CRDT |
 
@@ -326,7 +326,7 @@
 
 Based on [Notesnook's public roadmap](https://notesnook.com/roadmap/):
 
-### In Progress (as of April 2025)
+### In Progress (as of January 2026)
 
 | Feature | Completion | Impact on Skelenote |
 |---------|------------|---------------------|
