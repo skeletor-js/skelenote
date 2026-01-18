@@ -268,10 +268,10 @@ describe('DeviceRegistryStore', () => {
         publicSigningKey: 'key',
       });
 
-      const info = store.getDeviceInfo('device-1', 'online');
+      const info = store.getDeviceInfo('device-1', 'connected');
       expect(info).toBeDefined();
       expect(info?.isCurrentDevice).toBe(true);
-      expect(info?.status).toBe('online');
+      expect(info?.status).toBe('connected');
     });
 
     it('should get device info with default offline status', async () => {
@@ -323,11 +323,11 @@ describe('DeviceRegistryStore', () => {
         })
       );
 
-      const statuses = new Map([['peer-1', 'syncing' as const]]);
+      const statuses = new Map([['peer-1', 'connecting' as const]]);
       const allInfo = store.getAllDeviceInfo(statuses);
 
       const peerInfo = allInfo.find((i) => i.deviceId === 'peer-1');
-      expect(peerInfo?.status).toBe('syncing');
+      expect(peerInfo?.status).toBe('connecting');
     });
 
     it('should return empty array for all device info before initialization', () => {

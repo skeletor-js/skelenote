@@ -130,4 +130,70 @@ describe('Crypto Module', () => {
       expect(await crypto.parseQR('payload')).toBe('mnem');
     });
   });
+  describe('Edge Cases', () => {
+    describe('Non-Tauri Environment', () => {
+      beforeEach(() => {
+        delete (window as any).__TAURI_INTERNALS__;
+      });
+
+      it('should throw or return false/null when not in Tauri', async () => {
+        expect(await crypto.initCrypto()).toBe(false);
+        expect(await crypto.hasKey()).toBe(false);
+        expect(await crypto.validateMnemonic('foo')).toBe(false);
+
+        await expect(crypto.generateKey()).rejects.toThrow(
+          'require Tauri environment'
+        );
+        await expect(crypto.importKey('foo')).rejects.toThrow(
+          'require Tauri environment'
+        );
+        await expect(crypto.encrypt(new Uint8Array([]))).rejects.toThrow(
+          'require Tauri environment'
+        );
+        await expect(crypto.decrypt(new Uint8Array([]))).rejects.toThrow(
+          'require Tauri environment'
+        );
+        await expect(crypto.getDerivedUserId()).rejects.toThrow(
+          'require Tauri environment'
+        );
+        await expect(crypto.clearKey()).rejects.toThrow(
+          'require Tauri environment'
+        );
+        await expect(crypto.generateQR('foo')).rejects.toThrow(
+          'require Tauri environment'
+        );
+        await expect(crypto.parseQR('foo')).rejects.toThrow(
+          'require Tauri environment'
+        );
+      });
+    });
+
+    describe('Invoke Failures', () => {
+      beforeEach(() => {
+        const consoleSpy = vi
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
+        mockInvoke.mockRejectedValue(new Error('Tauri Error'));
+        return () => consoleSpy.mockRestore();
+      });
+
+      it('should handle invoke errors consistently', async () => {
+        await expect(crypto.initCrypto()).rejects.toThrow('Tauri Error');
+        await expect(crypto.importKey('foo')).rejects.toThrow('Tauri Error');
+        await expect(crypto.encrypt(new Uint8Array([]))).rejects.toThrow(
+          'Tauri Error'
+        );
+        await expect(crypto.decrypt(new Uint8Array([]))).rejects.toThrow(
+          'Tauri Error'
+        );
+        await expect(crypto.getDerivedUserId()).rejects.toThrow('Tauri Error');
+        await expect(crypto.clearKey()).rejects.toThrow('Tauri Error');
+        await expect(crypto.generateQR('foo')).rejects.toThrow('Tauri Error');
+        await expect(crypto.parseQR('foo')).rejects.toThrow('Tauri Error');
+
+        // validateMnemonic returns false on error
+        expect(await crypto.validateMnemonic('foo')).toBe(false);
+      });
+    });
+  });
 });

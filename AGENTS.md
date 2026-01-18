@@ -43,8 +43,9 @@ Skelenote uses **Linear** for issue tracking and project management.
 ### Structure
 
 - **Projects**: Maps to releases (e.g., `v0.2 - Exodus`, `v0.35 - Architect`).
-- **Epics**: Modeled as **Parent Issues** containing sub-issues.
-- **Cycles**: 2-week sprints (enable in Linear team settings if using).
+- **Epics**: Modeled as **Parent Issues** containing sub-issues. All "Epic" labeled issues MUST be parents.
+- **Cycles**: Active 2-week sprints to maintain momentum.
+- **Views**: Use shared team views for "Needs Triage" and "My Epics".
 
 ### Key Labels
 

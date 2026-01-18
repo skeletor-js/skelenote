@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MobileDailyNotesView } from '../MobileDailyNotesView';
 import { MantineProvider } from '@mantine/core';
 import React from 'react';
@@ -90,7 +90,7 @@ vi.mock('../../primitives', () => ({
       {rightSection}
     </div>
   ),
-  CollapsibleSection: ({ title, children, defaultOpen }: any) => (
+  CollapsibleSection: ({ title, children }: any) => (
     <div data-testid={`section-${title}`}>
       {title}
       {children}
@@ -99,7 +99,7 @@ vi.mock('../../primitives', () => ({
 }));
 
 vi.mock('../../rows', () => ({
-  MobileTaskRow: ({ task, onPress, onToggleComplete, onArchive }: any) => (
+  MobileTaskRow: ({ task, onPress }: any) => (
     <div data-testid={`task-row-${task.id}`} onClick={onPress}>
       {task.properties.title}
     </div>

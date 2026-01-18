@@ -59,7 +59,6 @@ const renderWithProvider = (ui: React.ReactNode) => {
 describe('SavedViewEditorSheet', () => {
   const mockOnClose = vi.fn();
   const mockOnCreate = vi.fn();
-  const mockOnUpdate = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -92,6 +91,8 @@ describe('SavedViewEditorSheet', () => {
           name: 'My View',
           icon: 'clipboard',
           filters: [],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
         }}
       />
     );
@@ -152,6 +153,8 @@ describe('SavedViewEditorSheet', () => {
           name: 'My View',
           icon: 'clipboard',
           filters: [],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
         }}
       />
     );

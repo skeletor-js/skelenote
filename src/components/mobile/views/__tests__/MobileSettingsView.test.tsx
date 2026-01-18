@@ -1,8 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MobileSettingsView } from '../MobileSettingsView';
 import { MantineProvider } from '@mantine/core';
 import {
@@ -15,7 +15,6 @@ import {
   useSemanticSearchSafe,
 } from '@/contexts';
 import { useBiometric } from '@/hooks';
-import * as exportLib from '@/lib/export';
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {

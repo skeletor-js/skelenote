@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { TemplateSettingsSheet } from '../TemplateSettingsSheet';
 import { MantineProvider } from '@mantine/core';
 

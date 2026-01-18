@@ -1,166 +1,118 @@
 /**
  * @vitest-environment jsdom
  */
-import React from 'react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { ThemeProvider, useTheme } from '../ThemeContext';
 
-// Store for mock localStorage
-let mockStore: Record<string, string> = {};
-
-// Mock localStorage
-const localStorageMock = {
-  getItem: vi.fn((key: string) => mockStore[key] ?? null),
-  setItem: vi.fn((key: string, value: string) => {
-    mockStore[key] = value;
-  }),
-  removeItem: vi.fn((key: string) => {
-    delete mockStore[key];
-  }),
-  clear: vi.fn(() => {
-    mockStore = {};
-  }),
-};
-
-Object.defineProperty(window, 'localStorage', { value: localStorageMock });
-
-// Mock matchMedia - default to light mode preference
-let prefersDark = false;
-const matchMediaMock = vi.fn().mockImplementation((query: string) => ({
-  matches: query === '(prefers-color-scheme: dark)' && prefersDark,
-  media: query,
-  onchange: null,
-  addListener: vi.fn(),
-  removeListener: vi.fn(),
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn(),
-  dispatchEvent: vi.fn(),
-}));
-
-Object.defineProperty(window, 'matchMedia', { value: matchMediaMock });
+const STORAGE_KEY = 'skelenote-theme';
 
 describe('ThemeContext', () => {
-  beforeEach(() => {
-    // Reset storage before each test
-    mockStore = {};
-    prefersDark = false;
-    vi.clearAllMocks();
-    document.documentElement.setAttribute('data-theme', 'light');
-  });
-
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <ThemeProvider>{children}</ThemeProvider>
   );
 
-  it('should throw when used outside provider', () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  beforeEach(() => {
+    localStorage.clear();
+    document.documentElement.removeAttribute('data-theme');
+    vi.clearAllMocks();
 
-    expect(() => {
-      renderHook(() => useTheme());
-    }).toThrow('useTheme must be used within a ThemeProvider');
-
-    spy.mockRestore();
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation((query) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
   });
 
-  it('should initialize with light theme by default', () => {
+  it('should initialize with default light theme (fallback)', () => {
     const { result } = renderHook(() => useTheme(), { wrapper });
-
     expect(result.current.theme).toBe('light');
   });
 
-  it('should load theme from localStorage', () => {
-    mockStore['skelenote-theme'] = 'dark';
-
-    const { result } = renderHook(() => useTheme(), { wrapper });
-
-    expect(result.current.theme).toBe('dark');
-  });
-
-  it('should set theme', () => {
-    const { result } = renderHook(() => useTheme(), { wrapper });
-
-    act(() => {
-      result.current.setTheme('dark');
+  it('should respect system preference for dark mode', () => {
+    // Mock matchMedia
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation((query) => ({
+        matches: query === '(prefers-color-scheme: dark)',
+        media: query,
+        onchange: null,
+        addListener: vi.fn(), // Deprecated
+        removeListener: vi.fn(), // Deprecated
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
     });
 
+    const { result } = renderHook(() => useTheme(), { wrapper });
     expect(result.current.theme).toBe('dark');
   });
 
   it('should toggle theme', () => {
-    // Ensure we start with light theme
-    mockStore = {};
-    prefersDark = false;
-
     const { result } = renderHook(() => useTheme(), { wrapper });
 
-    // Verify initial state
-    expect(result.current.theme).toBe('light');
+    expect(result.current.theme).toBe('light'); // Assuming system mock reset or default
 
     act(() => {
       result.current.toggleTheme();
     });
 
     expect(result.current.theme).toBe('dark');
-
-    act(() => {
-      result.current.toggleTheme();
-    });
-
-    expect(result.current.theme).toBe('light');
-  });
-
-  it('should persist theme to localStorage', () => {
-    const { result } = renderHook(() => useTheme(), { wrapper });
-
-    act(() => {
-      result.current.setTheme('dark');
-    });
-
-    expect(localStorageMock.setItem).toHaveBeenCalledWith(
-      'skelenote-theme',
-      'dark'
-    );
-  });
-
-  it('should apply theme to document', () => {
-    const { result } = renderHook(() => useTheme(), { wrapper });
-
-    act(() => {
-      result.current.setTheme('dark');
-    });
-
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('dark');
+
+    act(() => {
+      result.current.toggleTheme();
+    });
+    expect(result.current.theme).toBe('light');
   });
 
-  it('should use OS preference when no localStorage value', () => {
-    // Set OS preference to dark
-    prefersDark = true;
-
+  it('should set specific theme', () => {
     const { result } = renderHook(() => useTheme(), { wrapper });
+
+    act(() => {
+      result.current.setTheme('dark');
+    });
 
     expect(result.current.theme).toBe('dark');
   });
 
-  it('should support render prop pattern', () => {
-    // Ensure light theme
-    mockStore = {};
-    prefersDark = false;
+  it('should load theme from localStorage', () => {
+    localStorage.setItem(STORAGE_KEY, 'dark');
+    const { result } = renderHook(() => useTheme(), { wrapper });
+    expect(result.current.theme).toBe('dark');
+  });
 
-    let receivedColorScheme: string | undefined;
+  it('should support render prop pattern for Mantine', () => {
+    let injectedProps: any;
+    const renderSpy = vi.fn().mockImplementation((props) => {
+      injectedProps = props;
+      return null;
+    });
 
-    const TestComponent = () => (
-      <ThemeProvider>
-        {({ colorScheme }) => {
-          receivedColorScheme = colorScheme;
-          return <div>Theme: {colorScheme}</div>;
-        }}
-      </ThemeProvider>
+    // Manually render provider with function child
+    renderHook(() => {}, {
+      wrapper: () => <ThemeProvider>{renderSpy}</ThemeProvider>,
+    });
+
+    expect(renderSpy).toHaveBeenCalled();
+    expect(injectedProps.colorScheme).toBe('light'); // default
+  });
+
+  it('should throw error used outside provider', () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(() => renderHook(() => useTheme())).toThrow(
+      'useTheme must be used within a ThemeProvider'
     );
-
-    render(<TestComponent />);
-
-    expect(receivedColorScheme).toBe('light');
+    consoleSpy.mockRestore();
   });
 });

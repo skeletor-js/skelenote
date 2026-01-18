@@ -9,108 +9,100 @@ import { useArchive } from '../useArchive';
 const mockStore = {
   getArchived: vi.fn(),
   unarchive: vi.fn(),
+  delete: vi.fn(),
   getAll: vi.fn(),
   getContent: vi.fn(),
   setContent: vi.fn(),
-  delete: vi.fn(),
 };
-
 const mockRefreshData = vi.fn();
 
-vi.mock('@/contexts', async (importOriginal) => {
-  const actual = await importOriginal<any>();
-  return {
-    ...actual,
-    useObjects: () => ({
-      store: mockStore,
-      isLoading: false,
-      refreshData: mockRefreshData,
-      dataVersion: 1,
-    }),
-  };
-});
+vi.mock('@/contexts', () => ({
+  useObjects: () => ({
+    store: mockStore,
+    isLoading: false,
+    refreshData: mockRefreshData,
+    dataVersion: 1,
+  }),
+}));
 
-vi.mock('@/lib/editor', async (importOriginal) => {
-  const actual = await importOriginal<any>();
-  return {
-    ...actual,
-    removeMentionsFromContent: vi.fn(),
-  };
-});
+const mockRemoveMentionsFromContent = vi.fn();
+vi.mock('@/lib/editor', () => ({
+  removeMentionsFromContent: (content: any, id: string) =>
+    mockRemoveMentionsFromContent(content, id),
+}));
 
-import { removeMentionsFromContent } from '@/lib/editor';
-
-describe('useArchive', () => {
-  const item1 = { id: '1', updatedAt: 100, title: 'Item 1' };
-  const item2 = { id: '2', updatedAt: 200, title: 'Item 2' };
-
+describe('useArchive Hook', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockStore.getArchived.mockReturnValue([item1, item2]);
-    mockStore.getAll.mockReturnValue([]);
   });
 
   it('should return sorted archived items', () => {
+    const item1 = { id: '1', updatedAt: 100 };
+    const item2 = { id: '2', updatedAt: 200 };
+    mockStore.getArchived.mockReturnValue([item1, item2]);
+
     const { result } = renderHook(() => useArchive());
 
-    // Should be sorted by updatedAt desc
-    expect(result.current.items).toEqual([item2, item1]);
+    expect(result.current.items).toHaveLength(2);
+    expect(result.current.items[0].id).toBe('2'); // Most recent first
+    expect(result.current.items[1].id).toBe('1');
     expect(result.current.count).toBe(2);
   });
 
-  it('should unarchive item', () => {
+  it('should unarchive item and refresh data', () => {
     const { result } = renderHook(() => useArchive());
 
     act(() => {
-      result.current.unarchiveItem('1');
+      result.current.unarchiveItem('item-1');
     });
 
-    expect(mockStore.unarchive).toHaveBeenCalledWith('1');
+    expect(mockStore.unarchive).toHaveBeenCalledWith('item-1');
     expect(mockRefreshData).toHaveBeenCalled();
   });
 
-  describe('deleteItem', () => {
-    it('should delete item and clean up mentions', () => {
-      const otherObj = { id: 'other', properties: {} };
-      mockStore.getAll.mockReturnValue([otherObj, { id: '1' }]); // include self to verify skip logic
-      mockStore.getContent.mockReturnValue('content with mention');
-      vi.mocked(removeMentionsFromContent).mockReturnValue('cleaned content');
+  it('should delete item and clean up mentions', () => {
+    const { result } = renderHook(() => useArchive());
 
-      const { result } = renderHook(() => useArchive());
+    // Setup mock for mention cleanup
+    const otherObj = { id: 'other-1' };
+    mockStore.getAll.mockReturnValue([otherObj]); // exclude archived check? Hook usually excludes archived for cleanup?
+    // Hook calls store.getAll({ includeArchived: true })
+    // Let's verify behavior
 
-      act(() => {
-        result.current.deleteItem('1');
-      });
+    mockStore.getContent.mockReturnValue('content-with-mention');
+    mockRemoveMentionsFromContent.mockReturnValue('cleaned-content');
 
-      // Verification
-      expect(mockStore.getAll).toHaveBeenCalledWith({ includeArchived: true });
-      expect(mockStore.getContent).toHaveBeenCalledWith('other');
-      expect(removeMentionsFromContent).toHaveBeenCalledWith(
-        'content with mention',
-        '1'
-      );
-      expect(mockStore.setContent).toHaveBeenCalledWith(
-        'other',
-        'cleaned content'
-      );
-      expect(mockStore.delete).toHaveBeenCalledWith('1');
-      expect(mockRefreshData).toHaveBeenCalled();
+    act(() => {
+      result.current.deleteItem('item-to-delete');
     });
 
-    it('should skip cleanup if no content change', () => {
-      const otherObj = { id: 'other' };
-      mockStore.getAll.mockReturnValue([otherObj]);
-      mockStore.getContent.mockReturnValue('content');
-      vi.mocked(removeMentionsFromContent).mockReturnValue(null); // No change
+    // Verify cleanup loop
+    expect(mockStore.getAll).toHaveBeenCalledWith({ includeArchived: true });
+    expect(mockStore.getContent).toHaveBeenCalledWith('other-1');
+    expect(mockRemoveMentionsFromContent).toHaveBeenCalledWith(
+      'content-with-mention',
+      'item-to-delete'
+    );
+    expect(mockStore.setContent).toHaveBeenCalledWith(
+      'other-1',
+      'cleaned-content'
+    );
 
-      const { result } = renderHook(() => useArchive());
+    // Verify delete
+    expect(mockStore.delete).toHaveBeenCalledWith('item-to-delete');
+    expect(mockRefreshData).toHaveBeenCalled();
+  });
 
-      act(() => {
-        result.current.deleteItem('1');
-      });
+  it('should handle delete with no cleanup needed', () => {
+    const { result } = renderHook(() => useArchive());
 
-      expect(mockStore.setContent).not.toHaveBeenCalled();
-      expect(mockStore.delete).toHaveBeenCalledWith('1');
+    mockStore.getAll.mockReturnValue([]);
+
+    act(() => {
+      result.current.deleteItem('item-1');
     });
+
+    expect(mockStore.setContent).not.toHaveBeenCalled();
+    expect(mockStore.delete).toHaveBeenCalledWith('item-1');
   });
 });

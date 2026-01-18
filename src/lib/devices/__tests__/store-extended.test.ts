@@ -354,8 +354,7 @@ describe('DeviceRegistryStore - Extended Coverage', () => {
       await store.initialize('device-1');
 
       // Second initialization should return early and not re-register device
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const spy = vi.spyOn(
+      vi.spyOn(
         store as unknown as { load: () => Promise<void> },
         'load' as never
       );
