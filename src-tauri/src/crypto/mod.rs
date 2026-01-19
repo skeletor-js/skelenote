@@ -26,10 +26,5 @@ pub use qr::{generate_mnemonic_qr, parse_qr_payload};
 pub use signing::{derive_signing_key, sign_revocation, verify_revocation, get_public_key_bytes};
 pub use stronghold::StrongholdManager;
 
-// Re-export commands for easy access from lib.rs
-pub use commands::{
-    crypto_clear_key, crypto_decrypt, crypto_encrypt, crypto_generate_key, crypto_generate_qr,
-    crypto_get_user_id, crypto_has_key, crypto_import_key, crypto_init, crypto_parse_qr,
-    crypto_validate_mnemonic, device_get_signing_public_key, device_sign_revocation,
-    device_verify_revocation, CryptoState,
-};
+// Re-export CryptoState for lib.rs state management
+pub use commands::CryptoState;

@@ -12,7 +12,7 @@ use super::LocalSyncServer;
 use crate::crypto::{derive_user_id, CryptoState};
 use std::path::PathBuf;
 use std::sync::Arc;
-use tauri::{AppHandle, Emitter, Manager, State};
+use tauri::{AppHandle, Emitter, State};
 use tokio::sync::RwLock;
 
 /// Shared pairing state managed by Tauri
