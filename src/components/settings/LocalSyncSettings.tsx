@@ -90,7 +90,7 @@ export function LocalSyncSettings() {
     <>
       <Box component="section">
         <Group justify="space-between" mb="xs">
-          <Title order={4}>Hearth</Title>
+          <Title order={4}>Local Sync</Title>
           <Switch
             checked={isEnabled}
             onChange={handleToggle}

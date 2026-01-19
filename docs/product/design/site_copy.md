@@ -1,89 +1,95 @@
 # Skelenote Marketing Site Copy
 
-**Template:** Dreelio (Framer)
-**Voice:** "The Adult in the Room" (Cozy Rationalism)
-
-> [!NOTE]
-> **Deep Dive Strategy (vs Notesnook):**
->
-> 1. **Pricing:** Notesnook gates basic features (tasks, block links) behind a subscription. Skelenote frames these as "Core Rights," free forever.
-> 2. **Trust:** Notesnook says "Verify us with Vericrypt." Skelenote says "You hold the keys, so you don't *need* to verify us."
-> 3. **Vibe:** Notesnook is "Scrappy Underdog." Skelenote is "Premium Instrument."
+**Template:** Dreelio (Framer)  
+**Voice:** The Adult in the Room  
+**Pillars:** Free · Yours · Encrypted · No Lock-in
 
 ---
 
-## 1. Navigation Bar
+## Navigation Bar
 
 | Element | Copy | Link |
 | :--- | :--- | :--- |
 | **Logo** | Skelenote | / |
 | **Link 1** | Philosophy | #philosophy |
-| **Link 2** | Pricing (It's Free) | #pricing |
-| **Link 3** | Download | #download |
-| **CTA Button** | Get Early Access | #download |
+| **Link 2** | Download | #download |
+| **CTA Button** | Download Free | #download |
 
 ---
 
-## 2. Hero Section
+## Hero Section
 
 **Headline:**
-> Your notes. Your devices. Your key.
+> Free. Encrypted. Yours.
 
 **Subheadline:**
-> The permanent operating system for your life's work. Local-first, end-to-end encrypted, and yours forever.
+> No subscription. No lock-in.
 
 **Primary CTA:**
-> Download v0.1 (Alpha)
+> Download Free
 
 **Secondary CTA:**
-> Read the Manifesto
+> See How It Works
 
 ---
 
-## 3. Trusted By / Social Proof
+## Trust Badges
 
-**Header:**
-> BUILT ON LOCAL-FIRST PRINCIPLES
-
-**Logos (Text):**
-[ End-to-End Encrypted ] • [ Zero-Knowledge ] • [ Rust & Tauri ] • [ 100% Open Standards ]
+> [ Free forever ] · [ Works offline ] · [ Export anytime ] · [ Open source ]
 
 ---
 
-## 4. Feature Grid (The "Bento" Box)
+## Feature Grid (Bento Box)
 
-### Card 1: Sovereignty > Privacy (Large Card)
+### Card 1: Encrypted (Large Card)
 
-**Title:** Encryption You Don't Have to "Trust"
-**Body:** We don't ask you to trust our "transparent" servers. We architected them out of the equation. Your **Vault** is encrypted **on your device** with a 24-word Skeleton Key. We couldn't read your notes if we wanted to.
+**Title:** Your key. Not ours.
 
-### Card 2: The Core is Not for Sale (Medium Card)
-
-**Title:** No "Premium" Gating
-**Body:** Basic tools should not be behind a paywall. Block-level linking, task management, and full-quality image storage are **standard**, not "Pro" features. Sync free with **Hearth** (Local) or self-hosted **Courier**. We only charge for managed **Courier** cloud sync—monetizing convenience, not capability.
-
-### Card 3: The Digital Study (Medium Card)
-
-**Title:** A Sanctuary, Not a Tool
-**Body:** We rejected the "Cold Blue" SaaS aesthetic for something human. High-density information design meets the warmth of a quiet room. No notification bells. No "engagement" metrics.
-
-### Card 4: Ownership (Small Card)
-
-**Title:** Exit Anytime
-**Body:** One-click export to JSON & Markdown. Your thoughts shouldn't be trapped in a proprietary database.
+**Body:** Everything is encrypted on your device with a 24-word Skeleton Key. We can't read your notes. Neither can anyone else.
 
 ---
 
-## 5. Philosophy Section
+### Card 2: Free (Medium Card)
+
+**Title:** Everything. Free. Forever.
+
+**Body:** Tasks. Backlinks. Sync. Export. No premium tier, no feature gates, no subscriptions. It's all here.
+
+---
+
+### Card 3: Portable (Medium Card)
+
+**Title:** Import. Export. Leave.
+
+**Body:** Bring your notes from Notion, Obsidian, or plain Markdown. Take them out the same way. Your data is never trapped.
+
+---
+
+### Card 4: Offline (Small Card)
+
+**Title:** Works without internet.
+
+**Body:** No spinners. No "reconnecting." Your notes are on your device, where they belong.
+
+---
+
+## Philosophy Section
 
 **Headline:**
-> The "Cloud" is just someone else's computer.
+> No catch.
 
 **Body:**
-> We believe your second brain belongs on your hard drive, not in a data center we control. We build software for the paranoid, the professionals, and the perfectionists.
+> Skelenote is free—not "free with limits." You get every feature the day they're released. Your notes are encrypted on your devices with keys only you control. Import and export freely to and from other tools. Because your notes app shouldn't trap you and it certainly shouldn't profit off of you.
 
 ---
 
-## 6. Footer
+## Footer CTA
 
-*Same as previous version.*
+**Headline:**
+> Ready to own your notes?
+
+**CTA Button:**
+> Download Free
+
+**Subtext:**
+> macOS · Windows · Linux · iOS · Android

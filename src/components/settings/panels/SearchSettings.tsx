@@ -1,7 +1,7 @@
 /**
  * Search Settings Panel
  *
- * Lantern (AI-powered search) configuration including enable/disable toggle.
+ * Semantic search (AI-powered search) configuration including enable/disable toggle.
  * Extracted from SemanticSettings.tsx
  */
 
@@ -165,8 +165,8 @@ export function SearchSettings() {
           Search
         </Text>
         <Text size="sm" c="dimmed">
-          Lantern finds connections across your notes — even when the words
-          don't match.
+          Semantic search finds connections across your notes — even when the
+          words don't match.
         </Text>
       </Box>
 
@@ -175,7 +175,7 @@ export function SearchSettings() {
       {!isEnabled ? (
         <Stack gap="md">
           <Checkbox
-            label="Enable Lantern"
+            label="Enable Semantic Search"
             checked={false}
             onChange={() => setShowEnableModal(true)}
           />
@@ -197,7 +197,7 @@ export function SearchSettings() {
         <Stack gap="lg">
           <Group justify="space-between">
             <Checkbox
-              label="Enable Lantern"
+              label="Enable Semantic Search"
               checked={true}
               onChange={() => setShowDisableConfirm(true)}
               disabled={isDisabling}

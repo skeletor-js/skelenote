@@ -97,7 +97,12 @@ pub struct PairedDevice {
 
 impl PairedDevice {
     /// Create a new paired device
-    pub fn new(id: String, name: String, fingerprint: String, addresses: Vec<KnownAddress>) -> Self {
+    pub fn new(
+        id: String,
+        name: String,
+        fingerprint: String,
+        addresses: Vec<KnownAddress>,
+    ) -> Self {
         Self {
             id,
             name,
@@ -126,7 +131,9 @@ impl PairedDevice {
             }
 
             // 2. Highest success rate
-            let rate_cmp = b.success_rate().partial_cmp(&a.success_rate())
+            let rate_cmp = b
+                .success_rate()
+                .partial_cmp(&a.success_rate())
                 .unwrap_or(std::cmp::Ordering::Equal);
             if rate_cmp != std::cmp::Ordering::Equal {
                 return rate_cmp;
@@ -142,8 +149,11 @@ impl PairedDevice {
     /// Add or update an address
     pub fn add_or_update_address(&mut self, ip: String, port: u16) {
         // Check if address already exists
-        if let Some(addr) = self.known_addresses.iter_mut()
-            .find(|a| a.ip == ip && a.port == port) {
+        if let Some(addr) = self
+            .known_addresses
+            .iter_mut()
+            .find(|a| a.ip == ip && a.port == port)
+        {
             addr.last_used = current_timestamp();
             return;
         }
@@ -162,15 +172,19 @@ impl PairedDevice {
 
         // Keep maximum 5 addresses (prune oldest unused)
         if self.known_addresses.len() > 5 {
-            self.known_addresses.sort_by(|a, b| b.last_used.cmp(&a.last_used));
+            self.known_addresses
+                .sort_by(|a, b| b.last_used.cmp(&a.last_used));
             self.known_addresses.truncate(5);
         }
     }
 
     /// Record successful connection
     pub fn record_connection_success(&mut self, ip: &str, port: u16) {
-        if let Some(addr) = self.known_addresses.iter_mut()
-            .find(|a| a.ip == ip && a.port == port) {
+        if let Some(addr) = self
+            .known_addresses
+            .iter_mut()
+            .find(|a| a.ip == ip && a.port == port)
+        {
             addr.record_success();
         }
         self.last_connected = Some(current_timestamp());
@@ -179,8 +193,11 @@ impl PairedDevice {
 
     /// Record failed connection attempt
     pub fn record_connection_failure(&mut self, ip: &str, port: u16) {
-        if let Some(addr) = self.known_addresses.iter_mut()
-            .find(|a| a.ip == ip && a.port == port) {
+        if let Some(addr) = self
+            .known_addresses
+            .iter_mut()
+            .find(|a| a.ip == ip && a.port == port)
+        {
             addr.record_failure();
         }
     }
@@ -223,7 +240,12 @@ impl PairedDevicesCache {
     }
 
     /// Load cache from file, or create new if doesn't exist
-    pub fn load(path: &PathBuf, device_id: String, device_name: String, fingerprint: String) -> Result<Self, CacheError> {
+    pub fn load(
+        path: &PathBuf,
+        device_id: String,
+        device_name: String,
+        fingerprint: String,
+    ) -> Result<Self, CacheError> {
         if !path.exists() {
             println!("[Cache] No cache file found, creating new");
             return Ok(Self::new(device_id, device_name, fingerprint));
@@ -297,8 +319,14 @@ impl PairedDevicesCache {
     }
 
     /// Update device name
-    pub fn update_device_name(&mut self, device_id: &str, new_name: String) -> Result<(), CacheError> {
-        let device = self.get_device_mut(device_id)
+    #[allow(dead_code)]
+    pub fn update_device_name(
+        &mut self,
+        device_id: &str,
+        new_name: String,
+    ) -> Result<(), CacheError> {
+        let device = self
+            .get_device_mut(device_id)
             .ok_or_else(|| CacheError::DeviceNotFound(device_id.to_string()))?;
         device.name = new_name;
         println!("[Cache] Updated device name: {}", device_id);
@@ -306,16 +334,28 @@ impl PairedDevicesCache {
     }
 
     /// Record successful connection
-    pub fn record_connection_success(&mut self, device_id: &str, ip: &str, port: u16) -> Result<(), CacheError> {
-        let device = self.get_device_mut(device_id)
+    pub fn record_connection_success(
+        &mut self,
+        device_id: &str,
+        ip: &str,
+        port: u16,
+    ) -> Result<(), CacheError> {
+        let device = self
+            .get_device_mut(device_id)
             .ok_or_else(|| CacheError::DeviceNotFound(device_id.to_string()))?;
         device.record_connection_success(ip, port);
         Ok(())
     }
 
     /// Record failed connection attempt
-    pub fn record_connection_failure(&mut self, device_id: &str, ip: &str, port: u16) -> Result<(), CacheError> {
-        let device = self.get_device_mut(device_id)
+    pub fn record_connection_failure(
+        &mut self,
+        device_id: &str,
+        ip: &str,
+        port: u16,
+    ) -> Result<(), CacheError> {
+        let device = self
+            .get_device_mut(device_id)
             .ok_or_else(|| CacheError::DeviceNotFound(device_id.to_string()))?;
         device.record_connection_failure(ip, port);
         Ok(())

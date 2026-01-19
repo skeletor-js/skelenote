@@ -1,6 +1,6 @@
 /**
  * Sync Settings Sheet
- * Features: Courier (cloud sync) and Hearth (local sync) configuration, device management link
+ * Features: Cloud sync and local sync configuration, device management link
  */
 
 import { useState, useCallback } from 'react';
@@ -129,7 +129,7 @@ export function SyncSettingsSheet({
                   style={{ color: 'var(--mantine-color-ember-6)' }}
                 />
                 <Text size="sm" fw={600}>
-                  Courier
+                  Cloud Sync
                 </Text>
               </Group>
               <Switch
@@ -235,7 +235,7 @@ export function SyncSettingsSheet({
                   style={{ color: 'var(--mantine-color-sage-6)' }}
                 />
                 <Text size="sm" fw={600}>
-                  Hearth
+                  Local Sync
                 </Text>
               </Group>
               <Switch

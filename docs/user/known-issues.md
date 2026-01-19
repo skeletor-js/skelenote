@@ -40,11 +40,11 @@ This document tracks known bugs and limitations. Check here before reporting an 
 |-------|--------|------------|
 | *No issues currently documented* | | |
 
-### Courier
+### Cloud Sync
 
 | Issue | Status | Workaround |
 |-------|--------|------------|
-| Hosted relay not yet available | Planned | Self-host using Docker (see [Courier Guide](../guides/courier-guide.md)) |
+| Hosted relay not yet available | Planned | Self-host using Docker (see [Cloud Sync Guide](../guides/cloud-sync-guide.md)) |
 
 ---
 

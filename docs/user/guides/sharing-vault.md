@@ -108,11 +108,11 @@ Hearth enables real-time sync between devices on the same local network.
 
 ### Security
 
-- Data is encrypted in transit (same as Courier)
+- Data is encrypted in transit (same as cloud sync)
 - Only devices with matching Skeleton Key can sync
 - Works entirely on local network - no internet needed
 
-See the [Hearth Guide](hearth-guide.md) for setup instructions.
+See the [Local Sync Guide](local-sync-guide.md) for setup instructions.
 
 ---
 
@@ -128,7 +128,7 @@ See the [Hearth Guide](hearth-guide.md) for setup instructions.
 
 ### "I want to collaborate in real-time with a teammate"
 
-→ **Hearth** - Both people need the same Skeleton Key and same Wi-Fi network. Changes appear instantly.
+→ **Local sync** - Both people need the same Skeleton Key and same Wi-Fi network. Changes appear instantly.
 
 ### "I want to back up my data"
 
@@ -150,7 +150,7 @@ See the [Hearth Guide](hearth-guide.md) for setup instructions.
 - Sensitive data visible to anyone with the files
 - No access control or permissions
 
-### Hearth Risks
+### Local Sync Risks
 
 - Other devices on your network could attempt discovery
 - Only share Skeleton Key with trusted parties
@@ -161,5 +161,5 @@ See the [Hearth Guide](hearth-guide.md) for setup instructions.
 ## Further Reading
 
 - [Export & Import Guide](export-import.md) - Detailed export/import instructions
-- [Hearth Guide](hearth-guide.md) - Local sync setup
+- [Local Sync Guide](local-sync-guide.md) - Local sync setup
 - [Security & Privacy](../about/security-privacy.md) - Encryption and threat model

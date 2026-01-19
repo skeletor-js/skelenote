@@ -1,7 +1,7 @@
 /**
  * Sync Settings Panel
  *
- * Configuration for sync methods: Devices, Hearth (local sync), and Courier (cloud sync).
+ * Configuration for sync methods: Devices, local sync, and cloud sync.
  * Extracted from SyncSettings.tsx (without Account info and Danger Zone).
  */
 
@@ -108,10 +108,10 @@ export function SyncSettingsPanel() {
 
       <Divider />
 
-      {/* Courier */}
+      {/* Cloud Sync */}
       <Box>
         <Text size="md" fw={600} mb="xs">
-          Courier
+          Cloud Sync
         </Text>
         <Text size="sm" c="dimmed" mb="md">
           Sync devices anywhere — encrypted end-to-end.

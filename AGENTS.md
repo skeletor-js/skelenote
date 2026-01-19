@@ -258,7 +258,7 @@ Skelenote uses 12 React contexts for state management:
 | **SidebarContext** | `useSidebar()` | Sidebar collapse state |
 | **NavigationContext** | `useNavigation()` | App navigation, split pane, view state |
 | **ObjectContext** | `useObjects()` | CRUD operations, provides `store: ObjectStore` |
-| **SyncContext** | `useSyncContext()` | Cloud relay sync state |
+| **SyncContext** | `useSyncContext()` | Cloud sync state |
 | **ToastContext** | `useToast()` | Toast notifications |
 | **SkeletonKeyContext** | `useSkeletonKey()` | Encryption key state |
 | **LocalSyncContext** | `useLocalSync()` | P2P sync, QR pairing |
@@ -285,8 +285,8 @@ Skelenote uses 12 React contexts for state management:
 
 Two sync modes:
 
-1. **Cloud Relay** - WebSocket to relay server (optional)
-2. **Local P2P** - mDNS discovery + direct TCP on local network
+1. **Cloud sync** - WebSocket to relay server (optional)
+2. **Local sync** - mDNS discovery + direct TCP on local network
 
 **P2P Connection Methods:**
 
@@ -627,7 +627,7 @@ First 8 hex chars of SHA256(User ID) - used for visual verification during P2P p
 
 ### P2P vs Cloud
 
-| | Cloud Relay | Local P2P |
+| | Cloud Sync | Local Sync |
 |---|---|---|
 | Transport | WebSocket | TCP |
 | Discovery | N/A (configured URL) | mDNS `_skelenote._tcp` |
@@ -775,13 +775,24 @@ Skelenote combines the high-density efficiency of a code editor with the warmth 
 
 ### Brand Lexicon
 
-| Use | Avoid |
-|-----|-------|
-| The Study | Platform, OS |
-| Vault | Account, Cloud |
-| Object | Page, Note, Task |
-| Campfire | Collaboration, Multiplayer |
-| Relay | Cloud Storage |
+**Branded terms (keep these):**
+
+| Use            | Avoid           |
+|----------------|-----------------|
+| Skeleton Key   | Password, Key   |
+| Vault          | Account, Cloud  |
+| Object         | Page, Note, Task|
+
+**Use direct terms (not branded):**
+
+| Use            | Avoid (over-branded) |
+|----------------|----------------------|
+| Local sync     | Hearth               |
+| Cloud sync     | Courier              |
+| Semantic search| Lantern              |
+| Offline mode   | Sanctuary Mode       |
+| Workspace      | Digital Study, The Study |
+| Collaboration  | Campfire             |
 
 For complete design specs, see `docs/product/design/style-guide.md`.
 

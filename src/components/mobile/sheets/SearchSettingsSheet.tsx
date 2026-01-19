@@ -1,8 +1,8 @@
 /**
- * SearchSettingsSheet - Mobile settings for Lantern (AI-powered search)
+ * SearchSettingsSheet - Mobile settings for semantic search (AI-powered search)
  *
  * Features:
- * - Enable/disable Lantern toggle
+ * - Enable/disable semantic search toggle
  * - Progress indicator during download/indexing
  * - Index stats when enabled (count, last updated)
  * - Similarity threshold selector
@@ -222,7 +222,7 @@ export function SearchSettingsSheet({
             />
             <Box>
               <Text size="sm" fw={500}>
-                Lantern
+                Semantic Search
               </Text>
               <Text size="xs" c="dimmed">
                 Find connections across your notes

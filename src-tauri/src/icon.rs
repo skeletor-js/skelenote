@@ -1,3 +1,4 @@
+#![allow(unexpected_cfgs)]
 //! App Icon Switching Module
 //!
 //! Provides runtime app icon switching across platforms:
@@ -91,9 +92,10 @@ pub fn is_icon_switching_supported() -> bool {
 // ============================================================================
 
 #[cfg(target_os = "macos")]
+#[allow(unused_imports)]
 fn set_macos_dock_icon(app: &tauri::AppHandle, icon_name: &str) -> Result<(), String> {
-    use objc::{class, msg_send, sel, sel_impl};
     use objc::runtime::Object;
+    use objc::{class, msg_send, sel, sel_impl};
     use std::ffi::CString;
 
     // Determine the icon file path based on icon_name
@@ -121,7 +123,10 @@ fn set_macos_dock_icon(app: &tauri::AppHandle, icon_name: &str) -> Result<(), St
 
     if !icon_path.exists() {
         // Fallback to icns if PNG not found
-        let icns_path = resource_dir.join("icons").join(icon_subdir).join("icon.icns");
+        let icns_path = resource_dir
+            .join("icons")
+            .join(icon_subdir)
+            .join("icon.icns");
         if icns_path.exists() {
             println!("[Icon] PNG not found, falling back to icns");
             return set_macos_dock_icon_from_path(&icns_path);
@@ -134,14 +139,14 @@ fn set_macos_dock_icon(app: &tauri::AppHandle, icon_name: &str) -> Result<(), St
 }
 
 #[cfg(target_os = "macos")]
+#[allow(unused_imports)]
 fn set_macos_dock_icon_from_path(icon_path: &std::path::Path) -> Result<(), String> {
-    use objc::{class, msg_send, sel, sel_impl};
     use objc::runtime::Object;
+    use objc::{class, msg_send, sel, sel_impl};
     use std::ffi::CString;
 
     let icon_path_str = icon_path.to_string_lossy().to_string();
-    let c_path = CString::new(icon_path_str.clone())
-        .map_err(|_| "Invalid icon path")?;
+    let c_path = CString::new(icon_path_str.clone()).map_err(|_| "Invalid icon path")?;
 
     unsafe {
         // Get NSApplication shared instance
@@ -189,9 +194,10 @@ fn set_macos_dock_icon_from_path(icon_path: &std::path::Path) -> Result<(), Stri
 // ============================================================================
 
 #[cfg(target_os = "ios")]
+#[allow(unused_imports)]
 fn set_ios_alternate_icon(icon_name: &str) -> Result<(), String> {
-    use objc::{class, msg_send, sel, sel_impl};
     use objc::runtime::Object;
+    use objc::{class, msg_send, sel, sel_impl};
     use std::ffi::CString;
 
     // Map icon name to iOS alternate icon name

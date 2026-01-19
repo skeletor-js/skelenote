@@ -32,7 +32,7 @@ A local-first, zero-knowledge private study. Your vault lives on your device, en
 
 ## Why Skelenote?
 
-Skelenote is built for the "Digital Study" - a quiet room you own, not a noisy service you visit.
+Skelenote is built for a quiet workspace you own, not a noisy service you visit.
 
 ### Core Principles
 
@@ -46,8 +46,8 @@ Skelenote is built for the "Digital Study" - a quiet room you own, not a noisy s
 | Feature | Description |
 | ------- | ----------- |
 | **Object Graph** | Everything is connected - tasks, notes, projects, people |
-| **Campfire Sync** | Peer-to-peer sync on your local network |
-| **Cloud Relay** | Optional encrypted sync across the internet |
+| **Local Sync** | Peer-to-peer sync on your local network |
+| **Cloud Sync** | Optional encrypted sync across the internet |
 | **Skeleton Key** | 24-word mnemonic you control - lose it, lose access |
 | **PARA Method** | Built-in Projects, Areas, Resources, Archives structure |
 | **Rich Editor** | BlockNote-powered with @mentions and backlinks |
@@ -107,10 +107,10 @@ See [ROADMAP.md](ROADMAP.md) for the full plan.
 
 ### User Guides
 
-- [Getting Started](docs/user/getting-started.md) - Your first day in the Study
+- [Getting Started](docs/user/getting-started.md) - Your first day with Skelenote
 - [Mobile Guide](docs/user/guides/mobile-guide.md) - Using Skelenote on iOS/Android
 - [Export & Import](docs/user/guides/export-import.md) - Backups and data portability
-- [Campfire Mode](docs/user/guides/campfire-guide.md) - Local P2P sync
+- [Local Sync](docs/user/guides/local-sync-guide.md) - P2P sync on your network
 - [Cloud Sync](docs/user/guides/cloud-sync-guide.md) - Relay server configuration
 - [Keyboard Shortcuts](docs/user/guides/keyboard-shortcuts.md) - Power user tips
 

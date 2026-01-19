@@ -122,12 +122,12 @@ describe('SearchSettingsSheet', () => {
     expect(screen.getByText('Search Settings')).toBeDefined();
   });
 
-  it('should show Lantern toggle', () => {
+  it('should show semantic search toggle', () => {
     renderWithProvider(
       <SearchSettingsSheet opened={true} onClose={mockOnClose} />
     );
 
-    expect(screen.getByText('Lantern')).toBeDefined();
+    expect(screen.getByText('Semantic Search')).toBeDefined();
     expect(
       screen.getByText('Find connections across your notes')
     ).toBeDefined();

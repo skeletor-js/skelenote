@@ -165,5 +165,5 @@ You control which devices can access your vault:
 
 ## Further Reading
 
-- [Hearth Guide](../guides/hearth-guide.md) — Local network sync with air-gap security
-- [Courier Guide](../guides/courier-guide.md) — Optional relay server configuration
+- [Local Sync Guide](../guides/local-sync-guide.md) — Local network sync with air-gap security
+- [Cloud Sync Guide](../guides/cloud-sync-guide.md) — Optional relay server configuration

@@ -1,4 +1,4 @@
-# Courier: Internet Sync
+# Cloud Sync
 
 Sync your vault across the internet using an encrypted relay server.
 
@@ -6,7 +6,7 @@ Sync your vault across the internet using an encrypted relay server.
 
 ## Overview
 
-Courier uses a WebSocket relay server to sync data between devices anywhere in the world. All data is end-to-end encrypted—the relay only sees encrypted blobs and cannot read your content.
+Cloud sync uses a WebSocket relay server to sync data between devices anywhere in the world. All data is end-to-end encrypted—the relay only sees encrypted blobs and cannot read your content.
 
 **Key Points:**
 
@@ -14,7 +14,7 @@ Courier uses a WebSocket relay server to sync data between devices anywhere in t
 - Optional—Skelenote works fully offline without it
 - Self-hostable for complete control
 
-Use Courier when devices aren't on the same network. For local sync, see [Hearth](hearth-guide.md).
+Use Cloud sync when devices aren't on the same network. For local sync, see [Local sync](local-sync-guide.md).
 
 ---
 
@@ -50,7 +50,7 @@ The relay is a dumb pipe. It routes encrypted packets between your devices but c
 
 ## Encryption Guarantees
 
-Even with Courier, your data remains private:
+Even with Cloud sync, your data remains private:
 
 | Stage | Protection |
 |-------|------------|
@@ -74,9 +74,9 @@ Skelenote offers a hosted relay for convenience.
 
 ### Setup
 
-1. Open **Settings > Sync > Courier**
+1. Open **Settings > Sync > Cloud sync**
 2. Enter the relay URL (provided with your subscription)
-3. Toggle **Enable Courier** on
+3. Toggle **Enable Cloud sync** on
 4. Verify connection status shows "Connected"
 
 ### What the Relay Stores
@@ -149,30 +149,30 @@ server {
 
 ### Connecting Clients
 
-1. In Skelenote, go to **Settings > Sync > Courier**
+1. In Skelenote, go to **Settings > Sync > Cloud sync**
 2. Enter your relay URL: `wss://relay.yourdomain.com/`
-3. Enable Courier
+3. Enable Cloud sync
 4. Verify connection status
 
 ---
 
-## When to Use Courier vs Hearth
+## When to Use Cloud sync vs Local sync
 
 | Scenario | Recommendation |
 |----------|----------------|
-| Same building/network | **Hearth** (maximum security) |
-| Different cities/countries | **Courier** |
-| Untrusted network (hotel, conference) | **Hearth only** |
+| Same building/network | **Local sync** (maximum security) |
+| Different cities/countries | **Cloud sync** |
+| Untrusted network (hotel, conference) | **Local sync only** |
 | Solo user, multiple devices at home | Either works |
-| Team with remote members | **Courier** |
-| High-security environment | Hearth + self-hosted relay |
+| Team with remote members | **Cloud sync** |
+| High-security environment | Local sync + self-hosted relay |
 
 ### Using Both
 
-You can enable both Hearth and Courier simultaneously:
+You can enable both Local sync and Cloud sync simultaneously:
 
-- **Local devices** sync via Hearth (faster, air-gapped)
-- **Remote devices** sync via Courier
+- **Local devices** sync via Local sync (faster, air-gapped)
+- **Remote devices** sync via Cloud sync
 
 Skelenote automatically uses the fastest available path.
 
@@ -190,7 +190,7 @@ Skelenote automatically uses the fastest available path.
 ### Not Syncing
 
 1. **Ensure both devices use the same Skeleton Key**
-2. **Check Courier is enabled** on all devices
+2. **Check Cloud sync is enabled** on all devices
 3. **Verify devices show as connected** in Settings
 4. **Check relay status** in Settings > Sync
 
@@ -217,7 +217,7 @@ Loro CRDTs handle conflicts automatically. If you see unexpected content:
 
 ## Privacy Comparison
 
-| Aspect | Cloud Apps | Skelenote Courier |
+| Aspect | Cloud Apps | Skelenote Cloud sync |
 |--------|------------|-------------------|
 | Who can read data | Company, hackers, governments | Only you |
 | Encryption | At rest (they have keys) | End-to-end (you have keys) |
@@ -230,4 +230,4 @@ Loro CRDTs handle conflicts automatically. If you see unexpected content:
 ## Further Reading
 
 - [Security & Privacy Deep Dive](security-privacy.md) — Full encryption architecture
-- [Hearth Guide](hearth-guide.md) — Local network sync
+- [Local sync Guide](local-sync-guide.md) — Local network sync

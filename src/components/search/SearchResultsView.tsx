@@ -230,7 +230,7 @@ export function SearchResultsView() {
                   ) : isSemanticAvailable ? (
                     'Try different keywords or adjust your search terms'
                   ) : (
-                    'Try different keywords or enable Lantern for concept-based matching'
+                    'Try different keywords or enable semantic search for concept-based matching'
                   )}
                 </Text>
               </Stack>

@@ -5,6 +5,11 @@ description = "Object-based note app with local-first sync"
 authors = [""]
 edition = "2021"
 
+
+[features]
+# Dummy feature to satisfy objc crate macros that check for this feature
+cargo-clippy = []
+
 [lib]
 name = "skelenote_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
@@ -14,6 +19,7 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = ["devtools"] }
+
 tauri-plugin-fs = "2"
 tauri-plugin-os = "2"
 # tauri-plugin-global-shortcut = "2"  # Disabled: Quick Capture hotkey deprioritized
