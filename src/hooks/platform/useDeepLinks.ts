@@ -14,7 +14,7 @@
 import { useEffect } from 'react';
 import { onOpenUrl } from '@tauri-apps/plugin-deep-link';
 import { useNavigation, useObjects } from '@/contexts';
-import { usePlatform } from '@/hooks/usePlatform';
+import { usePlatform } from '@/hooks';
 
 export function useDeepLinks() {
   const { navigateToObject, navigateToView } = useNavigation();

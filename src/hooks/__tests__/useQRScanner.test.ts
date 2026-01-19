@@ -3,11 +3,11 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useQRScanner } from '../useQRScanner';
+import { useQRScanner } from '..';
 
 // Mock usePlatform
 // Mock usePlatform
-vi.mock('../usePlatform', async (importOriginal) => {
+vi.mock('../platform/usePlatform', async (importOriginal) => {
   const actual = await importOriginal<any>();
   return {
     ...actual,
@@ -37,7 +37,7 @@ vi.mock('@tauri-apps/plugin-barcode-scanner', async (importOriginal) => {
   };
 });
 
-import { usePlatform } from '../usePlatform';
+import { usePlatform } from '../platform/usePlatform';
 
 describe('useQRScanner', () => {
   beforeEach(() => {

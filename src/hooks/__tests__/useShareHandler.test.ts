@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useShareHandler } from '../useShareHandler';
+import { useShareHandler } from '..';
 import { BuiltInTypeIds } from '@/lib/types';
 
 // Mock dependencies
@@ -15,7 +15,7 @@ const mockRefreshData = vi.fn();
 const mockAddToast = vi.fn();
 const mockIsMobile = vi.fn();
 
-vi.mock('../usePlatform', () => ({
+vi.mock('../platform/usePlatform', () => ({
   usePlatform: () => ({ isMobile: mockIsMobile() }),
 }));
 

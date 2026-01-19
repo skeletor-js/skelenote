@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useReducedMotion, getAccessibleTransition } from '../useReducedMotion';
+import { useReducedMotion, getAccessibleTransition } from '..';
 
 // Track mock return value
 let mockReducedMotion: boolean | null = false;

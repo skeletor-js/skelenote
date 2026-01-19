@@ -5,7 +5,7 @@
  */
 
 import posthog from 'posthog-js';
-import type { Platform } from '@/hooks/usePlatform';
+import type { Platform } from '@/hooks';
 
 export interface PostHogConfig {
   apiKey: string;

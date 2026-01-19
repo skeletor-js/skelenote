@@ -64,7 +64,7 @@ vi.mock('../ToastContext', () => ({
 }));
 
 const mockPlatform = { isMobile: false, isIOS: false };
-vi.mock('@/hooks/usePlatform', () => ({
+vi.mock('@/hooks/platform/usePlatform', () => ({
   usePlatform: () => mockPlatform,
 }));
 

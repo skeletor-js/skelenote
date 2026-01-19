@@ -1,91 +1,87 @@
-export { useTheme } from './useTheme';
+// Platform hooks - device/OS-specific functionality
+export {
+  usePlatform,
+  type Platform,
+  useHaptics,
+  type HapticStyle,
+  type HapticNotification,
+  type UseHapticsResult,
+  useBiometric,
+  type BiometricStatus,
+  type UseBiometricResult,
+  useQRScanner,
+  useNotifications,
+  type UseNotificationsResult,
+  useAppIcon,
+  type IconId,
+  type IconVariant,
+  type UseAppIconResult,
+  useBackgroundTask,
+  type UseBackgroundTaskResult,
+  useDeepLinks,
+  useShareHandler,
+  type UseShareHandlerResult,
+} from './platform';
+
+// Data hooks - CRUD and data management
 export {
   useTasks,
   type UseTasksOptions,
   type UseTasksResult,
-} from './useTasks';
-export { useInbox, type UseInboxResult } from './useInbox';
-export { useArchive, type UseArchiveResult } from './useArchive';
-export {
-  useDailyNote,
-  useTodaysDailyNote,
-  type UseDailyNoteResult,
-} from './useDailyNote';
-export { useCalendar, type UseCalendarResult } from './useCalendar';
-export { useLinkToDaily } from './useLinkToDaily';
-export {
+  useTemplates,
+  type UseTemplatesResult,
   useSearch,
   type UseSearchOptions,
   type UseSearchResult,
-} from './useSearch';
-export {
   useSearchResults,
   type UseSearchResultsOptions,
   type UseSearchResultsResult,
   type SearchFilters,
-} from './useSearchResults';
-export { useConnectionStatus } from './useConnectionStatus';
-export { useSync } from './useSync';
-export {
-  useConfirmDialog,
-  type ConfirmOptions,
-  type ConfirmDialogState,
-  type UseConfirmDialogResult,
-} from './useConfirmDialog';
-export {
-  useContextMenu,
-  type ContextMenuPosition,
-  type UseContextMenuResult,
-} from './useContextMenu';
-export {
+  useInbox,
+  type UseInboxResult,
+  useDailyNote,
+  useTodaysDailyNote,
+  type UseDailyNoteResult,
   usePinnedObjects,
   type UsePinnedObjectsResult,
-} from './usePinnedObjects';
-export { useSavedViews, type UseSavedViewsResult } from './useSavedViews';
+  useSavedViews,
+  type UseSavedViewsResult,
+  useArchive,
+  type UseArchiveResult,
+  useDuplicate,
+  type UseDuplicateResult,
+  useLinkToDaily,
+} from './data';
+
+// UI hooks - interface state and interactions
 export {
+  useTheme,
   useSelection,
   type UseSelectionOptions,
   type UseSelectionResult,
   type SelectionState,
   type SelectionActions,
-} from './useSelection';
-export { useTemplates, type UseTemplatesResult } from './useTemplates';
-export { useDuplicate, type UseDuplicateResult } from './useDuplicate';
-export { usePlatform, type Platform } from './usePlatform';
-export { useSemanticIndexSync } from './useSemanticIndexSync';
-export { useQRScanner } from './useQRScanner';
-export {
-  useBiometric,
-  type BiometricStatus,
-  type UseBiometricResult,
-} from './useBiometric';
-export {
-  useHaptics,
-  type HapticStyle,
-  type HapticNotification,
-  type UseHapticsResult,
-} from './useHaptics';
-export {
   useScrollDirection,
   type ScrollDirection,
   type UseScrollDirectionOptions,
   type UseScrollDirectionResult,
-} from './useScrollDirection';
-export { useReducedMotion, getAccessibleTransition } from './useReducedMotion';
-export { useUndoToast } from './useUndoToast';
+  useConfirmDialog,
+  type ConfirmOptions,
+  type ConfirmDialogState,
+  type UseConfirmDialogResult,
+  useContextMenu,
+  type ContextMenuPosition,
+  type UseContextMenuResult,
+  useReducedMotion,
+  getAccessibleTransition,
+  useUndoToast,
+  useCalendar,
+  type UseCalendarResult,
+} from './ui';
+
+// Sync hooks - data synchronization
 export {
-  useNotifications,
-  type UseNotificationsResult,
-} from './useNotifications';
-export { useShareHandler, type UseShareHandlerResult } from './useShareHandler';
-export {
-  useBackgroundTask,
-  type UseBackgroundTaskResult,
-} from './useBackgroundTask';
-export { useDeepLinks } from './useDeepLinks';
-export {
-  useAppIcon,
-  type IconId,
-  type IconVariant,
-  type UseAppIconResult,
-} from './useAppIcon';
+  useSync,
+  useConnectionStatus,
+  useSemanticIndexSync,
+} from './sync';

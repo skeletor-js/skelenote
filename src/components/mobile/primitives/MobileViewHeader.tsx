@@ -4,7 +4,7 @@ import { ChevronLeft, Search } from 'lucide-react';
 import { MobileSyncIndicator } from './MobileSyncIndicator';
 import { useNavigation } from '@/contexts';
 import { IOS_CHEVRON } from '@/lib/constants/ios-styles';
-import { usePlatform } from '@/hooks/usePlatform';
+import { usePlatform } from '@/hooks';
 
 interface MobileViewHeaderProps {
   /** View title */

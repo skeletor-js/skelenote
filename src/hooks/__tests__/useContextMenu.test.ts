@@ -3,7 +3,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useContextMenu } from '../useContextMenu';
+import { useContextMenu } from '..';
 
 describe('useContextMenu', () => {
   it('should initialize with closed state', () => {
