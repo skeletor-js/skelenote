@@ -42,10 +42,10 @@ Categories covered:
 ## Key Competitive Advantages
 
 1. **CRDT-Based Sync** — Automatic conflict resolution, no data loss
-2. **P2P Sync (Campfire)** — Sync without servers, on local network
+2. **Hearth** — Sync without servers, on local network
 3. **Native Task Management** — First-class tasks with status, priority, recurrence
 4. **PARA Structure** — Built-in methodology, not just blank pages
-5. **Free Core App** — No subscriptions, own your software. Optional cloud relay only expenses.
+5. **Free Core App** — No subscriptions, own your software. Optional Courier only expenses.
 6. **Local AI** — All AI runs on-device, zero cloud dependency (v0.4)
 
 ## Key Gaps (Being Addressed)

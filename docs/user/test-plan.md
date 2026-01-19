@@ -102,9 +102,9 @@ Use this checklist to systematically test Skelenote. You don't need to complete 
 - [ ] Results highlight matching text
 - [ ] Can filter by object type
 
-### Semantic Search (if enabled)
+### Lantern (if enabled)
 
-- [ ] Enable semantic search in Settings
+- [ ] Enable Lantern in Settings
 - [ ] Wait for initial indexing
 - [ ] Search by meaning (not just keywords)
 - [ ] Results ranked by relevance
@@ -149,13 +149,13 @@ Test shortcuts from [Keyboard Shortcuts Guide](../guides/keyboard-shortcuts.md):
 
 ---
 
-## Sync: Campfire (Local P2P)
+## Sync: Hearth
 
 **Requires two devices on the same network.**
 
 ### Setup
 
-- [ ] Enable Campfire in Settings > Sync
+- [ ] Enable Hearth in Settings > Sync
 - [ ] Same Skeleton Key on both devices
 - [ ] Devices discover each other
 - [ ] Fingerprints match
@@ -177,7 +177,7 @@ Test shortcuts from [Keyboard Shortcuts Guide](../guides/keyboard-shortcuts.md):
 
 ---
 
-## Sync: Cloud Relay
+## Sync: Courier
 
 **Requires relay server (self-hosted or hosted).**
 

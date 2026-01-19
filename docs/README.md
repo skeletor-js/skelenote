@@ -11,7 +11,7 @@ Skelenote is a local-first, zero-knowledge note-taking app. Your vault lives on 
 - **Local. Encrypted. Yours.** — Your data never leaves your device unencrypted
 - **Zero-Knowledge Sync** — Even our servers can't read your notes
 - **No Lock-in** — Export everything as Markdown, HTML, JSON, or PDF anytime
-- **Free & Open Source** — Core app is 100% free, cloud sync optional ($8/mo)
+- **Free & Open Source** — Core app is 100% free, Courier optional ($8/mo)
 
 ---
 
@@ -20,8 +20,8 @@ Skelenote is a local-first, zero-knowledge note-taking app. Your vault lives on 
 | Feature | Description |
 | ------- | ----------- |
 | **Object Graph** | Everything is connected — tasks, notes, projects, people |
-| **Campfire Sync** | Peer-to-peer sync on your local network |
-| **Cloud Relay** | Optional encrypted sync across the internet |
+| **Hearth** | Local network sync between nearby devices |
+| **Courier** | Optional encrypted sync across the internet |
 | **Skeleton Key** | 24-word mnemonic you control |
 | **Rich Editor** | BlockNote-powered with @mentions and backlinks |
 | **Full Export** | Markdown, HTML, JSON, Plain Text, PDF |
@@ -43,7 +43,7 @@ New to Skelenote? Start here:
 
 Skelenote runs on **macOS**, **Windows**, **Linux**, **iOS**, and **Android**.
 
-Download from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases) or join [TestFlight for iOS](https://testflight.apple.com/join/skelenote).
+Download from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases). For iOS, join our [Discord](https://discord.gg/4apsgSRB7D) to get the TestFlight invite.
 
 ---
 

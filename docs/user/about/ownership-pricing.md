@@ -13,7 +13,7 @@ Skelenote is **100% free and open source**. The complete app—including all fea
 - Full desktop app (macOS, Windows, Linux)
 - Full mobile app (iOS, Android)
 - All local features (encryption, AI, graph, PARA)
-- **Campfire Mode**: P2P sync on your local network
+- **Hearth**: Sync on your local network
 - Unlimited notes, tasks, projects, and objects
 - Full export (Markdown, JSON, HTML, PDF)
 - All future updates
@@ -24,11 +24,11 @@ Skelenote is open source under the Apache 2.0 license. You can inspect the code,
 
 ---
 
-## Optional Cloud Sync
+## Optional Courier Sync
 
-For users who want encrypted sync across networks (home, office, mobile data) but don't want to self-host, we offer a managed cloud relay service:
+For users who want encrypted sync across networks (home, office, mobile data) but don't want to self-host, we offer a managed Courier service:
 
-**$8/month** — Managed Encrypted Cloud Sync
+**$8/month** — Managed Courier Sync
 
 - Sync across all your devices over the internet
 - End-to-end encrypted (we can't read your data)
@@ -37,7 +37,7 @@ For users who want encrypted sync across networks (home, office, mobile data) bu
 
 ### Why Pay?
 
-The cloud relay has real infrastructure costs (servers, bandwidth, storage). Your subscription funds ongoing development and keeps the project sustainable. It's strictly for convenience—you aren't paying for "features," you're paying for us to run the infrastructure for you.
+Courier has real infrastructure costs (servers, bandwidth, storage). Your subscription funds ongoing development and keeps the project sustainable. It's strictly for convenience—you aren't paying for "features," you're paying for us to run the infrastructure for you.
 
 ### Self-Hosting (Free)
 
@@ -66,7 +66,7 @@ Whether you pay or not:
 Our pricing philosophy is simple:
 
 1. **The app is free** — Everyone deserves privacy tools
-2. **Cloud sync costs money** — Because servers cost money
+2. **Courier costs money** — Because servers cost money
 3. **Self-hosting is always an option** — We monetize convenience, not necessity
 
 We don't sell your data. We don't show you ads. We don't lock you in. The only thing we charge for is the infrastructure to sync your encrypted data across the internet—and even that is optional.

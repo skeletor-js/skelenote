@@ -20,7 +20,7 @@ Your data lives on their servers. You pay monthly to access it. They can read it
 
 Skelenote, Obsidian, Logseq, Anytype, Joplin, AppFlowy, AFFiNE, Notesnook, Standard Notes, SiYuan, TriliumNext.
 
-Your data lives on your device first. Some offer optional cloud sync. Many are open-source. You own what you create.
+Your data lives on your device first. Some offer optional Courier. Many are open-source. You own what you create.
 
 **Skelenote sits firmly in the second camp**—but we go further than most. We encrypt by default, sync peer-to-peer without servers, and charge once instead of forever.
 
@@ -56,7 +56,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 
 | Tool | Sync Method | Conflict Resolution | Works Fully Offline | P2P Option |
 |------|-------------|--------------------|--------------------|------------|
-| **Skelenote** | CRDT (Loro) | Automatic merge | Yes | Yes (Campfire) |
+| **Skelenote** | CRDT (Loro) | Automatic merge | Yes | Yes (Hearth) |
 | **Anytype** | CRDT + P2P | Automatic merge | Yes | Yes |
 | **Obsidian** | File-based (paid sync or DIY) | Last write wins | Yes | No |
 | **Logseq** | File-based (paid sync or DIY) | Last write wins | Yes | No |
@@ -71,7 +71,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 
 **What CRDT means:** When you edit the same Object on two devices simultaneously, Skelenote merges both changes intelligently. Most apps pick one version and discard the other—or create conflicting copies you have to resolve manually.
 
-**What Campfire means:** Devices on the same network discover each other and sync directly. No internet. No cloud relay. No exposure. Physical proximity becomes your encryption.
+**What Hearth means:** Devices on the same network discover each other and sync directly. No internet. No Courier. No exposure. Physical proximity becomes your encryption.
 
 ---
 
@@ -79,7 +79,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 
 | Tool | Model | Typical Cost | One-Time Option |
 |------|-------|--------------|-----------------|
-| **Skelenote** | Free + optional cloud sync | $0 (app) / $8/mo (cloud) | N/A (Free) |
+| **Skelenote** | Free + optional Courier | $0 (app) / $8/mo (cloud) | N/A (Free) |
 | **Obsidian** | Free + paid sync | $0 (app) / $96/yr (sync) | Yes (app only) |
 | **Logseq** | Free (open-source) | $0 | N/A |
 | **Anytype** | Free (open-source) | $0 | N/A |
@@ -142,7 +142,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 **Skelenote is better for:**
 
 - Built-in encryption (no plugins, no configuration)
-- P2P sync without third-party services or DIY setup
+- Hearth without third-party services or DIY setup
 - CRDT sync (true merge vs. "last write wins" conflicts)
 - Native task management (not plugin-dependent)
 - Structured Objects (typed data, not just markdown files)
@@ -165,7 +165,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 
 - Document-style writing (not just outlines)
 - Built-in encryption without configuration
-- P2P sync that works out of the box
+- Hearth that works out of the box
 - CRDT conflict resolution
 - Native PARA structure (Projects, Areas, Resources, Archives)
 
@@ -186,10 +186,10 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 
 - Simpler onboarding (PARA defaults vs. blank canvas)
 - Native Tauri/Rust performance (lighter than Electron)
-- Clear business model: Free core app + optional paid cloud relay (vs. completely free with unclear future monetization)
+- Clear business model: Free core app + optional paid Courier (vs. completely free with unclear future monetization)
 - Time Machine with Loro CRDTs (revert any Object to any point)
 
-**The core difference:** Anytype and Skelenote share DNA—local-first, encrypted, object-based, P2P sync. Anytype is fully free and open-source. Skelenote offers a clearer structure and business model.
+**The core difference:** Anytype and Skelenote share DNA—local-first, encrypted, object-based, Hearth. Anytype is fully free and open-source. Skelenote offers a clearer structure and business model.
 
 ---
 
@@ -205,7 +205,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 **Skelenote is better for:**
 
 - Richer Object types (tasks, projects, areas, not just notes)
-- P2P sync without any server
+- Hearth without any server
 - Free core app (vs. subscription)
 - CRDT-based sync (better conflict handling)
 - PARA methodology built in
@@ -246,7 +246,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 
 - Cross-platform (Windows, Linux, not just Apple)
 - True local-first (Craft still relies on cloud)
-- P2P sync without iCloud
+- Hearth without iCloud
 - Free core app
 - Structured task/project management
 
@@ -303,7 +303,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 
 **Skelenote is better for:**
 
-- Zero-configuration P2P sync
+- Zero-configuration Hearth
 - Native encryption without setup
 - CRDT conflict resolution (Joplin uses last-write-wins)
 - Polished UX out of the box
@@ -326,7 +326,7 @@ Your data lives on your device first. Some offer optional cloud sync. Many are o
 
 - Cross-platform (Windows, Linux)
 - True zero-knowledge encryption
-- P2P sync without iCloud
+- Hearth without iCloud
 - Data portability (export everything, no lock-in)
 - Structured productivity (tasks, projects, PARA)
 
@@ -417,7 +417,7 @@ Most tools in this space make you choose:
 Skelenote refuses these trade-offs:
 
 - **Privacy AND features:** Full encryption with a complete productivity system
-- **Ownership AND convenience:** Local-first with zero-configuration P2P sync
+- **Ownership AND convenience:** Local-first with zero-configuration Hearth
 - **Structure AND flexibility:** PARA defaults you can rearrange
 
 We're not building another SaaS platform. We're building a Digital Study—a quiet room you own, with the door locked and the fire lit.

@@ -41,7 +41,7 @@
 | Attribute | Details |
 |-----------|---------|
 | **GitHub** | [skeletor-js/skelenote](https://github.com/skeletor-js/skelenote) |
-| **License** | Proprietary (alpha) |
+| **License** | Apache 2.0 (open source) |
 | **Founded** | December 2025 |
 | **Stage** | Alpha |
 | **Tech Stack** | TypeScript, React, Tauri 2.0, Rust, Loro CRDT |
@@ -85,8 +85,8 @@
 
 | Feature | Skelenote | Notesnook | Parity | Notes |
 |---------|:---------:|:---------:|:------:|-------|
-| Cloud sync | Optional relay | Primary method | N>S | Notesnook's cloud is more mature |
-| P2P sync | Yes (Campfire) | No | S>N | **Major Skelenote advantage** |
+| Courier | Optional relay | Primary method | N>S | Notesnook's cloud is more mature |
+| Hearth | Yes (Hearth) | No | S>N | **Major Skelenote advantage** |
 | CRDT merge | Yes (Loro) | No | S>N | **Major Skelenote advantage** |
 | Conflict resolution | Automatic | Manual user choice | S>N | CRDTs prevent data loss |
 | Offline-first | Yes | Limited | S>N | Skelenote truly works offline |
@@ -119,7 +119,7 @@
 |---------|:---------:|:---------:|:------:|-------|
 | Rich text editor | BlockNote | TipTap (Prosemirror) | = | Both have modern block editors |
 | Markdown support | Via BlockNote | Full | N>S | Notesnook has deeper markdown |
-| Markdown pasting | No | Yes | N>S | Paste markdown → rich text |
+| Markdown pasting | Yes (v0.2) | Yes | = | Paste markdown → rich text |
 | Tables | Yes | Yes | = | |
 | Code blocks | Yes | Yes (syntax highlighting) | = | |
 | Math formulas (LaTeX) | Planned (v1.0) | Yes | N>S | **Gap: Notesnook has KaTeX** |
@@ -188,9 +188,9 @@
 | Recurring tasks | Yes (complex patterns) | No | S>N | |
 | Task filters | 6 built-in views | No | S>N | |
 | Project assignment | Yes | No | S>N | |
-| Reminders/notifications | No | Yes | N>S | **Gap: Skelenote needs reminders** |
+| Reminders/notifications | Yes (v0.3) | Yes | = | Both now have reminders |
 
-**Analysis:** Skelenote has a complete task management system. Notesnook only has basic checklists. However, Notesnook has reminders which Skelenote lacks.
+**Analysis:** Skelenote has a complete task management system with reminders (v0.3). Notesnook only has basic checklists.
 
 ---
 
@@ -213,13 +213,13 @@
 | Feature | Skelenote | Notesnook | Parity | Notes |
 |---------|:---------:|:---------:|:------:|-------|
 | Full-text search | Yes (Fuse.js) | Yes | = | |
-| Semantic search | Yes (local ML) | No | S>N | **Skelenote advantage** |
+| Lantern | Yes (local ML) | No | S>N | **Skelenote advantage** |
 | Search filters | Basic | Yes (v3.3) | N>S | Notesnook recently added |
 | Backlinks | Yes (computed) | Yes | = | |
 | Graph view | Planned | No | = | Neither has it yet |
 | Search highlighting | Yes | Yes | = | |
 
-**Advantage:** Skelenote's local semantic search is unique - searches by meaning without sending data to cloud.
+**Advantage:** Skelenote's local Lantern is unique - searches by meaning without sending data to cloud.
 
 ---
 
@@ -229,12 +229,12 @@
 |---------|:---------:|:---------:|:------:|-------|
 | Markdown export | Yes | Yes | = | |
 | ZIP export | Yes | Yes | = | |
-| PDF export | Planned | Yes | N>S | |
+| PDF export | Yes (v0.2) | Yes | = | |
 | HTML export | Planned | Yes | N>S | |
 | JSON export | Yes (Loro) | Yes | = | |
 | Plain text export | Planned | Yes | N>S | |
-| Import from Notion | Planned | Yes | N>S | |
-| Import from Obsidian | Planned | Yes | N>S | |
+| Import from Notion | Yes (v0.2) | Yes | = | |
+| Import from Obsidian | Yes (v0.2) | Yes | = | |
 | Import from Evernote | No | Yes | N>S | |
 | Import from Google Keep | No | Yes | N>S | |
 | Web Clipper | Not planned | Yes | N>S | |
@@ -414,11 +414,11 @@ These features would make Skelenote definitively better:
 Features where Skelenote is already ahead—don't regress:
 
 - **CRDT-based sync** — Major technical moat
-- **P2P sync (Campfire)** — No server required
+- **Hearth** — No server required
 - **Native task management** — First-class, not checklists
 - **PARA structure** — Built-in methodology
 - **Daily notes with templates** — Deterministic IDs, auto-creation
-- **Semantic search** — Local ML, no cloud
+- **Lantern** — Local ML, no cloud
 - **Time Machine** — Granular CRDT history
 - **Free core app** — No subscriptions for core features
 
@@ -440,10 +440,10 @@ Features where Skelenote is already ahead—don't regress:
 | Task-focused workers | Skelenote | Native task management |
 | PARA practitioners | Skelenote | Built-in methodology |
 | Academic writers | Notesnook | LaTeX support |
-| Privacy maximalists | Skelenote | P2P sync, no servers |
+| Privacy maximalists | Skelenote | Hearth, no servers |
 | Subscription-averse | Skelenote | Free core app |
 | Web clipper users | Notesnook | Has web clipper |
-| Local network sync | Skelenote | Campfire P2P |
+| Local network sync | Skelenote | Hearth |
 
 ---
 
@@ -454,7 +454,7 @@ Skelenote and Notesnook occupy similar positions in the privacy-focused note-tak
 **Notesnook excels at:**
 
 - Cross-platform availability (mobile, web)
-- Traditional cloud sync reliability
+- Traditional Courier reliability
 - Note-specific features (math, web clipper, sharing)
 - Lower entry price point
 

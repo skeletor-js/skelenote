@@ -10,7 +10,7 @@ There are several ways to share your Skelenote data with others or access it acr
 |--------|----------|---------------|----------|
 | **Skeleton Key** | Multi-device sync | Full vault, real-time | Same identity, encrypted |
 | **Export** | Backup, migration | Static snapshot | Unencrypted Markdown |
-| **Campfire** | Real-time collab | Full vault, live sync | Same network only |
+| **Hearth** | Real-time collab | Full vault, live sync | Same network only |
 
 ---
 
@@ -46,7 +46,7 @@ Your Skeleton Key is the master key to all your encrypted data. Share it careful
 When you enter the same Skeleton Key on another device:
 
 1. Both devices share the same User ID
-2. All data syncs automatically via Cloud Relay or Campfire
+2. All data syncs automatically via Courier or Hearth
 3. Changes on either device appear on both
 
 > **Important:** Anyone with your Skeleton Key has full access to your vault. Only share with people you trust completely.
@@ -89,9 +89,9 @@ See the [Export & Import Guide](export-import.md) for detailed export options.
 
 ---
 
-## Campfire Sharing
+## Hearth Sharing
 
-Campfire enables real-time sync between devices on the same local network.
+Hearth enables real-time sync between devices on the same local network.
 
 ### When to Use
 
@@ -108,11 +108,11 @@ Campfire enables real-time sync between devices on the same local network.
 
 ### Security
 
-- Data is encrypted in transit (same as Cloud Relay)
+- Data is encrypted in transit (same as Courier)
 - Only devices with matching Skeleton Key can sync
 - Works entirely on local network - no internet needed
 
-See the [Campfire Guide](campfire-guide.md) for setup instructions.
+See the [Hearth Guide](hearth-guide.md) for setup instructions.
 
 ---
 
@@ -128,7 +128,7 @@ See the [Campfire Guide](campfire-guide.md) for setup instructions.
 
 ### "I want to collaborate in real-time with a teammate"
 
-→ **Campfire** - Both people need the same Skeleton Key and same Wi-Fi network. Changes appear instantly.
+→ **Hearth** - Both people need the same Skeleton Key and same Wi-Fi network. Changes appear instantly.
 
 ### "I want to back up my data"
 
@@ -150,7 +150,7 @@ See the [Campfire Guide](campfire-guide.md) for setup instructions.
 - Sensitive data visible to anyone with the files
 - No access control or permissions
 
-### Campfire Risks
+### Hearth Risks
 
 - Other devices on your network could attempt discovery
 - Only share Skeleton Key with trusted parties
@@ -161,5 +161,5 @@ See the [Campfire Guide](campfire-guide.md) for setup instructions.
 ## Further Reading
 
 - [Export & Import Guide](export-import.md) - Detailed export/import instructions
-- [Campfire Guide](campfire-guide.md) - Local P2P sync setup
+- [Hearth Guide](hearth-guide.md) - Local sync setup
 - [Security & Privacy](../about/security-privacy.md) - Encryption and threat model

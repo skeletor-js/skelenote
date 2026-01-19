@@ -22,6 +22,7 @@ Skelenote for iOS is currently in **alpha testing** via Apple TestFlight.
 Skelenote for Android is available in two ways:
 
 **APK Download (Alpha)**
+
 1. Download the `.apk` file from the [releases page](https://github.com/skeletor-js/skelenote/releases)
 2. On your Android device, go to **Settings > Security**
 3. Enable **Install from unknown sources** (or allow it for your browser)
@@ -63,15 +64,15 @@ The fastest way to connect your mobile device to a desktop is via QR code. This 
 
 ### On Your Desktop
 
-1. Open **Settings > Sync > Local Sync**
-2. Make sure Local Sync is enabled
+1. Open **Settings > Sync > Hearth**
+2. Make sure Hearth is enabled
 3. Click **Show Pairing Code**
 4. A QR code appears on screen
 
 ### On Your Mobile Device
 
 1. Open **Settings** (tap the Browse tab, then Settings)
-2. Go to **Sync > Local Sync**
+2. Go to **Sync > Hearth**
 3. Tap **Scan QR Code**
 4. Point your camera at the QR code on your desktop screen
 5. When the code is recognized, tap **Pair**
@@ -90,8 +91,8 @@ Once paired:
 **Devices not discovering each other?**
 
 - Make sure both devices are on the **same WiFi network**
-- Check that Local Sync is **enabled** on both devices
-- Try toggling Local Sync off and on again
+- Check that Hearth is **enabled** on both devices
+- Try toggling Hearth off and on again
 - Make sure your router allows local network discovery (some guest networks block this)
 
 **QR code not scanning?**
@@ -116,6 +117,7 @@ Once paired:
 Protect your notes with Face ID, Touch ID, or fingerprint authentication.
 
 **To enable:**
+
 1. Go to **Settings > Security**
 2. Toggle **Biometric Unlock** on
 3. Authenticate to confirm
@@ -138,11 +140,13 @@ Haptics follow your device's system settings. To disable them, turn off haptic f
 Get reminders for your tasks directly on your phone.
 
 **Setting up reminders:**
+
 1. Open a task
 2. Tap the **Reminder** field
 3. Choose when you want to be notified
 
 **Enabling notifications:**
+
 1. Skelenote will ask for permission when you set your first reminder
 2. Tap **Allow** in the system prompt
 3. You can manage notification settings in **Settings > Notifications**
@@ -154,17 +158,20 @@ Reminders work even when Skelenote is closed. Your notification content is gener
 Capture content from any app into Skelenote using your phone's share feature.
 
 **On iOS:**
+
 1. In Safari, Notes, or any app, tap the **Share** button
 2. Scroll through the share options and tap **Skelenote**
 3. Add an optional note, then tap **Post**
 4. The content appears in your Inbox next time you open Skelenote
 
 **On Android:**
+
 1. In Chrome, or any app, tap the **Share** button
 2. Select **Skelenote** from the share menu
 3. Skelenote opens and creates a new item with the shared content
 
 **What you can capture:**
+
 - Web page URLs (creates a Link object)
 - Selected text (creates a Note in your Inbox)
 - Images (coming soon)
@@ -223,9 +230,9 @@ Pull down on any list view to:
 
 Skelenote uses the same sync technology on mobile as desktop:
 
-1. **Local Sync (Campfire)** - When your phone and other devices are on the same WiFi network, they sync directly. No internet needed.
+1. **Hearth** - When your phone and other devices are on the same WiFi network, they sync directly. No internet needed.
 
-2. **Cloud Relay** - If configured, your devices can sync through an encrypted relay server when not on the same network.
+2. **Courier** - If configured, your devices can sync through an encrypted relay server when not on the same network.
 
 Both methods use end-to-end encryption. Your data is encrypted before it leaves your device.
 
@@ -263,17 +270,20 @@ You don't need to do anything special. Changes merge automatically when devices 
 ### Quick Capture Workflows
 
 **Capture thoughts during the day:**
+
 1. Use the **+** button or Share Sheet throughout your day
 2. Everything lands in your Inbox
 3. Process your Inbox during a dedicated review time
 
 **Meeting notes:**
+
 1. Open today's Daily Note
 2. Start typing as the meeting progresses
 3. Use @mentions to link to relevant projects or people
 4. Notes sync to desktop automatically
 
 **Task on the go:**
+
 1. Tap **+** > **Task**
 2. Enter the task title
 3. Optionally set a due date and priority
@@ -289,8 +299,9 @@ Skelenote works fully offline. No internet connection is required to:
 - View your entire history
 
 **When you come back online:**
-- Local sync resumes automatically when you join a network with other devices
-- Cloud relay reconnects if configured
+
+- Hearth resumes automatically when you join a network with other devices
+- Courier reconnects if configured
 - Any offline changes merge seamlessly
 
 **Tip:** Check the sync indicator (green/orange/red dot) to see your connection status.
@@ -299,15 +310,15 @@ Skelenote works fully offline. No internet connection is required to:
 
 Skelenote is designed to be battery-friendly:
 
-- **Local sync** uses minimal power (mDNS discovery is lightweight)
+- **Hearth** uses minimal power (mDNS discovery is lightweight)
 - **Biometric unlock** uses the system's optimized APIs
-- **No background sync** unless you have Cloud Relay enabled
+- **No background sync** unless you have Courier enabled
 - **No location tracking** or sensors running in the background
 
 To maximize battery life:
 
-- Use Local Sync only when needed (disable when traveling alone)
-- Keep Cloud Relay off unless you need cross-network sync
+- Use Hearth only when needed (disable when traveling alone)
+- Keep Courier off unless you need cross-network sync
 - Notifications use minimal battery since they're scheduled locally
 
 ---
@@ -315,6 +326,6 @@ To maximize battery life:
 ## Further Reading
 
 - [Getting Started Guide](../getting-started.md) - Full introduction to Skelenote
-- [Campfire Mode Guide](campfire-guide.md) - Deep dive into local network sync
-- [Cloud Sync Setup](cloud-sync-guide.md) - Configure cloud relay for remote sync
+- [Hearth Guide](hearth-guide.md) - Deep dive into local network sync
+- [Courier Guide](courier-guide.md) - Configure Courier for remote sync
 - [Settings Reference](settings-reference.md) - All settings explained
