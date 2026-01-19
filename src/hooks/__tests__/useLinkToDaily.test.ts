@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useLinkToDaily } from '../useLinkToDaily';
+import { useLinkToDaily } from '..';
 
 // Mock dependencies
 const mockStore = {};

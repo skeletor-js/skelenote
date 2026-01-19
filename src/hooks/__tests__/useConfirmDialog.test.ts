@@ -3,7 +3,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useConfirmDialog } from '../useConfirmDialog';
+import { useConfirmDialog } from '..';
 
 describe('useConfirmDialog', () => {
   describe('initial state', () => {

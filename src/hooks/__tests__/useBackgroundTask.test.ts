@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useBackgroundTask } from '../useBackgroundTask';
+import { useBackgroundTask } from '..';
 
 // Mock Tauri's invoke
 vi.mock('@tauri-apps/api/core', async (importOriginal) => {
@@ -15,7 +15,7 @@ vi.mock('@tauri-apps/api/core', async (importOriginal) => {
 });
 
 // Mock usePlatform
-vi.mock('../usePlatform', async (importOriginal) => {
+vi.mock('../platform/usePlatform', async (importOriginal) => {
   const actual = await importOriginal<any>();
   return {
     ...actual,
@@ -30,7 +30,7 @@ vi.mock('../usePlatform', async (importOriginal) => {
 });
 
 import { invoke } from '@tauri-apps/api/core';
-import { usePlatform } from '../usePlatform';
+import { usePlatform } from '../platform/usePlatform';
 
 describe('useBackgroundTask', () => {
   beforeEach(() => {

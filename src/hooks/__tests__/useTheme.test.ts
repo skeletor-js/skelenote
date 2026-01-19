@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useTheme } from '../useTheme';
+import { useTheme } from '..';
 
 // Mock ThemeContext
 const mockUseTheme = vi.fn().mockReturnValue({

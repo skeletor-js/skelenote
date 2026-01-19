@@ -11,9 +11,7 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 import { useNavigation, type ViewType } from '@/contexts';
-import { useHaptics } from '@/hooks/useHaptics';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { usePlatform } from '@/hooks/usePlatform';
+import { useHaptics, useReducedMotion, usePlatform } from '@/hooks';
 import { springs } from '@/lib/animations';
 import { QuickCaptureSheet } from '@/components/mobile/sheets';
 import classes from './BottomTabBar.module.css';

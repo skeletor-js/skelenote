@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from 'react';
 import { Collapse, Stack, Group, Text, Box } from '@mantine/core';
-import { useTasks } from '@/hooks/useTasks';
+import { useTasks } from '@/hooks';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { TaskRow } from '@/components/views/TaskRow';
 import { EmptyState, Icon } from '@/components/ui';

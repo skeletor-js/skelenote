@@ -2,35 +2,15 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { QuickCaptureSheet } from '../QuickCaptureSheet';
-import { MantineProvider } from '@mantine/core';
 import React from 'react';
 import { BuiltInTypeIds } from '@/lib/types';
 import { useObjects } from '@/contexts';
 import { useLinkToDaily, useReducedMotion } from '@/hooks';
+import { setupSheetMocks, renderWithProvider } from './test-utils';
 
-// Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
-  observe = vi.fn();
-  unobserve = vi.fn();
-  disconnect = vi.fn();
-};
-
-// Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation((query) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
+setupSheetMocks();
 
 // Mock Dependencies
 vi.mock('@/contexts', () => ({
@@ -110,10 +90,6 @@ vi.mock('../TagPickerSheet', () => ({
   TagPickerSheet: ({ opened }: any) =>
     opened ? <div data-testid="sheet-tags">Tag Picker</div> : null,
 }));
-
-const renderWithProvider = (ui: React.ReactNode) => {
-  return render(<MantineProvider>{ui}</MantineProvider>);
-};
 
 describe('QuickCaptureSheet', () => {
   const mocks = {

@@ -18,7 +18,7 @@ import {
 } from '@/lib/sync';
 import { useObjects } from './ObjectContext';
 import { useToast } from './ToastContext';
-import { usePlatform } from '@/hooks/usePlatform';
+import { usePlatform } from '@/hooks';
 import { AnalyticsEvents } from '@/lib/analytics';
 
 interface SyncContextValue {

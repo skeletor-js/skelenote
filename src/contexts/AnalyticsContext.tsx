@@ -16,7 +16,7 @@ import {
 } from 'react';
 import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
-import { usePlatform, type Platform } from '@/hooks/usePlatform';
+import { usePlatform, type Platform } from '@/hooks';
 import { initPostHog } from '@/lib/analytics';
 
 const STORAGE_KEY = 'skelenote:analyticsEnabled';

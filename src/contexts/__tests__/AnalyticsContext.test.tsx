@@ -29,7 +29,7 @@ vi.mock('posthog-js/react', () => ({
 }));
 
 // Mock usePlatform hook
-vi.mock('@/hooks/usePlatform', () => ({
+vi.mock('@/hooks/platform/usePlatform', () => ({
   usePlatform: () => ({
     platform: 'macos',
     isMobile: false,
