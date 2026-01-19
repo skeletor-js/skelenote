@@ -289,3 +289,95 @@ Edit `.claude/settings.json` (committed to git):
 1. Check JSON syntax: `node -e "JSON.parse(require('fs').readFileSync('file.json'))"`
 2. Start fresh session to reload configs
 3. Check MCP server is both defined AND enabled
+
+---
+
+## Directory Structure
+
+The `.claude/` directory contains:
+
+```
+.claude/
+├── settings.json          # Shared hooks (committed)
+├── settings.local.json    # Personal permissions (gitignored)
+├── CONFIG-GUIDE.md        # This documentation
+├── rules/                 # Persistent rules (auto-loaded)
+│   ├── git-workflow.md
+│   ├── code-quality.md
+│   ├── testing-standards.md
+│   ├── linear-workflow.md
+│   └── design-system.md
+├── skills/                # Invocable skills (/skill-name)
+│   ├── linear/SKILL.md
+│   ├── commit/SKILL.md
+│   ├── security/SKILL.md
+│   └── ...
+└── agents/                # Specialized agents (via Task tool)
+    ├── security-auditor.md
+    ├── docs-maintainer.md
+    └── ...
+```
+
+---
+
+## Rules
+
+Rules in `.claude/rules/` are persistent instructions that apply to all conversations. They're automatically loaded when Claude starts.
+
+| Rule | Purpose |
+|------|---------|
+| `git-workflow.md` | Branch naming, commit format, PR workflow |
+| `code-quality.md` | TypeScript standards, imports, anti-patterns |
+| `testing-standards.md` | Vitest conventions, mock patterns |
+| `linear-workflow.md` | Linear integration, labels, cycles |
+| `design-system.md` | Mantine, colors, "cozy rationalism" aesthetic |
+
+---
+
+## Skills
+
+Skills in `.claude/skills/*/SKILL.md` are invoked with `/skill-name` or via the Skill tool.
+
+### Categories
+
+**Git & Version Control:** commit, branch, pr, sync, merge-main, cleanup, commit-skip
+
+**Development:** dev, check, lint, test, build
+
+**Code Generation:** component, hook, context, type, tauri-command, mobile, test-file
+
+**Linear & Project Management:** linear, issue, project, roadmap-sync
+
+**Agent Wrappers:** security, docs, architecture, ux, tests
+
+**Release:** release, ship, squash, changelog
+
+---
+
+## Agents
+
+Agents in `.claude/agents/*.md` are specialized assistants invoked via the Task tool.
+
+| Agent | Model | Purpose |
+|-------|-------|---------|
+| `security-auditor` | Opus | Security reviews, OWASP compliance |
+| `docs-maintainer` | Opus | Documentation updates |
+| `architect-reviewer` | Opus | Architecture and design patterns |
+| `test-generator` | Opus | Comprehensive test generation |
+| `frontend-design-expert` | Opus | UI/UX with Mantine |
+| `ux-design-specialist` | Opus | User research, accessibility |
+| `tauri-engineer` | Opus | Rust backend, IPC, native |
+| `project-manager` | Opus | Linear project management |
+
+---
+
+## MCP Servers
+
+Available MCP servers for this project:
+
+| Server | Purpose |
+|--------|---------|
+| **Linear** | Issue tracking via `mcp__linear-server__*` tools |
+| **Mantine** | UI component docs via `mcp__mantine__*` tools |
+| **Context7** | Library docs via `mcp__context7__*` tools |
+| **Playwright** | Browser automation via `mcp__playwright__*` tools |

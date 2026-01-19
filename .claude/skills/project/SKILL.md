@@ -1,51 +1,112 @@
 ---
 name: project
-description: View and manage GitHub Project board
+description: View and manage Linear projects
 ---
 
 # Project Skill
 
-View and manage the Skelenote Roadmap GitHub Project board.
+View and manage Skelenote projects in Linear using Linear MCP.
 
 ## Information Needed
 
-- Action: view, list, or move
-- For move: issue number and target status
+- **Action**: view, list, or update
+- **For update**: project name and changes
 
 ## Steps
 
-1. Get project details:
-```bash
-gh project view 1 --owner skeletor-js
+### List All Projects
+
+```
+mcp__linear-server__list_projects({
+  team: "Skelenote"
+})
 ```
 
-2. List items by status (default: all):
-```bash
-gh project item-list 1 --owner skeletor-js --limit 50
+### View Project Details
+
+```
+mcp__linear-server__get_project({
+  query: "v0.2 - Exodus"
+})
 ```
 
-3. To filter by milestone:
-```bash
-gh issue list --milestone "v0.2 - Exodus" --state open
+### List Issues in Project
+
+```
+mcp__linear-server__list_issues({
+  team: "Skelenote",
+  project: "v0.2 - Exodus"
+})
 ```
 
-4. To move an item to a different status, first get field IDs:
-```bash
-gh project field-list 1 --owner skeletor-js
+### List Issues by State
+
+```
+mcp__linear-server__list_issues({
+  team: "Skelenote",
+  project: "v0.2 - Exodus",
+  state: "In Progress"
+})
 ```
 
-Then update the item:
-```bash
-gh project item-edit --project-id PVT_kwHOAchT0M4BMEJ5 --id <ITEM_ID> --field-id <STATUS_FIELD_ID> --single-select-option-id <OPTION_ID>
+### List Current Cycle
+
 ```
+mcp__linear-server__list_cycles({
+  teamId: "team-id",
+  type: "current"
+})
+```
+
+### Update Project
+
+```
+mcp__linear-server__update_project({
+  id: "project-id",
+  state: "completed"
+})
+```
+
+## Projects
+
+| Project              | Description                    |
+| -------------------- | ------------------------------ |
+| v0.2 - Exodus        | Data freedom & portability     |
+| v0.3 - Pocket        | Mobile apps & notifications    |
+| v0.4 - Oracle        | Sovereign AI on-device         |
+| v0.5 - Sentinel      | Security hardening             |
+| v1.0 - Cartographer  | Visualization & spatial        |
 
 ## Example
 
+User: "Show me what's in progress for v0.2"
+
 ```
-User: Show me what's in progress
-Assistant: Lists items with status "In Progress" from the project board
+mcp__linear-server__list_issues({
+  team: "Skelenote",
+  project: "v0.2 - Exodus",
+  state: "In Progress"
+})
 ```
 
-## Project URL
+## Progress Report
 
-https://github.com/users/skeletor-js/projects/1
+To generate a progress report:
+
+1. List all issues in project
+2. Group by state (Backlog, Todo, In Progress, Done)
+3. Calculate completion percentage
+4. Present formatted summary
+
+```markdown
+## v0.2 - Exodus Progress
+
+| Status      | Count |
+| ----------- | ----- |
+| Done        | 5     |
+| In Progress | 3     |
+| Todo        | 8     |
+| Backlog     | 4     |
+
+**Progress:** 25% complete (5/20 issues)
+```
