@@ -2,31 +2,11 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { AppearanceSettingsSheet } from '../AppearanceSettingsSheet';
-import { MantineProvider } from '@mantine/core';
+import { setupSheetMocks, renderWithProvider } from './test-utils';
 
-// Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
-  observe = vi.fn();
-  unobserve = vi.fn();
-  disconnect = vi.fn();
-};
-
-// Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation((query) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
+setupSheetMocks();
 
 // Mock localStorage
 const mockLocalStorage: Record<string, string> = {};
@@ -85,10 +65,6 @@ vi.mock('@/hooks', () => ({
     selection: mockSelection,
   }),
 }));
-
-const renderWithProvider = (ui: React.ReactNode) => {
-  return render(<MantineProvider>{ui}</MantineProvider>);
-};
 
 describe('AppearanceSettingsSheet', () => {
   const mockOnClose = vi.fn();

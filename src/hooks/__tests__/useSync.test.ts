@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useSync } from '../useSync';
+import { useSync } from '..';
 
 // Mock context
 const mockContext = {

@@ -71,7 +71,7 @@ vi.mock('@/lib/sync', async (importOriginal) => {
 });
 
 // Mock platform hook
-vi.mock('@/hooks/usePlatform', () => ({
+vi.mock('@/hooks/platform/usePlatform', () => ({
   usePlatform: () => ({
     isMobile: false,
     isIOS: false,

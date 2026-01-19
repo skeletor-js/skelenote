@@ -49,7 +49,7 @@ vi.mock('@/lib/semantic', () => ({
   SemanticEngineStatus: 'ready',
 }));
 
-vi.mock('@/hooks/useSemanticIndexSync', () => ({
+vi.mock('@/hooks/sync/useSemanticIndexSync', () => ({
   useSemanticIndexSync: () => ({
     notifyContentChange: vi.fn(),
     flushContentChanges: vi.fn(),

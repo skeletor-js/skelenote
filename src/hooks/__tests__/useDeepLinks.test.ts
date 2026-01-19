@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
 // Mock usePlatform
-vi.mock('../usePlatform', () => ({
+vi.mock('../platform/usePlatform', () => ({
   usePlatform: vi.fn(() => ({
     isMobile: true,
     isIOS: true,
@@ -43,8 +43,8 @@ vi.mock('@/contexts', () => ({
   }),
 }));
 
-import { usePlatform } from '../usePlatform';
-import { useDeepLinks } from '../useDeepLinks';
+import { usePlatform } from '../platform/usePlatform';
+import { useDeepLinks } from '..';
 
 describe('useDeepLinks', () => {
   beforeEach(() => {

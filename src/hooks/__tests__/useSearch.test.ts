@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useSearch } from '../useSearch';
+import { useSearch } from '..';
 
 // Mocks
 const mockStore = { id: 'store' };

@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useNotifications } from '../useNotifications';
+import { useNotifications } from '..';
 
 // Mocks
 const mockCheckPermission = vi.fn();
@@ -33,7 +33,7 @@ vi.mock('@/lib/notifications', async (importOriginal) => {
 
 const mockIsMobile = vi.fn();
 
-vi.mock('../usePlatform', async (importOriginal) => {
+vi.mock('../platform/usePlatform', async (importOriginal) => {
   const actual = await importOriginal<any>();
   return {
     ...actual,

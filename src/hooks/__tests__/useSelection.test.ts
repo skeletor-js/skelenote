@@ -3,8 +3,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useSelection } from '../useSelection';
-import { getAccessibleTransition } from '../useReducedMotion';
+import { useSelection, getAccessibleTransition } from '..';
 
 // ============================================================================
 // getAccessibleTransition Tests

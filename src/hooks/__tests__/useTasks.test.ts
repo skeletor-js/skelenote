@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useTasks } from '../useTasks';
+import { useTasks } from '..';
 import { BuiltInTypeIds } from '@/lib/types';
 
 // Mock dependencies

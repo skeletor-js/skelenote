@@ -21,7 +21,7 @@ import {
   SemanticProgress,
   IndexableContent,
 } from '@/lib/semantic';
-import { useSemanticIndexSync } from '@/hooks/useSemanticIndexSync';
+import { useSemanticIndexSync } from '@/hooks';
 import { AnalyticsEvents } from '@/lib/analytics';
 
 const STORAGE_KEY = 'skelenote:semanticSearchEnabled';

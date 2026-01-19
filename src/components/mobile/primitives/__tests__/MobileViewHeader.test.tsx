@@ -42,7 +42,7 @@ vi.mock('@/contexts', () => ({
 }));
 
 // Mock hooks
-vi.mock('@/hooks/usePlatform', () => ({
+vi.mock('@/hooks/platform/usePlatform', () => ({
   usePlatform: vi.fn(() => ({
     safeAreaTop: 0,
     safeAreaBottom: 0,

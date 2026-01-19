@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 
 // Mock usePlatform
-vi.mock('../usePlatform', () => ({
+vi.mock('../platform/usePlatform', () => ({
   usePlatform: vi.fn(() => ({
     isMobile: true,
     isIOS: true,
@@ -15,16 +15,16 @@ vi.mock('../usePlatform', () => ({
   })),
 }));
 
-vi.mock('../biometric-loader', () => ({
+vi.mock('../platform/biometric-loader', () => ({
   getBiometricModule: vi.fn().mockResolvedValue({
     checkStatus: vi.fn().mockRejectedValue(new Error('Not available')),
     authenticate: vi.fn().mockRejectedValue(new Error('Not available')),
   }),
 }));
 
-import { usePlatform } from '../usePlatform';
-import { useBiometric } from '../useBiometric';
-import { getBiometricModule } from '../biometric-loader';
+import { usePlatform } from '../platform/usePlatform';
+import { useBiometric } from '..';
+import { getBiometricModule } from '../platform/biometric-loader';
 
 describe('useBiometric', () => {
   beforeEach(() => {

@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useSearchResults } from '../useSearchResults';
+import { useSearchResults } from '..';
 
 // Mock base useSearch hook
 const mockUseSearch = {
@@ -20,7 +20,7 @@ const mockUseSearch = {
   clear: vi.fn(),
 };
 
-vi.mock('../useSearch', async (importOriginal) => {
+vi.mock('../data/useSearch', async (importOriginal) => {
   const actual = await importOriginal<any>();
   return {
     ...actual,

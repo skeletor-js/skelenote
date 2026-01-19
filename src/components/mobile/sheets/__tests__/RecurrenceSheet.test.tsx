@@ -2,33 +2,13 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { RecurrenceSheet } from '../RecurrenceSheet';
-import { MantineProvider } from '@mantine/core';
+import { setupSheetMocks, renderWithProvider } from './test-utils';
 
-// Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
-  observe = vi.fn();
-  unobserve = vi.fn();
-  disconnect = vi.fn();
-};
+setupSheetMocks();
 
-// Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation((query) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
-
-// Mock BottomSheet
+// Mock BottomSheet (must be inline due to vi.mock hoisting)
 vi.mock('@/components/mobile/primitives', () => ({
   BottomSheet: ({
     children,
@@ -67,10 +47,6 @@ vi.mock('@/components/object/editors/RecurrenceEditor', () => ({
     }
   },
 }));
-
-const renderWithProvider = (ui: React.ReactNode) => {
-  return render(<MantineProvider>{ui}</MantineProvider>);
-};
 
 describe('RecurrenceSheet', () => {
   const mockOnClose = vi.fn();

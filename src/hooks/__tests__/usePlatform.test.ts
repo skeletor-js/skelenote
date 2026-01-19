@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { usePlatform } from '../usePlatform';
+import { usePlatform } from '..';
 
 // Mock Tauri's plugin-os
 // Mock Tauri's plugin-os

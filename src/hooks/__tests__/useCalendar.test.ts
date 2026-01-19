@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useCalendar } from '../useCalendar';
+import { useCalendar } from '..';
 
 // Mock contexts
 vi.mock('@/contexts', async (importOriginal) => {
