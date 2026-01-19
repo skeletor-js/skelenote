@@ -24,6 +24,8 @@
 	<array>
 		<string>_skelenote._tcp</string>
 	</array>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Skelenote uses Face ID to securely unlock your Vault.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Skelenote uses the camera to scan QR codes for secure device pairing.</string>
 	<key>NSLocalNetworkUsageDescription</key>
