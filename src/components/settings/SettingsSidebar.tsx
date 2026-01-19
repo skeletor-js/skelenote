@@ -24,6 +24,7 @@ const NAV_ITEMS: Array<{
   { id: 'appearance', icon: 'palette', label: 'Appearance' },
   { id: 'templates', icon: 'file-text', label: 'Templates' },
   { id: 'search', icon: 'search', label: 'Search' },
+  { id: 'privacy', icon: 'shield', label: 'Privacy' },
   { id: 'data', icon: 'download', label: 'Data' },
 ];
 

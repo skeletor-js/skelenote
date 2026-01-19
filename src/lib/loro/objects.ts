@@ -51,6 +51,8 @@ interface ObjectsCache {
   all: SkelenoteObject[];
   /** All objects excluding archived */
   nonArchived: SkelenoteObject[];
+  /** Inboxed objects (excluding archived) for fast access */
+  inboxed: SkelenoteObject[];
 }
 
 /**
@@ -213,10 +215,11 @@ export class ObjectStore {
       }
     }
 
-    // Cache both variants
+    // Cache variants
     this.objectsCache = {
       all,
       nonArchived: all.filter((obj) => !obj.archived),
+      inboxed: all.filter((obj) => obj.inboxed && !obj.archived),
     };
 
     return options?.includeArchived
@@ -369,7 +372,11 @@ export class ObjectStore {
    * Get all inboxed objects (excludes archived items)
    */
   getInboxed(): SkelenoteObject[] {
-    return this.getAll().filter((obj) => obj.inboxed && !obj.archived);
+    // Trigger cache build if needed
+    if (!this.objectsCache) {
+      this.getAll();
+    }
+    return this.objectsCache!.inboxed;
   }
 
   /**

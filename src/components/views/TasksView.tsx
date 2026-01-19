@@ -82,7 +82,15 @@ const TABS_WITH_COUNTS: Set<TaskFilter> = new Set([
 
 export function TasksView() {
   const [activeTab, setActiveTab] = useState<TaskFilter>('today');
-  const { tasks, isLoading, toggleComplete, archiveTask } = useTasks({
+  const {
+    tasks,
+    isLoading,
+    totalCount,
+    hasMore,
+    loadMore,
+    toggleComplete,
+    archiveTask,
+  } = useTasks({
     filter: activeTab,
   });
   const { refreshData, store } = useObjects();
@@ -191,8 +199,8 @@ export function TasksView() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selection]);
 
-  // Total task count for header
-  const totalCount = countToday + countThisWeek + countOverdue + countWaiting;
+  // Total task count for header (sum of all tabs)
+  const headerCount = countToday + countThisWeek + countOverdue + countWaiting;
 
   // Empty state for current tab
   const emptyState = EMPTY_STATES[activeTab];
@@ -201,7 +209,7 @@ export function TasksView() {
     <Stack gap={0} h="100%" style={{ overflow: 'hidden' }} data-tasks-view>
       <ViewHeader
         title="Tasks"
-        count={totalCount > 0 ? totalCount : undefined}
+        count={headerCount > 0 ? headerCount : undefined}
       />
 
       {/* Sticky Tab Bar */}
@@ -285,15 +293,29 @@ export function TasksView() {
             </Stack>
           </Center>
         ) : (
-          <TaskList
-            tasks={tasks}
-            onToggleComplete={toggleComplete}
-            onArchiveTask={archiveTask}
-            emptyMessage={EMPTY_STATES[activeTab].message}
-            isSelected={selection.isSelected}
-            onSelectionChange={handleSelectionChange}
-            hasSelection={selection.hasSelection}
-          />
+          <Stack gap="sm">
+            <TaskList
+              tasks={tasks}
+              onToggleComplete={toggleComplete}
+              onArchiveTask={archiveTask}
+              emptyMessage={EMPTY_STATES[activeTab].message}
+              isSelected={selection.isSelected}
+              onSelectionChange={handleSelectionChange}
+              hasSelection={selection.hasSelection}
+            />
+            {/* Load More button */}
+            {hasMore && (
+              <Button
+                variant="subtle"
+                color="gray"
+                fullWidth
+                onClick={loadMore}
+                size="sm"
+              >
+                Load more ({tasks.length} of {totalCount})
+              </Button>
+            )}
+          </Stack>
         )}
       </Box>
 

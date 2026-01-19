@@ -115,6 +115,7 @@ describe('SettingsNavItem', () => {
       'appearance',
       'templates',
       'search',
+      'privacy',
       'data',
       'about',
       'danger',

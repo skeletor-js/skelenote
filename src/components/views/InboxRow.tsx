@@ -15,7 +15,7 @@ import {
 } from '@/components/ui';
 import { Icon } from '@/components/ui/Icon';
 import { getIconFromEmoji } from '@/lib/icons';
-import { useContextMenu, usePinnedObjects, useDuplicate } from '@/hooks';
+import { useContextMenu } from '@/hooks';
 import type { IconName } from '@/lib/icons';
 import { ObjectSearchModal } from '@/components/object/editors';
 import { formatRelativeDate, isOverdue } from '@/lib/utils/date';
@@ -24,10 +24,10 @@ import classes from './InboxRow.module.css';
 interface InboxRowProps {
   /** The inbox item object to display */
   item: SkelenoteObject;
-  /** Callback when row is clicked (navigates to detail) */
-  onClick: () => void;
-  /** Callback to open item in split pane */
-  onOpenInSplit: () => void;
+  /** Callback when row is clicked (navigates to detail) - receives itemId */
+  onClick: (itemId: string) => void;
+  /** Callback to open item in split pane - receives itemId */
+  onOpenInSplit: (itemId: string) => void;
   /** Callback when process button is clicked (optional for non-inbox views) */
   onProcess?: (itemId: string) => void;
   /** Callback when item is archived */
@@ -38,6 +38,20 @@ interface InboxRowProps {
   onSelectionChange?: (id: string, shiftKey: boolean) => void;
   /** Whether any item in the list is selected (enables "selecting mode") */
   isSelectingMode?: boolean;
+  /** Whether the item is pinned (passed from parent optimization) */
+  isPinned?: boolean;
+  /** Callback to toggle pin (passed from parent) */
+  onTogglePin?: (id: string) => void;
+  /** Whether the item can be duplicated */
+  canDuplicate?: boolean;
+  /** Callback to duplicate item */
+  onDuplicate?: (id: string) => void;
+  /** Callback to open tag picker (lifted to parent for single modal instance) */
+  onOpenTagPicker?: (itemId: string) => void;
+  /** Callback to open project picker (lifted to parent for single modal instance) */
+  onOpenProjectPicker?: (itemId: string) => void;
+  /** Callback to open area picker (lifted to parent for single modal instance) */
+  onOpenAreaPicker?: (itemId: string) => void;
 }
 
 export const InboxRow = memo(function InboxRow({
@@ -49,17 +63,32 @@ export const InboxRow = memo(function InboxRow({
   isSelected = false,
   onSelectionChange,
   isSelectingMode = false,
+  isPinned = false,
+  onTogglePin,
+  canDuplicate = false,
+  onDuplicate,
+  onOpenTagPicker,
+  onOpenProjectPicker,
+  onOpenAreaPicker,
 }: InboxRowProps) {
   const { store, refreshData } = useObjects();
   const typeRegistry = useTypeRegistry();
   const { addToast } = useToast();
   const { isOpen, position, openContextMenu, closeContextMenu } =
     useContextMenu();
-  const { isPinned, pin, unpin } = usePinnedObjects();
-  const { duplicate, canDuplicate } = useDuplicate();
+
+  // Local modal state - only used when parent doesn't provide callbacks
+  // When parent provides callbacks, modals are rendered at parent level (single instance)
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
   const [projectPickerOpen, setProjectPickerOpen] = useState(false);
   const [areaPickerOpen, setAreaPickerOpen] = useState(false);
+
+  // Use parent callbacks if provided, otherwise use local state
+  const hasLiftedModals = !!(
+    onOpenTagPicker &&
+    onOpenProjectPicker &&
+    onOpenAreaPicker
+  );
 
   // Get type info
   const typeDef = typeRegistry.get(item.typeId);
@@ -124,16 +153,9 @@ export const InboxRow = memo(function InboxRow({
   );
 
   // Handle pin/unpin
-  const itemIsPinned = isPinned(item.id);
   const handleTogglePin = useCallback(() => {
-    if (itemIsPinned) {
-      unpin(item.id);
-      addToast({ type: 'success', message: 'Removed from pins' });
-    } else {
-      pin(item.id);
-      addToast({ type: 'success', message: 'Pinned to sidebar' });
-    }
-  }, [itemIsPinned, pin, unpin, item.id, addToast]);
+    onTogglePin?.(item.id);
+  }, [onTogglePin, item.id]);
 
   // Handle select from context menu
   const handleSelect = useCallback(() => {
@@ -160,9 +182,9 @@ export const InboxRow = memo(function InboxRow({
   const handleOpenInSplit = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      onOpenInSplit();
+      onOpenInSplit(item.id);
     },
-    [onOpenInSplit]
+    [onOpenInSplit, item.id]
   );
 
   // Handle archive
@@ -185,10 +207,17 @@ export const InboxRow = memo(function InboxRow({
   );
 
   // Handle add tag click (with event stop propagation)
-  const handleAddTagClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    setTagPickerOpen(true);
-  }, []);
+  const handleAddTagClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (onOpenTagPicker) {
+        onOpenTagPicker(item.id);
+      } else {
+        setTagPickerOpen(true);
+      }
+    },
+    [onOpenTagPicker, item.id]
+  );
 
   // Handle assign project
   const handleAssignProject = useCallback(
@@ -204,10 +233,17 @@ export const InboxRow = memo(function InboxRow({
   );
 
   // Handle project click (with event stop propagation)
-  const handleProjectClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    setProjectPickerOpen(true);
-  }, []);
+  const handleProjectClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (onOpenProjectPicker) {
+        onOpenProjectPicker(item.id);
+      } else {
+        setProjectPickerOpen(true);
+      }
+    },
+    [onOpenProjectPicker, item.id]
+  );
 
   // Handle assign area
   const handleAssignArea = useCallback(
@@ -223,18 +259,24 @@ export const InboxRow = memo(function InboxRow({
   );
 
   // Handle area click (with event stop propagation)
-  const handleAreaClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    setAreaPickerOpen(true);
-  }, []);
+  const handleAreaClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (onOpenAreaPicker) {
+        onOpenAreaPicker(item.id);
+      } else {
+        setAreaPickerOpen(true);
+      }
+    },
+    [onOpenAreaPicker, item.id]
+  );
 
   // Handle duplicate (only if item can be duplicated)
-  const itemCanDuplicate = canDuplicate(item.id);
   const handleDuplicate = useCallback(() => {
-    if (itemCanDuplicate) {
-      duplicate(item.id);
+    if (canDuplicate) {
+      onDuplicate?.(item.id);
     }
-  }, [duplicate, item.id, itemCanDuplicate]);
+  }, [onDuplicate, item.id, canDuplicate]);
 
   // Handle duplicate click (with event stop propagation)
   const handleDuplicateClick = useCallback(
@@ -252,7 +294,7 @@ export const InboxRow = memo(function InboxRow({
         e.preventDefault();
         onSelectionChange(item.id, true);
       } else {
-        onClick();
+        onClick(item.id);
       }
     },
     [onClick, onSelectionChange, item.id]
@@ -272,11 +314,11 @@ export const InboxRow = memo(function InboxRow({
       : []),
     {
       id: 'pin',
-      label: itemIsPinned ? 'Unpin from Sidebar' : 'Pin to Sidebar',
+      label: isPinned ? 'Unpin from Sidebar' : 'Pin to Sidebar',
       icon: 'pin',
       onClick: handleTogglePin,
     },
-    ...(itemCanDuplicate
+    ...(canDuplicate
       ? [
           {
             id: 'duplicate',
@@ -435,7 +477,7 @@ export const InboxRow = memo(function InboxRow({
               </ActionIcon>
             </Tooltip>
             <Tooltip
-              label={itemIsPinned ? 'Unpin' : 'Pin to sidebar'}
+              label={isPinned ? 'Unpin' : 'Pin to sidebar'}
               position="top"
               withArrow
             >
@@ -446,14 +488,12 @@ export const InboxRow = memo(function InboxRow({
                   e.stopPropagation();
                   handleTogglePin();
                 }}
-                aria-label={
-                  itemIsPinned ? 'Unpin from sidebar' : 'Pin to sidebar'
-                }
+                aria-label={isPinned ? 'Unpin from sidebar' : 'Pin to sidebar'}
               >
                 <Icon name="pin" size={14} />
               </ActionIcon>
             </Tooltip>
-            {itemCanDuplicate && (
+            {canDuplicate && (
               <Tooltip label="Duplicate" position="top" withArrow>
                 <ActionIcon
                   variant="subtle"
@@ -489,32 +529,37 @@ export const InboxRow = memo(function InboxRow({
         onClose={closeContextMenu}
       />
 
-      {/* Tag Picker Modal */}
-      <ObjectSearchModal
-        isOpen={tagPickerOpen}
-        onClose={() => setTagPickerOpen(false)}
-        onSelect={handleAddTag}
-        targetTypeIds={['tag']}
-        title="Add Tag"
-      />
+      {/* Modals - only render if parent doesn't handle them (backwards compatibility) */}
+      {!hasLiftedModals && (
+        <>
+          {/* Tag Picker Modal */}
+          <ObjectSearchModal
+            isOpen={tagPickerOpen}
+            onClose={() => setTagPickerOpen(false)}
+            onSelect={handleAddTag}
+            targetTypeIds={['tag']}
+            title="Add Tag"
+          />
 
-      {/* Project Picker Modal */}
-      <ObjectSearchModal
-        isOpen={projectPickerOpen}
-        onClose={() => setProjectPickerOpen(false)}
-        onSelect={handleAssignProject}
-        targetTypeIds={['project']}
-        title="Assign to Project"
-      />
+          {/* Project Picker Modal */}
+          <ObjectSearchModal
+            isOpen={projectPickerOpen}
+            onClose={() => setProjectPickerOpen(false)}
+            onSelect={handleAssignProject}
+            targetTypeIds={['project']}
+            title="Assign to Project"
+          />
 
-      {/* Area Picker Modal */}
-      <ObjectSearchModal
-        isOpen={areaPickerOpen}
-        onClose={() => setAreaPickerOpen(false)}
-        onSelect={handleAssignArea}
-        targetTypeIds={['area']}
-        title="Assign to Area"
-      />
+          {/* Area Picker Modal */}
+          <ObjectSearchModal
+            isOpen={areaPickerOpen}
+            onClose={() => setAreaPickerOpen(false)}
+            onSelect={handleAssignArea}
+            targetTypeIds={['area']}
+            title="Assign to Area"
+          />
+        </>
+      )}
     </>
   );
 });

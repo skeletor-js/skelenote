@@ -19,6 +19,7 @@ vi.mock('@/contexts', () => ({
   useObjects: () => ({ store: mockStore }),
   useTypeRegistry: () => mockTypeRegistry,
   useSemanticSearchSafe: () => mockSemanticContext,
+  useAnalyticsSafe: () => null,
 }));
 
 // Mock @/lib/search

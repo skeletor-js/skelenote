@@ -33,10 +33,10 @@ interface TaskRowProps {
   task: SkelenoteObject;
   /** Callback when checkbox is clicked */
   onToggleComplete: (taskId: string) => void;
-  /** Callback when row is clicked (navigates to detail) */
-  onClick: () => void;
-  /** Callback to open task in split pane */
-  onOpenInSplit: () => void;
+  /** Callback when row is clicked (navigates to detail) - receives taskId */
+  onClick: (taskId: string) => void;
+  /** Callback to open task in split pane - receives taskId */
+  onOpenInSplit: (taskId: string) => void;
   /** Callback when task is archived */
   onArchive?: (taskId: string) => void;
   /** Whether this item is selected for bulk operations */
@@ -135,9 +135,9 @@ export const TaskRow = memo(function TaskRow({
   const handleOpenInSplit = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      onOpenInSplit();
+      onOpenInSplit(task.id);
     },
-    [onOpenInSplit]
+    [onOpenInSplit, task.id]
   );
 
   // Handle add tag click (with event stop propagation)
@@ -275,12 +275,12 @@ export const TaskRow = memo(function TaskRow({
       if (e.metaKey || e.ctrlKey) {
         // Cmd+click (Mac) or Ctrl+click (Windows) opens in split pane
         e.preventDefault();
-        onOpenInSplit();
+        onOpenInSplit(task.id);
       } else if (e.shiftKey && onSelectionChange) {
         e.preventDefault();
         onSelectionChange(task.id, true);
       } else {
-        onClick();
+        onClick(task.id);
       }
     },
     [onClick, onOpenInSplit, onSelectionChange, task.id]

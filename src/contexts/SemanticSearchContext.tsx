@@ -13,6 +13,7 @@ import {
   useEffect,
   type ReactNode,
 } from 'react';
+import posthog from 'posthog-js';
 import {
   SemanticEngine,
   createSemanticEngine,
@@ -21,6 +22,7 @@ import {
   IndexableContent,
 } from '@/lib/semantic';
 import { useSemanticIndexSync } from '@/hooks/useSemanticIndexSync';
+import { AnalyticsEvents } from '@/lib/analytics';
 
 const STORAGE_KEY = 'skelenote:semanticSearchEnabled';
 const THRESHOLD_KEY = 'skelenote:semanticThreshold';
@@ -163,6 +165,15 @@ export function SemanticSearchProvider({
       setStatus(eng.status);
       setIndexedCount(eng.indexedCount);
       setProgress(null);
+
+      // Track enable
+      try {
+        if (posthog.__loaded && !posthog.has_opted_out_capturing()) {
+          posthog.capture(AnalyticsEvents.SEMANTIC_SEARCH_ENABLED);
+        }
+      } catch {
+        // Silently fail if analytics is not available
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setError(message);
@@ -186,6 +197,15 @@ export function SemanticSearchProvider({
 
       if (cleanup) {
         setEngine(null);
+      }
+
+      // Track disable
+      try {
+        if (posthog.__loaded && !posthog.has_opted_out_capturing()) {
+          posthog.capture(AnalyticsEvents.SEMANTIC_SEARCH_DISABLED);
+        }
+      } catch {
+        // Silently fail if analytics is not available
       }
     },
     [engine]

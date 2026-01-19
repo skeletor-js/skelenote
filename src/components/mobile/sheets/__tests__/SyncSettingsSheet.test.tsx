@@ -95,7 +95,7 @@ describe('SyncSettingsSheet', () => {
   it('should show cloud sync section', () => {
     renderWithProvider(<SyncSettingsSheet {...defaultProps} />);
 
-    expect(screen.getByText('Cloud Sync')).toBeDefined();
+    expect(screen.getByText('Courier')).toBeDefined();
   });
 
   it('should show connected badges when syncs are connected', () => {

@@ -7,6 +7,7 @@ import { useArchive } from '../useArchive';
 
 // Mock dependencies
 const mockStore = {
+  get: vi.fn(),
   getArchived: vi.fn(),
   unarchive: vi.fn(),
   delete: vi.fn(),
@@ -23,6 +24,7 @@ vi.mock('@/contexts', () => ({
     refreshData: mockRefreshData,
     dataVersion: 1,
   }),
+  useAnalyticsSafe: () => null,
 }));
 
 const mockRemoveMentionsFromContent = vi.fn();

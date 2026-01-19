@@ -3,6 +3,7 @@
  */
 
 import { Stack } from '@mantine/core';
+import { useCallback } from 'react';
 import type { SkelenoteObject } from '@/lib/types';
 import { useNavigation } from '@/contexts';
 import { EmptyState } from '@/components/ui';
@@ -36,6 +37,21 @@ export function TaskList({
 }: TaskListProps) {
   const { navigateToObject, openInSplit } = useNavigation();
 
+  // Stable callbacks for row interactions
+  const handleClick = useCallback(
+    (id: string) => {
+      navigateToObject(id);
+    },
+    [navigateToObject]
+  );
+
+  const handleOpenInSplit = useCallback(
+    (id: string) => {
+      openInSplit(id);
+    },
+    [openInSplit]
+  );
+
   if (tasks.length === 0) {
     return <EmptyState message={emptyMessage} size="large" />;
   }
@@ -48,8 +64,8 @@ export function TaskList({
           task={task}
           onToggleComplete={onToggleComplete}
           onArchive={onArchiveTask}
-          onClick={() => navigateToObject(task.id)}
-          onOpenInSplit={() => openInSplit(task.id)}
+          onClick={handleClick}
+          onOpenInSplit={handleOpenInSplit}
           isSelected={isSelected?.(task.id)}
           onSelectionChange={onSelectionChange}
           isSelectingMode={hasSelection}

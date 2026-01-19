@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import posthog from 'posthog-js';
 import {
   SyncClient,
   type ConnectionStatus,
@@ -18,6 +19,7 @@ import {
 import { useObjects } from './ObjectContext';
 import { useToast } from './ToastContext';
 import { usePlatform } from '@/hooks/usePlatform';
+import { AnalyticsEvents } from '@/lib/analytics';
 
 interface SyncContextValue {
   /** The sync client instance */
@@ -139,6 +141,15 @@ export function SyncProvider({ children }: SyncProviderProps) {
       await client.enableEncryption();
 
       client.connect();
+
+      // Track sync started
+      try {
+        if (posthog.__loaded && !posthog.has_opted_out_capturing()) {
+          posthog.capture(AnalyticsEvents.SYNC_STARTED, { sync_type: 'cloud' });
+        }
+      } catch {
+        // Silently fail if analytics is not available
+      }
     },
     [syncClient, docStore, store, refreshData, addToast]
   );

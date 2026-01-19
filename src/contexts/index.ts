@@ -52,3 +52,8 @@ export {
   useSemanticSearchSafe,
 } from './SemanticSearchContext';
 export { UndoProvider, useUndo, useUndoSafe } from './UndoContext';
+export {
+  AnalyticsProvider,
+  useAnalytics,
+  useAnalyticsSafe,
+} from './AnalyticsContext';

@@ -16,6 +16,7 @@ import {
   AppearanceSettings,
   TemplateSettingsPanel,
   SearchSettings,
+  PrivacySettings,
   DataSettings,
   AboutSettings,
   DangerZoneSettings,
@@ -37,6 +38,8 @@ export function SettingsView() {
         return <TemplateSettingsPanel />;
       case 'search':
         return <SearchSettings />;
+      case 'privacy':
+        return <PrivacySettings />;
       case 'data':
         return <DataSettings />;
       case 'about':

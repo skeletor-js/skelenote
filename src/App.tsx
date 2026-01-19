@@ -34,6 +34,7 @@ import {
   useSkeletonKey,
   useKeyboardShortcuts,
   useUndo,
+  useAnalyticsSafe,
   type ViewType,
 } from '@/contexts';
 import {
@@ -46,6 +47,7 @@ import type { Template } from '@/lib/templates';
 import { runFirstRunSetup } from '@/lib/first-run';
 import type { TaskFilter } from '@/lib/tasks/filters';
 import { BuiltInTypeIds } from '@/lib/types';
+import { AnalyticsEvents } from '@/lib/analytics';
 
 // Lazy-loaded mobile views for better startup performance
 const MobileInboxView = lazy(() =>
@@ -568,7 +570,8 @@ function App() {
     unlock,
   } = useSkeletonKey();
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
-  const { isMobile } = usePlatform();
+  const { isMobile, platform } = usePlatform();
+  const analytics = useAnalyticsSafe();
 
   // Handle deep links (skelenote:// URLs) on mobile
   useDeepLinks();
@@ -618,6 +621,12 @@ function App() {
   useEffect(() => {
     // Only run after crypto is ready and key exists
     if (!startupCompleteRef.current && store && hasSkeletonKey) {
+      // Track app launch
+      analytics?.track(AnalyticsEvents.APP_LAUNCHED, {
+        platform,
+        is_mobile: isMobile,
+      });
+
       // Create today's daily note first
       const dailyNote = ensureTodaysDailyNote();
 
@@ -639,7 +648,16 @@ function App() {
 
       startupCompleteRef.current = true;
     }
-  }, [store, hasSkeletonKey, ensureTodaysDailyNote, refreshData, saveNow]);
+  }, [
+    store,
+    hasSkeletonKey,
+    ensureTodaysDailyNote,
+    refreshData,
+    saveNow,
+    analytics,
+    platform,
+    isMobile,
+  ]);
 
   const toggleShortcutsModal = useCallback(() => {
     setIsShortcutsModalOpen((prev) => !prev);

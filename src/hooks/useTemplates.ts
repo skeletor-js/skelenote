@@ -3,8 +3,9 @@
  */
 
 import { useMemo, useCallback, useState } from 'react';
-import { useObjects } from '@/contexts';
+import { useObjects, useAnalyticsSafe } from '@/contexts';
 import { useNavigation } from '@/contexts/NavigationContext';
+import { AnalyticsEvents } from '@/lib/analytics';
 import type { PropertyValue } from '@/lib/types';
 import type {
   Template,
@@ -82,6 +83,7 @@ export interface UseTemplatesResult {
 export function useTemplates(): UseTemplatesResult {
   const { store, isLoading, refreshData } = useObjects();
   const { navigateToObject } = useNavigation();
+  const analytics = useAnalyticsSafe();
 
   // Force re-render when daily note template changes
   const [, setForceUpdate] = useState(0);
@@ -197,12 +199,20 @@ export function useTemplates(): UseTemplatesResult {
         return null;
       }
       try {
+        // Get template info before creating for analytics
+        const template = getTemplate(store, templateId);
+
         const result = createFromTemplate(store, templateId, {
           properties: options?.properties,
           title: options?.title,
           context: options?.context,
         });
         refreshData();
+
+        // Track template usage
+        analytics?.track(AnalyticsEvents.TEMPLATE_USED, {
+          target_type: template?.targetTypeId,
+        });
 
         // Optionally navigate to the new object
         if (options?.navigate) {
@@ -215,7 +225,7 @@ export function useTemplates(): UseTemplatesResult {
         return null;
       }
     },
-    [store, refreshData, navigateToObject]
+    [store, refreshData, navigateToObject, analytics]
   );
 
   // Set the daily note template
