@@ -1,65 +1,105 @@
 ---
 name: issue
-description: Create and manage GitHub issues linked to roadmap
+description: Create and manage Linear issues linked to roadmap
 ---
 
 # Issue Skill
 
-Create and manage GitHub issues for the Skelenote roadmap.
+Create and manage Linear issues for the Skelenote roadmap using Linear MCP.
 
 ## Information Needed
 
-- Action: create, view, close, or list
-- For create: title, description, milestone, labels
+- **Action**: create, view, update, or list
+- **For create**: title, description, project, labels
 
 ## Steps
 
-### Create an issue:
-```bash
-gh issue create --title "<title>" --body "<body>" --label "roadmap,enhancement" --milestone "v0.2 - Exodus"
+### Create an Issue
+
+```
+mcp__linear-server__create_issue({
+  title: "Issue title",
+  description: "Description in Markdown",
+  team: "Skelenote",
+  project: "v0.2 - Exodus",
+  labels: ["Feature"]
+})
 ```
 
-### Add issue to project:
-```bash
-gh project item-add 1 --owner skeletor-js --url <ISSUE_URL>
+### View an Issue
+
+```
+mcp__linear-server__get_issue({
+  id: "NOTE-123"
+})
 ```
 
-### View issue:
-```bash
-gh issue view <NUMBER>
+### List Issues by Project
+
+```
+mcp__linear-server__list_issues({
+  team: "Skelenote",
+  project: "v0.2 - Exodus",
+  state: "In Progress"
+})
 ```
 
-### List issues by milestone:
-```bash
-gh issue list --milestone "v0.2 - Exodus" --state open
+### Update an Issue
+
+```
+mcp__linear-server__update_issue({
+  id: "issue-id",
+  state: "Done",
+  labels: ["Feature", "shipped"]
+})
 ```
 
-### Close issue:
-```bash
-gh issue close <NUMBER>
+### Add Comment
+
+```
+mcp__linear-server__create_comment({
+  issueId: "issue-id",
+  body: "Comment in Markdown"
+})
 ```
 
-## Issue Body Template
+## Issue Description Template
 
 ```markdown
-## Description
+## Summary
+
 [Feature description]
 
 ## Acceptance Criteria
-- [ ] [Criteria 1]
-- [ ] [Criteria 2]
+
+- [ ] Criteria 1
+- [ ] Criteria 2
 
 ## Technical Notes
+
 [Implementation details]
 
 ## Related
+
 - Roadmap: ROADMAP.md
 ```
 
 ## Labels
 
-- `roadmap` - All roadmap-tracked issues
-- `enhancement` - Feature issues
-- `phase-1/2/3/4` - Phase within release
-- `competitive-gap` - From competitor analysis
-- `package` - Package extraction
+| Label             | Usage                               |
+| ----------------- | ----------------------------------- |
+| `Feature`         | New functionality                   |
+| `Bug`             | Defect fixes                        |
+| `Improvement`     | Technical debt, refactoring         |
+| `competitive-gap` | Features in competitor apps         |
+| `package`         | Candidates for OSS extraction       |
+
+## Projects
+
+| Project              | Description                    |
+| -------------------- | ------------------------------ |
+| v0.2 - Exodus        | Data freedom & portability     |
+| v0.3 - Pocket        | Mobile apps & notifications    |
+| v0.4 - Oracle        | Sovereign AI on-device         |
+| v0.5 - Sentinel      | Security hardening             |
+| v1.0 - Cartographer  | Visualization & spatial        |

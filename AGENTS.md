@@ -139,6 +139,18 @@ Skelenote is a local-first, zero-knowledge note-taking app built with **Tauri 2.
 
 ```
 skelenote/
+├── .claude/                # Claude Code configuration
+│   ├── settings.json       # Shared hooks (committed)
+│   ├── settings.local.json # Personal permissions (gitignored)
+│   ├── rules/              # Persistent rules (auto-loaded)
+│   │   ├── git-workflow.md
+│   │   ├── code-quality.md
+│   │   ├── testing-standards.md
+│   │   ├── linear-workflow.md
+│   │   └── design-system.md
+│   ├── skills/             # Invocable skills (/skill-name)
+│   └── agents/             # Specialized agents (via Task tool)
+│
 ├── .github/workflows/      # CI/CD (test, build, release)
 ├── src/                    # Frontend (React/TypeScript)
 │   ├── components/         # React components by feature
@@ -843,3 +855,105 @@ For complete design specs, see `docs/product/design/style-guide.md`.
 - **style-guide.md**: Visual specs, component examples, Mantine config
 - **architecture.md**: System design, data flow, module responsibilities
 - **User guides**: End-user how-tos, no implementation details
+
+## Rules
+
+Rules in `.claude/rules/` are persistent instructions automatically loaded at session start:
+
+| Rule | Purpose |
+|------|---------|
+| **git-workflow.md** | Branch naming, commit format, PR workflow |
+| **code-quality.md** | TypeScript standards, path aliases, import patterns |
+| **testing-standards.md** | Vitest conventions, mock patterns, coverage expectations |
+| **linear-workflow.md** | Linear structure, labels, cycles, issue workflow |
+| **design-system.md** | "Cozy rationalism" aesthetic, Mantine patterns, colors |
+
+These rules formalize patterns from this file and are enforced automatically.
+
+## Hooks
+
+Hooks in `.claude/settings.json` run automatically during development:
+
+| Hook | When | What |
+|------|------|------|
+| **PreToolUse** | Before Edit/Write | Runs `pnpm lint --quiet` |
+| **PostToolUse** | After Edit/Write | TypeScript check on `.ts`/`.tsx` files |
+| **SessionStart** | New session | Shows git status and recent commits |
+| **Stop** | Session end | Runs `pnpm format` |
+
+These ensure code quality without manual intervention.
+
+## Available Agents
+
+Specialized agents are available via the Task tool for complex tasks:
+
+| Agent | When to Use |
+|-------|-------------|
+| **security-auditor** | After writing auth, crypto, or input handling code |
+| **docs-maintainer** | After implementing features that need documentation |
+| **architect-reviewer** | Before major refactoring or system design changes |
+| **test-generator** | When adding test coverage to existing code |
+| **frontend-design-expert** | For UI/UX design decisions and Mantine patterns |
+| **ux-design-specialist** | For user flow design and accessibility review |
+| **tauri-engineer** | For Rust backend, IPC, and native integrations |
+| **project-manager** | For Linear project and issue management |
+
+## MCP Servers Available
+
+| Server | Purpose | Key Tools |
+|--------|---------|-----------|
+| **Linear** | Issue tracking | `create_issue`, `list_issues`, `list_cycles` |
+| **Mantine** | UI documentation | `get_component_docs`, `search_components` |
+| **Context7** | Library docs | `resolve-library-id`, `query-docs` |
+| **Playwright** | Browser automation | `browser_navigate`, `browser_click`, `browser_snapshot` |
+
+## Skills Quick Reference
+
+### Git & Version Control
+
+- `/commit` - Semantic git commit
+- `/branch` - Create feature branch
+- `/pr` - Push and create PR
+- `/sync` - Sync with remote
+- `/merge-main` - Merge main into branch
+- `/cleanup` - Clean merged branches
+
+### Development
+
+- `/dev` - Start dev server with checks
+- `/check` - Run all CI checks locally
+- `/lint` - Run ESLint
+- `/test` - Run all tests
+- `/build` - Build production binaries
+
+### Code Generation
+
+- `/component` - React + Mantine component
+- `/hook` - Custom React hook
+- `/context` - React Context + provider
+- `/type` - Built-in object type
+- `/tauri-command` - Tauri Rust + TS command
+- `/mobile` - Mobile-specific component
+- `/test-file` - Test file scaffolding
+
+### Linear & Project Management
+
+- `/linear` - Create/manage Linear issues
+- `/issue` - Issue operations
+- `/project` - View Linear projects
+- `/roadmap-sync` - Sync roadmap with Linear
+
+### Agent Wrappers
+
+- `/security` - Quick security audit
+- `/docs` - Quick documentation update
+- `/architecture` - Quick architecture review
+- `/ux` - Quick UX review
+- `/tests` - Quick test generation
+
+### Release
+
+- `/release` - Bump version and tag
+- `/ship` - Full PR workflow
+- `/squash` - Squash merge PR
+- `/changelog` - Generate changelog
