@@ -7,6 +7,7 @@ Skelenote is designed for keyboard-first navigation. This guide covers all avail
 ## Platform Note
 
 Throughout this guide, `Cmd` refers to:
+
 - **macOS:** Command key
 - **Windows/Linux:** Ctrl key
 
@@ -16,7 +17,7 @@ Throughout this guide, `Cmd` refers to:
 
 | Shortcut | Action |
 |----------|--------|
-| `Cmd+K` | Open Command Palette |
+| `Cmd+K` | Open Omnibar |
 | `Cmd+?` | Show keyboard shortcuts |
 | `Cmd+Shift+F` | Global search |
 | `Cmd+,` | Open settings |
@@ -82,9 +83,9 @@ Throughout this guide, `Cmd` refers to:
 
 ---
 
-## Command Palette
+## Omnibar
 
-The Command Palette (`Cmd+K`) provides quick access to all actions:
+The Omnibar (`Cmd+K`) provides quick access to all actions:
 
 - Start typing to filter commands
 - Use arrow keys to navigate results
@@ -114,6 +115,7 @@ Skelenote supports split-pane viewing:
 ### Keyboard Navigation in Lists
 
 When focused on a list (Inbox, Tasks, etc.):
+
 - `Arrow Up/Down` moves selection
 - `Enter` opens selected item
 - `Space` can toggle task completion
@@ -127,6 +129,7 @@ When focused on a list (Inbox, Tasks, etc.):
 ### Editor Shortcuts
 
 The BlockNote editor supports standard formatting:
+
 - `Cmd+B` for **bold**
 - `Cmd+I` for *italic*
 - `Cmd+U` for underline

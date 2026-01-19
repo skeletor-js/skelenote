@@ -14,11 +14,11 @@ I wanted something different:
 * **Actually encrypted.** Zero-knowledge, not "we promise we won't look."
 * **Actually simple.** Works on all my devices without needing to trust a third party.
 
-## Why P2P Sync Matters
+## Why Hearth Matters
 
-Here's the thing: I don't need my data to exist anywhere but my devices. If my phone and MacBook are in the same room, they can sync directly. There's almost never a scenario where I'm editing on one device and won't eventually be near my other device. P2P solves my problem without requiring the cloud.
+Here's the thing: I don't need my data to exist anywhere but my devices. If my phone and MacBook are in the same room, they can sync directly. There's almost never a scenario where I'm editing on one device and won't eventually be near my other device. Hearth solves my problem without requiring the cloud.
 
-For those who want always-on sync, I built self-hosted relay support. Run your own relay, keep your data yours. That's the whole point. Or pay for our optional cloud sync service, but we keep that fully encrypted E2E too.
+For those who want always-on sync, I built self-hosted relay support. Run your own relay, keep your data yours. That's the whole point. Or pay for our optional Courier service, but we keep that fully encrypted E2E too.
 
 ## The Technical Philosophy
 
@@ -46,4 +46,4 @@ This app is for those that need a secure, personal place to think, work, write, 
 
 Desktop and mobile are here. In benchmark tests, all app features hold up with libraries as small as 5 notes and as large as 100,000. We're pushing biweekly releases with new features, and we're fully transparent about what's coming down the pipeline next. Even better? Our discord is open and we love discussion and suggestions on what we should add.
 
-I'm not building this to make money. I'm building something I actually want to use every day. If skelenote works for you too, join the community and let's chat.
+I'm not building this to make money. I'm building something I actually want to use every day. If Skelenote works for you too, join the community and let's chat.

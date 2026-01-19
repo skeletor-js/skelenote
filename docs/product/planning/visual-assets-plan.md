@@ -35,11 +35,11 @@ To validate the "Cozy Rationalism" aesthetic claim and reduce onboarding frictio
 
 ### C. The "Hearth" (Sync Connectivity)
 
-* **Target File:** `docs/user/guides/campfire-guide.md` (or `hearth-guide.md`).
+* **Target File:** `docs/user/guides/hearth-guide.md`.
 * **Composition:**
   * **Settings Panel:** Sync / Devices.
   * **Key Element:** "Connected Devices" list showing **Green Dots** (active connection).
-  * **Toggle:** "Campfire" (or Hearth) enabled.
+  * **Toggle:** "Hearth" enabled.
 * **Goal:** Assurance. Show the user what "It's working" looks like.
 
 ### D. Mobile Engagement (Triptych)
@@ -51,10 +51,10 @@ To validate the "Cozy Rationalism" aesthetic claim and reduce onboarding frictio
     3. **Edit:** Keyboard up, rich text editing.
 * **Goal:** Show feature parity with desktop.
 
-### E. Command Palette Speed
+### E. Omnibar Speed
 
 * **Target File:** `docs/user/guides/keyboard-shortcuts.md`.
-* **Composition:** Center crop of the Command Palette (`Cmd+K`).
+* **Composition:** Center crop of the Omnibar (`Cmd+K`).
 * **State:** User has typed "New Pro...", showing "Create New Project" as top hit.
 * **Goal:** Demonstrate "Keyboard First" efficiency.
 

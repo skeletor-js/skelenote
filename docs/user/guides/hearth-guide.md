@@ -1,12 +1,12 @@
-# Campfire Mode: Local Network Sync
+# Hearth: Local Network Sync
 
-**Physical proximity is the ultimate encryption.** Campfire Mode lets devices sync directly over your local network—no internet, no cloud, no interception possible.
+**Physical proximity is the ultimate encryption.** Hearth lets devices sync directly over your local network—no internet, no cloud, no interception possible.
 
 ---
 
-## What is Campfire Mode?
+## What is Hearth?
 
-Campfire is Skelenote's local P2P sync system. When enabled:
+Hearth is Skelenote's local network sync system. When enabled:
 
 1. Your device advertises itself on the local network
 2. Other Skelenote devices with the same Skeleton Key are discovered
@@ -52,7 +52,7 @@ This means a coffee shop full of Skelenote users won't see each other's devices�
 
 ---
 
-## Setting Up Campfire Sync
+## Setting Up Hearth
 
 ### Prerequisites
 
@@ -62,8 +62,8 @@ This means a coffee shop full of Skelenote users won't see each other's devices�
 
 ### Steps
 
-1. Open **Settings > Sync > Local Sync**
-2. Toggle **Enable Local Sync** on
+1. Open **Settings > Sync > Hearth**
+2. Toggle **Enable Hearth** on
 3. Your device will appear in the "Discovered Devices" list on other devices
 4. Sync happens automatically when devices connect
 
@@ -183,7 +183,7 @@ QR pairing maintains Skelenote's zero-knowledge security model:
 
 ### The Air-Gap Advantage
 
-When you sync via Campfire:
+When you sync via Hearth:
 
 - No DNS lookups to external servers
 - No TCP connections outside your network
@@ -218,7 +218,7 @@ Legal offices, medical facilities, or any environment where data must not leave 
 
 Hotel WiFi, conference networks, or any public network becomes safer because data only syncs locally.
 
-**Scenario:** You're at a conference with your laptop and phone on the hotel WiFi. Campfire syncs your devices directly. Even if the hotel network is compromised, your data is encrypted end-to-end and never leaves the local network.
+**Scenario:** You're at a conference with your laptop and phone on the hotel WiFi. Hearth syncs your devices directly. Even if the hotel network is compromised, your data is encrypted end-to-end and never leaves the local network.
 
 ---
 
@@ -229,7 +229,7 @@ Hotel WiFi, conference networks, or any public network becomes safer because dat
 1. **Verify same Skeleton Key** on all devices
 2. **Check network:** Devices must be on the same subnet
 3. **Firewall:** Ensure mDNS (UDP 5353) and Skelenote TCP port are allowed
-4. **Try toggling:** Turn Local Sync off and on
+4. **Try toggling:** Turn Hearth off and on
 5. **VPN interference:** Some VPNs block local network traffic
 
 ### Sync Not Working
@@ -247,10 +247,10 @@ Hotel WiFi, conference networks, or any public network becomes safer because dat
 
 ---
 
-## Campfire vs Cloud Sync
+## Hearth vs Courier
 
-| Aspect | Campfire | Cloud Relay |
-|--------|----------|-------------|
+| Aspect | Hearth | Courier |
+|--------|--------|---------|
 | **Internet required** | No | Yes |
 | **Data leaves network** | No | Yes (encrypted) |
 | **Works globally** | No | Yes |
@@ -259,21 +259,23 @@ Hotel WiFi, conference networks, or any public network becomes safer because dat
 | **Sync speed** | Fast (local) | Depends on internet |
 | **Setup complexity** | None | Minimal |
 
-**Choose Campfire when:**
+**Choose Hearth when:**
+
 - Security is paramount
 - Devices are physically proximate
 - You don't want any data on the internet
 
-**Choose Cloud Relay when:**
+**Choose Courier when:**
+
 - You need sync across cities/countries
 - Devices are rarely on the same network
 - Convenience outweighs maximum security
 
-You can use both: Campfire for local sync when available, Cloud Relay for remote devices.
+You can use both: Hearth for local sync when available, Courier for remote devices.
 
 ---
 
 ## Further Reading
 
 - [Security & Privacy Deep Dive](security-privacy.md) — Full encryption architecture
-- [Cloud Sync Setup](cloud-sync-guide.md) — Configure relay server sync
+- [Courier Setup](courier-guide.md) — Configure relay server sync

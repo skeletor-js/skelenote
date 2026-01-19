@@ -66,7 +66,7 @@ Check that the app has permission to access the system keychain:
 
 ## Sync Not Working
 
-### Campfire: Devices not discovering each other
+### Hearth: Devices not discovering each other
 
 1. **Same network?** Both devices must be on the same local network (same WiFi, same subnet)
 2. **Firewall?** Allow Skelenote through your firewall
@@ -79,16 +79,16 @@ Still not working? Try:
 # macOS - verify mDNS is working
 dns-sd -B _skelenote._tcp
 
-# Should show your device if Campfire is enabled
+# Should show your device if Hearth is enabled
 ```
 
-### Campfire: Connected but not syncing
+### Hearth: Connected but not syncing
 
 - Check that both devices have the same Skeleton Key
 - Wait a few seconds - initial sync can take time
-- Try toggling Campfire off and on in Settings
+- Try toggling Hearth off and on in Settings
 
-### Cloud Relay: Connection failed
+### Courier: Connection failed
 
 1. Check your relay server URL in Settings > Sync > Cloud
 2. Verify the server is running and accessible
@@ -128,13 +128,13 @@ Skelenote auto-saves with a 300ms debounce. If content seems lost:
 
 - **Title search**: Only searches object titles
 - **Content search**: Searches inside object content
-- **Semantic search**: Must be enabled in Settings (uses local AI)
+- **Lantern**: Must be enabled in Settings (uses local AI)
 
 Try broader search terms. Exact matches work better than partial words.
 
-### Semantic search is slow
+### Lantern is slow
 
-The first time you enable semantic search, it generates embeddings for all content. This is a one-time process. Subsequent searches are faster.
+The first time you enable Lantern, it generates embeddings for all content. This is a one-time process. Subsequent searches are faster.
 
 ---
 
@@ -148,12 +148,12 @@ The first time you enable semantic search, it generates embeddings for all conte
 
 ### High CPU usage
 
-Check if semantic search is indexing. This is temporary and will complete.
+Check if Lantern is indexing. This is temporary and will complete.
 
 If CPU stays high:
 
 1. Check console for error loops (Cmd+Option+I)
-2. Try disabling Campfire/Cloud sync temporarily
+2. Try disabling Hearth/Courier sync temporarily
 3. Report the issue with console logs
 
 ---

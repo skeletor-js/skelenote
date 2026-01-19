@@ -1,4 +1,4 @@
-# Cloud Sync Setup
+# Courier: Internet Sync
 
 Sync your vault across the internet using an encrypted relay server.
 
@@ -6,14 +6,15 @@ Sync your vault across the internet using an encrypted relay server.
 
 ## Overview
 
-Cloud Sync uses a WebSocket relay server to sync data between devices anywhere in the world. All data is end-to-end encrypted—the relay only sees encrypted blobs and cannot read your content.
+Courier uses a WebSocket relay server to sync data between devices anywhere in the world. All data is end-to-end encrypted—the relay only sees encrypted blobs and cannot read your content.
 
 **Key Points:**
+
 - Relay cannot decrypt your data (zero-knowledge)
 - Optional—Skelenote works fully offline without it
 - Self-hostable for complete control
 
-Use Cloud Sync when devices aren't on the same network. For local sync, see [Campfire Mode](campfire-guide.md).
+Use Courier when devices aren't on the same network. For local sync, see [Hearth](hearth-guide.md).
 
 ---
 
@@ -49,7 +50,7 @@ The relay is a dumb pipe. It routes encrypted packets between your devices but c
 
 ## Encryption Guarantees
 
-Even with cloud sync, your data remains private:
+Even with Courier, your data remains private:
 
 | Stage | Protection |
 |-------|------------|
@@ -59,6 +60,7 @@ Even with cloud sync, your data remains private:
 | **On receipt** | Decrypted locally with your Sync Key |
 
 The relay never has access to:
+
 - Your Skeleton Key
 - Your Sync Key
 - Any plaintext data
@@ -72,9 +74,9 @@ Skelenote offers a hosted relay for convenience.
 
 ### Setup
 
-1. Open **Settings > Sync > Cloud Sync**
-2. Enter the relay URL (provided with your license)
-3. Toggle **Enable Cloud Sync** on
+1. Open **Settings > Sync > Courier**
+2. Enter the relay URL (provided with your subscription)
+3. Toggle **Enable Courier** on
 4. Verify connection status shows "Connected"
 
 ### What the Relay Stores
@@ -147,30 +149,30 @@ server {
 
 ### Connecting Clients
 
-1. In Skelenote, go to **Settings > Sync > Cloud Sync**
+1. In Skelenote, go to **Settings > Sync > Courier**
 2. Enter your relay URL: `wss://relay.yourdomain.com/`
-3. Enable Cloud Sync
+3. Enable Courier
 4. Verify connection status
 
 ---
 
-## When to Use Cloud vs Campfire
+## When to Use Courier vs Hearth
 
 | Scenario | Recommendation |
 |----------|----------------|
-| Same building/network | **Campfire** (maximum security) |
-| Different cities/countries | **Cloud Sync** |
-| Untrusted network (hotel, conference) | **Campfire only** |
+| Same building/network | **Hearth** (maximum security) |
+| Different cities/countries | **Courier** |
+| Untrusted network (hotel, conference) | **Hearth only** |
 | Solo user, multiple devices at home | Either works |
-| Team with remote members | **Cloud Sync** |
-| High-security environment | Campfire + self-hosted relay |
+| Team with remote members | **Courier** |
+| High-security environment | Hearth + self-hosted relay |
 
 ### Using Both
 
-You can enable both Campfire and Cloud Sync simultaneously:
+You can enable both Hearth and Courier simultaneously:
 
-- **Local devices** sync via Campfire (faster, air-gapped)
-- **Remote devices** sync via Cloud Relay
+- **Local devices** sync via Hearth (faster, air-gapped)
+- **Remote devices** sync via Courier
 
 Skelenote automatically uses the fastest available path.
 
@@ -188,7 +190,7 @@ Skelenote automatically uses the fastest available path.
 ### Not Syncing
 
 1. **Ensure both devices use the same Skeleton Key**
-2. **Check Cloud Sync is enabled** on all devices
+2. **Check Courier is enabled** on all devices
 3. **Verify devices show as connected** in Settings
 4. **Check relay status** in Settings > Sync
 
@@ -198,6 +200,7 @@ Skelenote automatically uses the fastest available path.
 2. **Verify firewall** allows incoming WebSocket connections
 3. **Check server logs** for errors: `docker logs skelenote-relay`
 4. **Test WebSocket** with a tool like `wscat`:
+
    ```bash
    wscat -c wss://relay.yourdomain.com/
    ```
@@ -214,8 +217,8 @@ Loro CRDTs handle conflicts automatically. If you see unexpected content:
 
 ## Privacy Comparison
 
-| Aspect | Cloud Apps | Skelenote Cloud Sync |
-|--------|------------|---------------------|
+| Aspect | Cloud Apps | Skelenote Courier |
+|--------|------------|-------------------|
 | Who can read data | Company, hackers, governments | Only you |
 | Encryption | At rest (they have keys) | End-to-end (you have keys) |
 | Metadata | Full access | User ID only (anonymous) |
@@ -227,4 +230,4 @@ Loro CRDTs handle conflicts automatically. If you see unexpected content:
 ## Further Reading
 
 - [Security & Privacy Deep Dive](security-privacy.md) — Full encryption architecture
-- [Campfire Mode Guide](campfire-guide.md) — Local network sync
+- [Hearth Guide](hearth-guide.md) — Local network sync

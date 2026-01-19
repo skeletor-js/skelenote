@@ -34,19 +34,22 @@ These are battle-tested cryptographic primitives, not custom implementations.
 ### What about metadata?
 
 **What we CAN'T see** (encrypted):
+
 - Note content and titles
 - Task names and descriptions
 - Tags, projects, areas
 - Relationships between objects
 - Anything you type
 
-**What Cloud Relay sees** (if you use it):
+**What Courier sees** (if you use it):
+
 - Encrypted blob sizes
 - Timestamps of sync operations
 - User ID (cryptographic hash, not your identity)
 - Device IDs
 
-**What Campfire (P2P) exposes**:
+**What Hearth exposes**:
+
 - Your device is on the local network (via mDNS)
 - Nothing else - direct encrypted connection
 
@@ -90,6 +93,7 @@ We don't store your keys. We can't be compelled to hand over what we don't have.
 They have access until you close the app or lock your computer. Skelenote doesn't currently have an auto-lock timeout (planned feature).
 
 **Mitigations**:
+
 - Lock your computer when away (Cmd+Ctrl+Q on macOS)
 - Enable FileVault/BitLocker for full-disk encryption
 - Use a strong system password
@@ -99,6 +103,7 @@ They have access until you close the app or lock your computer. Skelenote doesn'
 If your device is compromised, all bets are off. A keylogger could capture your Skeleton Key as you type it. Skelenote protects data in transit and at rest, not against a compromised endpoint.
 
 **Mitigations**:
+
 - Keep your OS updated
 - Don't install untrusted software
 - Use antivirus/anti-malware tools
@@ -118,22 +123,27 @@ A full security audit is planned post-beta. We'll publish the results.
 ### How do I verify your claims?
 
 **Inspect network traffic**:
+
 ```bash
 # macOS/Linux - watch what Skelenote sends
 sudo tcpdump -i any -A host your-relay-server.com
 ```
+
 You'll see encrypted blobs, not plaintext.
 
 **Review the code**:
+
 - Encryption: `src-tauri/src/crypto/`
 - Sync protocol: `src/lib/sync/`
 - Key management: `src-tauri/src/crypto/keys.rs`
 
 **Verify local storage**:
+
 ```bash
 # Your data file (it's encrypted)
 xxd ~/Library/Application\ Support/com.skelenote.app/data/store.loro | head
 ```
+
 You'll see binary data, not readable text.
 
 ---
@@ -147,14 +157,16 @@ We will publish a transparency report if/when we receive legal requests for user
 ### Do you comply with GDPR?
 
 Yes. Key points:
+
 - Your data stays on your devices (local-first)
-- Cloud relay stores only encrypted blobs
+- Courier stores only encrypted blobs
 - You can delete everything by deleting your local files
 - We don't track or profile users
 
 ### What happens to my data if Skelenote shuts down?
 
 Nothing. Your data lives on your device in standard files. You can:
+
 - Continue using the app (it works offline forever)
 - Export to Markdown
 - Access the raw Loro CRDT files

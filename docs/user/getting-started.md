@@ -41,7 +41,7 @@ chmod +x Skelenote_*.AppImage
 **iOS** (via TestFlight)
 
 1. Install [TestFlight](https://apps.apple.com/app/testflight/id899247664) from the App Store
-2. Open the [Skelenote TestFlight link](https://testflight.apple.com/join/skelenote)
+2. Join our [Discord](https://discord.gg/4apsgSRB7D) to get the TestFlight invite link
 3. Tap **Accept** and install
 
 **Android** (APK)
@@ -136,11 +136,11 @@ Mention other objects with `@` to create a timeline of your work.
 
 ## Finding Things
 
-### Command Palette
+### Omnibar
 
-Press `Cmd+K` (or `Ctrl+K`) to open the Command Palette. Search objects, run commands, navigate anywhere.
+Press `Cmd+K` (or `Ctrl+K`) to open the Omnibar. Search objects, run commands, navigate anywhere.
 
-### Semantic Search
+### Lantern
 
 If enabled, Skelenote builds a local understanding of your vault's meaning. Search for concepts, not just words. This happens entirely on your device.
 
@@ -152,8 +152,8 @@ Every object shows what links to it. Follow the threads of your thinking.
 
 ## Syncing & Backup
 
-- **Campfire**: Local P2P sync for devices on the same network. [Guide](guides/campfire-guide.md).
-- **Cloud Relay**: Encrypted sync for remote devices. [Guide](guides/cloud-sync-guide.md).
+- **Hearth**: Local sync for devices on the same network. [Guide](guides/hearth-guide.md).
+- **Courier**: Encrypted sync for remote devices. [Guide](guides/courier-guide.md).
 - **Data Safety**: Learn how to backup your vault. [Guide](guides/data-safety.md).
 
 ---

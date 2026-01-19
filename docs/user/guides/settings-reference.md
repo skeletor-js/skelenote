@@ -28,29 +28,29 @@ Removes your Skeleton Key from this device. You'll need to re-enter it to access
 
 Configure how your data syncs between devices.
 
-### Campfire (Local P2P)
+### Hearth
 
 Sync with devices on your local network without any server.
 
 **Settings:**
 
-- **Enable Campfire** - Turn local sync on/off
+- **Enable Hearth** - Turn local sync on/off
 - **Device Name** - How this device appears to others
 - **Auto-connect** - Automatically connect to discovered devices
 
-See [Campfire Guide](campfire-guide.md) for detailed setup.
+See [Hearth Guide](hearth-guide.md) for detailed setup.
 
-### Cloud Relay
+### Courier
 
 Sync through an optional relay server for remote devices.
 
 **Settings:**
 
-- **Enable Cloud Sync** - Connect to relay server
+- **Enable Courier** - Connect to relay server
 - **Server URL** - Relay server address (default or self-hosted)
 - **Connection Status** - Shows connected/disconnected state
 
-See [Cloud Sync Guide](cloud-sync-guide.md) for server setup.
+See [Courier Guide](courier-guide.md) for server setup.
 
 ### Device Management
 
@@ -81,9 +81,9 @@ Adjust spacing between elements:
 
 ## Search
 
-Configure semantic (AI-powered) search.
+Configure Lantern (AI-powered search).
 
-### Enable Semantic Search
+### Enable Lantern
 
 Find conceptually similar content, not just keyword matches.
 
@@ -196,7 +196,7 @@ App information and links.
 
 Destructive actions that cannot be undone.
 
-### Remove Semantic Search
+### Remove Lantern
 
 Deletes the search model and index:
 

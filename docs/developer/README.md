@@ -87,7 +87,7 @@ Then create a PR using the template.
 | Editor | [BlockNote](https://www.blocknotejs.org/) |
 | Data Layer | [Loro CRDT](https://loro.dev/) |
 | Encryption | XChaCha20-Poly1305, BIP39 |
-| P2P Sync | mDNS/Bonjour + Direct TCP |
+| Hearth | mDNS/Bonjour + Direct TCP |
 
 ### Project Structure
 

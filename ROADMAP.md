@@ -69,7 +69,7 @@ This release establishes the core Skelenote experience: a local-first, encrypted
 | **XChaCha20-Poly1305** | Military-grade encryption with 192-bit nonce (safe for random generation) | ✅ |
 | **24-word Skeleton Key** | BIP39 mnemonic for human-readable key backup | ✅ |
 | **Loro CRDTs** | Time Machine lets you reset any object to any previous state | ✅ |
-| **Campfire P2P** | mDNS discovery + direct TCP sync on local network | ✅ |
+| **Hearth** | Local network sync via mDNS + TCP | ✅ |
 | **Cloud Relay** | Optional WebSocket relay for remote sync | ✅ |
 | **Device Revocation** | Block compromised devices from syncing | ✅ |
 | **Device Fingerprint** | Visual verification (first 8 hex chars of user ID hash) | ✅ |
@@ -265,7 +265,7 @@ Verify with `vite-plugin-visualizer` before/after.
 
 - Full editor with BlockNote
 - All object types and properties
-- Campfire P2P sync (WiFi/Bluetooth)
+- Hearth sync (WiFi/Bluetooth)
 - Cloud relay sync
 - Zen Mode
 - Omnibar (adapted for touch)
@@ -491,7 +491,7 @@ Source Device (has key)          Target Device (new)
 
 *Trust, but verify.*
 
-**Status:** � Planned  
+**Status:** 📋 Planned  
 **Version:** `0.5.0`  
 
 > [!IMPORTANT]

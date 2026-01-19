@@ -10,8 +10,8 @@
 
 * [Keyboard Shortcuts](user/guides/keyboard-shortcuts.md)
 * [Mobile Guide](user/guides/mobile-guide.md)
-* [Campfire Sync (P2P)](user/guides/campfire-guide.md)
-* [Cloud Sync](user/guides/cloud-sync-guide.md)
+* [Hearth](user/guides/hearth-guide.md)
+* [Courier](user/guides/courier-guide.md)
 * [Export & Import](user/guides/export-import.md)
 * [Data Safety](user/guides/data-safety.md)
 * [Sharing Your Vault](user/guides/sharing-vault.md)
