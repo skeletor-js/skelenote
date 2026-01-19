@@ -24,8 +24,10 @@ pub enum BlocklistError {
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 struct BlocklistData {
     /// Revoked device IDs
+    #[serde(default)]
     revoked_device_ids: Vec<String>,
     /// Last updated timestamp (Unix ms)
+    #[serde(default)]
     updated_at: u64,
 }
 
@@ -104,7 +106,10 @@ impl DeviceBlocklist {
         let contents = serde_json::to_string_pretty(&data)?;
         tokio::fs::write(path, contents).await?;
 
-        println!("[Blocklist] Saved {} blocked devices to disk", blocked.len());
+        println!(
+            "[Blocklist] Saved {} blocked devices to disk",
+            blocked.len()
+        );
         Ok(())
     }
 
@@ -191,5 +196,4 @@ mod tests {
         assert!(blocklist2.is_blocked("device-2").await);
         assert!(!blocklist2.is_blocked("device-3").await);
     }
-
 }

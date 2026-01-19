@@ -33,13 +33,13 @@ To validate the "Cozy Rationalism" aesthetic claim and reduce onboarding frictio
   * Show 3-5 unprocessed items. Some with tags (`#idea`), some plain text.
 * **Goal:** Visualize the "Landing Zone" concept.
 
-### C. The "Hearth" (Sync Connectivity)
+### C. Local Sync (Connectivity)
 
-* **Target File:** `docs/user/guides/hearth-guide.md`.
+* **Target File:** `docs/user/guides/local-sync-guide.md`.
 * **Composition:**
   * **Settings Panel:** Sync / Devices.
   * **Key Element:** "Connected Devices" list showing **Green Dots** (active connection).
-  * **Toggle:** "Hearth" enabled.
+  * **Toggle:** "Local Sync" enabled.
 * **Goal:** Assurance. Show the user what "It's working" looks like.
 
 ### D. Mobile Engagement (Triptych)

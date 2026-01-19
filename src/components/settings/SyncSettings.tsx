@@ -149,10 +149,10 @@ export function SyncSettings() {
 
       <Divider />
 
-      {/* Courier */}
+      {/* Cloud Sync */}
       <Box>
         <Title order={4} mb="xs">
-          Courier
+          Cloud Sync
         </Title>
         <Text size="sm" c="dimmed" mb="md">
           Sync devices anywhere — encrypted end-to-end.

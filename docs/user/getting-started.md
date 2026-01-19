@@ -1,71 +1,40 @@
 # Getting Started
 
 > [!NOTE]
-> **Active Development**: Skelenote is under active development. Your data is safe and backwards-compatible. New features and improvements ship regularly.
-
-Close the door. The room is yours.
+> **Active Development**: Skelenote is under active development. Your data is safe and backwards-compatible. New features ship regularly.
 
 ---
 
-## Installation & Setup
+## Installation
 
-1. **Download** the latest release from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases).
-2. **Install** for your platform:
+Download the latest release from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases).
 
 ### Desktop
 
-**macOS**
+**macOS**: Open the `.dmg` and drag Skelenote to Applications.
 
-Open the downloaded `.dmg` and drag Skelenote to Applications.
+**Windows**: Run the installer (`.exe`).
 
-**Windows**
-
-Run the downloaded installer (`.exe`).
-
-**Linux**
-
-Native packages (recommended):
+**Linux**:
 
 - `.deb` for Debian/Ubuntu: `sudo dpkg -i skelenote_*.deb`
 - `.rpm` for Fedora/RHEL: `sudo rpm -i skelenote_*.rpm`
-
-AppImage (fallback):
-
-```bash
-chmod +x Skelenote_*.AppImage
-./Skelenote_*.AppImage
-```
+- AppImage: `chmod +x Skelenote_*.AppImage && ./Skelenote_*.AppImage`
 
 ### Mobile
 
-**iOS** (via TestFlight)
+**iOS** (TestFlight): Join our [Discord](https://discord.gg/4apsgSRB7D) for the invite link.
 
-1. Install [TestFlight](https://apps.apple.com/app/testflight/id899247664) from the App Store
-2. Join our [Discord](https://discord.gg/4apsgSRB7D) to get the TestFlight invite link
-3. Tap **Accept** and install
-
-**Android** (APK)
-
-1. Download the `.apk` from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases)
-2. Enable **Install from unknown sources** in Settings > Security
-3. Open the APK and tap **Install**
+**Android**: Download the `.apk` from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases).
 
 > [!TIP]
-> See the [Mobile Guide](guides/mobile-guide.md) for detailed setup, QR pairing, and mobile-specific features.
-
----
-
-## Welcome to Your Study
-
-Skelenote is not another cloud service asking for your email. It's not a subscription waiting to lapse. It's a quiet room on your computer—a **Digital Study** where your thoughts live, encrypted, until you choose to share them.
-
-Your vault exists as files on this device. No account. No server knowing what you wrote at 2 AM. Just you and your work.
+> See the [Mobile Guide](guides/mobile-guide.md) for QR pairing and mobile features.
 
 ---
 
 ## Your Skeleton Key
 
-When you first open Skelenote, you'll create a **Skeleton Key**—a 24-word phrase that unlocks everything.
+When you first open Skelenote, you'll create a **Skeleton Key**—a 24-word phrase that encrypts everything.
 
 ```
 abandon ability able about above absent absorb abstract absurd abuse access accident ...
@@ -73,100 +42,78 @@ abandon ability able about above absent absorb abstract absurd abuse access acci
 
 Write it down. Store it somewhere safe. This is not a password you can reset.
 
-**We cannot recover your Skeleton Key.** That's not a limitation—that's the point. If we could recover it, so could someone else. Your privacy depends on this key staying in your hands alone.
+**We cannot recover your Skeleton Key.** That's the point. If we could recover it, so could someone else.
 
-When you set up another device, you'll enter this same phrase. That's how your vault follows you—not through our servers, but through your secure backup.
+When you set up another device, enter this same phrase. Your vault follows you through your key, not our servers.
 
 ---
 
-## The Furnished Room
+## The PARA Method
 
-Most apps hand you a blank page and wish you luck. Skelenote comes furnished.
+Skelenote comes with a built-in organization system:
 
-You step into the **PARA method**—a proven system for organizing knowledge:
+| Section | What Lives Here |
+|---------|-----------------|
+| **Projects** | Active work with deadlines. Things that end. |
+| **Areas** | Ongoing responsibilities. Things you maintain. |
+| **Resources** | Reference material, organized by topic. |
+| **Archive** | Completed work. Quiet, but searchable. |
 
-| Room | What Lives Here |
-|------|-----------------|
-| **Projects** | Active work with deadlines. A product launch. A research paper. Things that end. |
-| **Areas** | Ongoing responsibilities. Health. Finances. Career growth. Things you maintain. |
-| **Resources** | Reference material, organized by topic. Use tags to group them. |
-| **Archive** | Completed work. Not deleted—just quiet. Searchable when you need it. |
-
-This structure works on day one. In time, you can rearrange the furniture to suit your thinking.
+This works on day one. Rearrange it as you grow.
 
 ---
 
 ## Your First Object
 
-In Skelenote, everything is an **Object**. A quick task and a 5,000-word thesis share the same power—properties, tags, links, history.
+Everything in Skelenote is an **Object**. A quick task and a 5,000-word thesis share the same power.
 
-To create your first object:
-
-1. Press `Cmd+N` (or `Ctrl+N` on Windows/Linux)
+1. Press `Cmd+N` (or `Ctrl+N`)
 2. Give it a title
 3. Start writing
 
-Objects connect to each other. Type `@` followed by a name to link to another object. These links are bidirectional—the linked object will show your reference in its **Backlinks** section.
+Type `@` to link to other objects. Links are bidirectional—the other object shows your reference in Backlinks.
 
 ---
 
-## The Inbox Ritual
+## The Inbox
 
-New objects land in your **Inbox** by default.
-
-The inbox is not a to-do list. It's a holding area—a place for thoughts to wait until you're ready to decide where they belong.
-
-**The ritual:**
+New objects land in your **Inbox** by default. It's a holding area for thoughts that need sorting.
 
 1. Capture freely throughout the day
 2. Set aside time to process
-3. Move each object to its proper place (Project, Area, Resource) or archive it
-
-Your study stays quiet. The noise stays in the inbox until you choose to let it in.
+3. Move each object where it belongs
 
 ---
 
 ## Daily Notes
 
-Every day gets its own object, created automatically. Use Daily Notes for morning intentions, meeting notes, or ephemeral thoughts.
-
-Mention other objects with `@` to create a timeline of your work.
+Every day gets its own object, created automatically. Use it for morning intentions, meeting notes, or quick thoughts.
 
 ---
 
 ## Finding Things
 
-### Omnibar
-
-Press `Cmd+K` (or `Ctrl+K`) to open the Omnibar. Search objects, run commands, navigate anywhere.
-
-### Lantern
-
-If enabled, Skelenote builds a local understanding of your vault's meaning. Search for concepts, not just words. This happens entirely on your device.
-
-### Backlinks
-
-Every object shows what links to it. Follow the threads of your thinking.
+- **Omnibar** (`Cmd+K`): Search objects, run commands, navigate anywhere.
+- **Semantic search**: Search by meaning, not just keywords. Runs locally on your device.
+- **Backlinks**: See what links to each object.
 
 ---
 
-## Syncing & Backup
+## Sync
 
-- **Hearth**: Local sync for devices on the same network. [Guide](guides/hearth-guide.md).
-- **Courier**: Encrypted sync for remote devices. [Guide](guides/courier-guide.md).
-- **Data Safety**: Learn how to backup your vault. [Guide](guides/data-safety.md).
-
----
-
-## The Time Machine
-
-Made a mistake? Skelenote records the history of your vault. Navigate to any object's history and restore it to any previous state.
+- **Local sync**: Devices on the same network sync automatically. [Guide](guides/local-sync-guide.md)
+- **Cloud sync**: Encrypted sync for remote devices. [Guide](guides/cloud-sync-guide.md)
+- **Backup**: [Data safety guide](guides/data-safety.md)
 
 ---
 
-## Feedback & Community
+## History
 
-Your feedback shapes Skelenote's development.
+Made a mistake? Skelenote records your vault's history. Restore any object to any previous state.
+
+---
+
+## Community
 
 - **Report Issues**: [Linear](https://linear.app/skeletorjs/team/skelenote)
 - **Discuss**: [Discord](https://discord.gg/4apsgSRB7D)
@@ -178,6 +125,6 @@ Your feedback shapes Skelenote's development.
 
 - [Keyboard Shortcuts](guides/keyboard-shortcuts.md)
 - [Troubleshooting](troubleshooting.md)
-- [Philosophy & Manifesto](about/philosophy-manifesto.md)
+- [Philosophy](about/philosophy-manifesto.md)
 
-**Local. Encrypted. Yours.**
+**Free. Encrypted. Yours.**

@@ -28,29 +28,29 @@ Removes your Skeleton Key from this device. You'll need to re-enter it to access
 
 Configure how your data syncs between devices.
 
-### Hearth
+### Local Sync
 
 Sync with devices on your local network without any server.
 
 **Settings:**
 
-- **Enable Hearth** - Turn local sync on/off
+- **Enable Local Sync** - Turn local sync on/off
 - **Device Name** - How this device appears to others
 - **Auto-connect** - Automatically connect to discovered devices
 
-See [Hearth Guide](hearth-guide.md) for detailed setup.
+See [Local Sync Guide](local-sync-guide.md) for detailed setup.
 
-### Courier
+### Cloud Sync
 
 Sync through an optional relay server for remote devices.
 
 **Settings:**
 
-- **Enable Courier** - Connect to relay server
+- **Enable Cloud Sync** - Connect to relay server
 - **Server URL** - Relay server address (default or self-hosted)
 - **Connection Status** - Shows connected/disconnected state
 
-See [Courier Guide](courier-guide.md) for server setup.
+See [Cloud Sync Guide](cloud-sync-guide.md) for server setup.
 
 ### Device Management
 
@@ -81,9 +81,9 @@ Adjust spacing between elements:
 
 ## Search
 
-Configure Lantern (AI-powered search).
+Configure semantic search (AI-powered search).
 
-### Enable Lantern
+### Enable Semantic Search
 
 Find conceptually similar content, not just keyword matches.
 

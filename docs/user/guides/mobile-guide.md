@@ -317,8 +317,8 @@ Skelenote is designed to be battery-friendly:
 
 To maximize battery life:
 
-- Use Hearth only when needed (disable when traveling alone)
-- Keep Courier off unless you need cross-network sync
+- Use local sync only when needed (disable when traveling alone)
+- Keep cloud sync off unless you need cross-network sync
 - Notifications use minimal battery since they're scheduled locally
 
 ---
@@ -326,6 +326,6 @@ To maximize battery life:
 ## Further Reading
 
 - [Getting Started Guide](../getting-started.md) - Full introduction to Skelenote
-- [Hearth Guide](hearth-guide.md) - Deep dive into local network sync
-- [Courier Guide](courier-guide.md) - Configure Courier for remote sync
+- [Local Sync Guide](local-sync-guide.md) - Deep dive into local network sync
+- [Cloud Sync Guide](cloud-sync-guide.md) - Configure cloud sync for remote access
 - [Settings Reference](settings-reference.md) - All settings explained

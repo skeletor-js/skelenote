@@ -95,7 +95,7 @@ describe('SyncSettingsSheet', () => {
   it('should show cloud sync section', () => {
     renderWithProvider(<SyncSettingsSheet {...defaultProps} />);
 
-    expect(screen.getByText('Courier')).toBeDefined();
+    expect(screen.getByText('Cloud Sync')).toBeDefined();
   });
 
   it('should show connected badges when syncs are connected', () => {
@@ -106,10 +106,10 @@ describe('SyncSettingsSheet', () => {
     expect(connectedBadges.length).toBe(2);
   });
 
-  it('should show Hearth (local sync) section', () => {
+  it('should show local sync section', () => {
     renderWithProvider(<SyncSettingsSheet {...defaultProps} />);
 
-    expect(screen.getByText('Hearth')).toBeDefined();
+    expect(screen.getByText('Local Sync')).toBeDefined();
   });
 
   it('should show peers count when local sync is enabled', () => {

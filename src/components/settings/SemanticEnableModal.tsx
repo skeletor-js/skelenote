@@ -1,7 +1,7 @@
 /**
- * Lantern Enable Modal
+ * Semantic Search Enable Modal
  *
- * Confirmation dialog shown when user first enables Lantern (AI-powered search).
+ * Confirmation dialog shown when user first enables semantic search (AI-powered search).
  * Shows download and indexing progress.
  */
 
@@ -57,9 +57,9 @@ export function SemanticEnableModal({
 
   // Determine the modal title based on state
   const getTitle = () => {
-    if (isEnabling && !error) return 'Setting up Lantern...';
+    if (isEnabling && !error) return 'Setting up semantic search...';
     if (error) return 'Setup Failed';
-    return 'Enable Lantern?';
+    return 'Enable Semantic Search?';
   };
 
   // Get progress description based on operation
