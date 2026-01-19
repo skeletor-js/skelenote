@@ -11,6 +11,15 @@ const mockUseInbox = vi.fn();
 vi.mock('@/hooks', () => ({
   useInbox: () => mockUseInbox(),
   useSelection: vi.fn(),
+  usePinnedObjects: () => ({
+    pinnedObjects: [],
+    pin: vi.fn(),
+    unpin: vi.fn(),
+  }),
+  useDuplicate: () => ({
+    duplicate: vi.fn(),
+    canDuplicate: vi.fn().mockReturnValue(true),
+  }),
 }));
 
 const mockNavigateToObject = vi.fn();
@@ -22,7 +31,25 @@ vi.mock('@/contexts', () => ({
   }),
   useObjects: () => ({
     refreshData: vi.fn(),
+    store: {
+      getPinnedObjects: vi.fn().mockReturnValue([]),
+      getInboxed: vi.fn().mockReturnValue([]),
+      get: vi.fn(),
+      update: vi.fn(),
+    },
   }),
+  useToast: () => ({
+    addToast: vi.fn(),
+  }),
+  useTypeRegistry: () => ({
+    get: vi.fn().mockReturnValue({ name: 'Tag', icon: 'tag' }),
+    getAll: vi.fn().mockReturnValue([]),
+  }),
+}));
+
+// Mock ObjectSearchModal (used for picker modals)
+vi.mock('@/components/object/editors', () => ({
+  ObjectSearchModal: () => null,
 }));
 
 // Mock child components

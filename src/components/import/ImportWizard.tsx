@@ -12,7 +12,8 @@
 
 import { useState, useCallback } from 'react';
 import { Box } from '@mantine/core';
-import { useObjects, useToast } from '@/contexts';
+import { useObjects, useToast, useAnalyticsSafe } from '@/contexts';
+import { AnalyticsEvents } from '@/lib/analytics';
 import {
   importMarkdown,
   readVaultDirectory,
@@ -77,6 +78,7 @@ const NOTION_STEPS: AllSteps[] = [
 export function ImportWizard() {
   const { store, refreshData } = useObjects();
   const { addToast } = useToast();
+  const analytics = useAnalyticsSafe();
 
   // Common state
   const [step, setStep] = useState<AllSteps>('source');
@@ -191,6 +193,11 @@ export function ImportWizard() {
             type: 'success',
             message: `Imported ${importResult.imported} item${importResult.imported !== 1 ? 's' : ''} from Notion`,
           });
+          // Track import completion
+          analytics?.track(AnalyticsEvents.IMPORT_COMPLETED, {
+            source: 'notion',
+            object_count: importResult.imported,
+          });
         }
       } catch (error) {
         setResult({
@@ -203,7 +210,7 @@ export function ImportWizard() {
         setStep('success');
       }
     },
-    [store, notionClient, selectedDatabases, refreshData, addToast]
+    [store, notionClient, selectedDatabases, refreshData, addToast, analytics]
   );
 
   const handleStandaloneChoice = useCallback(
@@ -342,6 +349,11 @@ export function ImportWizard() {
             type: 'success',
             message: `Imported ${importResult.imported} note${importResult.imported !== 1 ? 's' : ''} from Obsidian${tagMsg}`,
           });
+          // Track import completion
+          analytics?.track(AnalyticsEvents.IMPORT_COMPLETED, {
+            source: 'obsidian',
+            object_count: importResult.imported,
+          });
         }
       } catch (error) {
         setResult({
@@ -354,7 +366,7 @@ export function ImportWizard() {
         setStep('success');
       }
     },
-    [store, vaultPath, parsedVaultFiles, refreshData, addToast]
+    [store, vaultPath, parsedVaultFiles, refreshData, addToast, analytics]
   );
 
   // File-based flow handlers (for regular Markdown)
@@ -508,9 +520,14 @@ export function ImportWizard() {
           type: 'success',
           message: `Imported ${imported} document${imported !== 1 ? 's' : ''}`,
         });
+        // Track import completion
+        analytics?.track(AnalyticsEvents.IMPORT_COMPLETED, {
+          source: 'markdown',
+          object_count: imported,
+        });
       }
     },
-    [store, refreshData, addToast]
+    [store, refreshData, addToast, analytics]
   );
 
   const handleReset = useCallback(() => {

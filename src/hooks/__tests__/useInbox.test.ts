@@ -8,6 +8,7 @@ import { BuiltInTypeIds } from '@/lib/types';
 
 // Mock dependencies
 const mockStore = {
+  get: vi.fn(),
   getInboxed: vi.fn(),
   markProcessed: vi.fn(),
   archive: vi.fn(),
@@ -29,6 +30,7 @@ vi.mock('@/contexts', () => ({
         dataVersion: 1,
       }) as any
   ),
+  useAnalyticsSafe: vi.fn(() => null),
 }));
 
 vi.mock('@/lib/editor', () => ({

@@ -13,8 +13,14 @@ import {
 } from 'react';
 import { TextInput, Popover, Loader, Box } from '@mantine/core';
 import { Search } from 'lucide-react';
-import { useNavigation, useObjects, useTypeRegistry } from '@/contexts';
+import {
+  useNavigation,
+  useObjects,
+  useTypeRegistry,
+  useAnalyticsSafe,
+} from '@/contexts';
 import { useSearch, useLinkToDaily, useDuplicate, useTheme } from '@/hooks';
+import { AnalyticsEvents } from '@/lib/analytics';
 import {
   getStaticActions,
   filterActions,
@@ -70,6 +76,7 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
   const { linkToDaily } = useLinkToDaily();
   const { duplicate, canDuplicate } = useDuplicate();
   const { toggleTheme } = useTheme();
+  const analytics = useAnalyticsSafe();
 
   // Search hook for object searching
   const {
@@ -293,6 +300,10 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
         linkToDaily(newObject);
         refreshData();
         navigateToObject(newObject.id);
+        analytics?.track(AnalyticsEvents.OBJECT_CREATED, {
+          object_type: action.typeId,
+          from_template: false,
+        });
       } else if (action.action) {
         action.action();
       }
@@ -318,6 +329,7 @@ export const Omnibar = forwardRef<OmnibarRef, OmnibarProps>(function Omnibar(
       canDuplicate,
       searchQueryText,
       toggleTheme,
+      analytics,
     ]
   );
 

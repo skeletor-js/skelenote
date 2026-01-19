@@ -205,6 +205,8 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchResult {
         }
 
         setIsSearching(false);
+
+        setIsSearching(false);
       }, debounceMs);
     },
     [limit, debounceMs, isHybridSearch, semanticContext, searchableItemsMap]

@@ -29,14 +29,13 @@ Object.defineProperty(window, 'matchMedia', {
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     div: ({
       children,
-      layout,
-      initial,
-      animate,
-      exit,
-      transition,
+      layout: _layout,
+      initial: _initial,
+      animate: _animate,
+      exit: _exit,
+      transition: _transition,
       ...props
     }: any) => <div {...props}>{children}</div>,
   },

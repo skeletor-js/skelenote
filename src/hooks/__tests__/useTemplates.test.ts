@@ -16,6 +16,7 @@ vi.mock('@/contexts', () => ({
     isLoading: false,
     refreshData: mockRefreshData,
   }),
+  useAnalyticsSafe: () => ({ track: vi.fn() }),
 }));
 
 vi.mock('@/contexts/NavigationContext', () => ({

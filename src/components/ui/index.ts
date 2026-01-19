@@ -17,3 +17,4 @@ export { EmptyState } from './EmptyState';
 export { Icon, type IconProps } from './Icon';
 export type { IconName } from '@/lib/icons';
 export { ViewHeader, type ViewHeaderProps } from './ViewHeader';
+export { FeatureFlag, type FeatureFlagProps } from './FeatureFlag';

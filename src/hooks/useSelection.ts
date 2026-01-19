@@ -87,6 +87,9 @@ export function useSelection({
 
   // Prune orphaned IDs when items change (e.g., filter change, sync)
   useEffect(() => {
+    // Optimization: Skip potentially expensive Set creation if nothing is selected
+    if (state.selectedIds.size === 0) return;
+
     const currentIds = new Set(allItems);
     const orphaned = [...state.selectedIds].filter((id) => !currentIds.has(id));
 

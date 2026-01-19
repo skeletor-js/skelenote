@@ -5,6 +5,9 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import posthog from 'posthog-js';
+import { AnalyticsEvents } from '@/lib/analytics';
+
 type Theme = 'light' | 'dark';
 
 interface ThemeContextValue {
@@ -57,10 +60,31 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
+    // Track theme change
+    try {
+      if (posthog.__loaded && !posthog.has_opted_out_capturing()) {
+        posthog.capture(AnalyticsEvents.THEME_CHANGED, { new_theme: newTheme });
+      }
+    } catch {
+      // Silently fail if analytics is not available
+    }
   };
 
   const toggleTheme = () => {
-    setThemeState((prev) => (prev === 'light' ? 'dark' : 'light'));
+    setThemeState((prev) => {
+      const newTheme = prev === 'light' ? 'dark' : 'light';
+      // Track theme change
+      try {
+        if (posthog.__loaded && !posthog.has_opted_out_capturing()) {
+          posthog.capture(AnalyticsEvents.THEME_CHANGED, {
+            new_theme: newTheme,
+          });
+        }
+      } catch {
+        // Silently fail if analytics is not available
+      }
+      return newTheme;
+    });
   };
 
   // Support render prop pattern for Mantine integration

@@ -16,6 +16,7 @@ import {
   KeyboardShortcutsProvider,
   SemanticSearchProvider,
   UndoProvider,
+  AnalyticsProvider,
 } from '@/contexts';
 import { ToastContainer } from '@/components/ui';
 import { migrateLocalStorageKeys } from '@/lib/migration';
@@ -50,27 +51,29 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         >
           <Notifications position="top-right" />
           <ToastProvider>
-            <SkeletonKeyProvider>
-              <DeviceRegistryProvider>
-                <ObjectProvider>
-                  <UndoProvider>
-                    <SemanticSearchProvider>
-                      <LocalSyncProvider>
-                        <SyncProvider>
-                          <NavigationProvider>
-                            <SidebarProvider>
-                              <KeyboardShortcutsProvider>
-                                <App />
-                              </KeyboardShortcutsProvider>
-                            </SidebarProvider>
-                          </NavigationProvider>
-                        </SyncProvider>
-                      </LocalSyncProvider>
-                    </SemanticSearchProvider>
-                  </UndoProvider>
-                </ObjectProvider>
-              </DeviceRegistryProvider>
-            </SkeletonKeyProvider>
+            <AnalyticsProvider>
+              <SkeletonKeyProvider>
+                <DeviceRegistryProvider>
+                  <ObjectProvider>
+                    <UndoProvider>
+                      <SemanticSearchProvider>
+                        <LocalSyncProvider>
+                          <SyncProvider>
+                            <NavigationProvider>
+                              <SidebarProvider>
+                                <KeyboardShortcutsProvider>
+                                  <App />
+                                </KeyboardShortcutsProvider>
+                              </SidebarProvider>
+                            </NavigationProvider>
+                          </SyncProvider>
+                        </LocalSyncProvider>
+                      </SemanticSearchProvider>
+                    </UndoProvider>
+                  </ObjectProvider>
+                </DeviceRegistryProvider>
+              </SkeletonKeyProvider>
+            </AnalyticsProvider>
             <ToastContainer />
           </ToastProvider>
         </MantineProvider>

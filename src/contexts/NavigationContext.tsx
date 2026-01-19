@@ -3,9 +3,13 @@ import {
   useContext,
   useState,
   useCallback,
+  useRef,
+  useEffect,
   type ReactNode,
 } from 'react';
 import type { Frontiers } from 'loro-crdt';
+import posthog from 'posthog-js';
+import { AnalyticsEvents } from '@/lib/analytics';
 
 /**
  * View types for the main content area
@@ -145,6 +149,22 @@ interface NavigationProviderProps {
   children: ReactNode;
 }
 
+// Helper to safely track analytics (checks if PostHog is initialized)
+function trackAnalytics(event: string, properties?: Record<string, unknown>) {
+  try {
+    // Check if PostHog is initialized and not opted out
+    if (
+      typeof posthog !== 'undefined' &&
+      posthog.__loaded &&
+      !posthog.has_opted_out_capturing()
+    ) {
+      posthog.capture(event, properties);
+    }
+  } catch {
+    // Silently fail if analytics is not available
+  }
+}
+
 export function NavigationProvider({ children }: NavigationProviderProps) {
   const [currentState, setCurrentState] = useState<NavigationState>({
     view: 'inbox',
@@ -156,6 +176,27 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   });
   const [history, setHistory] = useState<NavigationState[]>([]);
   const [forwardHistory, setForwardHistory] = useState<NavigationState[]>([]);
+
+  // Track the previous view to avoid duplicate tracking
+  const previousViewRef = useRef<ViewType | null>(null);
+
+  // Track view changes
+  useEffect(() => {
+    // Skip if same view
+    if (currentState.view === previousViewRef.current) return;
+
+    previousViewRef.current = currentState.view;
+
+    if (currentState.view === 'object' && currentState.objectId) {
+      trackAnalytics(AnalyticsEvents.OBJECT_OPENED, {
+        // We don't have access to object type here, but that's OK
+      });
+    } else {
+      trackAnalytics(AnalyticsEvents.VIEW_OPENED, {
+        view_name: currentState.view,
+      });
+    }
+  }, [currentState.view, currentState.objectId]);
 
   // Split pane state
   const [splitPane, setSplitPaneState] = useState<SplitPaneState>({

@@ -32,6 +32,7 @@ vi.mock('@/contexts', () => ({
         dataVersion: 1,
       }) as any
   ),
+  useAnalyticsSafe: () => ({ track: vi.fn() }),
 }));
 
 vi.mock('@/lib/tasks/recurrence', () => ({

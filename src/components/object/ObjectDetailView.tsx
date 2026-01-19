@@ -22,7 +22,9 @@ import {
   useToast,
   useKeyboardShortcuts,
   useSemanticSearchSafe,
+  useAnalyticsSafe,
 } from '@/contexts';
+import { AnalyticsEvents } from '@/lib/analytics';
 import { useConfirmDialog, useDuplicate, useContextMenu } from '@/hooks';
 import styles from './ObjectDetailView.module.css';
 
@@ -52,6 +54,7 @@ export function ObjectDetailView({
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
   const { duplicate, canDuplicate } = useDuplicate();
   const semanticContext = useSemanticSearchSafe();
+  const analytics = useAnalyticsSafe();
 
   // Export modal state
   const [exportModalOpen, setExportModalOpen] = useState(false);
@@ -141,6 +144,11 @@ export function ObjectDetailView({
             type: 'success',
             message: `Exported to ${filename}`,
           });
+          // Track export completion
+          analytics?.track(AnalyticsEvents.EXPORT_COMPLETED, {
+            format: options.format,
+            object_count: 1,
+          });
         }
       } catch (error) {
         console.error('Export failed:', error);
@@ -150,7 +158,7 @@ export function ObjectDetailView({
         });
       }
     },
-    [store, objectId, typeRegistry, addToast]
+    [store, objectId, typeRegistry, addToast, analytics]
   );
 
   // Handler to duplicate object

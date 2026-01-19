@@ -3,9 +3,10 @@
  */
 
 import { useMemo, useCallback } from 'react';
-import { useObjects } from '@/contexts';
+import { useObjects, useAnalyticsSafe } from '@/contexts';
 import type { SkelenoteObject } from '@/lib/types';
 import { removeMentionsFromContent } from '@/lib/editor';
+import { AnalyticsEvents } from '@/lib/analytics';
 
 export interface UseArchiveResult {
   /** All archived items sorted by updatedAt (most recently archived first) */
@@ -44,6 +45,7 @@ export interface UseArchiveResult {
  */
 export function useArchive(): UseArchiveResult {
   const { store, isLoading, refreshData, dataVersion } = useObjects();
+  const analytics = useAnalyticsSafe();
 
   // Get all archived items sorted by updatedAt descending (most recently archived first)
   const items = useMemo(() => {
@@ -70,6 +72,9 @@ export function useArchive(): UseArchiveResult {
     (itemId: string) => {
       if (!store) return;
 
+      // Get item info before deleting for analytics
+      const item = store.get(itemId);
+
       // Clean up mentions of this item in other objects' content
       const allObjects = store.getAll({ includeArchived: true });
       for (const obj of allObjects) {
@@ -90,8 +95,11 @@ export function useArchive(): UseArchiveResult {
       // Delete the item
       store.delete(itemId);
       refreshData();
+      analytics?.track(AnalyticsEvents.OBJECT_DELETED, {
+        object_type: item?.typeId,
+      });
     },
-    [store, refreshData]
+    [store, refreshData, analytics]
   );
 
   return {

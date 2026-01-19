@@ -46,6 +46,7 @@ vi.mock('@/contexts', () => ({
   }),
   useObjects: () => ({ store: mockStore, refreshData: mockRefreshData }),
   useTypeRegistry: () => ({ get: vi.fn() }),
+  useAnalyticsSafe: () => ({ track: vi.fn() }),
 }));
 
 vi.mock('@/hooks', () => ({

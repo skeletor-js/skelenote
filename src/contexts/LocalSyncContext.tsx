@@ -7,6 +7,7 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
+import posthog from 'posthog-js';
 import {
   startServer,
   stopServer,
@@ -50,6 +51,7 @@ import {
 } from '@/lib/devices';
 import { useToast } from './ToastContext';
 import { useObjects } from './ObjectContext';
+import { AnalyticsEvents } from '@/lib/analytics';
 
 type LocalSyncStatus =
   | 'off'
@@ -400,6 +402,16 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
           message: `Paired with ${info.deviceName}`,
           duration: 3000,
         });
+        // Track device pairing
+        try {
+          if (posthog.__loaded && !posthog.has_opted_out_capturing()) {
+            posthog.capture(AnalyticsEvents.DEVICE_PAIRED, {
+              pairing_method: 'qr',
+            });
+          }
+        } catch {
+          // Silently fail if analytics is not available
+        }
       } catch (err) {
         const message =
           err instanceof Error ? err.message : 'Failed to pair device';
@@ -426,6 +438,16 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
           message: 'Device paired successfully',
           duration: 3000,
         });
+        // Track device pairing
+        try {
+          if (posthog.__loaded && !posthog.has_opted_out_capturing()) {
+            posthog.capture(AnalyticsEvents.DEVICE_PAIRED, {
+              pairing_method: 'manual',
+            });
+          }
+        } catch {
+          // Silently fail if analytics is not available
+        }
       } catch (err) {
         const message =
           err instanceof Error ? err.message : 'Failed to pair device';
@@ -538,6 +560,15 @@ export function LocalSyncProvider({ children }: LocalSyncProviderProps) {
         message: 'Local network sync enabled',
         duration: 3000,
       });
+
+      // Track sync started
+      try {
+        if (posthog.__loaded && !posthog.has_opted_out_capturing()) {
+          posthog.capture(AnalyticsEvents.SYNC_STARTED, { sync_type: 'local' });
+        }
+      } catch {
+        // Silently fail if analytics is not available
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       console.error('[LocalSync] Failed to enable:', message);
