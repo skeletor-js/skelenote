@@ -36,7 +36,7 @@ Task({
 })
 ```
 
-3. Review agent's documentation updates
+1. Review agent's documentation updates
 
 ## Documentation Map
 
@@ -46,7 +46,7 @@ Task({
 | **Architecture** | `docs/developer/architecture.md` | System design, data flow |
 | **Tauri API** | `docs/developer/tauri-api.md` | Rust command changes |
 | **Testing** | `docs/developer/testing.md` | Test patterns, coverage |
-| **Style Guide** | `docs/product/design/style-guide.md` | UI component patterns |
+| **Design System** | `docs/product/design/` | UI colors, components, patterns |
 | **User Guides** | `docs/user/guides/` | Feature how-tos |
 
 ## Example: Document New Feature
@@ -54,6 +54,7 @@ Task({
 User: "Update docs for the PDF export feature"
 
 Launch agent:
+
 ```
 Task({
   subagent_type: "docs-maintainer",
@@ -74,6 +75,7 @@ Task({
 User: "Document the new haptic_notification command"
 
 Launch agent:
+
 ```
 Task({
   subagent_type: "docs-maintainer",

@@ -1,6 +1,8 @@
 # Design System Rules
 
-**ALWAYS review `docs/product/design/style-guide.md` before making any UI or frontend changes.**
+**ALWAYS review the design documentation in `docs/product/design/` before making any UI or frontend changes.**
+
+Key files: [colors.md](../../docs/product/design/colors.md), [components.md](../../docs/product/design/components.md), [mobile.md](../../docs/product/design/mobile.md)
 
 ## The Aesthetic: "Cozy Rationalism"
 
