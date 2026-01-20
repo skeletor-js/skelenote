@@ -11,7 +11,7 @@ We're in alpha and actively seeking testers. This is one of the most valuable co
 1. **Test the app** - Download from [Releases](https://github.com/skeletor-js/skelenote/releases) and use it
 2. **Report bugs** - [File a bug](https://linear.app/skeletorjs/team/skelenote) with steps to reproduce
 3. **Request features** - [Request a feature](https://linear.app/skeletorjs/team/skelenote) with your ideas
-4. **Join Discord** - Chat with other testers and provide real-time feedback
+4. **Join [Discord](https://discord.gg/4apsgSRB7D)** - Chat with other testers and provide real-time feedback
 
 See the [Getting Started Guide](docs/user/getting-started.md) for detailed instructions.
 

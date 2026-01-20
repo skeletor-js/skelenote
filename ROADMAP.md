@@ -777,7 +777,7 @@ Have feature requests or feedback?
 
 1. **Open an issue** on [GitHub](https://github.com/skeletor-js/skelenote/issues) with `feature-request` label
 2. **Vote on ideas** in [GitHub Discussions](https://github.com/skeletor-js/skelenote/discussions)
-3. **Join Discord** for real-time discussion
+3. **Join [Discord](https://discord.gg/4apsgSRB7D)** for real-time discussion
 4. **Check planning docs** in [`docs/product/planning/`](./docs/product/planning/) for detailed specs
 
 ### Prioritization Framework
