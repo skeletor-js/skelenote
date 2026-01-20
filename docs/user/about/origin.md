@@ -44,6 +44,6 @@ This app is for those that need a secure, personal place to think, work, write, 
 
 ## Where We Are
 
-Desktop and mobile are here. In benchmark tests, all app features hold up with libraries as small as 5 notes and as large as 100,000. We're pushing biweekly releases with new features, and we're fully transparent about what's coming down the pipeline next. Even better? Our discord is open and we love discussion and suggestions on what we should add.
+Desktop and mobile are here. In benchmark tests, all app features hold up with libraries as small as 5 notes and as large as 100,000. We're pushing biweekly releases with new features, and we're fully transparent about what's coming down the pipeline next. Even better? Our [Discord](https://discord.gg/4apsgSRB7D) is open and we love discussion and suggestions on what we should add.
 
 I'm not building this to make money. I'm building something I actually want to use every day. If Skelenote works for you too, join the community and let's chat.
