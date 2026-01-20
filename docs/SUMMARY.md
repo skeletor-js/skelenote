@@ -33,10 +33,3 @@
 * [CI/CD Pipeline](developer/ci-cd.md)
 * [Testing Guide](developer/testing.md)
 * [Mobile Development](developer/mobile-development.md)
-
-## Product Strategy
-
-* [Product Overview](product/README.md)
-* [Design System](product/design/style-guide.md)
-* [Brand Bible](product/design/skelenote-brand-bible.md)
-* [Competitive Analysis](product/competitive/README.md)
