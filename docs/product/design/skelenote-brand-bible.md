@@ -31,13 +31,7 @@ Everything we build and communicate ties back to these:
 
 Our design is warm and dense—the opposite of cold SaaS blue.
 
-### Palette
-
-- **Ember** (`#B85C50`): Primary actions, focus rings
-- **Sage** (`#5E8C61`): Success, completion
-- **Canvas** (`#FAFAFA`): Background (soft, not harsh white)
-- **Carbon** (`#18181B`): Primary text
-- **Graphite** (`#52525B`): Secondary text
+For the complete color palette and design tokens, see [colors.md](colors.md).
 
 ### Interface Principles
 

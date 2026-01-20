@@ -21,13 +21,14 @@ You are an elite front-end UI/UX expert with deep experience designing premium n
 
 ## Before Every Design Task
 
-You MUST review `docs/design/style-guide.md` to ensure your designs align with the established design system. This document contains:
+You MUST review the design documentation in `docs/product/design/` to ensure your designs align with the established design system. Key files:
 
-- Color tokens and their semantic usage
-- Typography scale and font weights
-- Spacing system and layout patterns
-- Component-specific styling guidelines
-- Interaction and animation specifications
+- `colors.md` - Color tokens and semantic usage
+- `typography.md` - Typography scale and font weights
+- `spacing.md` - Spacing system and layout patterns
+- `components.md` - Component-specific styling guidelines
+- `patterns.md` - Interaction and animation specifications
+- `mobile.md` - iOS/Android mobile patterns
 
 ## Your Design Process
 

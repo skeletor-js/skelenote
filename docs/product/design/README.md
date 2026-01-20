@@ -4,7 +4,14 @@ Brand identity, design system, and product planning.
 
 ## Design System
 
-- [Style Guide](style-guide.md) — UI components, colors, typography, spacing, Mantine configuration
+The design system is split into focused files for easier navigation:
+
+- [Colors](colors.md) — Palette, semantic colors, dark mode
+- [Typography](typography.md) — Fonts, scale, weights
+- [Spacing](spacing.md) — Spacing, layout, borders, shadows
+- [Components](components.md) — Buttons, forms, modals, cards
+- [Patterns](patterns.md) — Hover, focus, keyboard, accessibility
+- [Mobile](mobile.md) — iOS/Android patterns, gestures, safe areas
 
 ## Brand
 
@@ -13,7 +20,6 @@ Brand identity, design system, and product planning.
 ## Product Planning
 
 - [ROADMAP.md](/ROADMAP.md) — Release-by-release feature plans and priorities
-- [Planning Docs](../planning/) — Detailed specs for upcoming features
 - [Competitive Analysis](../competitive/) — How we compare to alternatives
 
 ---

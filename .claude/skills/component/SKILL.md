@@ -77,14 +77,15 @@ describe('ComponentName', () => {
 
 ## Example: TaskPriorityBadge
 
-### User provides:
+### User provides
+
 - Name: TaskPriorityBadge
 - Location: tasks
 - Props: priority (urgent | high | medium | low | none)
 - Mantine: Badge
 - Include tests: yes
 
-### Generated:
+### Generated
 
 ```typescript
 // src/components/tasks/TaskPriorityBadge.tsx
@@ -130,27 +131,31 @@ export const TaskPriorityBadge: FC<TaskPriorityBadgeProps> = ({ priority }) => {
 
 ## Style Guide Reference
 
-Before generating, review `docs/design/style-guide.md` for:
-- Color tokens (Ember, Sage, Brick, etc.)
-- Spacing conventions (tight padding)
-- Border usage (1px borders, not shadows)
-- Typography scale
+Before generating, review `docs/product/design/` for:
+
+- Color tokens: [colors.md](../../docs/product/design/colors.md) (Ember, Sage, Brick, etc.)
+- Spacing conventions: [spacing.md](../../docs/product/design/spacing.md) (tight padding)
+- Component patterns: [components.md](../../docs/product/design/components.md)
+- Mobile patterns: [mobile.md](../../docs/product/design/mobile.md) (iOS/Android)
 
 ## Component Patterns
 
 ### With Mantine Theme
+
 ```typescript
 import { useMantineTheme } from '@mantine/core';
 const theme = useMantineTheme();
 ```
 
 ### With Navigation Context
+
 ```typescript
 import { useNavigation } from '@/contexts';
 const { navigateTo } = useNavigation();
 ```
 
 ### With Object Context
+
 ```typescript
 import { useObjects } from '@/contexts';
 const { store, refreshData } = useObjects();

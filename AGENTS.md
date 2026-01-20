@@ -120,7 +120,14 @@ Or use the `/check` skill to run all validations at once.
 
 ## Important: Frontend & UI Work
 
-**ALWAYS review `docs/product/design/style-guide.md` before making any UI or frontend changes.** This comprehensive design system defines colors, typography, spacing, component patterns, and interaction behaviors for the Linear-inspired minimal aesthetic.
+**ALWAYS review the design documentation in `docs/product/design/` before making any UI or frontend changes.** The design system is split into focused files:
+
+- **[colors.md](docs/product/design/colors.md)** — Palette, semantic colors, dark mode
+- **[typography.md](docs/product/design/typography.md)** — Fonts, scale, weights
+- **[spacing.md](docs/product/design/spacing.md)** — Spacing, layout, borders, shadows
+- **[components.md](docs/product/design/components.md)** — Buttons, forms, modals, cards
+- **[patterns.md](docs/product/design/patterns.md)** — Hover, focus, keyboard, accessibility
+- **[mobile.md](docs/product/design/mobile.md)** — iOS/Android patterns, gestures, safe areas
 
 ## Architecture Overview
 

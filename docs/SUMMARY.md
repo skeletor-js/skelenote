@@ -25,6 +25,16 @@
 * [Ownership & Pricing](user/about/ownership-pricing.md)
 * [Origin Story](user/about/origin.md)
 
+## Design System
+
+* [Colors](product/design/colors.md)
+* [Typography](product/design/typography.md)
+* [Spacing](product/design/spacing.md)
+* [Components](product/design/components.md)
+* [Patterns](product/design/patterns.md)
+* [Mobile](product/design/mobile.md)
+* [Brand Bible](product/design/skelenote-brand-bible.md)
+
 ## For Developers
 
 * [Developer Overview](developer/README.md)
