@@ -80,8 +80,4 @@ export {
 } from './ui';
 
 // Sync hooks - data synchronization
-export {
-  useSync,
-  useConnectionStatus,
-  useSemanticIndexSync,
-} from './sync';
+export { useSync, useConnectionStatus, useSemanticIndexSync } from './sync';
