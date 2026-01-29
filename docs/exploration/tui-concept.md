@@ -1,278 +1,204 @@
-# Skelenote TUI: An AI-Native Notes System
+# Skelenote v2: Headless Productivity Backend
 
-> **Status**: Exploratory concept  
+> **Status**: Exploratory concept — awaiting feedback  
 > **Branch**: `explore/tui-markdown-notes`  
 > **Date**: 2026-01-28
 
-## The Thesis
+## The Vision
 
-In an AI-native future, a notes app should be:
+**A headless productivity backend for the AI era.** We provide the core engine; users bring their own frontend.
 
-1. **Plain files** - Markdown with YAML frontmatter, stored in a directory
-2. **Terminal-first** - TUI for speed, keyboard-driven workflows
-3. **AI-native** - Local vector embeddings, MCP server, agent-friendly
-4. **Minimal** - No complex sync protocols, no proprietary formats
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    SKELENOTE CORE (Rust)                        │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────────┐   │
+│  │ Markdown │ │ Backlink │ │  Task    │ │ Vector Embeddings│   │
+│  │  Parser  │ │  Index   │ │ Manager  │ │  (Local ML)      │   │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────────────┘   │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────────┐   │
+│  │  E2E     │ │  Sync    │ │  Daily   │ │    Templates     │   │
+│  │ Crypto   │ │  Relay   │ │  Notes   │ │                  │   │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────────────┘   │
+├─────────────────────────────────────────────────────────────────┤
+│                         MCP SERVER                              │
+│        (Universal interface for any AI agent or frontend)       │
+└─────────────────────────────────────────────────────────────────┘
+          │              │              │              │
+          ▼              ▼              ▼              ▼
+    ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐
+    │   TUI    │  │  Custom  │  │  Claude  │  │    Mobile    │
+    │(Default) │  │   GUI    │  │  Agent   │  │   Capture    │
+    └──────────┘  └──────────┘  └──────────┘  └──────────────┘
+```
 
-The current Skelenote stack (Tauri + React + Loro CRDT + BlockNote + custom sync) may be **over-engineered** for what people actually need.
+**The differentiator**: No other notes app exposes an MCP server as the primary interface. Users can ask Claude to build them a custom React UI that talks to their notes via MCP. The TUI is just the default.
 
 ---
 
-## Current Architecture (Complex)
+## What We Keep (Salvageable)
 
-```
-┌─────────────────────────────────────────────────┐
-│ Frontend: React + TypeScript + Mantine + Vite   │
-├─────────────────────────────────────────────────┤
-│ Editor: BlockNote (Prosemirror-based)           │
-├─────────────────────────────────────────────────┤
-│ State: 12 React Contexts                        │
-├─────────────────────────────────────────────────┤
-│ Data: Loro CRDT → Custom Binary Format          │
-├─────────────────────────────────────────────────┤
-│ Sync: mDNS + TCP + WebSocket + QR Pairing       │
-├─────────────────────────────────────────────────┤
-│ Crypto: XChaCha20 + BIP39 + Stronghold          │
-├─────────────────────────────────────────────────┤
-│ Shell: Tauri 2.0 (Rust)                         │
-└─────────────────────────────────────────────────┘
-```
+### From Rust Backend (~80% reusable)
 
-**Lines of code**: ~50,000+  
-**Dependencies**: 200+ npm packages, 100+ Rust crates  
-**Build time**: Minutes  
-**Complexity**: High
+| Module | Current | Action |
+|--------|---------|--------|
+| **Crypto** | BIP39, XChaCha20, Stronghold | ✅ Port directly |
+| **Network** | mDNS, TCP server, pairing | ✅ Keep for local sync |
+| **Relay** | WebSocket sync relay | ✅ Keep for mobile capture |
 
----
+### From TypeScript (~40% logic reusable)
 
-## Proposed Architecture (Simple)
+| Module | Current | Action |
+|--------|---------|--------|
+| **Semantic Search** | Embeddings, vector index, chunker | 🔄 Port to Rust |
+| **Backlink Index** | O(1) backlink lookups | 🔄 Port to Rust |
+| **Task Recurrence** | Clone-forward logic | 🔄 Port to Rust |
+| **Daily Notes** | Deterministic IDs, templates | 🔄 Port to Rust |
+| **Templates** | Placeholder expansion | 🔄 Port to Rust |
+| **Import/Export** | Markdown parsers | 🔄 Already markdown-native |
 
-```
-┌─────────────────────────────────────────────────┐
-│ TUI: Ratatui (Rust) or Bubble Tea (Go)          │
-├─────────────────────────────────────────────────┤
-│ Editor: Built-in markdown with vim keybindings  │
-├─────────────────────────────────────────────────┤
-│ Data: Plain .md files + YAML frontmatter        │
-│       ~/notes/                                  │
-│       ├── daily/2026-01-28.md                   │
-│       ├── projects/skelenote.md                 │
-│       └── inbox/quick-thought.md                │
-├─────────────────────────────────────────────────┤
-│ Search: Local SQLite FTS5 + Vector embeddings   │
-├─────────────────────────────────────────────────┤
-│ Sync: Git (optional) or Syncthing               │
-├─────────────────────────────────────────────────┤
-│ AI: MCP Server + Local embedding model          │
-└─────────────────────────────────────────────────┘
-```
+### What We Drop
 
-**Lines of code**: ~5,000-10,000  
-**Dependencies**: Minimal  
-**Build time**: Seconds  
-**Complexity**: Low
+| Module | Reason |
+|--------|--------|
+| React/Mantine UI | Replaced by TUI default + user-built frontends |
+| BlockNote editor | Markdown is the format |
+| Loro CRDT | Plain files + git = simpler conflict model |
+| 12 React Contexts | No React |
+| Complex mobile build | Capture via relay instead |
 
 ---
 
-## Why This Makes Sense Now
+## Architecture Deep Dive
 
-### 1. AI Agents Prefer Plain Text
-
-AI coding assistants (Claude, Cursor, Windsurf) work best with:
-
-- Plain text files they can read/write
-- Git repositories they can navigate
-- Standard formats (Markdown, YAML, JSON)
-
-**BlockNote JSON** and **Loro binary** are opaque to AI agents.
-
-### 2. Terminal Workflows Are Rising
-
-The developer workflow is increasingly terminal-centric:
-
-- `nvim` / `helix` for editing
-- `tmux` for session management
-- `fzf` / `ripgrep` for search
-- `git` for versioning
-- MCP servers for AI integration
-
-A TUI notes app slots perfectly into this workflow.
-
-### 3. Sync Is Solved
-
-Why build custom P2P sync when:
-
-- **Git** works for versioned notes
-- **Syncthing** works for real-time folder sync
-- **iCloud/Dropbox** work for non-technical users
-
-Plain files = use any sync solution.
-
-### 4. Mobile Is Optional
-
-For AI-native power users, mobile might not matter. But if needed:
-
-- **Termux** on Android with the same TUI
-- **iSH** on iOS (limited)
-- **Web companion** (minimal) for mobile capture
-
----
-
-## Core Features (MVP)
-
-### Must Have
-
-| Feature | Implementation |
-|---------|----------------|
-| Create/edit notes | Markdown files with YAML frontmatter |
-| Organize notes | Directory structure + tags in frontmatter |
-| Search notes | SQLite FTS5 for full-text |
-| Semantic search | Local embeddings (Ollama + Nomic) |
-| Daily notes | Auto-create `daily/YYYY-MM-DD.md` |
-| Quick capture | Append to inbox note |
-| Vim keybindings | Native TUI support |
-| MCP server | Expose notes to AI agents |
-
-### Nice to Have
-
-| Feature | Implementation |
-|---------|----------------|
-| Git integration | Auto-commit on save |
-| Backlinks | Parse [[wikilinks]] |
-| Templates | Template files with placeholder expansion |
-| Export | Already markdown—no export needed |
-| Encryption | GPG for sensitive notes |
-
-### Explicitly Out of Scope
-
-- Real-time collaboration
-- Rich text formatting beyond markdown
-- Image embedding (link to files instead)
-- Complex property schemas
-- Custom type systems
-
----
-
-## Tech Stack Options
-
-### Option A: Rust (Ratatui)
-
-```
-Rust ecosystem:
-├── ratatui          # TUI framework
-├── crossterm        # Terminal abstraction
-├── tree-sitter      # Syntax highlighting
-├── rusqlite         # SQLite + FTS5
-├── candle / ort     # Local ML inference
-└── rmcp             # MCP Rust SDK
-```
-
-**Pros**: Fast, single binary, memory safe  
-**Cons**: Slower iteration, steeper learning curve
-
-### Option B: Go (Bubble Tea)
-
-```
-Go ecosystem:
-├── bubbletea        # TUI framework
-├── glamour          # Markdown rendering
-├── bleve            # Full-text search
-├── ggml-go          # Local ML inference
-└── mcp-go           # MCP Go SDK
-```
-
-**Pros**: Fast compilation, simple concurrency  
-**Cons**: Less mature ML ecosystem
-
-### Option C: Python (Textual)
-
-```
-Python ecosystem:
-├── textual          # TUI framework
-├── rich             # Terminal formatting
-├── sqlite-utils     # SQLite helper
-├── sentence-transformers  # Embeddings
-└── mcp              # MCP Python SDK
-```
-
-**Pros**: Fastest iteration, best ML ecosystem  
-**Cons**: Slower runtime, distribution complexity
-
-**Recommendation**: Start with **Rust (Ratatui)** for the final product, but prototype in **Python (Textual)** for speed.
-
----
-
-## File Format
-
-### Example Note
+### Data Format: Markdown + YAML Frontmatter
 
 ```markdown
 ---
 id: note-2026-01-28-skelenote-pivot
-title: Skelenote TUI Pivot
+title: Skelenote v2 Vision
 type: note
-tags:
-  - skelenote
-  - architecture
-  - planning
+tags: [skelenote, architecture]
 created: 2026-01-28T17:55:00-07:00
 updated: 2026-01-28T18:30:00-07:00
+backlinks: []          # Auto-populated by index
 ---
 
-# Skelenote TUI Pivot
+# Skelenote v2 Vision
 
-Exploring a radical simplification...
+This is the main content as standard markdown.
 
-## Key Insights
+## Tasks within notes
 
-- Plain files are AI-native
-- TUI fits terminal workflows
-- Complexity is the enemy
+- [ ] Build prototype  @due(2026-02-01)  @project(skelenote)
+- [x] Research TUI frameworks
+- [ ] Test MCP integration  @priority(high)
 
-## Next Steps
+## Wikilinks
 
-- [ ] Prototype in Python
-- [ ] Test with real notes
-- [ ] Gather feedback
+See [[daily/2026-01-28]] for today's notes.
+Related: [[projects/skelenote]]
 ```
+
+### Task Detection Pattern
+
+Global task manager scans all markdown files for:
+
+```
+- [ ] uncompleted task
+- [x] completed task
+- [/] in-progress task (custom)
+
+# Optional inline metadata:
+@due(YYYY-MM-DD)
+@priority(high|medium|low)
+@project(name)
+@area(name)
+@recurrence(daily|weekly|monthly)
+```
+
+**No separate task type**—tasks live inside notes. This is how developers actually work.
+
+### Backlink System
+
+1. **Wikilinks**: `[[path/to/note]]` creates bidirectional link
+2. **Index**: SQLite table maps target → sources
+3. **Auto-update**: File watcher triggers re-index on save
+4. **Frontmatter sync**: Optional `backlinks: []` field populated by index
 
 ### Directory Structure
 
 ```
-~/notes/
-├── .skelenote/           # Config and cache
-│   ├── config.toml       # User settings
-│   ├── index.db          # SQLite FTS + embeddings
-│   └── templates/        # Note templates
-├── daily/                # Daily notes
-│   ├── 2026-01-28.md
-│   └── 2026-01-27.md
-├── inbox/                # Quick captures
+~/notes/                      # Or custom vault path
+├── .skelenote/               # Hidden config + cache
+│   ├── config.toml           # User settings
+│   ├── index.db              # SQLite: FTS5 + embeddings + backlinks
+│   ├── keys/                 # Encrypted Skeleton Key (Stronghold)
+│   └── templates/            # Template files
+├── daily/                    # Daily notes
+│   └── 2026-01-28.md
+├── inbox/                    # Quick captures
 │   └── untriaged.md
-├── projects/             # Project notes
+├── projects/                 # Project notes
 │   └── skelenote.md
-├── areas/                # Areas of responsibility
-│   └── health.md
-└── archive/              # Archived notes
-    └── old-project.md
+├── areas/                    # Areas of responsibility
+└── archive/                  # Soft-deleted notes
 ```
 
 ---
 
-## MCP Server Integration
+## Mobile Quick Capture
 
-The notes system exposes an MCP server so AI agents can:
+Since we're not building native mobile apps:
 
-```typescript
-// Available MCP tools
+### Option A: Encrypted Relay (Preferred)
+
+```
+┌────────────┐     HTTPS     ┌────────────┐    WebSocket   ┌────────────┐
+│   Mobile   │ ────────────▶ │   Relay    │ ◀────────────▶ │  Desktop   │
+│   PWA      │               │  Server    │                │   Client   │
+└────────────┘               └────────────┘                └────────────┘
+                                   │
+                            E2E encrypted
+                            (Skeleton Key)
+```
+
+1. User opens `https://capture.skelenote.com` (PWA)
+2. Authenticates with Skeleton Key fingerprint + device pairing
+3. Types quick capture note
+4. Encrypted, sent to relay
+5. Desktop client pulls on reconnect
+6. Also: LLMs can access via relay (authenticated)
+
+### Option B: Email/Telegram Capture
+
+- Send email to `yourkey@capture.skelenote.com`
+- Or message a Telegram bot
+- Decrypted on server, forwarded to relay
+
+### Option C: Local Network Only
+
+- Scan QR on mobile to connect when on same WiFi
+- Use existing P2P sync code
+- No cloud dependency
+
+---
+
+## MCP Server Interface
+
+The core differentiator. Every feature accessible via MCP.
+
+```json
 {
   "tools": [
     {
       "name": "search_notes",
-      "description": "Search notes by keyword or semantic similarity",
+      "description": "Semantic or keyword search across all notes",
       "parameters": {
         "query": "string",
-        "semantic": "boolean",
-        "limit": "number"
+        "semantic": "boolean (default: true)",
+        "limit": "number (default: 10)",
+        "type": "string (note|task|daily)",
+        "tag": "string"
       }
     },
     {
@@ -288,88 +214,237 @@ The notes system exposes an MCP server so AI agents can:
       "parameters": {
         "title": "string",
         "content": "string",
-        "type": "string",
-        "tags": "string[]"
+        "folder": "string (default: inbox)",
+        "tags": "string[]",
+        "template": "string"
       }
     },
     {
-      "name": "append_to_note",
-      "description": "Append content to an existing note",
+      "name": "edit_note",
+      "description": "Edit an existing note",
       "parameters": {
         "path": "string",
-        "content": "string"
+        "content": "string",
+        "append": "boolean"
       }
     },
     {
-      "name": "list_notes",
-      "description": "List notes by type, tag, or date range",
+      "name": "list_tasks",
+      "description": "List tasks across all notes",
       "parameters": {
-        "type": "string",
-        "tag": "string",
-        "since": "string"
+        "status": "string (todo|done|all)",
+        "due": "string (today|week|overdue)",
+        "project": "string",
+        "priority": "string"
       }
+    },
+    {
+      "name": "toggle_task",
+      "description": "Toggle a task's completion status",
+      "parameters": {
+        "note_path": "string",
+        "task_line": "number"
+      }
+    },
+    {
+      "name": "get_backlinks",
+      "description": "Get all notes linking to a target",
+      "parameters": {
+        "path": "string"
+      }
+    },
+    {
+      "name": "get_daily_note",
+      "description": "Get or create today's daily note",
+      "parameters": {
+        "date": "string (YYYY-MM-DD, default: today)"
+      }
+    },
+    {
+      "name": "quick_capture",
+      "description": "Append to inbox or daily note",
+      "parameters": {
+        "content": "string",
+        "target": "string (inbox|daily)"
+      }
+    }
+  ],
+  "resources": [
+    {
+      "name": "vault",
+      "description": "The notes vault directory",
+      "uri": "skelenote://vault"
+    },
+    {
+      "name": "config",
+      "description": "Skelenote configuration",
+      "uri": "skelenote://config"
     }
   ]
 }
 ```
 
-This allows AI assistants to:
+### AI Agent Use Cases
 
-- Search your notes for context
-- Reference existing notes in responses
-- Create notes from conversations
-- Build on previous thinking
-
----
-
-## Migration Path
-
-For existing Skelenote users:
-
-1. **Export to Markdown** - Already supported via export system
-2. **Frontmatter mapping** - Convert properties to YAML
-3. **Directory mapping** - Type → folder structure
-4. **Content conversion** - BlockNote JSON → Markdown
-
-Migration script would be straightforward since we control both formats.
+1. **Research assistant**: "Search my notes for everything related to CRDT sync"
+2. **Meeting prep**: "Create a note for my 1:1 with Jordan, pull in related tasks"
+3. **Weekly review**: "List all tasks due this week, grouped by project"
+4. **Journaling**: "Append today's highlights to my daily note"
+5. **Custom UI**: "Build me a React dashboard that shows my tasks and recent notes"
 
 ---
 
-## Questions to Explore
+## TUI Design (Default Frontend)
 
-1. **Would you use this?** Does a TUI notes app fit your workflow?
+Built with Ratatui (Rust):
 
-2. **What's essential?** Which current Skelenote features are must-haves?
+```
+┌─ Skelenote ──────────────────────────────────────────────────────┐
+│ ┌─ Sidebar ────────┐ ┌─ Content ───────────────────────────────┐ │
+│ │ 📅 Daily         │ │ # Skelenote v2 Vision                   │ │
+│ │ 📥 Inbox (3)     │ │                                         │ │
+│ │ ✅ Tasks         │ │ ## The Core Idea                        │ │
+│ │ ─────────────────│ │                                         │ │
+│ │ 📁 Projects      │ │ A headless productivity backend...      │ │
+│ │   └─ skelenote   │ │                                         │ │
+│ │   └─ freelance   │ │ ## Tasks                                │ │
+│ │ 📁 Areas         │ │ - [ ] Build prototype  @due(02-01)      │ │
+│ │   └─ health      │ │ - [x] Research TUI frameworks           │ │
+│ │ 📁 Archive       │ │ - [ ] Test MCP integration              │ │
+│ │                  │ │                                         │ │
+│ │ ─────────────────│ │ ## Backlinks                            │ │
+│ │ 🔍 Search...     │ │ ← [[daily/2026-01-28]]                  │ │
+│ └──────────────────┘ └─────────────────────────────────────────┘ │
+│ [j/k] navigate  [enter] open  [n] new  [/] search  [?] help     │
+└──────────────────────────────────────────────────────────────────┘
+```
 
-3. **Mobile story?** Is mobile access important, or is this desktop/terminal only?
+### Key Bindings
 
-4. **Branding?** Is this still "Skelenote" or a new project?
+| Key | Action |
+|-----|--------|
+| `j/k` | Navigate up/down |
+| `h/l` | Collapse/expand, back/forward |
+| `enter` | Open note in editor (`$EDITOR`) |
+| `n` | New note |
+| `t` | New task |
+| `/` | Search (fuzzy → semantic) |
+| `g d` | Go to daily note |
+| `g t` | Go to tasks view |
+| `g i` | Go to inbox |
+| `?` | Help |
+| `q` | Quit |
 
-5. **Open source?** Full open source, or keep some proprietary?
+---
+
+## Encryption Model
+
+Same as current Skelenote, simplified:
+
+```
+24-word Mnemonic ("Skeleton Key")
+    │
+    ▼ BIP39
+Master Key (Stronghold)
+    │
+    ├──▶ Sync Key (HKDF) ──▶ Encrypts relay data
+    ├──▶ User ID (HKDF)  ──▶ Deterministic across devices
+    └──▶ Sign Key (HKDF) ──▶ Device authentication
+```
+
+**Encrypted at rest**: Optional per-note encryption via `.gpg` wrapper  
+**Encrypted in transit**: Always, via Skeleton Key derived sync key
+
+---
+
+## Tech Stack
+
+```
+Rust:
+├── ratatui          # TUI framework
+├── crossterm        # Terminal abstraction
+├── rmcp             # MCP server
+├── rusqlite         # FTS5 + vector storage
+├── candle / ort     # Local embeddings
+├── pulldown-cmark   # Markdown parsing
+├── serde_yaml       # YAML frontmatter
+├── chacha20poly1305 # Encryption
+├── bip39            # Mnemonic generation
+├── iota-stronghold  # Secure key storage
+├── tokio            # Async runtime
+├── axum             # HTTP for relay/API
+└── notify           # File watcher for index updates
+```
+
+---
+
+## Migration from Skelenote v1
+
+```bash
+skelenote migrate --from ~/Library/Application\ Support/skelenote --to ~/notes
+```
+
+1. Export all objects as markdown with YAML frontmatter
+2. Convert BlockNote JSON → Markdown
+3. Map type → folder (tasks stay inline)
+4. Rebuild indexes
+5. Optional: delete v1 data
+
+---
+
+## Phases
+
+### Phase 1: Core Engine (2-3 weeks)
+
+- [ ] Markdown parser with YAML frontmatter
+- [ ] File-based storage with watcher
+- [ ] SQLite index (FTS5 + backlinks)
+- [ ] Basic MCP server
+
+### Phase 2: TUI + Tasks (2 weeks)
+
+- [ ] Ratatui TUI shell
+- [ ] Inline task detection
+- [ ] Task views (today, week, overdue)
+- [ ] Daily notes
+
+### Phase 3: AI Features (2 weeks)
+
+- [ ] Local embeddings (Nomic or similar)
+- [ ] Semantic search
+- [ ] Full MCP tool suite
+
+### Phase 4: Sync + Mobile (2 weeks)
+
+- [ ] Port encryption from v1
+- [ ] Encrypted relay server
+- [ ] Mobile PWA capture
+
+### Phase 5: Polish
+
+- [ ] Migration tool
+- [ ] Templates
+- [ ] Recurrence
+- [ ] Git integration
+
+---
+
+## Open Questions
+
+1. **Sync granularity**: File-level (simple) or chunk-level (complex)?
+2. **Conflict resolution**: Last-write-wins or manual merge?
+3. **Embedding model**: Nomic? all-MiniLM? Ollama requirement?
+4. **Relay hosting**: Self-hosted required, or offer managed?
+5. **License**: MIT? AGPL? Proprietary core?
 
 ---
 
 ## Next Steps
 
-If this direction feels right:
+If approved:
 
-1. [ ] Build a Python prototype with Textual (1-2 days)
-2. [ ] Test with real notes migration
-3. [ ] Validate MCP integration with Claude
-4. [ ] Decide: pivot Skelenote or new project
-5. [ ] If pivot: plan deprecation of GUI version
-
----
-
-## Appendix: Competitive Landscape
-
-| App | Approach | AI Features |
-|-----|----------|-------------|
-| Obsidian | GUI + Markdown | Plugins only |
-| Logseq | GUI + Markdown | Limited |
-| Notable | GUI + Markdown | None |
-| nb | CLI + Markdown | None |
-| Joplin | GUI + Markdown | None |
-| **Proposed** | TUI + Markdown | Native MCP + embeddings |
-
-The gap: No TUI-first, AI-native notes app exists yet.
+1. [ ] Set up new Rust project in this branch
+2. [ ] Port crypto module from `src-tauri/src/crypto`
+3. [ ] Build markdown parser with frontmatter
+4. [ ] Implement basic MCP server
+5. [ ] Create minimal TUI shell
