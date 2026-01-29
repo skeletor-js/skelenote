@@ -40,6 +40,7 @@ hkdf = "0.12"
 sha2 = "0.10"
 rand = "0.8"
 base64 = "0.22"
+argon2 = "0.5"
 
 # HTTP Server (for MCP-like API)
 axum = { version = "0.8", features = ["ws"] }
@@ -63,6 +64,8 @@ reqwest = { version = "0.13.1", features = ["json"] }
 notify-debouncer-full = "0.7.0"
 tokio-tungstenite = "0.28.0"
 futures = "0.3.31"
+arboard = "3"
+sublime_fuzzy = "0.7"
 
 [dev-dependencies]
 tempfile = "3"

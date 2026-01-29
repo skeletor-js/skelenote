@@ -214,6 +214,60 @@ impl Index {
         Ok(sources)
     }
 
+    /// Fuzzy search notes by title and content.
+    ///
+    /// Uses sublime_fuzzy for typo-tolerant matching.
+    pub fn fuzzy_search(&self, query: &str, limit: usize) -> anyhow::Result<Vec<SearchHit>> {
+        use sublime_fuzzy::best_match;
+
+        let mut stmt = self
+            .conn
+            .prepare("SELECT path, title, content FROM notes_fts")?;
+
+        let mut scored: Vec<(i64, SearchHit)> = stmt
+            .query_map([], |row| {
+                let path: String = row.get(0)?;
+                let title: Option<String> = row.get(1)?;
+                let content: String = row.get(2)?;
+                Ok((path, title, content))
+            })?
+            .filter_map(|r| r.ok())
+            .filter_map(|(path, title, content)| {
+                // Score against title (weighted higher) and content
+                let title_score = title
+                    .as_ref()
+                    .and_then(|t| best_match(query, t))
+                    .map(|m| m.score() * 2) // Title matches worth 2x
+                    .unwrap_or(0);
+
+                let content_score = best_match(query, &content)
+                    .map(|m| m.score())
+                    .unwrap_or(0);
+
+                let total_score = title_score + content_score;
+
+                if total_score > 0 {
+                    Some((
+                        total_score as i64,
+                        SearchHit {
+                            path,
+                            title,
+                            snippet: None,
+                            score: total_score as f64,
+                        },
+                    ))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        // Sort by score descending
+        scored.sort_by(|a, b| b.0.cmp(&a.0));
+
+        Ok(scored.into_iter().take(limit).map(|(_, hit)| hit).collect())
+    }
+
     /// Full-text search
     pub fn search(&self, query: &str, limit: usize) -> anyhow::Result<Vec<SearchHit>> {
         let mut stmt = self.conn.prepare(
@@ -308,6 +362,11 @@ impl Index {
         filters: &crate::search::SearchFilters,
         limit: usize,
     ) -> anyhow::Result<Vec<SearchHit>> {
+        // If fuzzy mode with text query and no other filters, use fuzzy search
+        if filters.is_fuzzy() && filters.text_query.is_some() && !filters.has_filters() {
+            return self.fuzzy_search(filters.text_query.as_ref().unwrap(), limit);
+        }
+
         let mut sql = String::from("SELECT n.path, n.title FROM notes n");
         let mut conditions = Vec::new();
         let mut params: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
@@ -1032,6 +1091,43 @@ mod tests {
 
         let results = index.search_filtered(&filters, 50).unwrap();
         assert_eq!(results.len(), 2);
+    }
+
+    #[test]
+    fn test_fuzzy_search() {
+        let dir = tempfile::tempdir().unwrap();
+        let index = Index::open(dir.path().join("index.db").as_path()).unwrap();
+
+        // Index meeting notes
+        let path = "meeting-notes.md";
+        index
+            .index_note(path, None, Some("Meeting Notes"), &[], "hash1")
+            .unwrap();
+        index
+            .update_fts_content(path, "Project discussion")
+            .unwrap();
+
+        // Index personal journal
+        let path2 = "personal.md";
+        index
+            .index_note(path2, None, Some("Personal Journal"), &[], "hash2")
+            .unwrap();
+        index
+            .update_fts_content(path2, "Daily thoughts")
+            .unwrap();
+
+        // Fuzzy match "mtg nts" should find "meeting notes"
+        let results = index.fuzzy_search("mtg nts", 50).unwrap();
+        assert!(!results.is_empty(), "Fuzzy search should find results");
+        assert!(
+            results[0]
+                .title
+                .as_ref()
+                .unwrap()
+                .to_lowercase()
+                .contains("meeting"),
+            "First result should be Meeting Notes"
+        );
     }
 
     #[test]
