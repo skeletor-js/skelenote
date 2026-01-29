@@ -146,6 +146,16 @@ Any AI agent can connect to your notes via MCP at `http://localhost:3000/mcp`.
             let rel_path = path.strip_prefix(&self.root).unwrap_or(path).to_path_buf();
 
             if let Ok(note) = Note::read(&self.root, &rel_path) {
+                // Auto-generate ID if missing
+                let note = if note.frontmatter.id.is_none() {
+                    let mut note = note;
+                    note.frontmatter.id = Some(uuid::Uuid::new_v4().to_string());
+                    note.write(&self.root)?;
+                    note
+                } else {
+                    note
+                };
+
                 let hash = content_hash(&note.content);
 
                 let needs_reindex = {
@@ -193,6 +203,7 @@ Any AI agent can connect to your notes via MCP at `http://localhost:3000/mcp`.
                 // Index metadata
                 index.index_note(
                     &path_str,
+                    note.frontmatter.id.as_deref(),
                     note.frontmatter.title.as_deref(),
                     &note.frontmatter.tags,
                     &hash,
@@ -207,7 +218,7 @@ Any AI agent can connect to your notes via MCP at `http://localhost:3000/mcp`.
                     .iter()
                     .map(|link| normalize_wikilink(link))
                     .collect();
-                index.update_backlinks(&path_str, &targets)?;
+                index.update_backlinks(&path_str, note.frontmatter.id.as_deref(), &targets)?;
 
                 // Index tasks
                 let tasks = Task::extract_from_content(&rel_path, &note.content);
@@ -331,6 +342,7 @@ Any AI agent can connect to your notes via MCP at `http://localhost:3000/mcp`.
             // Index metadata
             index.index_note(
                 &path_str,
+                note.frontmatter.id.as_deref(),
                 note.frontmatter.title.as_deref(),
                 &note.frontmatter.tags,
                 &hash,
@@ -345,7 +357,7 @@ Any AI agent can connect to your notes via MCP at `http://localhost:3000/mcp`.
                 .iter()
                 .map(|link| normalize_wikilink(link))
                 .collect();
-            index.update_backlinks(&path_str, &targets)?;
+            index.update_backlinks(&path_str, note.frontmatter.id.as_deref(), &targets)?;
 
             // Index tasks
             let tasks = Task::extract_from_content(&rel_path, &note.content);
@@ -571,6 +583,20 @@ tags: [inbox]
     pub async fn get_backlinks(&self, path: &Path) -> anyhow::Result<Vec<String>> {
         let index = self.index.lock().unwrap();
         index.get_backlinks(&path.to_string_lossy())
+    }
+
+    /// Resolve a wikilink to a note
+    pub async fn resolve_link(&self, link: &str) -> anyhow::Result<Option<Note>> {
+        let path = {
+            let index = self.index.lock().unwrap();
+            index.resolve_link(link)?
+        };
+
+        if let Some(path) = path {
+            self.get_note(Path::new(&path)).await
+        } else {
+            Ok(None)
+        }
     }
 
     /// Get all cached notes (for TUI)

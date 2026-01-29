@@ -212,4 +212,17 @@ Content here."#;
         // Custom field should be in extra
         assert!(fm.extra.contains_key("custom_field"));
     }
+
+    #[test]
+    fn test_auto_generate_id() {
+        let content = r#"---
+title: No ID Note
+---
+
+Content."#;
+
+        let (fm, _) = parse_frontmatter(content).unwrap();
+        // ID should be None from parsing (generation happens at vault creation/reindex)
+        assert!(fm.id.is_none());
+    }
 }

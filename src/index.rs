@@ -24,6 +24,7 @@ impl Index {
             -- Notes metadata
             CREATE TABLE IF NOT EXISTS notes (
                 path TEXT PRIMARY KEY,
+                id TEXT,
                 title TEXT,
                 tags TEXT,
                 created TEXT,
@@ -31,6 +32,8 @@ impl Index {
                 modified TEXT,
                 content_hash TEXT
             );
+
+            CREATE INDEX IF NOT EXISTS idx_notes_id ON notes(id);
 
             -- Full-text search index
             CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
@@ -60,15 +63,15 @@ impl Index {
                 VALUES (new.rowid, new.path, new.title, '', new.tags);
             END;
 
-            -- Backlinks (source -> target)
+            -- Backlinks (source -> target_link text)
             CREATE TABLE IF NOT EXISTS backlinks (
                 source_path TEXT NOT NULL,
-                target_path TEXT NOT NULL,
-                link_text TEXT,
-                PRIMARY KEY (source_path, target_path)
+                source_id TEXT,
+                target_link TEXT NOT NULL,
+                PRIMARY KEY (source_path, target_link)
             );
 
-            CREATE INDEX IF NOT EXISTS idx_backlinks_target ON backlinks(target_path);
+            CREATE INDEX IF NOT EXISTS idx_backlinks_target ON backlinks(target_link);
 
             -- Tasks
             CREATE TABLE IF NOT EXISTS tasks (
@@ -104,6 +107,7 @@ impl Index {
     pub fn index_note(
         &self,
         path: &str,
+        id: Option<&str>,
         title: Option<&str>,
         tags: &[String],
         content_hash: &str,
@@ -112,10 +116,10 @@ impl Index {
 
         self.conn.execute(
             r#"
-            INSERT OR REPLACE INTO notes (path, title, tags, modified, content_hash)
-            VALUES (?, ?, ?, datetime('now'), ?)
+            INSERT OR REPLACE INTO notes (path, id, title, tags, modified, content_hash)
+            VALUES (?, ?, ?, ?, datetime('now'), ?)
             "#,
-            params![path, title, tags_str, content_hash],
+            params![path, id, title, tags_str, content_hash],
         )?;
 
         Ok(())
@@ -169,34 +173,73 @@ impl Index {
     }
 
     /// Update backlinks for a source note
-    pub fn update_backlinks(&self, source_path: &str, targets: &[String]) -> anyhow::Result<()> {
+    pub fn update_backlinks(
+        &self,
+        source_path: &str,
+        source_id: Option<&str>,
+        targets: &[String],
+    ) -> anyhow::Result<()> {
         // Clear existing backlinks from this source
         self.conn
             .execute("DELETE FROM backlinks WHERE source_path = ?", [source_path])?;
 
         // Insert new backlinks
-        let mut stmt = self
-            .conn
-            .prepare("INSERT OR IGNORE INTO backlinks (source_path, target_path) VALUES (?, ?)")?;
+        let mut stmt = self.conn.prepare(
+            "INSERT OR IGNORE INTO backlinks (source_path, source_id, target_link) VALUES (?, ?, ?)",
+        )?;
 
         for target in targets {
-            stmt.execute(params![source_path, target])?;
+            stmt.execute(params![source_path, source_id, target])?;
         }
 
         Ok(())
     }
 
-    /// Get backlinks to a target note
+    /// Get backlinks to a target note (simple version for backward compatibility)
     pub fn get_backlinks(&self, target_path: &str) -> anyhow::Result<Vec<String>> {
-        let mut stmt = self
-            .conn
-            .prepare("SELECT source_path FROM backlinks WHERE target_path = ?")?;
+        let path_without_ext = target_path.trim_end_matches(".md");
+
+        let mut stmt = self.conn.prepare(
+            "SELECT DISTINCT source_path FROM backlinks WHERE target_link = ? OR target_link = ?",
+        )?;
 
         let paths = stmt
-            .query_map([target_path], |row| row.get(0))?
+            .query_map(params![target_path, path_without_ext], |row| row.get(0))?
             .collect::<Result<Vec<String>, _>>()?;
 
         Ok(paths)
+    }
+
+    /// Get notes that link to this note (by ID, title, or path)
+    pub fn get_backlinks_for_note(
+        &self,
+        note_id: Option<&str>,
+        title: Option<&str>,
+        path: &str,
+    ) -> anyhow::Result<Vec<String>> {
+        let mut sources = Vec::new();
+        let path_without_ext = path.trim_end_matches(".md");
+
+        // Find backlinks where target matches our ID, title, or path
+        let mut stmt = self.conn.prepare(
+            "SELECT DISTINCT source_path FROM backlinks WHERE target_link = ? OR target_link = ? OR target_link = ? OR target_link = ?",
+        )?;
+
+        let rows = stmt.query_map(
+            params![
+                note_id.unwrap_or(""),
+                title.unwrap_or(""),
+                path,
+                path_without_ext
+            ],
+            |row| row.get(0),
+        )?;
+
+        for row in rows {
+            sources.push(row?);
+        }
+
+        Ok(sources)
     }
 
     /// Full-text search
@@ -373,6 +416,54 @@ impl Index {
         }
 
         Ok(hits)
+    }
+
+    /// Resolve a wikilink to a note path
+    /// Tries: exact ID match, then title match, then path match
+    pub fn resolve_link(&self, link: &str) -> anyhow::Result<Option<String>> {
+        // Try exact ID match first
+        let by_id: Option<String> = self
+            .conn
+            .query_row("SELECT path FROM notes WHERE id = ?", [link], |row| {
+                row.get(0)
+            })
+            .optional()?;
+
+        if by_id.is_some() {
+            return Ok(by_id);
+        }
+
+        // Try title match (case-insensitive)
+        let by_title: Option<String> = self
+            .conn
+            .query_row(
+                "SELECT path FROM notes WHERE LOWER(title) = LOWER(?)",
+                [link],
+                |row| row.get(0),
+            )
+            .optional()?;
+
+        if by_title.is_some() {
+            return Ok(by_title);
+        }
+
+        // Try path match (with or without .md extension)
+        let path_with_ext = if link.ends_with(".md") {
+            link.to_string()
+        } else {
+            format!("{}.md", link)
+        };
+
+        let by_path: Option<String> = self
+            .conn
+            .query_row(
+                "SELECT path FROM notes WHERE path = ? OR path = ?",
+                params![link, path_with_ext],
+                |row| row.get(0),
+            )
+            .optional()?;
+
+        Ok(by_path)
     }
 }
 

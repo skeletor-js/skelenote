@@ -39,13 +39,17 @@ GOOD:
 
 ### Properties & Note Linking (Current)
 
-- [~] Simplify frontmatter to "Properties" (id, title, tags, created, updated)
+- [x] Simplify frontmatter to "Properties" (id, title, tags, created, updated)
   - [x] Remove `type`, `aliases`, `daily` from Frontmatter struct
   - [x] Update index schema to remove note_type column
   - [x] Update vault templates and index_note calls
   - [x] Rename MetadataField to PropertyField (Title/Tags only)
   - [x] Rename all UI strings from "metadata" to "properties"
-  - [ ] Add ID-based note linking with computed backlinks
+  - [x] Add ID-based note linking with computed backlinks
+    - [x] Task 6: Auto-generate UUIDs for notes without IDs during reindex
+    - [x] Task 7: Add ID column to index for link resolution
+    - [x] Task 8: Add link resolution (by ID, title, or path)
+    - [x] Task 9: Update backlinks to track source IDs
   - See: `docs/plans/2026-01-28-properties-and-linking.md`
 
 ---
