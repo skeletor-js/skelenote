@@ -241,6 +241,65 @@ impl Index {
         Ok(hits)
     }
 
+    /// Get paths of notes that link TO a target (by ID, title, or path).
+    ///
+    /// This finds all source notes that have a wikilink pointing to the target.
+    pub fn get_sources_linking_to(&self, target: &str) -> anyhow::Result<Vec<String>> {
+        // Find all source paths where target_link matches (ID, title, or path)
+        // Use exact match first, then partial match for flexibility
+        let mut stmt = self.conn.prepare(
+            "SELECT DISTINCT source_path FROM backlinks
+             WHERE LOWER(target_link) = LOWER(?)
+             OR LOWER(target_link) LIKE LOWER(?)",
+        )?;
+
+        let results: Vec<String> = stmt
+            .query_map([target, &format!("%{}%", escape_like_pattern(target))], |row| row.get(0))?
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(results)
+    }
+
+    /// Get paths of notes that are linked FROM a source (by ID, title, or path).
+    ///
+    /// This finds all target notes that the source note links to.
+    pub fn get_targets_linked_from(&self, source: &str) -> anyhow::Result<Vec<String>> {
+        // First, find the source path by ID, title, or path match
+        let source_path: Option<String> = self
+            .conn
+            .query_row(
+                "SELECT path FROM notes WHERE id = ? OR LOWER(title) = LOWER(?) OR path LIKE ?",
+                [source, source, &format!("%{}%", escape_like_pattern(source))],
+                |row| row.get(0),
+            )
+            .optional()?;
+
+        let Some(source_path) = source_path else {
+            return Ok(Vec::new());
+        };
+
+        // Get all target_links from that source
+        let mut stmt = self
+            .conn
+            .prepare("SELECT target_link FROM backlinks WHERE source_path = ?")?;
+
+        let links: Vec<String> = stmt
+            .query_map([&source_path], |row| row.get(0))?
+            .collect::<Result<Vec<_>, _>>()?;
+
+        // Resolve each link to a path
+        drop(stmt);
+
+        let mut paths = Vec::new();
+        for link in links {
+            if let Some(path) = self.resolve_link(&link)? {
+                paths.push(path);
+            }
+        }
+
+        Ok(paths)
+    }
+
     /// Search notes with structured filters.
     ///
     /// Builds a dynamic SQL query based on active filters.
@@ -279,6 +338,43 @@ impl Index {
         if let Some(id) = &filters.id {
             conditions.push("n.id LIKE ?".to_string());
             params.push(Box::new(format!("%{}%", id)));
+        }
+
+        // Backlink filter: links:target (notes that link TO target)
+        let link_source_paths = if let Some(target) = &filters.links_to {
+            Some(self.get_sources_linking_to(target)?)
+        } else {
+            None
+        };
+
+        // Backlink filter: linkedby:source (notes linked FROM source)
+        let link_target_paths = if let Some(source) = &filters.linked_by {
+            Some(self.get_targets_linked_from(source)?)
+        } else {
+            None
+        };
+
+        // Add path constraints for backlink filters
+        if let Some(paths) = &link_source_paths {
+            if paths.is_empty() {
+                return Ok(Vec::new()); // No matches possible
+            }
+            let placeholders: Vec<&str> = paths.iter().map(|_| "?").collect();
+            conditions.push(format!("n.path IN ({})", placeholders.join(", ")));
+            for p in paths {
+                params.push(Box::new(p.clone()));
+            }
+        }
+
+        if let Some(paths) = &link_target_paths {
+            if paths.is_empty() {
+                return Ok(Vec::new()); // No matches possible
+            }
+            let placeholders: Vec<&str> = paths.iter().map(|_| "?").collect();
+            conditions.push(format!("n.path IN ({})", placeholders.join(", ")));
+            for p in paths {
+                params.push(Box::new(p.clone()));
+            }
         }
 
         // Text query via FTS5
@@ -544,6 +640,13 @@ impl Index {
     }
 }
 
+/// Escape SQL LIKE pattern special characters.
+fn escape_like_pattern(s: &str) -> String {
+    s.replace('\\', "\\\\")
+        .replace('%', "\\%")
+        .replace('_', "\\_")
+}
+
 fn cosine_similarity(a: &[f32], b: &[f32]) -> f64 {
     let dot_product: f64 = a
         .iter()
@@ -744,15 +847,11 @@ mod tests {
         // Index a note with work tag and project content
         let path = "meeting.md";
         index
-            .index_note(
-                path,
-                None,
-                Some("Meeting"),
-                &["work".to_string()],
-                "hash1",
-            )
+            .index_note(path, None, Some("Meeting"), &["work".to_string()], "hash1")
             .unwrap();
-        index.update_fts_content(path, "Project discussion").unwrap();
+        index
+            .update_fts_content(path, "Project discussion")
+            .unwrap();
 
         // Index a note with personal tag and project content
         let path2 = "meeting2.md";
@@ -772,7 +871,11 @@ mod tests {
         // Verify basic FTS search works (using filtered search with text query only)
         let basic_filters = crate::search::SearchFilters::parse("project");
         let basic_results = index.search_filtered(&basic_filters, 50).unwrap();
-        assert_eq!(basic_results.len(), 2, "Basic FTS should find 2 notes with 'project'");
+        assert_eq!(
+            basic_results.len(),
+            2,
+            "Basic FTS should find 2 notes with 'project'"
+        );
 
         // Search with both text query and tag filter
         let filters = crate::search::SearchFilters::parse("tag:work project");
@@ -796,7 +899,9 @@ mod tests {
                 params![path, None::<String>, "Recent Meeting", "", "2025-06-01", "hash1"],
             )
             .unwrap();
-        index.update_fts_content(path, "Project discussion").unwrap();
+        index
+            .update_fts_content(path, "Project discussion")
+            .unwrap();
 
         // Index an old note with project content
         let path2 = "old.md";
@@ -807,7 +912,9 @@ mod tests {
                 params![path2, None::<String>, "Old Meeting", "", "2020-01-01", "hash2"],
             )
             .unwrap();
-        index.update_fts_content(path2, "Project discussion").unwrap();
+        index
+            .update_fts_content(path2, "Project discussion")
+            .unwrap();
 
         // Search with both text query and date filter
         let filters = crate::search::SearchFilters::parse("after:2025-01-01 project");
@@ -815,6 +922,116 @@ mod tests {
         let results = index.search_filtered(&filters, 50).unwrap();
         assert_eq!(results.len(), 1);
         assert!(results[0].path.contains("recent"));
+    }
+
+    #[test]
+    fn test_search_links_to() {
+        let dir = tempfile::tempdir().unwrap();
+        let index = Index::open(dir.path().join("index.db").as_path()).unwrap();
+
+        // Note that is linked to (target)
+        let target_path = "target.md";
+        index
+            .index_note(
+                target_path,
+                Some("target-id"),
+                Some("Target Note"),
+                &[],
+                "hash1",
+            )
+            .unwrap();
+        index
+            .update_fts_content(target_path, "Target content")
+            .unwrap();
+
+        // Note that links to target (source)
+        let source_path = "source.md";
+        index
+            .index_note(source_path, None, Some("Source"), &[], "hash2")
+            .unwrap();
+        index
+            .update_fts_content(source_path, "Links to [[target-id]]")
+            .unwrap();
+        // Add the backlink
+        index
+            .update_backlinks(source_path, None, &["target-id".to_string()])
+            .unwrap();
+
+        // Note with no links
+        let other_path = "other.md";
+        index
+            .index_note(other_path, None, Some("Other"), &[], "hash3")
+            .unwrap();
+        index
+            .update_fts_content(other_path, "No links here")
+            .unwrap();
+
+        // Find notes that link TO target-id
+        let mut filters = crate::search::SearchFilters::default();
+        filters.links_to = Some("target-id".to_string());
+
+        let results = index.search_filtered(&filters, 50).unwrap();
+        assert_eq!(results.len(), 1);
+        assert!(results[0].path.contains("source"));
+    }
+
+    #[test]
+    fn test_search_linked_by() {
+        let dir = tempfile::tempdir().unwrap();
+        let index = Index::open(dir.path().join("index.db").as_path()).unwrap();
+
+        // Source note with outgoing links
+        let source_path = "source.md";
+        index
+            .index_note(source_path, Some("source-id"), Some("Source"), &[], "hash1")
+            .unwrap();
+        index
+            .update_fts_content(source_path, "Links to [[target1]] and [[target2]]")
+            .unwrap();
+        // Add the backlinks from source
+        index
+            .update_backlinks(
+                source_path,
+                Some("source-id"),
+                &["target1".to_string(), "target2".to_string()],
+            )
+            .unwrap();
+
+        // Target notes
+        let target1_path = "target1.md";
+        index
+            .index_note(
+                target1_path,
+                Some("target1"),
+                Some("Target 1"),
+                &[],
+                "hash2",
+            )
+            .unwrap();
+        index
+            .update_fts_content(target1_path, "First target")
+            .unwrap();
+
+        let target2_path = "target2.md";
+        index
+            .index_note(
+                target2_path,
+                Some("target2"),
+                Some("Target 2"),
+                &[],
+                "hash3",
+            )
+            .unwrap();
+        index
+            .update_fts_content(target2_path, "Second target")
+            .unwrap();
+
+        // Find notes that are linked FROM source-id
+        let mut filters = crate::search::SearchFilters::default();
+        filters.linked_by = Some("source-id".to_string());
+
+        let results = index.search_filtered(&filters, 50).unwrap();
+        assert_eq!(results.len(), 2);
     }
 
     #[test]
@@ -882,9 +1099,18 @@ mod tests {
         );
 
         let paths: Vec<&str> = results.iter().map(|r| r.path.as_str()).collect();
-        assert!(paths.contains(&"actual-work.md"), "Should find actual-work.md");
-        assert!(paths.contains(&"work-meeting.md"), "Should find work-meeting.md");
-        assert!(!paths.contains(&"school.md"), "Should NOT find school.md (homework tag)");
+        assert!(
+            paths.contains(&"actual-work.md"),
+            "Should find actual-work.md"
+        );
+        assert!(
+            paths.contains(&"work-meeting.md"),
+            "Should find work-meeting.md"
+        );
+        assert!(
+            !paths.contains(&"school.md"),
+            "Should NOT find school.md (homework tag)"
+        );
         assert!(
             !paths.contains(&"networking.md"),
             "Should NOT find networking.md (network tag)"

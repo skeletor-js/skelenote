@@ -51,6 +51,7 @@ GOOD:
   - [x] Task 2: Add `search_filtered()` method to Index in `src/index.rs`
     - [x] Code quality fixes: tag word-boundary matching, error propagation
   - [ ] Task 3: Integrate into Vault.search() to use filters
+    - [x] Fix LIKE pattern escaping for backlink filters
   - [ ] Task 4: Wire up TUI search to use filtered search
 
 - [ ] Add search filter for date range (`after:2025-01-01`)
@@ -60,12 +61,16 @@ GOOD:
   - Support both: `after:2025-01-01` and `before:2025-12-31`
   - Test: Search `after:2025-01-01`, only recent notes appear
 
-- [ ] Add search filter for backlinks (`links:note-id` or `linkedby:note-id`)
+- [x] Add search filter for backlinks (`links:note-id` or `linkedby:note-id`)
   - File: `src/tui/app.rs`, `src/vault.rs`, `src/index.rs`
   - `links:X` - find notes that link TO note X (by ID, title, or path)
   - `linkedby:X` - find notes that are linked FROM note X
   - Leverage existing `backlinks` table with three-tier resolution
   - Test: Search `linkedby:my-note`, see all notes that link to it
+  - [x] Task 3.1: Add failing tests for backlink filter search
+  - [x] Task 3.2: Add helper methods (get_sources_linking_to, get_targets_linked_from)
+  - [x] Task 3.3: Update search_filtered to handle backlink filters
+  - [x] Task 3.4: Run tests and verify all pass
 
 - [ ] Add search filter by note ID (`id:uuid`)
   - File: `src/tui/app.rs`, `src/vault.rs`
