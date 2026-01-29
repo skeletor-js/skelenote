@@ -28,8 +28,9 @@ pub fn draw(f: &mut Frame, app: &App) {
 fn draw_tabs(f: &mut Frame, app: &App, area: Rect) {
     let tabs = vec![
         ("1", "Notes", View::Notes),
-        ("2", "Tasks", View::Tasks),
-        ("3", "Daily", View::Daily),
+        ("2", "Inbox", View::Inbox),
+        ("3", "Tasks", View::Tasks),
+        ("4", "Daily", View::Daily),
     ];
 
     let mut spans: Vec<Span> = Vec::new();
@@ -63,11 +64,10 @@ fn draw_tabs(f: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_main(f: &mut Frame, app: &App, area: Rect) {
-    // If we have a current note, show split view
     if app.current_note.is_some() {
         let chunks = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints([Constraint::Percentage(35), Constraint::Percentage(65)])
+            .constraints([Constraint::Percentage(30), Constraint::Percentage(70)])
             .split(area);
 
         draw_list(f, app, chunks[0]);
@@ -79,7 +79,7 @@ fn draw_main(f: &mut Frame, app: &App, area: Rect) {
 
 fn draw_list(f: &mut Frame, app: &App, area: Rect) {
     match app.view {
-        View::Notes | View::Daily | View::Search => draw_notes_list(f, app, area),
+        View::Notes | View::Inbox | View::Daily | View::Search => draw_notes_list(f, app, area),
         View::Tasks => draw_tasks_list(f, app, area),
     }
 }
@@ -117,7 +117,6 @@ fn draw_notes_list(f: &mut Frame, app: &App, area: Rect) {
             } else {
                 "  "
             };
-
             let content = format!("{}{}", prefix, note.title());
             ListItem::new(content).style(style)
         })
@@ -125,6 +124,7 @@ fn draw_notes_list(f: &mut Frame, app: &App, area: Rect) {
 
     let title = match app.view {
         View::Notes => " Notes ",
+        View::Inbox => " Inbox ",
         View::Daily => " Daily ",
         View::Search => " Search ",
         _ => "",
@@ -171,7 +171,6 @@ fn draw_tasks_list(f: &mut Frame, app: &App, area: Rect) {
             } else {
                 "[ ]"
             };
-
             let content = format!("{}{} {}", prefix, checkbox, task.text);
             ListItem::new(content).style(style)
         })
@@ -200,14 +199,22 @@ fn draw_content(f: &mut Frame, app: &App, area: Rect) {
             Style::default()
         };
 
-        // Split content into lines for scrolling
-        let lines: Vec<Line> = note
-            .content
+        let is_editing = app.input_mode == InputMode::NoteEditing;
+        let content_str = if is_editing {
+            &app.editor_buffer
+        } else {
+            &note.content
+        };
+
+        let lines: Vec<Line> = content_str
             .lines()
+            .enumerate()
             .skip(app.content_scroll)
-            .map(|line| {
+            .map(|(line_num, line)| {
+                let is_cursor_line = is_editing && line_num == app.editor_cursor.0;
+
                 // Basic syntax highlighting
-                let style = if line.starts_with('#') {
+                let base_style = if line.starts_with('#') {
                     Style::default()
                         .fg(Color::Cyan)
                         .add_modifier(Modifier::BOLD)
@@ -220,11 +227,43 @@ fn draw_content(f: &mut Frame, app: &App, area: Rect) {
                 } else {
                     Style::default()
                 };
-                Line::styled(line, style)
+
+                if is_cursor_line && is_editing {
+                    // Show cursor position
+                    let col = app.editor_cursor.1.min(line.len());
+                    let before = &line[..col];
+                    let cursor_char = line.chars().nth(col).unwrap_or(' ');
+                    let after = if col < line.len() {
+                        &line[col + 1..]
+                    } else {
+                        ""
+                    };
+
+                    Line::from(vec![
+                        Span::styled(before, base_style),
+                        Span::styled(
+                            cursor_char.to_string(),
+                            Style::default().bg(Color::White).fg(Color::Black),
+                        ),
+                        Span::styled(after, base_style),
+                    ])
+                } else {
+                    Line::styled(line, base_style)
+                }
             })
             .collect();
 
-        let title = format!(" {} ", note.title());
+        let title_marker = if is_editing {
+            if app.unsaved_changes {
+                " ● EDITING "
+            } else {
+                " EDITING "
+            }
+        } else {
+            ""
+        };
+        let title = format!(" {}{}", note.title(), title_marker);
+
         let para = Paragraph::new(lines)
             .block(
                 Block::default()
@@ -242,11 +281,13 @@ fn draw_status(f: &mut Frame, app: &App, area: Rect) {
     let text = match app.input_mode {
         InputMode::Normal => app.status.clone(),
         InputMode::Editing => format!("{}{}_", app.status, app.input),
+        InputMode::NoteEditing => app.status.clone(),
     };
 
     let style = match app.input_mode {
         InputMode::Normal => Style::default().fg(Color::DarkGray),
         InputMode::Editing => Style::default().fg(Color::Yellow),
+        InputMode::NoteEditing => Style::default().fg(Color::Green),
     };
 
     let para = Paragraph::new(text).style(style);

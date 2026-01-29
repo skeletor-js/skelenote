@@ -357,6 +357,22 @@ type: note
         notes.sort_by(|a, b| b.modified.cmp(&a.modified));
         notes
     }
+
+    /// Get notes in a specific folder
+    pub async fn get_notes_in_folder(&self, folder: &str) -> Vec<crate::notes::Note> {
+        let cache = self.notes_cache.read().await;
+        let mut notes: Vec<_> = cache
+            .values()
+            .filter(|n| {
+                n.path
+                    .parent()
+                    .map_or(false, |p| p.to_string_lossy() == folder)
+            })
+            .cloned()
+            .collect();
+        notes.sort_by(|a, b| b.modified.cmp(&a.modified));
+        notes
+    }
 }
 
 /// Compute SHA256 hash of content
