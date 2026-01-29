@@ -1,0 +1,3 @@
+RefCell<hashlink::lru_cache::LruCache<Arc<str>, rusqlite::raw_statement::RawStatement>>
+tokio::sync::RwLock<index::Index>
+Arc<tokio::sync::RwLock<index::Index>>

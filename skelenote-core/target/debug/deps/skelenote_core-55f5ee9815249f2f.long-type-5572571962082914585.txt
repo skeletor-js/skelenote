@@ -1,0 +1,2 @@
+fn(axum::extract::State<Arc<McpState>>, Query<TasksQuery>) -> impl std::future::Future<Output = Result<Json<serde_json::Value>, axum::http::StatusCode>> {api_tasks}
+fn(axum::extract::State<Arc<McpState>>, Query<TasksQuery>) -> impl std::future::Future<Output = Result<Json<serde_json::Value>, axum::http::StatusCode>> {api_tasks}: Handler<_, _>

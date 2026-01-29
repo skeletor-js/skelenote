@@ -1,0 +1,3 @@
+RefCell<rusqlite::inner_connection::InnerConnection>
+tokio::sync::RwLock<index::Index>
+Arc<tokio::sync::RwLock<index::Index>>

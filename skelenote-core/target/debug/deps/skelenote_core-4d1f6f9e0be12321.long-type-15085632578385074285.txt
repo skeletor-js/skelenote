@@ -1,0 +1,2 @@
+fn(axum::extract::State<Arc<McpState>>, Json<CaptureRequest>) -> impl std::future::Future<Output = Result<Json<serde_json::Value>, axum::http::StatusCode>> {api_capture}
+fn(axum::extract::State<Arc<McpState>>, Json<CaptureRequest>) -> impl std::future::Future<Output = Result<Json<serde_json::Value>, axum::http::StatusCode>> {api_capture}: Handler<_, _>

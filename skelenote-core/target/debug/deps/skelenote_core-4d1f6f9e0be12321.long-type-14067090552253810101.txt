@@ -1,0 +1,2 @@
+fn(axum::extract::State<Arc<McpState>>, Query<DailyQuery>) -> impl std::future::Future<Output = Result<Json<serde_json::Value>, axum::http::StatusCode>> {api_daily}
+fn(axum::extract::State<Arc<McpState>>, Query<DailyQuery>) -> impl std::future::Future<Output = Result<Json<serde_json::Value>, axum::http::StatusCode>> {api_daily}: Handler<_, _>

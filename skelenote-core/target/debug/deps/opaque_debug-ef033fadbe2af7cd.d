@@ -1,0 +1,7 @@
+/Users/jordanstella/GitHub/skelenote/skelenote-core/target/debug/deps/opaque_debug-ef033fadbe2af7cd.d: /Users/jordanstella/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/opaque-debug-0.3.1/src/lib.rs
+
+/Users/jordanstella/GitHub/skelenote/skelenote-core/target/debug/deps/libopaque_debug-ef033fadbe2af7cd.rlib: /Users/jordanstella/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/opaque-debug-0.3.1/src/lib.rs
+
+/Users/jordanstella/GitHub/skelenote/skelenote-core/target/debug/deps/libopaque_debug-ef033fadbe2af7cd.rmeta: /Users/jordanstella/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/opaque-debug-0.3.1/src/lib.rs
+
+/Users/jordanstella/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/opaque-debug-0.3.1/src/lib.rs:
