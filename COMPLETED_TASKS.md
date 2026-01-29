@@ -5,6 +5,38 @@
 
 ---
 
+## Documentation Refresh (2026-01-29)
+
+- [x] Update documentation to reflect current codebase state
+  - [x] Update ROADMAP.md - mark v0.2, v0.3, v0.4 as complete, add v0.5
+  - [x] Update README.md - reflect current features, add badges, update CLI commands
+  - [x] Update CLAUDE.md - refresh module structure with all new modules
+
+---
+
+## v0.4 — Sync (P2P Discovery Phase 4D-E)
+
+### Peer Status & Link Device Screen (2026-01-29)
+
+- [x] Add peer connection status UI in TUI (Phase 4D)
+  - File: `src/tui/app.rs`, `src/tui/ui.rs`
+  - Added `SyncState` struct with `peer_count`, `relay_connected`, `last_sync`
+  - Added `sync_state` field to App struct
+  - Updated status bar to show `[n peers | relay: ✓/✗]` format
+  - Status displayed in right side of status bar with color coding
+
+- [x] Add "Link Another Device" info screen in TUI (Phase 4E)
+  - File: `src/tui/app.rs`, `src/tui/ui.rs`
+  - Added `LinkDevice` variant to `View` enum
+  - Added `:link` command handler to switch to LinkDevice view
+  - Created `draw_link_device()` function showing:
+    - Current fingerprint (8 chars, prominent display)
+    - Instructions for syncing via recovery phrase
+    - Note about matching fingerprints
+  - Added key handler to return from LinkDevice view (any key returns)
+
+---
+
 ## v0.2 — Experience (TUI Polish)
 
 ### Advanced Search (2026-01-28)
@@ -231,3 +263,242 @@
   - [x] Task 12: Verify tests pass
   - [x] Task 13: Run clippy and format
   - See: `docs/plans/2026-01-28-properties-and-linking.md`
+
+---
+
+## v0.3 — Integration (MCP Enhancements)
+
+### MCP Filesystem Tools (2026-01-29)
+
+- [x] Add `validate_vault_path()` helper function
+  - File: `src/mcp.rs`
+  - Rejects absolute paths and path traversal attempts (..)
+  - Returns validated full path within vault
+
+- [x] Make vault event handlers public
+  - File: `src/vault.rs`
+  - Changed `handle_create_modify` and `handle_remove` to `pub`
+  - Enables MCP tools to trigger reindexing
+
+- [x] Add `read_file` MCP tool for arbitrary vault files
+  - File: `src/mcp.rs`
+  - Parameters: `path` (string, relative to vault root)
+  - Returns: File content as string (or base64 for binary)
+  - Validates path is within vault root (prevents traversal)
+
+- [x] Add `write_file` MCP tool
+  - File: `src/mcp.rs`
+  - Parameters: `path`, `content`
+  - Creates parent directories if needed
+  - Validates path is within vault root
+  - Triggers reindex for .md files via `vault.handle_create_modify()`
+
+- [x] Add `create_directory` MCP tool
+  - File: `src/mcp.rs`
+  - Parameters: `path` (relative to vault root)
+  - Creates directory and any missing parents via `create_dir_all`
+
+- [x] Add `get_file_info` MCP tool
+  - File: `src/mcp.rs`
+  - Parameters: `path`
+  - Returns: JSON `{ size, modified, is_directory, extension }`
+
+- [x] Add `delete_file` MCP tool
+  - File: `src/mcp.rs`
+  - Parameters: `path`
+  - Deletes files, or empty directories only
+  - Triggers index removal for .md files via `vault.handle_remove()`
+
+- [x] Enhance `list_directory` tool with metadata
+  - File: `src/mcp.rs`, `src/vault.rs`
+  - Added `FileEntry` struct with name, path, is_directory, size, modified
+  - Added `list_files_detailed()` method to Vault
+  - Returns: JSON array `[{ name, path, is_directory, size, modified }]`
+  - Added optional `recursive: bool` parameter for deep listing
+
+### MCP Search Enhancements (2026-01-29)
+
+- [x] Add `search_advanced` MCP tool with filters
+  - File: `src/mcp.rs`
+  - Parameters: `query`, `tags[]`, `after`, `before`, `links_to`, `linked_by`, `limit`
+  - Builds SearchFilters and calls vault.search_filtered()
+  - Returns JSON array of results with path, title, snippet, score
+
+- [x] Add `get_index_stats` MCP tool
+  - File: `src/mcp.rs`, `src/index.rs`
+  - Added `IndexStats` struct with total_notes, total_tasks, total_backlinks, indexed_embeddings
+  - Added `get_stats()` method to Index
+  - Added `get_index_stats()` wrapper to Vault
+  - Returns JSON object with vault statistics
+
+- [x] Add `find_related` MCP tool
+  - File: `src/mcp.rs`, `src/vault.rs`
+  - Parameters: `path`, `limit`
+  - Added `find_related()` method to Vault
+  - Uses note's embedding for semantic search
+  - Excludes the source note from results
+  - Returns JSON array of similar notes
+
+- [x] Add `get_tags` MCP tool
+  - File: `src/mcp.rs`, `src/index.rs`
+  - Added `get_all_tags()` method to Index
+  - Parses comma-separated tags from all notes
+  - Returns JSON array of `{tag, count}` sorted by count desc
+
+- [x] Add `get_note_graph` MCP tool
+  - File: `src/mcp.rs`, `src/index.rs`
+  - Added `GraphNode` and `GraphEdge` structs
+  - Added `get_graph()` method to Index
+  - Added `get_note_graph()` wrapper to Vault
+  - Returns JSON `{nodes: [{path, title}], edges: [{source, target}]}`
+  - Resolves backlinks to actual note paths
+
+---
+
+## v0.4 — Sync (Rust Relay & P2P)
+
+### Sync State Table (2026-01-29)
+
+- [x] Add sync state table to SQLite index
+  - File: `src/index.rs`
+  - Schema: `sync_state(path, local_version BLOB, loro_doc BLOB, synced_at TEXT, sync_status TEXT)`
+  - Added `SyncState` struct for representing sync state
+  - Added `get_sync_state()` - retrieves sync state for a note path
+  - Added `update_sync_state()` - creates or updates sync state with UPSERT
+  - Added `get_pending_syncs()` - returns paths of all notes with 'pending' status
+  - Added `delete_sync_state()` - removes sync state for a path
+  - Updated `remove_note()` to also delete sync state
+  - Added tests: `test_sync_state_crud`, `test_get_pending_syncs`, `test_remove_note_deletes_sync_state`
+
+### Relay Server Rate Limiting & Room Cleanup (2026-01-29)
+
+- [x] Add rate limiting to relay server (Phase 2D)
+  - File: `src/relay/rate_limit.rs` (new), `src/relay/server.rs`
+  - Created `RateLimiter` struct with per-client tracking
+  - Tracks message count per client IP per minute
+  - Default limit: 100 messages/minute per client
+  - Returns RATE_LIMITED error when exceeded
+  - Background task cleans up stale client entries (every 2 min)
+  - Uses `ConnectInfo<SocketAddr>` extractor for client address
+  - Added unit tests for rate limiter
+
+- [x] Add room cleanup for idle rooms (Phase 2E)
+  - File: `src/relay/server.rs`
+  - Added `last_activity: Instant` to `RoomState` struct
+  - Background cleanup task runs every 5 minutes
+  - Removes rooms with no activity for 1 hour
+  - Also prunes old messages from database (keeps 24 hours)
+  - Updated room handlers to track activity timestamps
+
+### Message Persistence & Sequencing (2026-01-29)
+
+- [x] Add message persistence to relay server (Phase 2A-C)
+  - File: `src/relay/db.rs` (new), `src/relay/server.rs`
+  - Created `RelayDb` struct with SQLite persistence at `~/.skelenote/relay.db`
+  - Schema: `messages(id, room, seq, encrypted_payload, timestamp)` with UNIQUE(room, seq)
+  - Added `store_message()`, `get_messages_since()`, `get_recent_messages()`, `get_next_seq()`, `prune_old_messages()`
+  - Added `next_seq: AtomicU64` to `RoomState` for per-room sequencing
+  - Server assigns sequence numbers to incoming Sync messages
+  - Persists messages to RelayDb before broadcasting
+  - Replays last 100 messages on client join via History message
+  - Handles RequestHistory by querying RelayDb for messages since given seq
+  - Added unit tests for all RelayDb methods
+
+- [x] Add message versioning/sequencing
+  - File: `src/relay/protocol.rs`, `src/relay/server.rs`
+  - Protocol already has `seq: u64` in Sync message
+  - Server tracks per-room sequence counter via `AtomicU64`
+  - Clients can request messages from specific seq via RequestHistory
+  - Returns History message with all messages since requested seq
+
+- [x] Add identity announcement (complete)
+  - File: `src/relay/protocol.rs`, `src/relay/server.rs`
+  - Announce message with user_id and fingerprint
+  - Server derives room from user_id via sha256
+  - No user database - zero-knowledge routing
+  - Devices with same mnemonic get same user_id, join same room
+
+### Sync Transport Layer - Phase 3 (2026-01-29)
+
+- [x] Add E2E encryption for sync payloads (Phase 3A)
+  - File: `src/sync/transport.rs` (new)
+  - Created `SyncTransport` struct for encrypted WebSocket communication
+  - Uses `KeyManager::sync_key()` for XChaCha20-Poly1305 encryption
+  - Format: 24-byte nonce prepended to ciphertext
+  - Methods: `connect()`, `send_update()`, `recv_update()`, `recv_history()`, `close()`
+  - `new_disconnected()` for testing without network
+  - `encrypt()` / `decrypt()` public for standalone use
+  - Relay cannot decrypt payloads (doesn't have mnemonic)
+  - Tests: 7 unit tests for encryption roundtrip, wrong key failure, large data, etc.
+
+- [x] Add delta sync (Phase 3B)
+  - File: `src/sync/delta.rs` (new)
+  - Created `DeltaSync` struct for managing incremental sync state per note
+  - `local_edit()` - apply local changes, save to index, return delta to send
+  - `remote_update()` - apply remote update, merge via Loro, return content
+  - `get_pending()` - get all notes with pending local changes
+  - `mark_synced()` / `mark_syncing()` - status management
+  - `get_delta()` - get delta from specific version
+  - `init_sync_state()` - initialize sync for existing notes
+  - Uses existing `sync_state` table in Index
+  - Tests: 8 unit tests covering local/remote edits, merges, status tracking
+
+- [x] Add conflict detection and resolution (Phase 3C)
+  - File: `src/sync/crdt.rs`
+  - Added `MergeResult` struct with `content: String` and `had_concurrent_edits: bool`
+  - Added `apply_updates_with_result()` method to `LoroNote`
+  - Compares version vectors before/after to detect concurrent edits
+  - Loro handles CRDT merge automatically; we surface detection for UI
+  - Tests: 3 unit tests for MergeResult and concurrent edit detection
+
+- [x] Add sync status tracking (Phase 3D)
+  - File: `src/sync/mod.rs`
+  - Created `SyncStatus` enum: `Synced`, `Pending`, `Syncing`
+  - Implemented `Display` trait for TUI indicators:
+    - `Synced` -> ✓ (checkmark)
+    - `Pending` -> ↑ (up arrow)
+    - `Syncing` -> ⟳ (cycle)
+  - Added `from_str()` / `as_str()` for database serialization
+  - Status tracked via `DeltaSync` methods and index `sync_state` table
+  - Tests: 5 unit tests for display, parsing, equality
+
+- [x] Update sync module exports
+  - File: `src/sync/mod.rs`
+  - Added `pub mod delta`, `pub mod transport`
+  - Exported: `LoroNote`, `MergeResult`, `DeltaSync`, `SyncTransport`, `SyncStatus`
+  - Preserved existing exports: `MdnsService`, `PeerDiscovery`, `DiscoveredPeer`, `PeerConnection`
+
+### P2P Discovery - Phase 4 (2026-01-29)
+
+- [x] Add mDNS service advertisement (Phase 4A)
+  - File: `src/sync/mdns.rs` (new), `Cargo.toml`
+  - Added `mdns-sd = "0.11"` and `hostname` crate dependencies
+  - Created `MdnsService` struct for advertising on local network
+  - Advertises `_skelenote._tcp.local.` service type
+  - Includes fingerprint in TXT record: `fingerprint=<8-char>`
+  - Methods: `advertise(fingerprint, port)`, `stop()`, `service_name()`
+  - Implements `Drop` for automatic cleanup on drop
+  - Tests: 2 unit tests for DiscoveredPeer clone and service type format
+
+- [x] Add mDNS peer discovery (Phase 4B)
+  - File: `src/sync/mdns.rs`
+  - Created `DiscoveredPeer` struct with ip, port, fingerprint, last_seen, service_name
+  - Created `PeerDiscovery` struct for browsing network services
+  - Methods: `start(our_fingerprint)`, `poll()`, `matching_peers()`, `all_peers()`, `stop()`
+  - `matching_peers()` filters to same vault identity (matching fingerprint)
+  - `remove_stale_peers(max_age_secs)` for cleanup of old entries
+  - Handles ServiceResolved/ServiceRemoved events from mDNS daemon
+  - Implements `Drop` for automatic cleanup
+
+- [x] Add direct peer WebSocket connection (Phase 4C)
+  - File: `src/sync/peer.rs` (new)
+  - Created `PeerConnection` struct for P2P or relay connections
+  - Direct connect: `PeerConnection::connect(&peer, key_manager)`
+  - Relay connect: `PeerConnection::connect_relay(url, key_manager)`
+  - Methods: `send_update()`, `recv_update()`, `announce()`, `close()`, `is_direct()`, `peer()`
+  - Encrypts/decrypts updates using KeyManager sync key
+  - Handles Sync, History, Error, Ack message types
+  - Created `connect_with_fallback()` function for direct-first with relay fallback
+  - Reuses `Message` protocol from relay module
+  - Added `Clone` derive to `KeyManager` in `src/crypto.rs`
+  - Tests: 1 unit test for type compilation verification
