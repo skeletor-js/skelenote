@@ -24,6 +24,14 @@ pub enum InputMode {
     Editing,
 }
 
+/// What the editing input is for
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EditingContext {
+    Search,
+    NewNote,
+    Capture,
+}
+
 /// Application state
 pub struct App {
     /// The vault
@@ -34,6 +42,9 @@ pub struct App {
 
     /// Input mode
     pub input_mode: InputMode,
+
+    /// What editing is for
+    pub editing_context: EditingContext,
 
     /// Search/input buffer
     pub input: String,
@@ -52,6 +63,9 @@ pub struct App {
 
     /// Should quit
     pub should_quit: bool,
+
+    /// Pending action: path to open in editor after TUI restores
+    pub pending_editor_path: Option<std::path::PathBuf>,
 }
 
 impl App {
@@ -60,12 +74,14 @@ impl App {
             vault: Arc::new(RwLock::new(vault)),
             view: View::Notes,
             input_mode: InputMode::Normal,
+            editing_context: EditingContext::Search,
             input: String::new(),
             selected: 0,
             notes: Vec::new(),
             tasks: Vec::new(),
-            status: "Press ? for help".to_string(),
+            status: "Press ? for help | r:refresh".to_string(),
             should_quit: false,
+            pending_editor_path: None,
         }
     }
 
@@ -105,6 +121,7 @@ impl App {
             // Search
             KeyCode::Char('/') => {
                 self.input_mode = InputMode::Editing;
+                self.editing_context = EditingContext::Search;
                 self.input.clear();
                 self.status = "Search: ".to_string();
             }
@@ -112,9 +129,22 @@ impl App {
             // Actions
             KeyCode::Enter => self.open_selected().await?,
             KeyCode::Char('x') => self.toggle_task().await?,
-            KeyCode::Char('n') => self.create_note().await?,
-            KeyCode::Char('c') => self.quick_capture().await?,
-            KeyCode::Char('r') => self.refresh().await?,
+            KeyCode::Char('n') => {
+                self.input_mode = InputMode::Editing;
+                self.editing_context = EditingContext::NewNote;
+                self.input.clear();
+                self.status = "New note title: ".to_string();
+            }
+            KeyCode::Char('c') => {
+                self.input_mode = InputMode::Editing;
+                self.editing_context = EditingContext::Capture;
+                self.input.clear();
+                self.status = "Capture: ".to_string();
+            }
+            KeyCode::Char('r') => {
+                self.refresh().await?;
+                self.status = "Refreshed".to_string();
+            }
 
             _ => {}
         }
@@ -126,11 +156,24 @@ impl App {
             KeyCode::Esc => {
                 self.input_mode = InputMode::Normal;
                 self.input.clear();
-                self.status = "Press ? for help".to_string();
+                self.status = "Cancelled".to_string();
             }
             KeyCode::Enter => {
-                self.search().await?;
+                let input = self.input.clone();
                 self.input_mode = InputMode::Normal;
+                self.input.clear();
+
+                match self.editing_context {
+                    EditingContext::Search => {
+                        self.do_search(&input).await?;
+                    }
+                    EditingContext::NewNote => {
+                        self.do_create_note(&input).await?;
+                    }
+                    EditingContext::Capture => {
+                        self.do_capture(&input).await?;
+                    }
+                }
             }
             KeyCode::Backspace => {
                 self.input.pop();
@@ -177,7 +220,6 @@ impl App {
 
         match self.view {
             View::Notes => {
-                // Get all notes
                 self.notes = vault.get_all_notes().await;
             }
             View::Tasks => {
@@ -196,13 +238,14 @@ impl App {
         Ok(())
     }
 
-    async fn search(&mut self) -> Result<()> {
-        if self.input.is_empty() {
+    async fn do_search(&mut self, query: &str) -> Result<()> {
+        if query.is_empty() {
+            self.status = "Empty search".to_string();
             return Ok(());
         }
 
         let vault = self.vault.read().await;
-        let results = vault.search(&self.input, 50).await?;
+        let results = vault.search(query, 50).await?;
 
         self.notes = Vec::new();
         for result in results {
@@ -213,7 +256,41 @@ impl App {
 
         self.view = View::Search;
         self.selected = 0;
-        self.status = format!("Found {} notes for '{}'", self.notes.len(), self.input);
+        self.status = format!("Found {} notes for '{}'", self.notes.len(), query);
+        Ok(())
+    }
+
+    async fn do_create_note(&mut self, title: &str) -> Result<()> {
+        if title.is_empty() {
+            self.status = "Note title cannot be empty".to_string();
+            return Ok(());
+        }
+
+        let vault = self.vault.write().await;
+        let note = vault.create_note(title, "", None, &[]).await?;
+        let full_path = vault.root.join(&note.path);
+
+        self.status = format!("Created: {} - press Enter to edit", note.path.display());
+        self.pending_editor_path = Some(full_path);
+
+        // Refresh to show new note
+        drop(vault);
+        self.view = View::Notes;
+        self.refresh().await?;
+
+        Ok(())
+    }
+
+    async fn do_capture(&mut self, content: &str) -> Result<()> {
+        if content.is_empty() {
+            self.status = "Nothing to capture".to_string();
+            return Ok(());
+        }
+
+        let vault = self.vault.write().await;
+        vault.quick_capture(content).await?;
+
+        self.status = format!("Captured: {}", content);
         Ok(())
     }
 
@@ -223,20 +300,17 @@ impl App {
                 if let Some(note) = self.notes.get(self.selected) {
                     let vault = self.vault.read().await;
                     let full_path = vault.root.join(&note.path);
-
-                    // Open in $EDITOR
-                    let editor = std::env::var("EDITOR").unwrap_or_else(|_| "vim".to_string());
-                    
-                    // We need to exit TUI temporarily
-                    self.status = format!("Opening {} in {}", note.title(), editor);
-                    
-                    // TODO: Actually suspend TUI and open editor
+                    self.pending_editor_path = Some(full_path.clone());
+                    self.status = format!("Opening: {}", note.title());
                 }
             }
             View::Tasks => {
-                // Go to task source
+                // Open task's source file
                 if let Some(task) = self.tasks.get(self.selected) {
-                    self.status = format!("Task in: {}", task.source.display());
+                    let vault = self.vault.read().await;
+                    let full_path = vault.root.join(&task.source);
+                    self.pending_editor_path = Some(full_path.clone());
+                    self.status = format!("Opening task source: {}", task.source.display());
                 }
             }
         }
@@ -245,6 +319,7 @@ impl App {
 
     async fn toggle_task(&mut self) -> Result<()> {
         if self.view != View::Tasks {
+            self.status = "Press 2 to switch to Tasks view first".to_string();
             return Ok(());
         }
 
@@ -255,29 +330,24 @@ impl App {
             if let Ok(content) = std::fs::read_to_string(&full_path) {
                 let new_content = Task::toggle_in_content(&content, task.line);
                 std::fs::write(&full_path, new_content)?;
-                self.status = format!("Toggled: {}", task.text);
+                let status_icon = if task.done { "☐" } else { "☑" };
+                self.status = format!("{} {}", status_icon, task.text);
             }
         }
 
         // Refresh tasks
+        drop(self.vault.read().await);
         self.refresh().await?;
         Ok(())
     }
 
-    async fn create_note(&mut self) -> Result<()> {
-        // Switch to editing mode to get title
-        self.input_mode = InputMode::Editing;
-        self.input.clear();
-        self.status = "New note title: ".to_string();
-        // TODO: Create note after title entered
-        Ok(())
+    /// Check if there's a pending editor action
+    pub fn has_pending_editor(&self) -> bool {
+        self.pending_editor_path.is_some()
     }
 
-    async fn quick_capture(&mut self) -> Result<()> {
-        self.input_mode = InputMode::Editing;
-        self.input.clear();
-        self.status = "Capture: ".to_string();
-        // TODO: Capture after text entered
-        Ok(())
+    /// Take the pending editor path (for launching editor)
+    pub fn take_pending_editor(&mut self) -> Option<std::path::PathBuf> {
+        self.pending_editor_path.take()
     }
 }

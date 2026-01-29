@@ -1,8 +1,8 @@
 //! Terminal User Interface using ratatui
 
 mod app;
-mod ui;
 mod event;
+mod ui;
 
 pub use app::App;
 pub use event::Event;
@@ -26,26 +26,13 @@ pub async fn run(vault: Vault) -> Result<()> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    // Create app and run
-    let app = App::new(vault);
-    let result = run_app(&mut terminal, app).await;
+    // Create app
+    let mut app = App::new(vault);
 
-    // Restore terminal
-    disable_raw_mode()?;
-    execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )?;
-    terminal.show_cursor()?;
+    // Initial data load
+    app.refresh().await?;
 
-    result
-}
-
-async fn run_app<B: ratatui::backend::Backend>(
-    terminal: &mut Terminal<B>,
-    mut app: App,
-) -> Result<()> {
+    // Main loop
     loop {
         terminal.draw(|f| ui::draw(f, &app))?;
 
@@ -56,7 +43,64 @@ async fn run_app<B: ratatui::backend::Backend>(
                 Event::Tick => {}
             }
         }
+
+        // Check for pending editor action
+        if app.has_pending_editor() {
+            if let Some(path) = app.take_pending_editor() {
+                // Suspend TUI
+                disable_raw_mode()?;
+                execute!(
+                    terminal.backend_mut(),
+                    LeaveAlternateScreen,
+                    DisableMouseCapture
+                )?;
+                terminal.show_cursor()?;
+
+                // Launch editor
+                let editor = std::env::var("EDITOR").unwrap_or_else(|_| "vim".to_string());
+                let status = std::process::Command::new(&editor).arg(&path).status();
+
+                // Resume TUI
+                enable_raw_mode()?;
+                execute!(
+                    terminal.backend_mut(),
+                    EnterAlternateScreen,
+                    EnableMouseCapture
+                )?;
+                terminal.hide_cursor()?;
+                terminal.clear()?;
+
+                // Update status
+                match status {
+                    Ok(s) if s.success() => {
+                        app.status = format!("Edited: {}", path.display());
+                        // Refresh to pick up changes
+                        app.refresh().await?;
+                    }
+                    Ok(s) => {
+                        app.status = format!("Editor exited with: {}", s);
+                    }
+                    Err(e) => {
+                        app.status = format!("Failed to launch {}: {}", editor, e);
+                    }
+                }
+            }
+        }
+
+        // Check for quit
+        if app.should_quit {
+            break;
+        }
     }
+
+    // Restore terminal
+    disable_raw_mode()?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture
+    )?;
+    terminal.show_cursor()?;
 
     Ok(())
 }
