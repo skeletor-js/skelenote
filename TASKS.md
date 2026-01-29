@@ -55,7 +55,7 @@ GOOD:
     - [x] Write test for Vault.search_filtered
   - [ ] Task 3: Integrate into Vault.search() to use filters
     - [x] Fix LIKE pattern escaping for backlink filters
-  - [ ] Task 4: Wire up TUI search to use filtered search
+  - [x] Task 6: Integrate filters into TUI (updates do_search, adds search_query field)
 
 - [ ] Add search filter for date range (`after:2025-01-01`)
   - File: `src/tui/app.rs`, `src/vault.rs`
@@ -81,13 +81,6 @@ GOOD:
   - Match against `notes.id` column (UUID format)
   - Useful for finding notes by their unique identifier
   - Test: Search `id:550e8400`, partial match on note ID
-
-- [ ] Add search results highlighting
-  - File: `src/tui/ui.rs`, `src/tui/theme.rs`
-  - Store search query in App state
-  - When rendering search results, highlight matching text
-  - Add `syntax_highlight: Style` to Theme
-  - Test: Search for term, see it highlighted in results
 
 - [~] Add fuzzy search mode (`/fuzzy query` or `~query`)
   - File: `src/tui/app.rs`, `src/vault.rs`

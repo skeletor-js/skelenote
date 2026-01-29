@@ -1,7 +1,7 @@
 //! UI rendering using ratatui
 
 use super::app::{App, Focus, InputMode, Popup, SetupPhase, View};
-use super::theme::ThemeVariant;
+use super::theme::{Theme, ThemeVariant};
 use crate::crypto;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
@@ -10,6 +10,73 @@ use ratatui::{
     widgets::{Block, Borders, Clear, List, ListItem, Paragraph, Wrap},
     Frame,
 };
+
+/// Highlight matching substrings in text.
+/// Returns owned Spans (with 'static lifetime) since all strings are cloned.
+fn highlight_matches(
+    text: &str,
+    query: &str,
+    theme: &Theme,
+    is_selected: bool,
+) -> Vec<Span<'static>> {
+    let base_style = if is_selected {
+        theme.list_selected_focus
+    } else {
+        theme.list_default
+    };
+
+    if query.is_empty() {
+        return vec![Span::styled(text.to_string(), base_style)];
+    }
+
+    let text_lower = text.to_lowercase();
+    let query_lower = query.to_lowercase();
+
+    let mut spans = Vec::new();
+    let mut last_end = 0;
+
+    // Find all occurrences of query words
+    for word in query_lower.split_whitespace() {
+        if word.is_empty() {
+            continue;
+        }
+        let mut search_start = 0;
+        while let Some(start) = text_lower[search_start..].find(word) {
+            let abs_start = search_start + start;
+            let abs_end = abs_start + word.len();
+
+            // Add text before match
+            if abs_start > last_end {
+                spans.push(Span::styled(
+                    text[last_end..abs_start].to_string(),
+                    base_style,
+                ));
+            }
+
+            // Add highlighted match
+            if abs_start >= last_end {
+                spans.push(Span::styled(
+                    text[abs_start..abs_end].to_string(),
+                    theme.search_highlight,
+                ));
+                last_end = abs_end;
+            }
+
+            search_start = abs_end;
+        }
+    }
+
+    // Add remaining text
+    if last_end < text.len() {
+        spans.push(Span::styled(text[last_end..].to_string(), base_style));
+    }
+
+    if spans.is_empty() {
+        spans.push(Span::styled(text.to_string(), base_style));
+    }
+
+    spans
+}
 
 /// Draw the entire UI
 pub fn draw(f: &mut Frame, app: &App) {
@@ -150,6 +217,7 @@ fn draw_list(f: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_notes_list(f: &mut Frame, app: &App, area: Rect) {
+    let theme = &app.theme;
     let items: Vec<ListItem> = app
         .notes
         .iter()
@@ -165,24 +233,37 @@ fn draw_notes_list(f: &mut Frame, app: &App, area: Rect) {
                 // Determine style for viewing
                 // For now reuse list_selected_focus but maybe distinct style later?
                 // Actually the original logic used Cyan + Bold
-                app.theme.list_selected_focus
+                theme.list_selected_focus
             } else if is_selected && app.focus == Focus::List {
-                app.theme.list_selected_focus
+                theme.list_selected_focus
             } else if is_selected {
-                app.theme.list_selected
+                theme.list_selected
             } else {
-                app.theme.list_default
+                theme.list_default
             };
 
             let prefix = if is_viewing {
-                &app.theme.list_prefix_viewing
+                &theme.list_prefix_viewing
             } else if is_selected {
-                &app.theme.list_prefix_selected
+                &theme.list_prefix_selected
             } else {
                 "  "
             };
-            let content = format!("{}{}", prefix, note.title());
-            ListItem::new(content).style(style)
+
+            let title = note.title();
+
+            // Use highlighting when we have a search query
+            let spans = if let Some(ref query) = app.search_query {
+                // Build spans: prefix (unstyled) + highlighted title
+                let is_focused = is_viewing || (is_selected && app.focus == Focus::List);
+                let mut result = vec![Span::styled(prefix.to_string(), style)];
+                result.extend(highlight_matches(&title, query, theme, is_focused));
+                result
+            } else {
+                vec![Span::styled(format!("{}{}", prefix, title), style)]
+            };
+
+            ListItem::new(Line::from(spans))
         })
         .collect();
 

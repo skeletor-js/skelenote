@@ -110,6 +110,8 @@ pub struct Theme {
     pub syntax_link: Style,
     pub syntax_list: Style,
     pub syntax_todo: Style,
+    /// Style for search match highlighting
+    pub search_highlight: Style,
 }
 
 /// Extract foreground color from a Style
@@ -202,6 +204,7 @@ impl Theme {
             syntax_list: Style::default().fg(parse_or(&config.syntax_list, fg)),
             syntax_todo: Style::default()
                 .fg(parse_or(&config.syntax_todo, extract_fg(&base.syntax_todo))),
+            search_highlight: base.search_highlight,
         }
     }
 
@@ -238,6 +241,10 @@ impl Theme {
             syntax_link: Style::default().fg(Color::Blue),
             syntax_list: Style::default().fg(fg),
             syntax_todo: Style::default().fg(Color::Green),
+            search_highlight: Style::default()
+                .fg(Color::Rgb(0, 0, 0))
+                .bg(Color::Rgb(255, 200, 100))
+                .add_modifier(Modifier::BOLD),
         }
     }
 
@@ -273,6 +280,10 @@ impl Theme {
             syntax_link: Style::default().fg(purple),
             syntax_list: Style::default().fg(fg),
             syntax_todo: Style::default().fg(Color::Green),
+            search_highlight: Style::default()
+                .fg(Color::Rgb(40, 44, 52))
+                .bg(Color::Rgb(229, 192, 123))
+                .add_modifier(Modifier::BOLD),
         }
     }
 
@@ -309,6 +320,10 @@ impl Theme {
             syntax_link: Style::default().fg(cyan),
             syntax_list: Style::default().fg(fg),
             syntax_todo: Style::default().fg(Color::Green),
+            search_highlight: Style::default()
+                .fg(Color::Rgb(40, 42, 54))
+                .bg(Color::Rgb(241, 250, 140))
+                .add_modifier(Modifier::BOLD),
         }
     }
 
@@ -345,6 +360,10 @@ impl Theme {
             syntax_link: Style::default().fg(cyan),
             syntax_list: Style::default().fg(fg),
             syntax_todo: Style::default().fg(Color::Green),
+            search_highlight: Style::default()
+                .fg(Color::Rgb(26, 27, 38))
+                .bg(Color::Rgb(224, 175, 104))
+                .add_modifier(Modifier::BOLD),
         }
     }
 
@@ -382,6 +401,10 @@ impl Theme {
             syntax_link: Style::default().fg(blue),
             syntax_list: Style::default().fg(fg),
             syntax_todo: Style::default().fg(Color::Green),
+            search_highlight: Style::default()
+                .fg(Color::Rgb(30, 30, 46))
+                .bg(Color::Rgb(249, 226, 175))
+                .add_modifier(Modifier::BOLD),
         }
     }
 
@@ -418,6 +441,10 @@ impl Theme {
             syntax_link: Style::default().fg(magenta),
             syntax_list: Style::default().fg(fg),
             syntax_todo: Style::default().fg(Color::Green),
+            search_highlight: Style::default()
+                .fg(Color::Rgb(1, 22, 39))
+                .bg(Color::Rgb(255, 203, 139))
+                .add_modifier(Modifier::BOLD),
         }
     }
 
@@ -457,6 +484,10 @@ impl Theme {
             syntax_link: Style::default().fg(neon_blue),
             syntax_list: Style::default().fg(fg),
             syntax_todo: Style::default().fg(Color::Green),
+            search_highlight: Style::default()
+                .fg(Color::Rgb(43, 33, 58))
+                .bg(Color::Rgb(255, 251, 150))
+                .add_modifier(Modifier::BOLD),
         }
     }
 }
