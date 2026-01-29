@@ -282,12 +282,14 @@ fn draw_status(f: &mut Frame, app: &App, area: Rect) {
         InputMode::Normal => app.status.clone(),
         InputMode::Editing => format!("{}{}_", app.status, app.input),
         InputMode::NoteEditing => app.status.clone(),
+        InputMode::MetadataEditing => format!("{}{}_", app.status, app.metadata_buffer),
     };
 
     let style = match app.input_mode {
         InputMode::Normal => Style::default().fg(Color::DarkGray),
         InputMode::Editing => Style::default().fg(Color::Yellow),
         InputMode::NoteEditing => Style::default().fg(Color::Green),
+        InputMode::MetadataEditing => Style::default().fg(Color::Magenta),
     };
 
     let para = Paragraph::new(text).style(style);

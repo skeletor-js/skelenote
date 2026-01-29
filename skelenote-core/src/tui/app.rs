@@ -24,14 +24,16 @@ pub enum View {
 pub enum Focus {
     List,
     Content,
+    Metadata,
 }
 
 /// Input mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InputMode {
     Normal,
-    Editing,     // Input bar for search/capture/new note
-    NoteEditing, // Editing note content
+    Editing,          // Input bar for search/capture/new note
+    NoteEditing,      // Editing note content
+    MetadataEditing,  // Editing a metadata field
 }
 
 /// What the editing input is for
@@ -41,6 +43,16 @@ pub enum EditingContext {
     NewNote,
     Capture,
     NewFolder,
+    MetadataField,
+}
+
+/// Metadata field being edited
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MetadataField {
+    Title,
+    Type,
+    Tags,
+    Aliases,
 }
 
 /// Application state
@@ -98,6 +110,15 @@ pub struct App {
 
     /// Unsaved changes flag
     pub unsaved_changes: bool,
+
+    /// Metadata editing - which field is selected
+    pub metadata_field: MetadataField,
+
+    /// Buffer for metadata field editing
+    pub metadata_buffer: String,
+
+    /// Show metadata panel
+    pub show_metadata: bool,
 }
 
 impl App {
@@ -118,9 +139,12 @@ impl App {
             editor_buffer: String::new(),
             editor_cursor: (0, 0),
             content_scroll: 0,
-            status: "1-4:views  j/k:nav  Enter:open  e:edit  c:capture  n:new  q:quit".to_string(),
+            status: "1-4:views  j/k:nav  Enter:open  e:edit  m:meta  c:capture  n:new  q:quit".to_string(),
             should_quit: false,
             unsaved_changes: false,
+            metadata_field: MetadataField::Title,
+            metadata_buffer: String::new(),
+            show_metadata: false,
         }
     }
 
@@ -130,6 +154,7 @@ impl App {
             InputMode::Normal => self.handle_normal_key(key).await,
             InputMode::Editing => self.handle_input_key(key).await,
             InputMode::NoteEditing => self.handle_editor_key(key).await,
+            InputMode::MetadataEditing => self.handle_metadata_key(key).await,
         }
     }
 
@@ -154,7 +179,14 @@ impl App {
                 if self.current_note.is_some() {
                     self.focus = match self.focus {
                         Focus::List => Focus::Content,
-                        Focus::Content => Focus::List,
+                        Focus::Content => {
+                            if self.show_metadata {
+                                Focus::Metadata
+                            } else {
+                                Focus::List
+                            }
+                        }
+                        Focus::Metadata => Focus::List,
                     };
                     self.update_status();
                 }
@@ -162,18 +194,35 @@ impl App {
 
             // Navigation
             KeyCode::Char('j') | KeyCode::Down => {
-                if self.focus == Focus::Content {
-                    self.content_scroll = self.content_scroll.saturating_add(1);
-                } else {
-                    self.next();
+                match self.focus {
+                    Focus::Content => {
+                        self.content_scroll = self.content_scroll.saturating_add(1);
+                    }
+                    Focus::Metadata => {
+                        self.next_metadata_field();
+                        self.status = format!("METADATA | {:?}", self.metadata_field);
+                    }
+                    Focus::List => {
+                        self.next();
+                    }
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if self.focus == Focus::Content {
-                    self.content_scroll = self.content_scroll.saturating_sub(1);
-                } else {
-                    self.previous();
+                match self.focus {
+                    Focus::Content => {
+                        self.content_scroll = self.content_scroll.saturating_sub(1);
+                    }
+                    Focus::Metadata => {
+                        self.prev_metadata_field();
+                        self.status = format!("METADATA | {:?}", self.metadata_field);
+                    }
+                    Focus::List => {
+                        self.previous();
+                    }
                 }
+            }
+            KeyCode::Enter if self.focus == Focus::Metadata => {
+                self.start_metadata_edit();
             }
             KeyCode::Char('g') => {
                 if self.focus == Focus::Content {
@@ -236,6 +285,11 @@ impl App {
                 self.start_editing();
             }
 
+            // Metadata panel
+            KeyCode::Char('m') if self.current_note.is_some() => {
+                self.toggle_metadata();
+            }
+
             // Actions
             KeyCode::Char('x') if self.focus == Focus::List && self.view == View::Tasks => {
                 self.toggle_task().await?;
@@ -285,6 +339,7 @@ impl App {
                     EditingContext::NewNote => self.do_create_note(&input).await?,
                     EditingContext::Capture => self.do_capture(&input).await?,
                     EditingContext::NewFolder => self.do_create_folder(&input).await?,
+                    EditingContext::MetadataField => {} // Handled by MetadataEditing mode
                 }
             }
             KeyCode::Backspace => {
@@ -510,6 +565,129 @@ impl App {
             note.content = self.editor_buffer.clone();
             self.unsaved_changes = false;
             self.status = format!("Saved: {}", note.path.display());
+        }
+        Ok(())
+    }
+
+    fn toggle_metadata(&mut self) {
+        self.show_metadata = !self.show_metadata;
+        if self.show_metadata {
+            self.focus = Focus::Metadata;
+            self.metadata_field = MetadataField::Title;
+            self.status = "METADATA | j/k:field  Enter:edit  Esc:close".to_string();
+        } else {
+            self.focus = Focus::Content;
+            self.update_status();
+        }
+    }
+
+    async fn handle_metadata_key(&mut self, key: KeyCode) -> Result<()> {
+        match key {
+            KeyCode::Esc => {
+                // Save and close
+                self.apply_metadata_edit().await?;
+                self.input_mode = InputMode::Normal;
+                self.metadata_buffer.clear();
+                self.update_status();
+            }
+            KeyCode::Enter => {
+                // Commit this field and move to next
+                self.apply_metadata_edit().await?;
+                self.next_metadata_field();
+                self.load_metadata_field();
+            }
+            KeyCode::Backspace => {
+                self.metadata_buffer.pop();
+            }
+            KeyCode::Char(c) => {
+                self.metadata_buffer.push(c);
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    fn start_metadata_edit(&mut self) {
+        self.load_metadata_field();
+        self.input_mode = InputMode::MetadataEditing;
+        self.status = format!("Editing {:?}: ", self.metadata_field);
+    }
+
+    fn load_metadata_field(&mut self) {
+        if let Some(note) = &self.current_note {
+            self.metadata_buffer = match self.metadata_field {
+                MetadataField::Title => note.frontmatter.title.clone().unwrap_or_default(),
+                MetadataField::Type => note.frontmatter.note_type.clone().unwrap_or_default(),
+                MetadataField::Tags => note.frontmatter.tags.join(", "),
+                MetadataField::Aliases => note.frontmatter.aliases.join(", "),
+            };
+            self.status = format!("Edit {:?}: {}_", self.metadata_field, self.metadata_buffer);
+        }
+    }
+
+    fn next_metadata_field(&mut self) {
+        self.metadata_field = match self.metadata_field {
+            MetadataField::Title => MetadataField::Type,
+            MetadataField::Type => MetadataField::Tags,
+            MetadataField::Tags => MetadataField::Aliases,
+            MetadataField::Aliases => MetadataField::Title,
+        };
+    }
+
+    fn prev_metadata_field(&mut self) {
+        self.metadata_field = match self.metadata_field {
+            MetadataField::Title => MetadataField::Aliases,
+            MetadataField::Type => MetadataField::Title,
+            MetadataField::Tags => MetadataField::Type,
+            MetadataField::Aliases => MetadataField::Tags,
+        };
+    }
+
+    async fn apply_metadata_edit(&mut self) -> Result<()> {
+        if let Some(note) = &mut self.current_note {
+            // Update in-memory frontmatter
+            match self.metadata_field {
+                MetadataField::Title => {
+                    note.frontmatter.title = if self.metadata_buffer.is_empty() {
+                        None
+                    } else {
+                        Some(self.metadata_buffer.clone())
+                    };
+                }
+                MetadataField::Type => {
+                    note.frontmatter.note_type = if self.metadata_buffer.is_empty() {
+                        None
+                    } else {
+                        Some(self.metadata_buffer.clone())
+                    };
+                }
+                MetadataField::Tags => {
+                    note.frontmatter.tags = self.metadata_buffer
+                        .split(',')
+                        .map(|s| s.trim().to_string())
+                        .filter(|s| !s.is_empty())
+                        .collect();
+                }
+                MetadataField::Aliases => {
+                    note.frontmatter.aliases = self.metadata_buffer
+                        .split(',')
+                        .map(|s| s.trim().to_string())
+                        .filter(|s| !s.is_empty())
+                        .collect();
+                }
+            }
+
+            // Save to file
+            let vault = self.vault.read().await;
+            let full_path = vault.root.join(&note.path);
+            drop(vault);
+
+            // Generate new frontmatter YAML
+            let yaml = serde_yaml::to_string(&note.frontmatter)?;
+            let new_content = format!("---\n{}---\n\n{}", yaml, note.content);
+            std::fs::write(&full_path, &new_content)?;
+
+            self.status = format!("Saved {:?}: {}", self.metadata_field, self.metadata_buffer);
         }
         Ok(())
     }
