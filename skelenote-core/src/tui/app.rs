@@ -17,6 +17,13 @@ pub enum View {
     Search,
 }
 
+/// What panel has focus
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Focus {
+    List,
+    Content,
+}
+
 /// Input mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InputMode {
@@ -40,6 +47,9 @@ pub struct App {
     /// Current view
     pub view: View,
 
+    /// Which panel has focus
+    pub focus: Focus,
+
     /// Input mode
     pub input_mode: InputMode,
 
@@ -58,14 +68,17 @@ pub struct App {
     /// Tasks list (cached)
     pub tasks: Vec<Task>,
 
+    /// Currently viewed note content
+    pub current_note: Option<Note>,
+
+    /// Scroll position in content view
+    pub content_scroll: usize,
+
     /// Status message
     pub status: String,
 
     /// Should quit
     pub should_quit: bool,
-
-    /// Pending action: path to open in editor after TUI restores
-    pub pending_editor_path: Option<std::path::PathBuf>,
 }
 
 impl App {
@@ -73,15 +86,17 @@ impl App {
         Self {
             vault: Arc::new(RwLock::new(vault)),
             view: View::Notes,
+            focus: Focus::List,
             input_mode: InputMode::Normal,
             editing_context: EditingContext::Search,
             input: String::new(),
             selected: 0,
             notes: Vec::new(),
             tasks: Vec::new(),
-            status: "Press ? for help | r:refresh".to_string(),
+            current_note: None,
+            content_scroll: 0,
+            status: "j/k:nav  Enter:view  Tab:switch  c:capture  n:new  q:quit".to_string(),
             should_quit: false,
-            pending_editor_path: None,
         }
     }
 
@@ -96,52 +111,115 @@ impl App {
     async fn handle_normal_key(&mut self, key: KeyCode) -> Result<()> {
         match key {
             // Quit
-            KeyCode::Char('q') => self.should_quit = true,
+            KeyCode::Char('q') => {
+                if self.focus == Focus::Content {
+                    // Close content view, go back to list
+                    self.focus = Focus::List;
+                    self.current_note = None;
+                } else {
+                    self.should_quit = true;
+                }
+            }
+            KeyCode::Esc => {
+                if self.focus == Focus::Content {
+                    self.focus = Focus::List;
+                    self.current_note = None;
+                }
+            }
+
+            // Switch focus between list and content
+            KeyCode::Tab => {
+                if self.current_note.is_some() {
+                    self.focus = match self.focus {
+                        Focus::List => Focus::Content,
+                        Focus::Content => Focus::List,
+                    };
+                }
+            }
 
             // Navigation
-            KeyCode::Char('j') | KeyCode::Down => self.next(),
-            KeyCode::Char('k') | KeyCode::Up => self.previous(),
-            KeyCode::Char('g') => self.selected = 0,
-            KeyCode::Char('G') => self.go_to_end(),
+            KeyCode::Char('j') | KeyCode::Down => {
+                if self.focus == Focus::Content {
+                    self.content_scroll = self.content_scroll.saturating_add(1);
+                } else {
+                    self.next();
+                }
+            }
+            KeyCode::Char('k') | KeyCode::Up => {
+                if self.focus == Focus::Content {
+                    self.content_scroll = self.content_scroll.saturating_sub(1);
+                } else {
+                    self.previous();
+                }
+            }
+            KeyCode::Char('g') => {
+                if self.focus == Focus::Content {
+                    self.content_scroll = 0;
+                } else {
+                    self.selected = 0;
+                }
+            }
+            KeyCode::Char('G') => {
+                if self.focus == Focus::List {
+                    self.go_to_end();
+                }
+            }
 
-            // View switching
-            KeyCode::Char('1') => {
+            // Page up/down for content
+            KeyCode::Char('d') if self.focus == Focus::Content => {
+                self.content_scroll = self.content_scroll.saturating_add(10);
+            }
+            KeyCode::Char('u') if self.focus == Focus::Content => {
+                self.content_scroll = self.content_scroll.saturating_sub(10);
+            }
+
+            // View switching (only in list focus)
+            KeyCode::Char('1') if self.focus == Focus::List => {
                 self.view = View::Notes;
+                self.current_note = None;
                 self.refresh().await?;
             }
-            KeyCode::Char('2') => {
+            KeyCode::Char('2') if self.focus == Focus::List => {
                 self.view = View::Tasks;
+                self.current_note = None;
                 self.refresh().await?;
             }
-            KeyCode::Char('3') => {
+            KeyCode::Char('3') if self.focus == Focus::List => {
                 self.view = View::Daily;
+                self.current_note = None;
                 self.refresh().await?;
             }
 
             // Search
-            KeyCode::Char('/') => {
+            KeyCode::Char('/') if self.focus == Focus::List => {
                 self.input_mode = InputMode::Editing;
                 self.editing_context = EditingContext::Search;
                 self.input.clear();
                 self.status = "Search: ".to_string();
             }
 
-            // Actions
-            KeyCode::Enter => self.open_selected().await?,
-            KeyCode::Char('x') => self.toggle_task().await?,
-            KeyCode::Char('n') => {
+            // Open/view selected
+            KeyCode::Enter => {
+                self.open_selected().await?;
+            }
+
+            // Actions (only in list focus)
+            KeyCode::Char('x') if self.focus == Focus::List => {
+                self.toggle_task().await?;
+            }
+            KeyCode::Char('n') if self.focus == Focus::List => {
                 self.input_mode = InputMode::Editing;
                 self.editing_context = EditingContext::NewNote;
                 self.input.clear();
                 self.status = "New note title: ".to_string();
             }
-            KeyCode::Char('c') => {
+            KeyCode::Char('c') if self.focus == Focus::List => {
                 self.input_mode = InputMode::Editing;
                 self.editing_context = EditingContext::Capture;
                 self.input.clear();
                 self.status = "Capture: ".to_string();
             }
-            KeyCode::Char('r') => {
+            KeyCode::Char('r') if self.focus == Focus::List => {
                 self.refresh().await?;
                 self.status = "Refreshed".to_string();
             }
@@ -156,7 +234,7 @@ impl App {
             KeyCode::Esc => {
                 self.input_mode = InputMode::Normal;
                 self.input.clear();
-                self.status = "Cancelled".to_string();
+                self.status = "j/k:nav  Enter:view  Tab:switch  c:capture  n:new  q:quit".to_string();
             }
             KeyCode::Enter => {
                 let input = self.input.clone();
@@ -268,10 +346,11 @@ impl App {
 
         let vault = self.vault.write().await;
         let note = vault.create_note(title, "", None, &[]).await?;
-        let full_path = vault.root.join(&note.path);
 
-        self.status = format!("Created: {} - press Enter to edit", note.path.display());
-        self.pending_editor_path = Some(full_path);
+        self.status = format!("Created: {}", note.path.display());
+        self.current_note = Some(note);
+        self.focus = Focus::Content;
+        self.content_scroll = 0;
 
         // Refresh to show new note
         drop(vault);
@@ -290,27 +369,30 @@ impl App {
         let vault = self.vault.write().await;
         vault.quick_capture(content).await?;
 
-        self.status = format!("Captured: {}", content);
+        self.status = format!("✓ Captured: {}", content);
         Ok(())
     }
 
     async fn open_selected(&mut self) -> Result<()> {
         match self.view {
             View::Notes | View::Daily | View::Search => {
-                if let Some(note) = self.notes.get(self.selected) {
-                    let vault = self.vault.read().await;
-                    let full_path = vault.root.join(&note.path);
-                    self.pending_editor_path = Some(full_path.clone());
-                    self.status = format!("Opening: {}", note.title());
+                if let Some(note) = self.notes.get(self.selected).cloned() {
+                    self.current_note = Some(note.clone());
+                    self.focus = Focus::Content;
+                    self.content_scroll = 0;
+                    self.status = format!("Viewing: {} | Tab:list  j/k:scroll  q:close", note.title());
                 }
             }
             View::Tasks => {
-                // Open task's source file
+                // Open task's source note
                 if let Some(task) = self.tasks.get(self.selected) {
                     let vault = self.vault.read().await;
-                    let full_path = vault.root.join(&task.source);
-                    self.pending_editor_path = Some(full_path.clone());
-                    self.status = format!("Opening task source: {}", task.source.display());
+                    if let Ok(Some(note)) = vault.get_note(&task.source).await {
+                        self.current_note = Some(note.clone());
+                        self.focus = Focus::Content;
+                        self.content_scroll = 0;
+                        self.status = format!("Viewing: {} | Tab:list  j/k:scroll  q:close", note.title());
+                    }
                 }
             }
         }
@@ -339,15 +421,5 @@ impl App {
         drop(self.vault.read().await);
         self.refresh().await?;
         Ok(())
-    }
-
-    /// Check if there's a pending editor action
-    pub fn has_pending_editor(&self) -> bool {
-        self.pending_editor_path.is_some()
-    }
-
-    /// Take the pending editor path (for launching editor)
-    pub fn take_pending_editor(&mut self) -> Option<std::path::PathBuf> {
-        self.pending_editor_path.take()
     }
 }

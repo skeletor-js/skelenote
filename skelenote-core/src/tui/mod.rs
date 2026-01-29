@@ -44,50 +44,6 @@ pub async fn run(vault: Vault) -> Result<()> {
             }
         }
 
-        // Check for pending editor action
-        if app.has_pending_editor() {
-            if let Some(path) = app.take_pending_editor() {
-                // Suspend TUI
-                disable_raw_mode()?;
-                execute!(
-                    terminal.backend_mut(),
-                    LeaveAlternateScreen,
-                    DisableMouseCapture
-                )?;
-                terminal.show_cursor()?;
-
-                // Launch editor
-                let editor = std::env::var("EDITOR").unwrap_or_else(|_| "vim".to_string());
-                let status = std::process::Command::new(&editor).arg(&path).status();
-
-                // Resume TUI
-                enable_raw_mode()?;
-                execute!(
-                    terminal.backend_mut(),
-                    EnterAlternateScreen,
-                    EnableMouseCapture
-                )?;
-                terminal.hide_cursor()?;
-                terminal.clear()?;
-
-                // Update status
-                match status {
-                    Ok(s) if s.success() => {
-                        app.status = format!("Edited: {}", path.display());
-                        // Refresh to pick up changes
-                        app.refresh().await?;
-                    }
-                    Ok(s) => {
-                        app.status = format!("Editor exited with: {}", s);
-                    }
-                    Err(e) => {
-                        app.status = format!("Failed to launch {}: {}", editor, e);
-                    }
-                }
-            }
-        }
-
-        // Check for quit
         if app.should_quit {
             break;
         }

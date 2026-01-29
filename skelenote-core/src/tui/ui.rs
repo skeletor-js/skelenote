@@ -1,11 +1,11 @@
 //! UI rendering using ratatui
 
-use super::app::{App, InputMode, View};
+use super::app::{App, Focus, InputMode, View};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
+    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
     Frame,
 };
 
@@ -14,9 +14,9 @@ pub fn draw(f: &mut Frame, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(3), // Tabs
+            Constraint::Length(1), // Tabs
             Constraint::Min(0),    // Main content
-            Constraint::Length(3), // Status bar
+            Constraint::Length(1), // Status bar
         ])
         .split(f.area());
 
@@ -43,26 +43,41 @@ fn draw_tabs(f: &mut Frame, app: &App, area: Rect) {
         };
 
         if !spans.is_empty() {
-            spans.push(Span::raw("  │  "));
+            spans.push(Span::raw(" │ "));
         }
-        spans.push(Span::styled(format!("[{}] {}", key, label), style));
+        spans.push(Span::styled(format!("[{}]{}", key, label), style));
     }
 
     if app.view == View::Search {
-        spans.push(Span::raw("  │  "));
+        spans.push(Span::raw(" │ "));
         spans.push(Span::styled(
-            "[/] Search Results",
+            "[/]Search",
             Style::default()
                 .fg(Color::Cyan)
                 .add_modifier(Modifier::BOLD),
         ));
     }
 
-    let para = Paragraph::new(Line::from(spans)).block(Block::default().borders(Borders::BOTTOM));
+    let para = Paragraph::new(Line::from(spans));
     f.render_widget(para, area);
 }
 
 fn draw_main(f: &mut Frame, app: &App, area: Rect) {
+    // If we have a current note, show split view
+    if app.current_note.is_some() {
+        let chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Percentage(35), Constraint::Percentage(65)])
+            .split(area);
+
+        draw_list(f, app, chunks[0]);
+        draw_content(f, app, chunks[1]);
+    } else {
+        draw_list(f, app, area);
+    }
+}
+
+fn draw_list(f: &mut Frame, app: &App, area: Rect) {
     match app.view {
         View::Notes | View::Daily | View::Search => draw_notes_list(f, app, area),
         View::Tasks => draw_tasks_list(f, app, area),
@@ -75,31 +90,58 @@ fn draw_notes_list(f: &mut Frame, app: &App, area: Rect) {
         .iter()
         .enumerate()
         .map(|(i, note)| {
-            let style = if i == app.selected {
+            let is_selected = i == app.selected;
+            let is_viewing = app
+                .current_note
+                .as_ref()
+                .map_or(false, |n| n.path == note.path);
+
+            let style = if is_viewing {
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD)
+            } else if is_selected && app.focus == Focus::List {
                 Style::default()
                     .fg(Color::Yellow)
                     .add_modifier(Modifier::BOLD)
+            } else if is_selected {
+                Style::default().fg(Color::Yellow)
             } else {
                 Style::default()
             };
 
-            let prefix = if i == app.selected { "▶ " } else { "  " };
-            let title = note.title();
-            let date = note.modified.format("%Y-%m-%d %H:%M");
+            let prefix = if is_viewing {
+                "▶ "
+            } else if is_selected {
+                "› "
+            } else {
+                "  "
+            };
 
-            let content = format!("{}{} ({})", prefix, title, date);
+            let content = format!("{}{}", prefix, note.title());
             ListItem::new(content).style(style)
         })
         .collect();
 
     let title = match app.view {
         View::Notes => " Notes ",
-        View::Daily => " Daily Note ",
-        View::Search => " Search Results ",
+        View::Daily => " Daily ",
+        View::Search => " Search ",
         _ => "",
     };
 
-    let list = List::new(items).block(Block::default().title(title).borders(Borders::ALL));
+    let border_style = if app.focus == Focus::List && app.current_note.is_some() {
+        Style::default().fg(Color::Yellow)
+    } else {
+        Style::default()
+    };
+
+    let list = List::new(items).block(
+        Block::default()
+            .title(title)
+            .borders(Borders::ALL)
+            .border_style(border_style),
+    );
     f.render_widget(list, area);
 }
 
@@ -109,7 +151,9 @@ fn draw_tasks_list(f: &mut Frame, app: &App, area: Rect) {
         .iter()
         .enumerate()
         .map(|(i, task)| {
-            let style = if i == app.selected {
+            let is_selected = i == app.selected;
+
+            let style = if is_selected && app.focus == Focus::List {
                 Style::default()
                     .fg(Color::Yellow)
                     .add_modifier(Modifier::BOLD)
@@ -119,7 +163,7 @@ fn draw_tasks_list(f: &mut Frame, app: &App, area: Rect) {
                 Style::default()
             };
 
-            let prefix = if i == app.selected { "▶ " } else { "  " };
+            let prefix = if is_selected { "› " } else { "  " };
             let checkbox = if task.done {
                 "[x]"
             } else if task.in_progress {
@@ -128,39 +172,83 @@ fn draw_tasks_list(f: &mut Frame, app: &App, area: Rect) {
                 "[ ]"
             };
 
-            let due = task.due.map(|d| format!(" @{}", d)).unwrap_or_default();
-            let priority = task
-                .priority
-                .map(|p| format!(" !{:?}", p).to_lowercase())
-                .unwrap_or_default();
-
-            let content = format!("{}{} {}{}{}", prefix, checkbox, task.text, due, priority);
+            let content = format!("{}{} {}", prefix, checkbox, task.text);
             ListItem::new(content).style(style)
         })
         .collect();
 
-    let list = List::new(items).block(Block::default().title(" Tasks ").borders(Borders::ALL));
+    let border_style = if app.focus == Focus::List {
+        Style::default().fg(Color::Yellow)
+    } else {
+        Style::default()
+    };
+
+    let list = List::new(items).block(
+        Block::default()
+            .title(" Tasks ")
+            .borders(Borders::ALL)
+            .border_style(border_style),
+    );
     f.render_widget(list, area);
 }
 
+fn draw_content(f: &mut Frame, app: &App, area: Rect) {
+    if let Some(note) = &app.current_note {
+        let border_style = if app.focus == Focus::Content {
+            Style::default().fg(Color::Yellow)
+        } else {
+            Style::default()
+        };
+
+        // Split content into lines for scrolling
+        let lines: Vec<Line> = note
+            .content
+            .lines()
+            .skip(app.content_scroll)
+            .map(|line| {
+                // Basic syntax highlighting
+                let style = if line.starts_with('#') {
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD)
+                } else if line.starts_with("- [ ]") || line.starts_with("- [x]") {
+                    Style::default().fg(Color::Green)
+                } else if line.starts_with("- ") || line.starts_with("* ") {
+                    Style::default().fg(Color::White)
+                } else if line.contains("[[") && line.contains("]]") {
+                    Style::default().fg(Color::Blue)
+                } else {
+                    Style::default()
+                };
+                Line::styled(line, style)
+            })
+            .collect();
+
+        let title = format!(" {} ", note.title());
+        let para = Paragraph::new(lines)
+            .block(
+                Block::default()
+                    .title(title)
+                    .borders(Borders::ALL)
+                    .border_style(border_style),
+            )
+            .wrap(Wrap { trim: false });
+
+        f.render_widget(para, area);
+    }
+}
+
 fn draw_status(f: &mut Frame, app: &App, area: Rect) {
-    let (style, text) = match app.input_mode {
-        InputMode::Normal => (Style::default().fg(Color::DarkGray), app.status.clone()),
-        InputMode::Editing => (
-            Style::default().fg(Color::Yellow),
-            format!("{}{}", app.status, app.input),
-        ),
+    let text = match app.input_mode {
+        InputMode::Normal => app.status.clone(),
+        InputMode::Editing => format!("{}{}_", app.status, app.input),
     };
 
-    let help = " q:quit  j/k:nav  /:search  x:toggle  n:new  c:capture ";
-    let help_span = Span::styled(help, Style::default().fg(Color::DarkGray));
-
-    let status_line = if app.input_mode == InputMode::Editing {
-        Line::from(vec![Span::styled(text, style)])
-    } else {
-        Line::from(vec![Span::styled(text, style), Span::raw(" │ "), help_span])
+    let style = match app.input_mode {
+        InputMode::Normal => Style::default().fg(Color::DarkGray),
+        InputMode::Editing => Style::default().fg(Color::Yellow),
     };
 
-    let para = Paragraph::new(status_line).block(Block::default().borders(Borders::TOP));
+    let para = Paragraph::new(text).style(style);
     f.render_widget(para, area);
 }
