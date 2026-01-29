@@ -9,6 +9,7 @@ pub mod index;
 pub mod mcp;
 pub mod notes;
 pub mod tasks;
+pub mod tui;
 pub mod vault;
 
 pub use config::Config;

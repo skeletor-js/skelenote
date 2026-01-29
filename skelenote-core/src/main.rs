@@ -131,8 +131,6 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn run_tui(_vault: Vault) -> anyhow::Result<()> {
-    // TODO: Implement TUI with ratatui
-    println!("TUI not yet implemented. Use `skelenote serve` for MCP server.");
-    Ok(())
+async fn run_tui(vault: Vault) -> anyhow::Result<()> {
+    skelenote_core::tui::run(vault).await
 }

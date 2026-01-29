@@ -349,6 +349,14 @@ type: note
         let index = self.index.lock().unwrap();
         index.get_backlinks(&path.to_string_lossy())
     }
+
+    /// Get all cached notes (for TUI)
+    pub async fn get_all_notes(&self) -> Vec<crate::notes::Note> {
+        let cache = self.notes_cache.read().await;
+        let mut notes: Vec<_> = cache.values().cloned().collect();
+        notes.sort_by(|a, b| b.modified.cmp(&a.modified));
+        notes
+    }
 }
 
 /// Compute SHA256 hash of content
