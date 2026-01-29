@@ -39,60 +39,15 @@ GOOD:
 
 ### v0.2 — Experience (TUI Polish)
 
-#### Advanced Search
+#### Advanced Search (Completed 2026-01-28)
 
-- [~] Add search filter syntax for tags (`tag:foo`)
-  - File: `src/tui/app.rs`, `src/vault.rs`
-  - Parse query for `tag:` prefix
-  - Filter results by tag match (case-insensitive)
-  - Tags stored as comma-separated in `notes.tags` column
-  - Test: Search `tag:work`, only notes with #work tag appear
-  - [x] Task 1: SearchFilters struct in `src/search.rs` (completed)
-  - [x] Task 2: Add `search_filtered()` method to Index in `src/index.rs`
-    - [x] Code quality fixes: tag word-boundary matching, error propagation
-  - [x] Task 5: Integrate filters into Vault
-    - [x] Add search_filtered method to Vault
-    - [x] Write test for Vault.search_filtered
-  - [ ] Task 3: Integrate into Vault.search() to use filters
-    - [x] Fix LIKE pattern escaping for backlink filters
-  - [x] Task 6: Integrate filters into TUI (updates do_search, adds search_query field)
-
-- [ ] Add search filter for date range (`after:2025-01-01`)
-  - File: `src/tui/app.rs`, `src/vault.rs`
-  - Parse `after:` and `before:` prefixes
-  - Filter by `created` or `updated` frontmatter fields (ISO 8601)
-  - Support both: `after:2025-01-01` and `before:2025-12-31`
-  - Test: Search `after:2025-01-01`, only recent notes appear
-
-- [x] Add search filter for backlinks (`links:note-id` or `linkedby:note-id`)
-  - File: `src/tui/app.rs`, `src/vault.rs`, `src/index.rs`
-  - `links:X` - find notes that link TO note X (by ID, title, or path)
-  - `linkedby:X` - find notes that are linked FROM note X
-  - Leverage existing `backlinks` table with three-tier resolution
-  - Test: Search `linkedby:my-note`, see all notes that link to it
-  - [x] Task 3.1: Add failing tests for backlink filter search
-  - [x] Task 3.2: Add helper methods (get_sources_linking_to, get_targets_linked_from)
-  - [x] Task 3.3: Update search_filtered to handle backlink filters
-  - [x] Task 3.4: Run tests and verify all pass
-
-- [ ] Add search filter by note ID (`id:uuid`)
-  - File: `src/tui/app.rs`, `src/vault.rs`
-  - Parse query for `id:` prefix
-  - Match against `notes.id` column (UUID format)
-  - Useful for finding notes by their unique identifier
-  - Test: Search `id:550e8400`, partial match on note ID
-
-- [~] Add fuzzy search mode (`/fuzzy query` or `~query`)
-  - File: `src/tui/app.rs`, `src/vault.rs`
-  - Add `fuzzy_search()` method using `sublime_fuzzy` crate
-  - Match against note titles and content
-  - Test: Search `~nts` matches "notes"
-  - [x] Task 4: Add fuzzy_search() to Index in `src/index.rs`
-    - [x] Add sublime_fuzzy dependency to Cargo.toml
-    - [x] Write failing test for fuzzy search
-    - [x] Implement fuzzy_search method
-    - [x] Update search_filtered to use fuzzy mode
-    - [x] Run all tests and verify
+> **Moved to COMPLETED_TASKS.md** - All Advanced Search features implemented:
+> - Tag filter (`tag:foo`)
+> - Date range filter (`after:`, `before:`)
+> - Backlink filter (`links:`, `linkedby:`)
+> - ID filter (`id:uuid`)
+> - Fuzzy search (`~query`)
+> - Search result highlighting
 
 ---
 

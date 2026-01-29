@@ -7,6 +7,41 @@
 
 ## v0.2 — Experience (TUI Polish)
 
+### Advanced Search (2026-01-28)
+
+- [x] Add search filter syntax for tags (`tag:foo`)
+  - Parse query for `tag:` prefix with case-insensitive word-boundary matching
+  - Created `SearchFilters` struct in `src/search.rs` with `parse()` method
+  - Added `search_filtered()` method to Index with dynamic SQL building
+  - Integrated into Vault and TUI search workflow
+
+- [x] Add search filter for date range (`after:2025-01-01`, `before:...`)
+  - Parse `after:` and `before:` prefixes (ISO 8601 format)
+  - Filter by `created` or `updated` frontmatter fields
+  - Supports combined filters with text queries
+
+- [x] Add search filter for backlinks (`links:note-id` or `linkedby:note-id`)
+  - `links:X` - find notes that link TO note X (by ID, title, or path)
+  - `linkedby:X` - find notes that are linked FROM note X
+  - Added `get_sources_linking_to()` and `get_targets_linked_from()` helpers
+  - Leverages existing `backlinks` table with three-tier resolution
+
+- [x] Add search filter by note ID (`id:uuid`)
+  - Partial matching on note ID column
+  - Supports combined filters
+
+- [x] Add fuzzy search mode (`~query`)
+  - Added `sublime_fuzzy` crate dependency
+  - Implemented `fuzzy_search()` method with title weighting (2x)
+  - Triggered via `~` prefix in search query
+
+- [x] Add search results highlighting
+  - Added `search_highlight: Style` to Theme (all 7 themes + custom)
+  - Implemented `highlight_matches()` for case-insensitive multi-word highlighting
+  - Updated `draw_notes_list` to highlight matching query terms
+
+- See: `docs/plans/2026-01-28-advanced-search.md`
+
 ### Custom Theme Support (2026-01-28)
 
 - [x] Add custom theme support via config file
