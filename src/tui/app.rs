@@ -424,6 +424,9 @@ pub struct App {
 
     /// Path to identity file
     pub identity_path: PathBuf,
+
+    /// Current search query for highlighting (text portion only)
+    pub search_query: Option<String>,
 }
 
 impl App {
@@ -477,6 +480,7 @@ impl App {
             unlock_state: UnlockState::default(),
             key_manager: Some(key_manager),
             identity_path,
+            search_query: None,
         }
     }
 
@@ -529,6 +533,7 @@ impl App {
             unlock_state: UnlockState::default(),
             key_manager: None,
             identity_path,
+            search_query: None,
         }
     }
 
@@ -581,6 +586,7 @@ impl App {
             unlock_state: UnlockState::default(),
             key_manager: None,
             identity_path,
+            search_query: None,
         }
     }
 
@@ -1889,14 +1895,39 @@ impl App {
 
         let vault = self.vault.read().await;
 
-        let (results, mode_desc) = if let Some(stripped) = query
-            .strip_prefix("/s ")
-            .or_else(|| query.strip_prefix("/semantic "))
-        {
-            let res = vault.semantic_search(stripped, 50).await?;
-            (res, format!("Semantic search: '{}'", stripped))
+        // Check for semantic search prefix
+        let (query, semantic) = if query.starts_with("/s ") || query.starts_with("/semantic ") {
+            let q = query
+                .strip_prefix("/s ")
+                .or_else(|| query.strip_prefix("/semantic "))
+                .unwrap_or(query);
+            (q, true)
         } else {
-            let res = vault.search(query, 50).await?;
+            (query, false)
+        };
+
+        // Parse filters from query
+        let filters = crate::search::SearchFilters::parse(query);
+
+        // Store search query for highlighting (only the text part)
+        self.search_query = filters.text_query.clone();
+
+        let (results, mode_desc) = if semantic {
+            // Semantic search doesn't support filters yet
+            let res = vault
+                .semantic_search(filters.text_query.as_deref().unwrap_or(query), 50)
+                .await?;
+            (res, format!("Semantic search: '{}'", query))
+        } else if filters.has_filters() || filters.is_fuzzy() {
+            // Use filtered search
+            let res = vault.search_filtered(&filters, 50).await?;
+            let fuzzy_note = if filters.is_fuzzy() { " (fuzzy)" } else { "" };
+            (res, format!("Filtered search: '{}'{}", query, fuzzy_note))
+        } else {
+            // Plain FTS search
+            let res = vault
+                .search(filters.text_query.as_deref().unwrap_or(query), 50)
+                .await?;
             (res, format!("Full-text search: '{}'", query))
         };
 
