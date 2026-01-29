@@ -1,2 +1,0 @@
-fn(axum::extract::State<Arc<McpState>>, Json<McpCallRequest>) -> impl std::future::Future<Output = Result<Json<McpCallResult>, axum::http::StatusCode>> {mcp_call}
-fn(axum::extract::State<Arc<McpState>>, Json<McpCallRequest>) -> impl std::future::Future<Output = Result<Json<McpCallResult>, axum::http::StatusCode>> {mcp_call}: Handler<_, _>

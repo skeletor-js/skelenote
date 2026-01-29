@@ -1,0 +1,68 @@
+[package]
+name = "skelenote-core"
+version = "0.1.0"
+edition = "2021"
+description = "Headless productivity backend with MCP interface"
+license = "MIT"
+repository = "https://github.com/skeletor-js/skelenote"
+
+[[bin]]
+name = "skelenote"
+path = "src/main.rs"
+
+[lib]
+name = "skelenote_core"
+path = "src/lib.rs"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# CLI & TUI
+clap = { version = "4", features = ["derive"] }
+ratatui = "0.29"
+crossterm = "0.28"
+
+# Markdown & YAML
+pulldown-cmark = "0.12"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+gray_matter = "0.2"
+
+# Database & Search
+rusqlite = { version = "0.32", features = ["bundled", "vtab"] }
+
+# Encryption
+chacha20poly1305 = "0.10"
+bip39 = "2"
+hkdf = "0.12"
+sha2 = "0.10"
+rand = "0.8"
+base64 = "0.22"
+
+# HTTP Server (for MCP-like API)
+axum = { version = "0.8", features = ["ws"] }
+tower-http = { version = "0.6", features = ["cors"] }
+
+# Utilities
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+thiserror = "2"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+directories = "5"
+walkdir = "2"
+glob = "0.3"
+regex = "1"
+toml = "0.8"
+hex = "0.4"
+fastembed = "5.8.1"
+reqwest = { version = "0.13.1", features = ["json"] }
+notify-debouncer-full = "0.7.0"
+tokio-tungstenite = "0.28.0"
+futures = "0.3.31"
+
+[dev-dependencies]
+tempfile = "3"

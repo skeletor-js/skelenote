@@ -1,59 +1,28 @@
-## Summary
+## Description
 
-<!-- Brief description of what this PR does -->
+Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context.
 
-## Changes
+Fixes # (issue)
 
-<!-- List the key changes -->
--
+## Type of change
 
-## Related Issues
-
-<!-- Link to the GitHub issue this PR addresses -->
-<!-- Use "Closes #123" to auto-close when merged -->
-Closes #
-
-<!-- The issue should be on the Skelenote Roadmap project board -->
-
-## Type of Change
-
-- [ ] Bug fix (non-breaking change that fixes an issue)
-- [ ] New feature (non-breaking change that adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to change)
-- [ ] Refactor (code change that neither fixes a bug nor adds a feature)
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation update
-- [ ] Test update
 
-## Security Impact
+## How Has This Been Tested?
 
-- [ ] This change affects encryption or key management (`src-tauri/src/crypto/`)
-- [ ] This change affects the sync protocol (`src/lib/sync/`)
-- [ ] This change affects network handling (`src-tauri/src/network/`)
-- [ ] This change handles user input that could be malicious
-- [ ] No security impact
+Please describe the tests that you ran to verify your changes.
 
-<!-- If any security boxes are checked, describe the security considerations -->
-
-## Screenshots
-
-<!-- If this is a UI change, add screenshots -->
+- [ ] `cargo test` passed
+- [ ] Manual verification in TUI
 
 ## Checklist
 
-- [ ] I have read the [Contributing Guide](../CONTRIBUTING.md)
-- [ ] My code follows the project's style guidelines
-- [ ] I have tested my changes locally (`pnpm tauri dev`)
-- [ ] Linting passes (`pnpm lint`)
-- [ ] Type checking passes (`pnpm exec tsc --noEmit`)
-- [ ] Tests pass (`pnpm test:run`)
-- [ ] I have added tests for new functionality (if applicable)
-- [ ] I have updated documentation (if applicable)
-- [ ] UI changes follow the [style guide](../docs/design/style-guide.md)
-
-## Testing Instructions
-
-<!-- How can reviewers test this change? -->
-
-1.
-2.
-3.
+- [ ] My code follows the style guidelines of this project
+- [ ] I have performed a self-review of my own code
+- [ ] I have commented my code, particularly in hard-to-understand areas
+- [ ] I have made corresponding changes to the documentation
+- [ ] I have added tests that prove my fix is effective or that my feature works
+- [ ] New and existing unit tests pass locally with my changes

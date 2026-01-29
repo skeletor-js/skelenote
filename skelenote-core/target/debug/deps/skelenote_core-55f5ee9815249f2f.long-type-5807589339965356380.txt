@@ -1,2 +1,0 @@
-fn(axum::extract::State<Arc<McpState>>, Json<CreateNoteRequest>) -> impl std::future::Future<Output = Result<Json<serde_json::Value>, axum::http::StatusCode>> {api_create_note}
-fn(axum::extract::State<Arc<McpState>>, Json<CreateNoteRequest>) -> impl std::future::Future<Output = Result<Json<serde_json::Value>, axum::http::StatusCode>> {api_create_note}: Handler<_, _>
