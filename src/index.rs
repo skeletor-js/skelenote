@@ -25,7 +25,6 @@ impl Index {
             CREATE TABLE IF NOT EXISTS notes (
                 path TEXT PRIMARY KEY,
                 title TEXT,
-                note_type TEXT,
                 tags TEXT,
                 created TEXT,
                 updated TEXT,
@@ -106,7 +105,6 @@ impl Index {
         &self,
         path: &str,
         title: Option<&str>,
-        note_type: Option<&str>,
         tags: &[String],
         content_hash: &str,
     ) -> anyhow::Result<()> {
@@ -114,10 +112,10 @@ impl Index {
 
         self.conn.execute(
             r#"
-            INSERT OR REPLACE INTO notes (path, title, note_type, tags, modified, content_hash)
-            VALUES (?, ?, ?, ?, datetime('now'), ?)
+            INSERT OR REPLACE INTO notes (path, title, tags, modified, content_hash)
+            VALUES (?, ?, ?, datetime('now'), ?)
             "#,
-            params![path, title, note_type, tags_str, content_hash],
+            params![path, title, tags_str, content_hash],
         )?;
 
         Ok(())

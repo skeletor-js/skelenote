@@ -348,7 +348,6 @@ async fn mcp_call(
         "patch_metadata" => {
             let path = req.arguments["path"].as_str().unwrap_or("");
             let title = req.arguments["title"].as_str().map(String::from);
-            let note_type = req.arguments["type"].as_str().map(String::from);
             let tags = req.arguments["tags"].as_array().map(|arr| {
                 arr.iter()
                     .filter_map(|v| v.as_str().map(String::from))
@@ -361,16 +360,13 @@ async fn mcp_call(
                     if let Some(t) = title {
                         fm.title = Some(t);
                     }
-                    if let Some(t) = note_type {
-                        fm.note_type = Some(t);
-                    }
                     if let Some(t) = tags {
                         fm.tags = t;
                     }
                 })
                 .await
             {
-                Ok(_) => ok_result("Metadata updated"),
+                Ok(_) => ok_result("Properties updated"),
                 Err(e) => err_result(&e.to_string()),
             }
         }

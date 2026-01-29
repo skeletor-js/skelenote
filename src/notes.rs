@@ -30,10 +30,6 @@ pub struct Frontmatter {
     /// Note title
     pub title: Option<String>,
 
-    /// Note type (note, project, area, etc.)
-    #[serde(rename = "type")]
-    pub note_type: Option<String>,
-
     /// Tags
     #[serde(default)]
     pub tags: Vec<String>,
@@ -44,15 +40,7 @@ pub struct Frontmatter {
     /// Updated timestamp
     pub updated: Option<DateTime<Utc>>,
 
-    /// Is this a daily note?
-    #[serde(default)]
-    pub daily: bool,
-
-    /// Aliases for wikilink resolution
-    #[serde(default)]
-    pub aliases: Vec<String>,
-
-    /// Any additional properties
+    /// Any additional properties (extensible)
     #[serde(flatten)]
     pub extra: std::collections::HashMap<String, serde_yaml::Value>,
 }
@@ -200,5 +188,28 @@ Some content here."#;
         let content = "See [[projects/skelenote]] and [[daily/2026-01-28|today]]";
         let links = extract_wikilinks(content);
         assert_eq!(links, vec!["projects/skelenote", "daily/2026-01-28"]);
+    }
+
+    #[test]
+    fn test_simplified_frontmatter() {
+        let content = r#"---
+id: abc-123
+title: Test Note
+tags: [rust, notes]
+created: 2026-01-28T12:00:00Z
+updated: 2026-01-28T13:00:00Z
+custom_field: value
+---
+
+Content here."#;
+
+        let (fm, _body) = parse_frontmatter(content).unwrap();
+        assert_eq!(fm.id, Some("abc-123".to_string()));
+        assert_eq!(fm.title, Some("Test Note".to_string()));
+        assert_eq!(fm.tags, vec!["rust", "notes"]);
+        assert!(fm.created.is_some());
+        assert!(fm.updated.is_some());
+        // Custom field should be in extra
+        assert!(fm.extra.contains_key("custom_field"));
     }
 }

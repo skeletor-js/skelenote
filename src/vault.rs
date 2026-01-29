@@ -58,7 +58,6 @@ impl Vault {
         // Create welcome note
         let welcome = r#"---
 title: Welcome to Skelenote
-type: note
 tags: [getting-started]
 ---
 
@@ -195,7 +194,6 @@ Any AI agent can connect to your notes via MCP at `http://localhost:3000/mcp`.
                 index.index_note(
                     &path_str,
                     note.frontmatter.title.as_deref(),
-                    note.frontmatter.note_type.as_deref(),
                     &note.frontmatter.tags,
                     &hash,
                 )?;
@@ -334,7 +332,6 @@ Any AI agent can connect to your notes via MCP at `http://localhost:3000/mcp`.
             index.index_note(
                 &path_str,
                 note.frontmatter.title.as_deref(),
-                note.frontmatter.note_type.as_deref(),
                 &note.frontmatter.tags,
                 &hash,
             )?;
@@ -468,8 +465,7 @@ Any AI agent can connect to your notes via MCP at `http://localhost:3000/mcp`.
             let content = format!(
                 r#"---
 title: {}
-type: note
-daily: true
+tags: [daily]
 created: {}
 ---
 
@@ -477,7 +473,7 @@ created: {}
 
 ## Tasks
 
-- [ ] 
+- [ ]
 
 ## Notes
 
@@ -504,7 +500,7 @@ created: {}
             std::fs::create_dir_all(self.config.inbox_path())?;
             r#"---
 title: Inbox
-type: note
+tags: [inbox]
 ---
 
 # Inbox
