@@ -9,6 +9,7 @@ pub enum ThemeVariant {
     Catppuccin,
     NightOwl,
     SynthWave84,
+    Custom,
 }
 
 impl ThemeVariant {
@@ -20,7 +21,8 @@ impl ThemeVariant {
             Self::TokyoNight => Self::Catppuccin,
             Self::Catppuccin => Self::NightOwl,
             Self::NightOwl => Self::SynthWave84,
-            Self::SynthWave84 => Self::Claude,
+            Self::SynthWave84 => Self::Custom,
+            Self::Custom => Self::Claude,
         }
     }
 
@@ -33,7 +35,53 @@ impl ThemeVariant {
             Self::Catppuccin => "Catppuccin",
             Self::NightOwl => "Night Owl",
             Self::SynthWave84 => "SynthWave '84",
+            Self::Custom => "Custom",
         }
+    }
+
+    /// Parse theme name from string (case-insensitive)
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s.to_lowercase().as_str() {
+            "claude" | "claude inspired" => Some(Self::Claude),
+            "onedarkpro" | "one dark pro" | "one-dark-pro" => Some(Self::OneDarkPro),
+            "dracula" => Some(Self::Dracula),
+            "tokyonight" | "tokyo night" | "tokyo-night" => Some(Self::TokyoNight),
+            "catppuccin" => Some(Self::Catppuccin),
+            "nightowl" | "night owl" | "night-owl" => Some(Self::NightOwl),
+            "synthwave84" | "synthwave 84" | "synthwave-84" | "synthwave '84" => {
+                Some(Self::SynthWave84)
+            }
+            "custom" => Some(Self::Custom),
+            _ => None,
+        }
+    }
+
+    /// Convert to config-friendly string
+    pub fn as_config_str(self) -> &'static str {
+        match self {
+            Self::Claude => "claude",
+            Self::OneDarkPro => "onedarkpro",
+            Self::Dracula => "dracula",
+            Self::TokyoNight => "tokyonight",
+            Self::Catppuccin => "catppuccin",
+            Self::NightOwl => "nightowl",
+            Self::SynthWave84 => "synthwave84",
+            Self::Custom => "custom",
+        }
+    }
+
+    /// Get all available theme variants
+    pub fn all() -> Vec<Self> {
+        vec![
+            Self::Claude,
+            Self::OneDarkPro,
+            Self::Dracula,
+            Self::TokyoNight,
+            Self::Catppuccin,
+            Self::NightOwl,
+            Self::SynthWave84,
+            Self::Custom,
+        ]
     }
 }
 
@@ -52,6 +100,8 @@ pub struct Theme {
     pub list_prefix_selected: String,
     pub content_default: Style,
     pub content_cursor: Style,
+    pub content_selection: Style,
+    pub note_title: Style,
     pub status_bar: Style,
     pub status_bar_input: Style,
     pub status_bar_mode_note: Style,
@@ -60,6 +110,16 @@ pub struct Theme {
     pub syntax_link: Style,
     pub syntax_list: Style,
     pub syntax_todo: Style,
+}
+
+/// Extract foreground color from a Style
+fn extract_fg(style: &Style) -> Color {
+    style.fg.unwrap_or(Color::White)
+}
+
+/// Extract background color from a Style
+fn extract_bg(style: &Style) -> Color {
+    style.bg.unwrap_or(Color::Black)
 }
 
 impl Theme {
@@ -72,6 +132,76 @@ impl Theme {
             ThemeVariant::Catppuccin => Self::catppuccin(),
             ThemeVariant::NightOwl => Self::night_owl(),
             ThemeVariant::SynthWave84 => Self::synthwave_84(),
+            ThemeVariant::Custom => {
+                // Custom themes must be loaded via from_custom_config()
+                // Fall back to Claude if called directly
+                Self::claude()
+            }
+        }
+    }
+
+    /// Create a custom theme from config, inheriting unspecified colors from base theme
+    pub fn from_custom_config(config: &crate::config::CustomThemeConfig) -> Self {
+        use crate::config::CustomThemeConfig;
+
+        // Get base theme to inherit from
+        let base_variant = ThemeVariant::from_str(&config.base).unwrap_or(ThemeVariant::Claude);
+        let base = Self::from_variant(base_variant);
+
+        // Helper to parse color or use default
+        let parse_or = |opt: &Option<String>, default: Color| -> Color {
+            opt.as_ref()
+                .and_then(|s| CustomThemeConfig::parse_color(s))
+                .unwrap_or(default)
+        };
+
+        // Extract core palette colors
+        let bg = parse_or(&config.background, extract_bg(&base.root));
+        let fg = parse_or(&config.foreground, extract_fg(&base.root));
+        let accent = parse_or(&config.accent, extract_fg(&base.border_focus));
+        let secondary = parse_or(&config.secondary, extract_fg(&base.border_default));
+
+        // Build the custom theme with overrides
+        Self {
+            variant: ThemeVariant::Custom,
+            root: Style::default().bg(bg).fg(fg),
+            border_default: Style::default().fg(parse_or(&config.border, secondary)),
+            border_focus: Style::default().fg(parse_or(&config.border_focus, accent)),
+            tab_active: Style::default().fg(accent).add_modifier(Modifier::BOLD),
+            tab_inactive: Style::default().fg(secondary),
+            tab_divider: Style::default().fg(secondary),
+            list_default: Style::default().fg(fg),
+            list_selected: Style::default().fg(accent),
+            list_selected_focus: Style::default().fg(accent).add_modifier(Modifier::BOLD),
+            list_prefix_viewing: base.list_prefix_viewing.clone(),
+            list_prefix_selected: base.list_prefix_selected.clone(),
+            content_default: Style::default().fg(fg),
+            content_cursor: Style::default().bg(parse_or(&config.cursor, fg)).fg(bg),
+            content_selection: Style::default()
+                .bg(parse_or(
+                    &config.selection,
+                    extract_bg(&base.content_selection),
+                ))
+                .fg(fg),
+            note_title: Style::default().fg(accent).add_modifier(Modifier::BOLD),
+            status_bar: Style::default().fg(parse_or(&config.status_bar, secondary)),
+            status_bar_input: Style::default().fg(parse_or(&config.status_bar_input, accent)),
+            status_bar_mode_note: Style::default().fg(parse_or(
+                &config.status_bar_mode_note,
+                extract_fg(&base.status_bar_mode_note),
+            )),
+            status_bar_mode_meta: Style::default().fg(parse_or(
+                &config.status_bar_mode_meta,
+                extract_fg(&base.status_bar_mode_meta),
+            )),
+            syntax_header: Style::default()
+                .fg(parse_or(&config.syntax_header, accent))
+                .add_modifier(Modifier::BOLD),
+            syntax_link: Style::default()
+                .fg(parse_or(&config.syntax_link, extract_fg(&base.syntax_link))),
+            syntax_list: Style::default().fg(parse_or(&config.syntax_list, fg)),
+            syntax_todo: Style::default()
+                .fg(parse_or(&config.syntax_todo, extract_fg(&base.syntax_todo))),
         }
     }
 
@@ -98,6 +228,8 @@ impl Theme {
             list_prefix_selected: "› ".to_string(),
             content_default: Style::default().fg(fg),
             content_cursor: Style::default().bg(fg).fg(bg),
+            content_selection: Style::default().bg(Color::Rgb(80, 80, 70)).fg(fg),
+            note_title: Style::default().fg(accent).add_modifier(Modifier::BOLD),
             status_bar: Style::default().fg(secondary),
             status_bar_input: Style::default().fg(accent),
             status_bar_mode_note: Style::default().fg(Color::Green),
@@ -131,6 +263,8 @@ impl Theme {
             list_prefix_selected: "› ".to_string(),
             content_default: Style::default().fg(fg),
             content_cursor: Style::default().bg(blue).fg(bg),
+            content_selection: Style::default().bg(Color::Rgb(60, 68, 82)).fg(fg),
+            note_title: Style::default().fg(blue).add_modifier(Modifier::BOLD),
             status_bar: Style::default().fg(grey),
             status_bar_input: Style::default().fg(blue),
             status_bar_mode_note: Style::default().fg(Color::Green),
@@ -165,6 +299,8 @@ impl Theme {
             list_prefix_selected: "› ".to_string(),
             content_default: Style::default().fg(fg),
             content_cursor: Style::default().bg(purple).fg(bg),
+            content_selection: Style::default().bg(Color::Rgb(68, 71, 90)).fg(fg),
+            note_title: Style::default().fg(purple).add_modifier(Modifier::BOLD),
             status_bar: Style::default().fg(comment),
             status_bar_input: Style::default().fg(cyan),
             status_bar_mode_note: Style::default().fg(Color::Green),
@@ -199,6 +335,8 @@ impl Theme {
             list_prefix_selected: "› ".to_string(),
             content_default: Style::default().fg(fg),
             content_cursor: Style::default().bg(blue).fg(bg),
+            content_selection: Style::default().bg(Color::Rgb(56, 60, 88)).fg(fg),
+            note_title: Style::default().fg(blue).add_modifier(Modifier::BOLD),
             status_bar: Style::default().fg(comment),
             status_bar_input: Style::default().fg(cyan),
             status_bar_mode_note: Style::default().fg(Color::Green),
@@ -234,6 +372,8 @@ impl Theme {
             list_prefix_selected: "› ".to_string(),
             content_default: Style::default().fg(fg),
             content_cursor: Style::default().bg(mauve).fg(bg),
+            content_selection: Style::default().bg(surface1).fg(fg),
+            note_title: Style::default().fg(mauve).add_modifier(Modifier::BOLD),
             status_bar: Style::default().fg(surface1),
             status_bar_input: Style::default().fg(blue),
             status_bar_mode_note: Style::default().fg(Color::Green),
@@ -268,6 +408,8 @@ impl Theme {
             list_prefix_selected: "› ".to_string(),
             content_default: Style::default().fg(fg),
             content_cursor: Style::default().bg(cyan).fg(bg),
+            content_selection: Style::default().bg(Color::Rgb(34, 66, 89)).fg(fg),
+            note_title: Style::default().fg(blue).add_modifier(Modifier::BOLD),
             status_bar: Style::default().fg(grey),
             status_bar_input: Style::default().fg(cyan),
             status_bar_mode_note: Style::default().fg(Color::Green),
@@ -305,6 +447,8 @@ impl Theme {
             list_prefix_selected: "› ".to_string(),
             content_default: Style::default().fg(fg),
             content_cursor: Style::default().bg(neon_pink).fg(bg),
+            content_selection: Style::default().bg(Color::Rgb(70, 55, 90)).fg(fg),
+            note_title: Style::default().fg(neon_pink).add_modifier(Modifier::BOLD),
             status_bar: Style::default().fg(grey),
             status_bar_input: Style::default().fg(neon_blue),
             status_bar_mode_note: Style::default().fg(Color::Green),

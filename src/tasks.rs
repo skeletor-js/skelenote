@@ -11,7 +11,7 @@
 use chrono::NaiveDate;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::LazyLock;
 
 /// A task extracted from a markdown file
@@ -58,7 +58,7 @@ pub enum Priority {
 }
 
 impl Priority {
-    pub fn from_str(s: &str) -> Option<Self> {
+    pub fn parse(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "urgent" => Some(Self::Urgent),
             "high" => Some(Self::High),
@@ -79,37 +79,30 @@ impl Priority {
 }
 
 // Regex patterns
-static TASK_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^(\s*)-\s*\[([ xX/])\]\s*(.+)$").unwrap()
-});
+static TASK_PATTERN: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^(\s*)-\s*\[([ xX/])\]\s*(.+)$").unwrap());
 
-static DUE_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"@due\((\d{4}-\d{2}-\d{2})\)").unwrap()
-});
+static DUE_PATTERN: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"@due\((\d{4}-\d{2}-\d{2})\)").unwrap());
 
-static PRIORITY_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"@priority\((\w+)\)").unwrap()
-});
+static PRIORITY_PATTERN: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"@priority\((\w+)\)").unwrap());
 
-static PROJECT_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"@project\(([^)]+)\)").unwrap()
-});
+static PROJECT_PATTERN: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"@project\(([^)]+)\)").unwrap());
 
-static AREA_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"@area\(([^)]+)\)").unwrap()
-});
+static AREA_PATTERN: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"@area\(([^)]+)\)").unwrap());
 
-static RECURRENCE_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"@recurrence\(([^)]+)\)").unwrap()
-});
+static RECURRENCE_PATTERN: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"@recurrence\(([^)]+)\)").unwrap());
 
 impl Task {
     /// Extract all tasks from markdown content
-    pub fn extract_from_content(source: &PathBuf, content: &str) -> Vec<Self> {
+    pub fn extract_from_content(source: &Path, content: &str) -> Vec<Self> {
         content
             .lines()
             .enumerate()
-            .filter_map(|(idx, line)| Self::parse_line(source.clone(), idx + 1, line))
+            .filter_map(|(idx, line)| Self::parse_line(source.to_path_buf(), idx + 1, line))
             .collect()
     }
 
@@ -131,7 +124,7 @@ impl Task {
 
         let priority = PRIORITY_PATTERN
             .captures(content)
-            .and_then(|c| c.get(1).and_then(|m| Priority::from_str(m.as_str())));
+            .and_then(|c| c.get(1).and_then(|m| Priority::parse(m.as_str())));
 
         let project = PROJECT_PATTERN
             .captures(content)
@@ -182,7 +175,8 @@ impl Task {
                     if l.contains("- [ ]") {
                         l.replace("- [ ]", "- [x]")
                     } else if l.contains("- [x]") || l.contains("- [X]") {
-                        l.replacen("- [x]", "- [ ]", 1).replacen("- [X]", "- [ ]", 1)
+                        l.replacen("- [x]", "- [ ]", 1)
+                            .replacen("- [X]", "- [ ]", 1)
                     } else if l.contains("- [/]") {
                         l.replace("- [/]", "- [x]")
                     } else {

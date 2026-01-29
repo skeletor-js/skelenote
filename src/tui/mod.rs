@@ -5,9 +5,10 @@ mod event;
 mod theme;
 mod ui;
 
-pub use app::App;
+pub use app::{App, View};
 pub use event::Event;
 
+use crate::crypto;
 use crate::Vault;
 use anyhow::Result;
 use crossterm::{
@@ -20,6 +21,9 @@ use std::io;
 
 /// Run the TUI application
 pub async fn run(vault: Vault) -> Result<()> {
+    // Determine identity file path
+    let identity_path = vault.root.join(".skelenote").join("identity.enc");
+
     // Setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -27,11 +31,19 @@ pub async fn run(vault: Vault) -> Result<()> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    // Create app
-    let mut app = App::new(vault);
+    // Create app based on identity file existence
+    let mut app = if crypto::identity_exists(&identity_path) {
+        // Identity exists - need password to unlock
+        App::new_unlock(vault, identity_path)
+    } else {
+        // First run - need to create identity
+        App::new_setup(vault, identity_path)
+    };
 
-    // Initial data load
-    app.refresh().await?;
+    // Only do initial refresh if already authenticated
+    if !matches!(app.view, View::Setup | View::Unlock) {
+        app.refresh().await?;
+    }
 
     // Main loop
     loop {
@@ -40,7 +52,8 @@ pub async fn run(vault: Vault) -> Result<()> {
         if let Some(event) = event::poll()? {
             match event {
                 Event::Quit => break,
-                Event::Key(key) => app.handle_key(key).await?,
+                Event::Key(key_event) => app.handle_key(key_event).await?,
+                Event::Mouse(mouse) => app.handle_mouse(mouse).await?,
                 Event::Tick => {}
             }
         }

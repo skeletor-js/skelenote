@@ -29,11 +29,11 @@ impl EmbeddingEngine {
                     "nomic-embed-text" => fastembed::EmbeddingModel::NomicEmbedTextV15,
                     _ => fastembed::EmbeddingModel::BGESmallENV15,
                 };
-                
+
                 // Note: BGESmallENV15 enum variant might differ in actual fastembed version
-                // Let's stick to BGESmallENV15 if available, otherwise check crates. 
+                // Let's stick to BGESmallENV15 if available, otherwise check crates.
                 // In fastembed 4+, BGESmallENV15 is supported.
-                
+
                 let init_options = InitOptions::new(model).with_show_download_progress(true);
                 let model = TextEmbedding::try_new(init_options)?;
                 Ok(Self::Local(Arc::new(Mutex::new(model))))
@@ -43,7 +43,7 @@ impl EmbeddingEngine {
                     .openai_api_key
                     .clone()
                     .ok_or_else(|| anyhow!("OpenAI API key required for 'openai' provider"))?;
-                
+
                 Ok(Self::OpenAI {
                     client: Client::new(),
                     api_key,
@@ -59,9 +59,7 @@ impl EmbeddingEngine {
         match self {
             Self::Local(model) => {
                 let mut model = model.lock().await;
-                // Force type check
-                let result: anyhow::Result<Vec<Vec<f32>>> = model.embed(texts, None).map_err(Into::into);
-                result
+                model.embed(texts, None)
             }
             Self::OpenAI {
                 client,

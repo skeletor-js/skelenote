@@ -44,12 +44,12 @@ async fn ws_handler(
 
 async fn handle_socket(socket: WebSocket, state: Arc<RelayState>) {
     let (mut sender, mut receiver) = socket.split();
-    
+
     // Channel to bridge broadcast -> websocket
     let (tx, mut rx) = tokio::sync::mpsc::channel::<Message>(100);
-    
+
     // Spawn writer task
-    let mut write_task = tokio::spawn(async move {
+    let write_task = tokio::spawn(async move {
         while let Some(msg) = rx.recv().await {
             let json: String = serde_json::to_string(&msg).unwrap_or_default();
             // Axum 0.8 Message::Text takes Utf8Bytes, which implements From<String>
@@ -100,7 +100,7 @@ async fn handle_socket(socket: WebSocket, state: Arc<RelayState>) {
                                 }
                             }
                         }));
-                        
+
                         tracing::info!("Client joined room: {}", room_id);
                     }
                     Message::Leave => {

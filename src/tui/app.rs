@@ -119,9 +119,9 @@ pub enum Focus {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InputMode {
     Normal,
-    Editing,          // Input bar for search/capture/new note
-    NoteEditing,      // Editing note content
-    PropertyEditing,  // Editing a property field
+    Editing,         // Input bar for search/capture/new note
+    NoteEditing,     // Editing note content
+    PropertyEditing, // Editing a property field
 }
 
 /// What the editing input is for
@@ -1141,9 +1141,10 @@ impl App {
                         } else {
                             new_content.push_str(l);
                         }
-                        if i < lines.len() - 1 && i != row - 1 {
-                            new_content.push('\n');
-                        } else if i == row - 1 && row < lines.len() - 1 {
+                        // Add newline after merged line if not the last line
+                        let should_add_newline = (i < lines.len() - 1 && i != row - 1)
+                            || (i == row - 1 && row < lines.len() - 1);
+                        if should_add_newline {
                             new_content.push('\n');
                         }
                     }
@@ -1292,8 +1293,8 @@ impl App {
             let existing = std::fs::read_to_string(&full_path)?;
 
             // Find where frontmatter ends
-            let new_content = if existing.starts_with("---") {
-                if let Some(end) = existing[3..].find("---") {
+            let new_content = if let Some(stripped) = existing.strip_prefix("---") {
+                if let Some(end) = stripped.find("---") {
                     let frontmatter = &existing[..end + 6]; // Include closing ---\n
                     format!("{}\n{}", frontmatter.trim_end(), self.editor_buffer)
                 } else {
@@ -1505,12 +1506,7 @@ impl App {
         self.update_selection(extend_selection, (row, col), new_pos);
     }
 
-    fn update_selection(
-        &mut self,
-        extend: bool,
-        old_pos: (usize, usize),
-        new_pos: (usize, usize),
-    ) {
+    fn update_selection(&mut self, extend: bool, old_pos: (usize, usize), new_pos: (usize, usize)) {
         if extend {
             // Extend or start selection
             if let Some(ref mut sel) = self.editor_selection {
@@ -1621,7 +1617,12 @@ impl App {
         if line_count == 0 {
             return;
         }
-        let last_line_len = self.editor_buffer.lines().last().map(|l| l.len()).unwrap_or(0);
+        let last_line_len = self
+            .editor_buffer
+            .lines()
+            .last()
+            .map(|l| l.len())
+            .unwrap_or(0);
 
         self.editor_selection = Some(Selection {
             anchor: (0, 0),
@@ -1824,7 +1825,7 @@ impl App {
         // Use try_read to avoid blocking - if we can't get the lock, skip saving
         if let Ok(vault) = self.vault.try_read() {
             let mut config = vault.config.clone();
-            config.theme = self.theme.variant.to_config_string().to_string();
+            config.theme = self.theme.variant.as_config_str().to_string();
             if let Err(e) = config.save() {
                 tracing::warn!("Failed to save theme to config: {}", e);
             }
@@ -2260,7 +2261,8 @@ impl App {
                         if clipboard.set_text(&self.setup_state.mnemonic).is_ok() {
                             self.setup_state.copied_to_clipboard = true;
                         } else {
-                            self.setup_state.error = Some("Failed to copy to clipboard".to_string());
+                            self.setup_state.error =
+                                Some("Failed to copy to clipboard".to_string());
                         }
                     }
                     Err(_) => {
@@ -2479,9 +2481,7 @@ impl App {
             KeyCode::Backspace => {
                 self.unlock_state.password.pop();
             }
-            KeyCode::Char('f') | KeyCode::Char('F')
-                if self.unlock_state.password.is_empty() =>
-            {
+            KeyCode::Char('f') | KeyCode::Char('F') if self.unlock_state.password.is_empty() => {
                 // Forgot password - switch to setup in restore mode
                 self.view = View::Setup;
                 self.setup_state = SetupState::default();

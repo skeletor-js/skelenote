@@ -139,7 +139,7 @@ Any AI agent can connect to your notes via MCP at `http://localhost:3000/mcp`.
         for entry in WalkDir::new(&self.root)
             .into_iter()
             .filter_map(|e| e.ok())
-            .filter(|e| e.path().extension().map_or(false, |ext| ext == "md"))
+            .filter(|e| e.path().extension().is_some_and(|ext| ext == "md"))
             .filter(|e| !e.path().starts_with(self.root.join(".skelenote")))
         {
             let path = entry.path();
@@ -162,7 +162,7 @@ Any AI agent can connect to your notes via MCP at `http://localhost:3000/mcp`.
                     let index = self.index.lock().unwrap();
                     index
                         .get_content_hash(rel_path.to_string_lossy().as_ref())?
-                        .map_or(true, |h| h != hash)
+                        .is_none_or(|h| h != hash)
                 };
 
                 if needs_reindex {
@@ -581,8 +581,19 @@ tags: [inbox]
 
     /// Get backlinks to a note
     pub async fn get_backlinks(&self, path: &Path) -> anyhow::Result<Vec<String>> {
-        let index = self.index.lock().unwrap();
-        index.get_backlinks(&path.to_string_lossy())
+        // Get the note to access its ID and title for resolution
+        if let Some(note) = self.get_note(path).await? {
+            let index = self.index.lock().unwrap();
+            index.get_backlinks_for_note(
+                note.frontmatter.id.as_deref(),
+                note.frontmatter.title.as_deref(),
+                &path.to_string_lossy(),
+            )
+        } else {
+            // Fallback to simple path-based lookup
+            let index = self.index.lock().unwrap();
+            index.get_backlinks(&path.to_string_lossy())
+        }
     }
 
     /// Resolve a wikilink to a note
@@ -615,7 +626,7 @@ tags: [inbox]
             .filter(|n| {
                 n.path
                     .parent()
-                    .map_or(false, |p| p.to_string_lossy() == folder)
+                    .is_some_and(|p| p.to_string_lossy() == folder)
             })
             .cloned()
             .collect();

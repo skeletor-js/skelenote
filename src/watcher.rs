@@ -1,6 +1,6 @@
 //! File system watcher for live vault updates
 
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use notify_debouncer_full::{new_debouncer, Debouncer, FileIdMap};
 use std::path::{Path, PathBuf};
 use std::sync::mpsc;
@@ -20,7 +20,7 @@ pub enum VaultEvent {
 
 /// Helper to check if file is relevant (markdown)
 fn is_relevant(path: &Path) -> bool {
-    path.extension().map_or(false, |ext| ext == "md") && !path.iter().any(|c| c == ".skelenote")
+    path.extension().is_some_and(|ext| ext == "md") && !path.iter().any(|c| c == ".skelenote")
 }
 
 /// Opaque handle to keep watcher alive

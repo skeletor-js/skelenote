@@ -80,7 +80,9 @@ fn draw_tabs(f: &mut Frame, app: &App, area: Rect) {
         // Track this tab's boundaries for mouse click detection
         {
             let mut layout = app.ui_layout.borrow_mut();
-            layout.tab_bounds.push((col_offset, col_offset + text_len, view));
+            layout
+                .tab_bounds
+                .push((col_offset, col_offset + text_len, view));
         }
         col_offset += text_len;
 
@@ -98,9 +100,11 @@ fn draw_tabs(f: &mut Frame, app: &App, area: Rect) {
         let search_text = "[/]Search";
         {
             let mut layout = app.ui_layout.borrow_mut();
-            layout
-                .tab_bounds
-                .push((col_offset, col_offset + search_text.len() as u16, View::Search));
+            layout.tab_bounds.push((
+                col_offset,
+                col_offset + search_text.len() as u16,
+                View::Search,
+            ));
         }
         spans.push(Span::styled(search_text, app.theme.tab_active));
     }
@@ -155,7 +159,7 @@ fn draw_notes_list(f: &mut Frame, app: &App, area: Rect) {
             let is_viewing = app
                 .current_note
                 .as_ref()
-                .map_or(false, |n| n.path == note.path);
+                .is_some_and(|n| n.path == note.path);
 
             let style = if is_viewing {
                 // Determine style for viewing
@@ -190,9 +194,7 @@ fn draw_notes_list(f: &mut Frame, app: &App, area: Rect) {
         _ => "",
     };
 
-    let border_style = if app.focus == Focus::List && app.current_note.is_some() {
-        app.theme.border_focus // Actually logic was if focused and note open -> yellow (focus)
-    } else if app.focus == Focus::List {
+    let border_style = if app.focus == Focus::List {
         app.theme.border_focus
     } else {
         app.theme.border_default
@@ -298,21 +300,33 @@ fn draw_content(f: &mut Frame, app: &App, area: Rect) {
                 };
 
                 // Check if this line has selection
-                let line_selection = selection_bounds.and_then(|((start_line, start_col), (end_line, end_col))| {
-                    if line_num >= start_line && line_num <= end_line {
-                        let sel_start = if line_num == start_line { start_col } else { 0 };
-                        let sel_end = if line_num == end_line { end_col.min(line.len()) } else { line.len() };
-                        if sel_start < sel_end || (sel_start == sel_end && line_num > start_line && line_num < end_line) {
-                            Some((sel_start, sel_end))
-                        } else if sel_start == sel_end && line_num == start_line && line_num == end_line {
-                            None // Empty selection on same line
+                let line_selection =
+                    selection_bounds.and_then(|((start_line, start_col), (end_line, end_col))| {
+                        if line_num >= start_line && line_num <= end_line {
+                            let sel_start = if line_num == start_line { start_col } else { 0 };
+                            let sel_end = if line_num == end_line {
+                                end_col.min(line.len())
+                            } else {
+                                line.len()
+                            };
+                            if sel_start < sel_end
+                                || (sel_start == sel_end
+                                    && line_num > start_line
+                                    && line_num < end_line)
+                            {
+                                Some((sel_start, sel_end))
+                            } else if sel_start == sel_end
+                                && line_num == start_line
+                                && line_num == end_line
+                            {
+                                None // Empty selection on same line
+                            } else {
+                                Some((sel_start, line.len())) // Full line selected
+                            }
                         } else {
-                            Some((sel_start, line.len())) // Full line selected
+                            None
                         }
-                    } else {
-                        None
-                    }
-                });
+                    });
 
                 if is_editing && (is_cursor_line || line_selection.is_some()) {
                     // Complex rendering: cursor and/or selection
@@ -340,12 +354,34 @@ fn draw_content(f: &mut Frame, app: &App, area: Rect) {
         } else {
             ""
         };
-        let title = format!(" {}{}", note.title(), title_marker);
+
+        // Build title with note name and editing indicator
+        let title_spans: Vec<Span> = vec![
+            Span::raw(" "),
+            Span::styled(note.title(), app.theme.note_title),
+            Span::raw(title_marker),
+        ];
+
+        // Build bottom bar with keyboard shortcuts
+        let bottom_spans: Vec<Span> = if is_editing {
+            vec![
+                Span::styled(" Esc", app.theme.tab_inactive),
+                Span::raw(":Exit "),
+            ]
+        } else {
+            vec![
+                Span::styled(" p", app.theme.tab_inactive),
+                Span::raw(":Properties "),
+                Span::styled("e", app.theme.tab_inactive),
+                Span::raw(":Edit "),
+            ]
+        };
 
         let para = Paragraph::new(lines)
             .block(
                 Block::default()
-                    .title(title)
+                    .title(Line::from(title_spans))
+                    .title_bottom(Line::from(bottom_spans))
                     .borders(Borders::ALL)
                     .border_style(border_style),
             )
@@ -405,10 +441,16 @@ fn render_line_with_cursor_and_selection<'a>(
             let cursor_char = line.chars().nth(col).unwrap_or(' ');
             spans.push(Span::styled(cursor_char.to_string(), cursor_style));
             if col + 1 < sel_start {
-                spans.push(Span::styled(line[col + 1..sel_start].to_string(), base_style));
+                spans.push(Span::styled(
+                    line[col + 1..sel_start].to_string(),
+                    base_style,
+                ));
             }
             if sel_start < sel_end {
-                spans.push(Span::styled(line[sel_start..sel_end].to_string(), selection_style));
+                spans.push(Span::styled(
+                    line[sel_start..sel_end].to_string(),
+                    selection_style,
+                ));
             }
             if sel_end < line_len {
                 spans.push(Span::styled(line[sel_end..].to_string(), base_style));
@@ -420,7 +462,10 @@ fn render_line_with_cursor_and_selection<'a>(
                 spans.push(Span::styled(line[..sel_start].to_string(), base_style));
             }
             if sel_start < sel_end {
-                spans.push(Span::styled(line[sel_start..sel_end].to_string(), selection_style));
+                spans.push(Span::styled(
+                    line[sel_start..sel_end].to_string(),
+                    selection_style,
+                ));
             }
             if sel_end < col {
                 spans.push(Span::styled(line[sel_end..col].to_string(), base_style));
@@ -437,12 +482,18 @@ fn render_line_with_cursor_and_selection<'a>(
                 spans.push(Span::styled(line[..sel_start].to_string(), base_style));
             }
             if sel_start < col {
-                spans.push(Span::styled(line[sel_start..col].to_string(), selection_style));
+                spans.push(Span::styled(
+                    line[sel_start..col].to_string(),
+                    selection_style,
+                ));
             }
             let cursor_char = line.chars().nth(col).unwrap_or(' ');
             spans.push(Span::styled(cursor_char.to_string(), cursor_style));
             if col + 1 < sel_end {
-                spans.push(Span::styled(line[col + 1..sel_end].to_string(), selection_style));
+                spans.push(Span::styled(
+                    line[col + 1..sel_end].to_string(),
+                    selection_style,
+                ));
             }
             if sel_end < line_len {
                 spans.push(Span::styled(line[sel_end..].to_string(), base_style));
@@ -454,7 +505,10 @@ fn render_line_with_cursor_and_selection<'a>(
             spans.push(Span::styled(line[..sel_start].to_string(), base_style));
         }
         if sel_start < sel_end {
-            spans.push(Span::styled(line[sel_start..sel_end].to_string(), selection_style));
+            spans.push(Span::styled(
+                line[sel_start..sel_end].to_string(),
+                selection_style,
+            ));
         }
         if sel_end < line_len {
             spans.push(Span::styled(line[sel_end..].to_string(), base_style));
@@ -648,7 +702,9 @@ fn draw_setup_mnemonic(f: &mut Frame, app: &App) {
     if app.setup_state.copied_to_clipboard {
         lines.push(Line::from(Span::styled(
             "Copied to clipboard!",
-            Style::default().fg(Color::Green).add_modifier(Modifier::BOLD),
+            Style::default()
+                .fg(Color::Green)
+                .add_modifier(Modifier::BOLD),
         )));
     } else {
         lines.push(Line::from(Span::styled(
@@ -699,7 +755,9 @@ fn draw_setup_verify(f: &mut Frame, app: &App) {
 
         let prompt = format!("  Word #{}: ", idx);
         let input_style = if is_active {
-            Style::default().fg(Color::Cyan).add_modifier(Modifier::UNDERLINED)
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::UNDERLINED)
         } else {
             Style::default().fg(Color::White)
         };
@@ -820,8 +878,8 @@ fn draw_setup_password(f: &mut Frame, app: &App, is_confirm: bool) {
         password
     });
 
-    let strength_bar: String = "█".repeat(strength as usize * 2)
-        + &"░".repeat(8 - strength as usize * 2);
+    let strength_bar: String =
+        "█".repeat(strength as usize * 2) + &"░".repeat(8 - strength as usize * 2);
     let strength_color = match strength {
         0 => Color::Red,
         1 => Color::Red,
@@ -851,7 +909,9 @@ fn draw_setup_password(f: &mut Frame, app: &App, is_confirm: bool) {
             Span::raw("  Password: "),
             Span::styled(
                 format!("{}|", masked),
-                Style::default().fg(Color::White).add_modifier(Modifier::UNDERLINED),
+                Style::default()
+                    .fg(Color::White)
+                    .add_modifier(Modifier::UNDERLINED),
             ),
         ]),
         Line::from(""),
@@ -884,7 +944,7 @@ fn draw_setup_password(f: &mut Frame, app: &App, is_confirm: bool) {
     f.render_widget(para, inner);
 }
 
-fn draw_setup_complete(f: &mut Frame, app: &App) {
+fn draw_setup_complete(f: &mut Frame, _app: &App) {
     let area = centered_rect(50, 12, f.area());
     f.render_widget(Clear, area);
 
@@ -900,7 +960,9 @@ fn draw_setup_complete(f: &mut Frame, app: &App) {
         Line::from(""),
         Line::from(Span::styled(
             "Your vault is now encrypted!",
-            Style::default().fg(Color::Green).add_modifier(Modifier::BOLD),
+            Style::default()
+                .fg(Color::Green)
+                .add_modifier(Modifier::BOLD),
         )),
         Line::from(""),
         Line::from("Keep your recovery phrase safe."),
@@ -936,7 +998,9 @@ fn draw_unlock(f: &mut Frame, app: &App) {
         Line::from(""),
         Line::from(Span::styled(
             format!("  {}|", masked),
-            Style::default().fg(Color::White).add_modifier(Modifier::UNDERLINED),
+            Style::default()
+                .fg(Color::White)
+                .add_modifier(Modifier::UNDERLINED),
         )),
         Line::from(""),
     ];
