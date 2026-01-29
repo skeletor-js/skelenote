@@ -41,24 +41,38 @@ GOOD:
 
 #### Advanced Search
 
-- [ ] Add search filter syntax for tags (`tag:foo`)
+- [~] Add search filter syntax for tags (`tag:foo`)
   - File: `src/tui/app.rs`, `src/vault.rs`
   - Parse query for `tag:` prefix
   - Filter results by tag match (case-insensitive)
+  - Tags stored as comma-separated in `notes.tags` column
   - Test: Search `tag:work`, only notes with #work tag appear
-
-- [ ] Add search filter for note type (`type:daily`)
-  - File: `src/tui/app.rs`, `src/vault.rs`
-  - Parse query for `type:` prefix
-  - Filter by frontmatter `type` field
-  - Supported types: note, daily, project, area, resource
-  - Test: Search `type:project`, only project notes appear
+  - [x] Task 1: SearchFilters struct in `src/search.rs` (completed)
+  - [x] Task 2: Add `search_filtered()` method to Index in `src/index.rs`
+    - [x] Code quality fixes: tag word-boundary matching, error propagation
+  - [ ] Task 3: Integrate into Vault.search() to use filters
+  - [ ] Task 4: Wire up TUI search to use filtered search
 
 - [ ] Add search filter for date range (`after:2025-01-01`)
   - File: `src/tui/app.rs`, `src/vault.rs`
   - Parse `after:` and `before:` prefixes
-  - Filter by note `modified` or `created` date
+  - Filter by `created` or `updated` frontmatter fields (ISO 8601)
+  - Support both: `after:2025-01-01` and `before:2025-12-31`
   - Test: Search `after:2025-01-01`, only recent notes appear
+
+- [ ] Add search filter for backlinks (`links:note-id` or `linkedby:note-id`)
+  - File: `src/tui/app.rs`, `src/vault.rs`, `src/index.rs`
+  - `links:X` - find notes that link TO note X (by ID, title, or path)
+  - `linkedby:X` - find notes that are linked FROM note X
+  - Leverage existing `backlinks` table with three-tier resolution
+  - Test: Search `linkedby:my-note`, see all notes that link to it
+
+- [ ] Add search filter by note ID (`id:uuid`)
+  - File: `src/tui/app.rs`, `src/vault.rs`
+  - Parse query for `id:` prefix
+  - Match against `notes.id` column (UUID format)
+  - Useful for finding notes by their unique identifier
+  - Test: Search `id:550e8400`, partial match on note ID
 
 - [ ] Add search results highlighting
   - File: `src/tui/ui.rs`, `src/tui/theme.rs`

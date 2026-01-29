@@ -35,32 +35,27 @@ impl Index {
 
             CREATE INDEX IF NOT EXISTS idx_notes_id ON notes(id);
 
-            -- Full-text search index
+            -- Full-text search index (standalone, not content-external)
             CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
                 path,
                 title,
                 content,
-                tags,
-                content='notes',
-                content_rowid='rowid'
+                tags
             );
 
-            -- Triggers to keep FTS in sync
+            -- Triggers to keep FTS in sync with notes table
+            -- Note: Content is initially empty, updated separately via update_fts_content()
             CREATE TRIGGER IF NOT EXISTS notes_ai AFTER INSERT ON notes BEGIN
-                INSERT INTO notes_fts(rowid, path, title, content, tags)
-                VALUES (new.rowid, new.path, new.title, '', new.tags);
+                INSERT INTO notes_fts(path, title, content, tags)
+                VALUES (new.path, new.title, '', new.tags);
             END;
 
             CREATE TRIGGER IF NOT EXISTS notes_ad AFTER DELETE ON notes BEGIN
-                INSERT INTO notes_fts(notes_fts, rowid, path, title, content, tags)
-                VALUES('delete', old.rowid, old.path, old.title, '', old.tags);
+                DELETE FROM notes_fts WHERE path = old.path;
             END;
 
             CREATE TRIGGER IF NOT EXISTS notes_au AFTER UPDATE ON notes BEGIN
-                INSERT INTO notes_fts(notes_fts, rowid, path, title, content, tags)
-                VALUES('delete', old.rowid, old.path, old.title, '', old.tags);
-                INSERT INTO notes_fts(rowid, path, title, content, tags)
-                VALUES (new.rowid, new.path, new.title, '', new.tags);
+                UPDATE notes_fts SET title = new.title, tags = new.tags WHERE path = old.path;
             END;
 
             -- Backlinks (source -> target_link text)
@@ -127,34 +122,11 @@ impl Index {
 
     /// Update the FTS content for a note
     pub fn update_fts_content(&self, path: &str, content: &str) -> anyhow::Result<()> {
-        // Get rowid for the note
-        let rowid: Option<i64> = self
-            .conn
-            .query_row("SELECT rowid FROM notes WHERE path = ?", [path], |row| {
-                row.get(0)
-            })
-            .optional()?;
-
-        if let Some(rowid) = rowid {
-            // Delete old FTS entry
-            self.conn.execute(
-                "INSERT INTO notes_fts(notes_fts, rowid, path, title, content, tags) VALUES('delete', ?, ?, ?, ?, ?)",
-                params![rowid, path, "", "", ""],
-            )?;
-
-            // Get note metadata
-            let (title, tags): (Option<String>, Option<String>) = self.conn.query_row(
-                "SELECT title, tags FROM notes WHERE path = ?",
-                [path],
-                |row| Ok((row.get(0)?, row.get(1)?)),
-            )?;
-
-            // Insert new FTS entry
-            self.conn.execute(
-                "INSERT INTO notes_fts(rowid, path, title, content, tags) VALUES(?, ?, ?, ?, ?)",
-                params![rowid, path, title, content, tags],
-            )?;
-        }
+        // Simply update the content in the FTS table
+        self.conn.execute(
+            "UPDATE notes_fts SET content = ? WHERE path = ?",
+            params![content, path],
+        )?;
 
         Ok(())
     }
@@ -267,6 +239,111 @@ impl Index {
             .collect::<Result<Vec<_>, _>>()?;
 
         Ok(hits)
+    }
+
+    /// Search notes with structured filters.
+    ///
+    /// Builds a dynamic SQL query based on active filters.
+    pub fn search_filtered(
+        &self,
+        filters: &crate::search::SearchFilters,
+        limit: usize,
+    ) -> anyhow::Result<Vec<SearchHit>> {
+        let mut sql = String::from("SELECT n.path, n.title FROM notes n");
+        let mut conditions = Vec::new();
+        let mut params: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
+
+        // Tag filter (case-insensitive, exact match within comma-separated list)
+        // Wrapping with commas ensures we match whole tags, not substrings
+        // e.g., "work" won't match "homework" or "network"
+        for tag in &filters.tags {
+            conditions.push("(',' || LOWER(n.tags) || ',') LIKE ?".to_string());
+            params.push(Box::new(format!("%,{},%", tag.to_lowercase())));
+        }
+
+        // Date range filters
+        if let Some(after) = &filters.after {
+            conditions.push("(n.created >= ? OR n.updated >= ?)".to_string());
+            let date_str = after.format("%Y-%m-%d").to_string();
+            params.push(Box::new(date_str.clone()));
+            params.push(Box::new(date_str));
+        }
+        if let Some(before) = &filters.before {
+            conditions.push("(n.created <= ? OR n.updated <= ?)".to_string());
+            let date_str = before.format("%Y-%m-%d").to_string();
+            params.push(Box::new(date_str.clone()));
+            params.push(Box::new(date_str));
+        }
+
+        // ID filter (partial match)
+        if let Some(id) = &filters.id {
+            conditions.push("n.id LIKE ?".to_string());
+            params.push(Box::new(format!("%{}%", id)));
+        }
+
+        // Text query via FTS5
+        if let Some(text) = &filters.text_query {
+            // When text query is present, use FTS with JOIN to notes for other filters
+            // This allows us to apply date/ID filters that require columns from notes table
+            sql = String::from(
+                "SELECT n.path, n.title, bm25(notes_fts) as score \
+                 FROM notes_fts \
+                 JOIN notes n ON notes_fts.path = n.path \
+                 WHERE notes_fts MATCH ?",
+            );
+
+            // Prepend the text query as first parameter
+            let mut fts_params: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
+            fts_params.push(Box::new(text.clone()));
+
+            // Note: We skip snippet() here for simplicity since filtered search prioritizes
+            // structured filters over snippet generation. The main search() method provides
+            // snippets for text-only searches.
+
+            // Apply all conditions (tags, dates, id) - they reference n.* columns
+            for cond in &conditions {
+                sql.push_str(&format!(" AND {}", cond));
+            }
+            // Add the parameters from conditions
+            fts_params.extend(params);
+
+            sql.push_str(&format!(" ORDER BY score LIMIT {}", limit));
+            params = fts_params;
+        } else if !conditions.is_empty() {
+            sql.push_str(" WHERE ");
+            sql.push_str(&conditions.join(" AND "));
+            sql.push_str(&format!(" ORDER BY n.updated DESC LIMIT {}", limit));
+        } else {
+            sql.push_str(&format!(" ORDER BY n.updated DESC LIMIT {}", limit));
+        }
+
+        let mut stmt = self.conn.prepare(&sql)?;
+
+        let param_refs: Vec<&dyn rusqlite::ToSql> = params.iter().map(|p| p.as_ref()).collect();
+
+        let results = if filters.text_query.is_some() {
+            stmt.query_map(rusqlite::params_from_iter(param_refs), |row| {
+                Ok(SearchHit {
+                    path: row.get(0)?,
+                    title: row.get(1)?,
+                    snippet: None,
+                    score: row.get(2)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?
+        } else {
+            stmt.query_map(rusqlite::params_from_iter(param_refs), |row| {
+                Ok(SearchHit {
+                    path: row.get(0)?,
+                    title: row.get(1)?,
+                    snippet: None,
+                    score: 0.0,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?
+        };
+
+        Ok(results)
     }
 
     /// Index tasks from a note
@@ -489,4 +566,328 @@ pub struct SearchHit {
     pub title: Option<String>,
     pub snippet: Option<String>,
     pub score: f64,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_search_with_tag_filter() {
+        let dir = tempfile::tempdir().unwrap();
+        let index = Index::open(dir.path().join("index.db").as_path()).unwrap();
+
+        // Index a note with tags
+        let path = "work-meeting.md";
+        index
+            .index_note(
+                path,
+                None,
+                Some("Work Meeting"),
+                &["work".to_string(), "urgent".to_string()],
+                "hash1",
+            )
+            .unwrap();
+        index.update_fts_content(path, "Meeting notes").unwrap();
+
+        // Index a note without matching tag
+        let path2 = "personal.md";
+        index
+            .index_note(
+                path2,
+                None,
+                Some("Personal"),
+                &["home".to_string()],
+                "hash2",
+            )
+            .unwrap();
+        index.update_fts_content(path2, "Personal stuff").unwrap();
+
+        let mut filters = crate::search::SearchFilters::default();
+        filters.tags.push("work".to_string());
+
+        let results = index.search_filtered(&filters, 50).unwrap();
+        assert_eq!(results.len(), 1);
+        assert!(results[0].path.contains("work-meeting"));
+    }
+
+    #[test]
+    fn test_search_with_date_filter() {
+        let dir = tempfile::tempdir().unwrap();
+        let index = Index::open(dir.path().join("index.db").as_path()).unwrap();
+
+        // Index a recent note - we need to manually insert created date
+        let path = "recent.md";
+        index.conn.execute(
+            "INSERT OR REPLACE INTO notes (path, id, title, tags, created, modified, content_hash) VALUES (?, ?, ?, ?, ?, datetime('now'), ?)",
+            params![path, None::<String>, "Recent", "", "2025-06-01", "hash1"],
+        ).unwrap();
+        index.update_fts_content(path, "Recent note").unwrap();
+
+        // Index an old note
+        let path2 = "old.md";
+        index.conn.execute(
+            "INSERT OR REPLACE INTO notes (path, id, title, tags, created, modified, content_hash) VALUES (?, ?, ?, ?, ?, datetime('now'), ?)",
+            params![path2, None::<String>, "Old", "", "2020-01-01", "hash2"],
+        ).unwrap();
+        index.update_fts_content(path2, "Old note").unwrap();
+
+        let mut filters = crate::search::SearchFilters::default();
+        filters.after = Some(chrono::NaiveDate::from_ymd_opt(2025, 1, 1).unwrap());
+
+        let results = index.search_filtered(&filters, 50).unwrap();
+        assert_eq!(results.len(), 1);
+        assert!(results[0].path.contains("recent"));
+    }
+
+    #[test]
+    fn test_search_with_id_filter() {
+        let dir = tempfile::tempdir().unwrap();
+        let index = Index::open(dir.path().join("index.db").as_path()).unwrap();
+
+        let path = "note.md";
+        index
+            .index_note(
+                path,
+                Some("550e8400-e29b-41d4-a716-446655440000"),
+                Some("Test"),
+                &[],
+                "hash1",
+            )
+            .unwrap();
+        index.update_fts_content(path, "Content").unwrap();
+
+        let mut filters = crate::search::SearchFilters::default();
+        filters.id = Some("550e8400".to_string());
+
+        let results = index.search_filtered(&filters, 50).unwrap();
+        assert_eq!(results.len(), 1);
+    }
+
+    #[test]
+    fn test_search_with_multiple_tags() {
+        // Test combining multiple tag filters (AND logic)
+        let dir = tempfile::tempdir().unwrap();
+        let index = Index::open(dir.path().join("index.db").as_path()).unwrap();
+
+        let path = "meeting.md";
+        index
+            .index_note(
+                path,
+                None,
+                Some("Meeting"),
+                &["work".to_string(), "urgent".to_string()],
+                "hash1",
+            )
+            .unwrap();
+
+        let path2 = "meeting2.md";
+        index
+            .index_note(
+                path2,
+                None,
+                Some("Meeting 2"),
+                &["work".to_string()],
+                "hash2",
+            )
+            .unwrap();
+
+        // Search for notes with both "work" AND "urgent" tags
+        let mut filters = crate::search::SearchFilters::default();
+        filters.tags.push("work".to_string());
+        filters.tags.push("urgent".to_string());
+
+        let results = index.search_filtered(&filters, 50).unwrap();
+        assert_eq!(results.len(), 1);
+        assert!(results[0].path.contains("meeting.md"));
+    }
+
+    #[test]
+    fn test_search_with_tag_and_date() {
+        // Test combining tag filter with date filter
+        let dir = tempfile::tempdir().unwrap();
+        let index = Index::open(dir.path().join("index.db").as_path()).unwrap();
+
+        // Recent work note
+        index.conn.execute(
+            "INSERT OR REPLACE INTO notes (path, id, title, tags, created, modified, content_hash) VALUES (?, ?, ?, ?, ?, datetime('now'), ?)",
+            params!["recent-work.md", None::<String>, "Recent Work", "work", "2025-06-01", "hash1"],
+        ).unwrap();
+
+        // Old work note
+        index.conn.execute(
+            "INSERT OR REPLACE INTO notes (path, id, title, tags, created, modified, content_hash) VALUES (?, ?, ?, ?, ?, datetime('now'), ?)",
+            params!["old-work.md", None::<String>, "Old Work", "work", "2020-01-01", "hash2"],
+        ).unwrap();
+
+        // Recent personal note
+        index.conn.execute(
+            "INSERT OR REPLACE INTO notes (path, id, title, tags, created, modified, content_hash) VALUES (?, ?, ?, ?, ?, datetime('now'), ?)",
+            params!["recent-personal.md", None::<String>, "Recent Personal", "personal", "2025-06-01", "hash3"],
+        ).unwrap();
+
+        // Search for work notes created after 2025-01-01
+        let mut filters = crate::search::SearchFilters::default();
+        filters.tags.push("work".to_string());
+        filters.after = Some(chrono::NaiveDate::from_ymd_opt(2025, 1, 1).unwrap());
+
+        let results = index.search_filtered(&filters, 50).unwrap();
+        assert_eq!(results.len(), 1);
+        assert!(results[0].path.contains("recent-work"));
+    }
+
+    #[test]
+    fn test_search_with_text_and_tag() {
+        let dir = tempfile::tempdir().unwrap();
+        let index = Index::open(dir.path().join("index.db").as_path()).unwrap();
+
+        // Index a note with work tag and project content
+        let path = "meeting.md";
+        index
+            .index_note(
+                path,
+                None,
+                Some("Meeting"),
+                &["work".to_string()],
+                "hash1",
+            )
+            .unwrap();
+        index.update_fts_content(path, "Project discussion").unwrap();
+
+        // Index a note with personal tag and project content
+        let path2 = "meeting2.md";
+        index
+            .index_note(
+                path2,
+                None,
+                Some("Meeting 2"),
+                &["personal".to_string()],
+                "hash2",
+            )
+            .unwrap();
+        index
+            .update_fts_content(path2, "Project discussion")
+            .unwrap();
+
+        // Verify basic FTS search works (using filtered search with text query only)
+        let basic_filters = crate::search::SearchFilters::parse("project");
+        let basic_results = index.search_filtered(&basic_filters, 50).unwrap();
+        assert_eq!(basic_results.len(), 2, "Basic FTS should find 2 notes with 'project'");
+
+        // Search with both text query and tag filter
+        let filters = crate::search::SearchFilters::parse("tag:work project");
+
+        let results = index.search_filtered(&filters, 50).unwrap();
+        assert_eq!(results.len(), 1);
+        assert!(results[0].path.contains("meeting.md"));
+    }
+
+    #[test]
+    fn test_search_with_text_and_date() {
+        let dir = tempfile::tempdir().unwrap();
+        let index = Index::open(dir.path().join("index.db").as_path()).unwrap();
+
+        // Index a recent note with project content
+        let path = "recent.md";
+        index
+            .conn
+            .execute(
+                "INSERT OR REPLACE INTO notes (path, id, title, tags, created, modified, content_hash) VALUES (?, ?, ?, ?, ?, datetime('now'), ?)",
+                params![path, None::<String>, "Recent Meeting", "", "2025-06-01", "hash1"],
+            )
+            .unwrap();
+        index.update_fts_content(path, "Project discussion").unwrap();
+
+        // Index an old note with project content
+        let path2 = "old.md";
+        index
+            .conn
+            .execute(
+                "INSERT OR REPLACE INTO notes (path, id, title, tags, created, modified, content_hash) VALUES (?, ?, ?, ?, ?, datetime('now'), ?)",
+                params![path2, None::<String>, "Old Meeting", "", "2020-01-01", "hash2"],
+            )
+            .unwrap();
+        index.update_fts_content(path2, "Project discussion").unwrap();
+
+        // Search with both text query and date filter
+        let filters = crate::search::SearchFilters::parse("after:2025-01-01 project");
+
+        let results = index.search_filtered(&filters, 50).unwrap();
+        assert_eq!(results.len(), 1);
+        assert!(results[0].path.contains("recent"));
+    }
+
+    #[test]
+    fn test_tag_word_boundary_matching() {
+        // Regression test: tag:work should NOT match notes tagged only "homework" or "network"
+        let dir = tempfile::tempdir().unwrap();
+        let index = Index::open(dir.path().join("index.db").as_path()).unwrap();
+
+        // Note with exact "work" tag - should match
+        index
+            .index_note(
+                "actual-work.md",
+                None,
+                Some("Actual Work"),
+                &["work".to_string()],
+                "hash1",
+            )
+            .unwrap();
+
+        // Note with "homework" tag - should NOT match "work"
+        index
+            .index_note(
+                "school.md",
+                None,
+                Some("School Stuff"),
+                &["homework".to_string()],
+                "hash2",
+            )
+            .unwrap();
+
+        // Note with "network" tag - should NOT match "work"
+        index
+            .index_note(
+                "networking.md",
+                None,
+                Some("Networking Notes"),
+                &["network".to_string()],
+                "hash3",
+            )
+            .unwrap();
+
+        // Note with multiple tags including "work" - should match
+        index
+            .index_note(
+                "work-meeting.md",
+                None,
+                Some("Work Meeting"),
+                &["work".to_string(), "urgent".to_string()],
+                "hash4",
+            )
+            .unwrap();
+
+        // Search for tag:work
+        let mut filters = crate::search::SearchFilters::default();
+        filters.tags.push("work".to_string());
+
+        let results = index.search_filtered(&filters, 50).unwrap();
+
+        // Should only find notes with exact "work" tag, not "homework" or "network"
+        assert_eq!(
+            results.len(),
+            2,
+            "Should find exactly 2 notes with 'work' tag, got {:?}",
+            results.iter().map(|r| &r.path).collect::<Vec<_>>()
+        );
+
+        let paths: Vec<&str> = results.iter().map(|r| r.path.as_str()).collect();
+        assert!(paths.contains(&"actual-work.md"), "Should find actual-work.md");
+        assert!(paths.contains(&"work-meeting.md"), "Should find work-meeting.md");
+        assert!(!paths.contains(&"school.md"), "Should NOT find school.md (homework tag)");
+        assert!(
+            !paths.contains(&"networking.md"),
+            "Should NOT find networking.md (network tag)"
+        );
+    }
 }
