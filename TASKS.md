@@ -36,14 +36,13 @@ GOOD:
 
 ## Active Tasks
 
-- [~] Repository cleanup after pivot to pure Rust
-  - Remove 11,352 deleted files from git tracking (old TypeScript/React code)
-  - Add `.fastembed_cache/` to .gitignore
-  - Fix README.md build path (was referencing old `skelenote-core` subdirectory)
-  - Commit all changes
+<!-- Add tasks here -->
 
 ---
 
 ## Completed Tasks
 
-<!-- Move completed tasks here with date -->
+- [x] Repository cleanup after pivot to pure Rust (2026-01-28)
+  - Removed 11,352 files (old TypeScript/React frontend, docs, workers)
+  - Added `.fastembed_cache/` to .gitignore
+  - Fixed README.md build path
