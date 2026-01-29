@@ -10,6 +10,7 @@ pub mod index;
 pub mod mcp;
 pub mod notes;
 pub mod relay;
+pub mod search;
 pub mod tasks;
 pub mod tui;
 pub mod vault;
