@@ -50,6 +50,9 @@ GOOD:
   - [x] Task 1: SearchFilters struct in `src/search.rs` (completed)
   - [x] Task 2: Add `search_filtered()` method to Index in `src/index.rs`
     - [x] Code quality fixes: tag word-boundary matching, error propagation
+  - [x] Task 5: Integrate filters into Vault
+    - [x] Add search_filtered method to Vault
+    - [x] Write test for Vault.search_filtered
   - [ ] Task 3: Integrate into Vault.search() to use filters
     - [x] Fix LIKE pattern escaping for backlink filters
   - [ ] Task 4: Wire up TUI search to use filtered search
@@ -86,11 +89,17 @@ GOOD:
   - Add `syntax_highlight: Style` to Theme
   - Test: Search for term, see it highlighted in results
 
-- [ ] Add fuzzy search mode (`/fuzzy query` or `~query`)
+- [~] Add fuzzy search mode (`/fuzzy query` or `~query`)
   - File: `src/tui/app.rs`, `src/vault.rs`
   - Add `fuzzy_search()` method using `sublime_fuzzy` crate
   - Match against note titles and content
   - Test: Search `~nts` matches "notes"
+  - [x] Task 4: Add fuzzy_search() to Index in `src/index.rs`
+    - [x] Add sublime_fuzzy dependency to Cargo.toml
+    - [x] Write failing test for fuzzy search
+    - [x] Implement fuzzy_search method
+    - [x] Update search_filtered to use fuzzy mode
+    - [x] Run all tests and verify
 
 ---
 

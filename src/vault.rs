@@ -392,6 +392,33 @@ Any AI agent can connect to your notes via MCP at `http://localhost:3000/mcp`.
             .collect())
     }
 
+    /// Search notes with structured filters.
+    ///
+    /// Parses filter syntax like `tag:work after:2025-01-01 query`.
+    pub async fn search_filtered(
+        &self,
+        filters: &crate::search::SearchFilters,
+        limit: usize,
+    ) -> anyhow::Result<Vec<SearchResult>> {
+        let index = self.index.lock().unwrap();
+        let hits = index.search_filtered(filters, limit)?;
+
+        Ok(hits
+            .into_iter()
+            .map(|hit| SearchResult {
+                path: self.root.join(&hit.path),
+                title: hit.title.unwrap_or_else(|| {
+                    Path::new(&hit.path)
+                        .file_stem()
+                        .map(|s| s.to_string_lossy().to_string())
+                        .unwrap_or_default()
+                }),
+                snippet: hit.snippet,
+                score: hit.score as f32,
+            })
+            .collect())
+    }
+
     /// Semantic search
     pub async fn semantic_search(
         &self,
@@ -832,4 +859,38 @@ fn slugify(s: &str) -> String {
         .filter(|s| !s.is_empty())
         .collect::<Vec<_>>()
         .join("-")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_vault_search_filtered() {
+        let dir = tempfile::tempdir().unwrap();
+        let config = Config::load_or_create(dir.path()).unwrap();
+        let vault = Vault::open(dir.path(), config).await.unwrap();
+
+        // Create test notes
+        vault
+            .create_note("Work Meeting", "Meeting notes", Some(""), &["work".to_string()])
+            .await
+            .unwrap();
+        vault
+            .create_note("Personal", "Personal stuff", Some(""), &["home".to_string()])
+            .await
+            .unwrap();
+
+        // Reindex to ensure notes are properly indexed (including tags)
+        vault.reindex().await.unwrap();
+
+        let filters = crate::search::SearchFilters::parse("tag:work");
+        let results = vault.search_filtered(&filters, 50).await.unwrap();
+
+        assert_eq!(results.len(), 1);
+        assert!(results[0]
+            .path
+            .to_string_lossy()
+            .contains("work-meeting"));
+    }
 }
