@@ -213,17 +213,6 @@
 
 ---
 
-## Search Highlighting (2026-01-28)
-
-- [x] Add search results highlighting
-  - File: `src/tui/ui.rs`, `src/tui/theme.rs`
-  - Added `search_highlight: Style` to Theme struct with appropriate colors for all 7 themes
-  - Implemented `highlight_matches()` helper function for case-insensitive, multi-word matching
-  - Updated `draw_notes_list` to highlight matching query words in note titles
-  - Supports: Claude, OneDarkPro, Dracula, TokyoNight, Catppuccin, NightOwl, SynthWave84 themes
-
----
-
 ## Properties & Note Linking (2026-01-28)
 
 - [x] Simplify frontmatter to "Properties" (id, title, tags, created, updated)

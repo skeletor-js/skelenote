@@ -37,20 +37,6 @@ GOOD:
 
 ## Active Tasks
 
-### v0.2 — Experience (TUI Polish)
-
-#### Advanced Search (Completed 2026-01-28)
-
-> **Moved to COMPLETED_TASKS.md** - All Advanced Search features implemented:
-> - Tag filter (`tag:foo`)
-> - Date range filter (`after:`, `before:`)
-> - Backlink filter (`links:`, `linkedby:`)
-> - ID filter (`id:uuid`)
-> - Fuzzy search (`~query`)
-> - Search result highlighting
-
----
-
 ### v0.3 — Integration (MCP Enhancements)
 
 #### MCP Filesystem Tools
