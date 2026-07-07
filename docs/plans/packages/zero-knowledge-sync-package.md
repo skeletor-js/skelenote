@@ -62,10 +62,10 @@ pub struct KeychainStorage { ... }
 
 | Current Path | Notes |
 |--------------|-------|
-| [keys.rs](file:///Users/jordanstella/GitHub/skelenote/src-tauri/src/crypto/keys.rs) | Core key generation and derivation |
-| [encryption.rs](file:///Users/jordanstella/GitHub/skelenote/src-tauri/src/crypto/encryption.rs) | XChaCha20-Poly1305 encryption |
-| [error.rs](file:///Users/jordanstella/GitHub/skelenote/src-tauri/src/crypto/error.rs) | Error types |
-| [stronghold.rs](file:///Users/jordanstella/GitHub/skelenote/src-tauri/src/crypto/stronghold.rs) | Optional — keychain integration |
+| [keys.rs](../../../src-tauri/src/crypto/keys.rs) | Core key generation and derivation |
+| [encryption.rs](../../../src-tauri/src/crypto/encryption.rs) | XChaCha20-Poly1305 encryption |
+| [error.rs](../../../src-tauri/src/crypto/error.rs) | Error types |
+| [stronghold.rs](../../../src-tauri/src/crypto/stronghold.rs) | Optional — keychain integration |
 
 ### Changes Required
 
@@ -151,12 +151,12 @@ The name `crypt-sync` captures both meanings: **crypt** (skeleton theme) and **c
 **Rust:**
 | Current Path | Notes |
 |--------------|-------|
-| [protocol.rs](file:///Users/jordanstella/GitHub/skelenote/src-tauri/src/network/protocol.rs) | Core protocol encoding/decoding |
+| [protocol.rs](../../../src-tauri/src/network/protocol.rs) | Core protocol encoding/decoding |
 
 **TypeScript:**
 | Current Path | Notes |
 |--------------|-------|
-| [protocol.ts](file:///Users/jordanstella/GitHub/skelenote/src/lib/sync/protocol.ts) | Client-side protocol mirror |
+| [protocol.ts](../../../src/lib/sync/protocol.ts) | Client-side protocol mirror |
 
 ### API Surface (Rust)
 

@@ -1,6 +1,7 @@
 {
     "name": "skelenote-sync-relay",
     "version": "1.0.0",
+    "license": "Apache-2.0",
     "description": "Self-hosted sync relay server for Skelenote",
     "type": "module",
     "main": "dist/index.js",

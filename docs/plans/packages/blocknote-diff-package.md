@@ -99,8 +99,8 @@ export function flattenBlocks(blocks: Block[]): Block[];
 
 | Current Path | Package Path | Notes |
 |--------------|--------------|-------|
-| [block-diff.ts](file:///Users/jordanstella/GitHub/skelenote/src/lib/diff/block-diff.ts) | `src/index.ts` | Core diffing logic |
-| [index.ts](file:///Users/jordanstella/GitHub/skelenote/src/lib/diff/index.ts) | — | Just re-exports, not needed |
+| [block-diff.ts](../../../src/lib/diff/block-diff.ts) | `src/index.ts` | Core diffing logic |
+| [index.ts](../../../src/lib/diff/index.ts) | — | Just re-exports, not needed |
 
 ---
 
