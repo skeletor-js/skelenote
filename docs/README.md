@@ -21,7 +21,7 @@ Skelenote is a local-first, zero-knowledge notes app. Your vault lives on your d
 |---------|-------------|
 | **Object Graph** | Everything connects—tasks, notes, projects, people |
 | **Local Sync** | Sync devices on the same network |
-| **Cloud Sync** | Encrypted sync across the internet |
+| **Self-Hosted Sync** | Encrypted sync through a relay you run yourself |
 | **Skeleton Key** | 24-word phrase only you control |
 | **Rich Editor** | BlockNote with @mentions and backlinks |
 | **Full Export** | Markdown, HTML, JSON, PDF |
@@ -39,22 +39,16 @@ Skelenote is a local-first, zero-knowledge notes app. Your vault lives on your d
 
 ### Platforms
 
-Skelenote runs on **macOS**, **Windows**, **Linux**, **iOS**, and **Android**.
+Skelenote is a desktop app for **macOS**, **Windows**, and **Linux**. The **iOS** and **Android** targets build from the same codebase via Tauri but are experimental and not distributed.
 
-Download from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases).
-
-For iOS, join our [Discord](https://discord.gg/4apsgSRB7D) for the TestFlight invite.
+There are no prebuilt binaries. Skelenote is build-from-source only, see the [Getting Started Guide](user/getting-started.md).
 
 ---
 
-## Alpha Testing
+## Feedback
 
-Skelenote is in **alpha**. We're looking for testers.
-
-1. Download from [Releases](https://github.com/skeletor-js/skelenote/releases)
-2. Read the [Getting Started Guide](user/getting-started.md)
-3. Join our [Discord](https://discord.gg/4apsgSRB7D)
-4. Report bugs via [Linear](https://linear.app/skeletorjs/team/skelenote)
+1. Build and run it (see the [Getting Started Guide](user/getting-started.md))
+2. Report bugs or request features via [GitHub Issues](https://github.com/skeletor-js/skelenote/issues)
 
 ---
 

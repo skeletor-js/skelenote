@@ -108,7 +108,7 @@ Hearth enables real-time sync between devices on the same local network.
 
 ### Security
 
-- Data is encrypted in transit (same as cloud sync)
+- Data is encrypted in transit (same as relay sync)
 - Only devices with matching Skeleton Key can sync
 - Works entirely on local network - no internet needed
 

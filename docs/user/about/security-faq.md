@@ -110,7 +110,7 @@ If your device is compromised, all bets are off. A keylogger could capture your 
 
 ### Has Skelenote been audited?
 
-**Not yet** - we're in alpha.
+**Not yet.** Skelenote has not been independently audited.
 
 Our cryptographic primitives (XChaCha20, BIP39, HKDF) are industry-standard and extensively audited. Our implementation uses well-maintained libraries, not custom crypto.
 
@@ -178,5 +178,5 @@ No server dependency for core functionality.
 ## Still Have Questions?
 
 - [Security & Privacy](./security-privacy.md) - Technical deep dive
-- [Discord](https://discord.gg/4apsgSRB7D) - Ask the community
+- [GitHub Issues](https://github.com/skeletor-js/skelenote/issues) - Ask a question
 - For security vulnerabilities, see [SECURITY.md](../../../SECURITY.md)

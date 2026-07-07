@@ -10,7 +10,7 @@ Ship your first PR in 30 minutes.
 
 **Prerequisites**:
 
-- **Node.js** 18+
+- **Node.js** 22
 - **Rust** (latest stable) - [Install Rust](https://rustup.rs/)
 - **pnpm** (recommended) or npm/yarn
 

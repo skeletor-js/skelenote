@@ -166,4 +166,4 @@ You control which devices can access your vault:
 ## Further Reading
 
 - [Local Sync Guide](../guides/local-sync-guide.md) — Local network sync with air-gap security
-- [Cloud Sync Guide](../guides/cloud-sync-guide.md) — Optional relay server configuration
+- [Self-Hosted Sync Guide](../guides/cloud-sync-guide.md) — Optional relay server you run yourself

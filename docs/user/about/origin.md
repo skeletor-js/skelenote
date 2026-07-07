@@ -44,6 +44,6 @@ This app is for those that need a secure, personal place to think, work, write, 
 
 ## Where We Are
 
-Desktop and mobile are here. In benchmark tests, all app features hold up with libraries as small as 5 notes and as large as 100,000. We're pushing biweekly releases with new features, and we're fully transparent about what's coming down the pipeline next. Even better? Our [Discord](https://discord.gg/4apsgSRB7D) is open and we love discussion and suggestions on what we should add.
+The desktop app works, and the mobile targets build from the same codebase (though they're experimental and not distributed). In benchmark tests, all app features hold up with libraries as small as 5 notes and as large as 100,000. Skelenote is open source now, so you can read the code, build it, and see exactly what it does.
 
-I'm not building this to make money. I'm building something I actually want to use every day. If Skelenote works for you too, join the community and let's chat.
+I'm not building this to make money. I'm building something I actually want to use every day. If Skelenote works for you too, open an issue on [GitHub](https://github.com/skeletor-js/skelenote/issues) and let's talk.

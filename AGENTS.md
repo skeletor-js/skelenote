@@ -86,13 +86,12 @@ Skelenote uses GitHub Actions for continuous integration and cross-platform buil
 
 ### Platform Support
 
-All platforms are fully tested and built in CI:
+Skelenote is build-from-source only. It has never been distributed through an app store, TestFlight, or GitHub Releases. Do not write docs or copy that claim otherwise.
 
-- **macOS**: ARM64 (Apple Silicon) and x86_64 (Intel) - `.dmg` and `.app`
-- **Windows**: x86_64 - `.exe` NSIS installer
-- **Linux**: `.deb` (Debian/Ubuntu), `.rpm` (Fedora/RHEL), `.AppImage` (universal)
-- **iOS**: Via Tauri 2.0 mobile (TestFlight distribution)
-- **Android**: Via Tauri 2.0 mobile (APK/Play Store)
+- **macOS**: ARM64 (Apple Silicon) and x86_64 (Intel), built locally with `pnpm tauri build`
+- **Windows**: x86_64, built locally
+- **Linux**: built locally
+- **iOS / Android**: Tauri 2.0 mobile targets that build from the same codebase but are experimental and not distributed
 
 ### Before Merging (REQUIRED)
 
@@ -304,7 +303,7 @@ Skelenote uses 12 React contexts for state management:
 
 Two sync modes:
 
-1. **Cloud sync** - WebSocket to relay server (optional)
+1. **Relay sync** - WebSocket to a self-hosted relay server (optional; no hosted service)
 2. **Local sync** - mDNS discovery + direct TCP on local network
 
 **P2P Connection Methods:**
@@ -644,9 +643,9 @@ First 8 hex chars of SHA256(User ID) - used for visual verification during P2P p
 - Why XChaCha20: 192-bit nonce is safe for random generation in distributed P2P
 - Format: `[nonce: 24 bytes][ciphertext + auth tag]`
 
-### P2P vs Cloud
+### P2P vs Relay
 
-| | Cloud Sync | Local Sync |
+| | Relay Sync | Local Sync |
 |---|---|---|
 | Transport | WebSocket | TCP |
 | Discovery | N/A (configured URL) | mDNS `_skelenote._tcp` |
@@ -807,7 +806,7 @@ Skelenote combines the high-density efficiency of a code editor with the warmth 
 | Use            | Avoid (over-branded) |
 |----------------|----------------------|
 | Local sync     | Hearth               |
-| Cloud sync     | Courier              |
+| Self-hosted relay sync | Courier      |
 | Semantic search| Lantern              |
 | Offline mode   | Sanctuary Mode       |
 | Workspace      | Digital Study, The Study |

@@ -1,12 +1,12 @@
 # Data Safety & Recovery
 
-Your data is safe during alpha. This guide explains how Skelenote protects your data and how to back it up.
+This guide explains how Skelenote protects your data and how to back it up.
 
 ---
 
 ## Your Data Will Persist
 
-**Alpha updates will NOT delete your data.**
+**Updates will NOT delete your data.**
 
 Skelenote uses [Loro CRDT](https://loro.dev/) for data storage, which maintains backwards compatibility. When you update to a new version:
 
@@ -121,10 +121,10 @@ See [Export & Import Guide](../guides/export-import.md) for details.
 ### "I updated and something broke"
 
 1. **Don't panic** - your data file is likely fine
-2. Check [Known Issues](./KNOWN_ISSUES.md) for the new version
+2. Check [Known Issues](../known-issues.md) for the new version
 3. Try restarting the app
 4. If the app won't launch, your data is still safe in the data folder
-5. Report the issue on [Linear](https://linear.app/skeletorjs/team/skelenote) or [Discord](https://discord.gg/4apsgSRB7D)
+5. Report the issue on [GitHub Issues](https://github.com/skeletor-js/skelenote/issues)
 
 ### "I think I lost data"
 
@@ -188,6 +188,5 @@ Planned features for better data safety:
 
 ## Questions?
 
-- [Troubleshooting Guide](./TROUBLESHOOTING.md)
-- [Discord](https://discord.gg/4apsgSRB7D)
-- [Report an Issue](https://linear.app/skeletorjs/team/skelenote)
+- [Troubleshooting Guide](../troubleshooting.md)
+- [Report an Issue](https://github.com/skeletor-js/skelenote/issues)

@@ -2,7 +2,7 @@
 
 > **Living document** — Tracks planned releases, features, and strategic priorities.
 
-> **Live Tracking:** [Linear Team](https://linear.app/skeletorjs/team/skelenote)
+> **Note on status:** "Built" means the feature is implemented in the codebase. Skelenote is build-from-source only and has never been distributed through an app store, TestFlight, or GitHub Releases, so no version is "shipped" in the sense of a downloadable product.
 
 ---
 
@@ -10,33 +10,28 @@
 
 | Version | Codename | Theme | Status |
 |---------|----------|-------|--------|
-| **v0.1** | Foundation | Core productivity system | ✅ Shipped |
-| **v0.2** | Exodus | Data freedom & portability | ✅ Shipped |
-| **v0.3** | Pocket | Mobile apps & notifications | ✅ Shipped |
-| **v0.35** | Architect | Custom object types & extensibility | 📋 Planned |
-| **v0.4** | Oracle | Sovereign AI on-device | 📋 Planned |
-| **v0.5** | Sentinel | Security hardening | 📋 Planned |
-| **v1.0** | Cartographer | Visualization & spatial | 💭 Exploring |
+| **v0.1** | Foundation | Core productivity system | Built |
+| **v0.2** | Exodus | Data freedom & portability | Built |
+| **v0.3** | Pocket | Mobile targets & notifications | Partially built (mobile experimental) |
+| **v0.35** | Architect | Custom object types & extensibility | Planned |
+| **v0.4** | Oracle | Sovereign AI on-device | Planned |
+| **v0.5** | Sentinel | Security hardening | Planned |
+| **v1.0** | Cartographer | Visualization & spatial | Exploring |
 
 ---
 
-## Competitive Analysis
+## Positioning
 
-For detailed comparisons with other tools in the privacy-focused note-taking space:
-
-| Document | Description |
-|----------|-------------|
-| [Notesnook Comparison](./docs/product/competitive/notesnook-comparison.md) | Feature-by-feature analysis vs. our closest encrypted competitor |
-| [Competitive Landscape](./docs/product/competitive/competitive-landscape.md) | Comprehensive overview of 20+ tools across privacy, sync, pricing |
+Skelenote sits in the local-first, end-to-end encrypted note space. It favors on-device processing, no accounts, and self-hosted sync over hosted services.
 
 **Key Gaps Identified:**
 
 | Gap | Priority | Target Release |
 |-----|----------|----------------|
-| Mobile apps | Critical | ✅ v0.3 |
-| Reminders & notifications | High | ✅ v0.3 |
-| Import wizards (Notion, Obsidian) | High | ✅ v0.2 |
-| PDF export | Medium | ✅ v0.2 |
+| Mobile apps | Critical | v0.3 (experimental) |
+| Reminders & notifications | High | v0.3 |
+| Import wizards (Notion, Obsidian) | High | v0.2 (built) |
+| PDF export | Medium | v0.2 (built) |
 | App lock (auto-lock) | Medium | v0.5 |
 | Secondary vault | Medium | v0.5 |
 | Two-factor auth (2FA) | Medium | v0.5 |
@@ -55,8 +50,8 @@ For detailed comparisons with other tools in the privacy-focused note-taking spa
 
 *The encrypted productivity system that works offline.*
 
-**Status:** ✅ Shipped  
-**Version:** `0.1.0-alpha.1`
+**Status:** Built  
+**Version:** `0.1.0`
 
 This release establishes the core Skelenote experience: a local-first, encrypted productivity system with native task management and P2P sync.
 
@@ -70,7 +65,7 @@ This release establishes the core Skelenote experience: a local-first, encrypted
 | **24-word Skeleton Key** | BIP39 mnemonic for human-readable key backup | ✅ |
 | **Loro CRDTs** | Time Machine lets you reset any object to any previous state | ✅ |
 | **Hearth** | Local network sync via mDNS + TCP | ✅ |
-| **Cloud Relay** | Optional WebSocket relay for remote sync | ✅ |
+| **Self-hosted Relay** | Optional WebSocket relay for remote sync (you host it) | ✅ |
 | **Device Revocation** | Block compromised devices from syncing | ✅ |
 | **Device Fingerprint** | Visual verification (first 8 hex chars of user ID hash) | ✅ |
 
@@ -124,7 +119,7 @@ This release establishes the core Skelenote experience: a local-first, encrypted
 
 *Your data, your format, your choice.*
 
-**Status:** ✅ Shipped  
+**Status:** Built  
 **Version:** `0.2.0`
 
 This release delivers complete data portability—import from anywhere, export to any format, leave anytime.
@@ -248,25 +243,25 @@ Verify with `vite-plugin-visualizer` before/after.
 
 *Skelenote in your pocket.*
 
-**Status:** ✅ Shipped  
+**Status:** Partially built (mobile experimental, not distributed)  
 **Version:** `0.3.0`
 
 > [!NOTE]
-> v0.3 Pocket delivered native iOS/Android apps with full feature parity—not a companion app, the real thing. Mobile is available via TestFlight (iOS) and APK download (Android).
+> Tauri generates iOS and Android projects from the same codebase and they compile, but neither has been shipped to a store, TestFlight, or as an APK. Treat mobile as experimental and build-it-yourself. See the [mobile guide](./docs/user/guides/mobile-guide.md).
 
-### Native Mobile Apps
+### Mobile Targets (Experimental)
 
 | Platform | Technology | Distribution |
 |----------|------------|--------------|
-| **iOS** | Tauri 2.0 Mobile (WRY + wkwebview) | App Store + TestFlight |
-| **Android** | Tauri 2.0 Mobile (WRY + WebView) | Play Store + APK |
+| **iOS** | Tauri 2.0 Mobile (WRY + wkwebview) | Build from source only |
+| **Android** | Tauri 2.0 Mobile (WRY + WebView) | Build from source only |
 
-**Feature Parity:**
+**Intended Parity (where implemented):**
 
 - Full editor with BlockNote
 - All object types and properties
-- Hearth sync (WiFi/Bluetooth)
-- Cloud relay sync
+- Hearth sync (local network)
+- Self-hosted relay sync
 - Zen Mode
 - Omnibar (adapted for touch)
 
@@ -686,7 +681,7 @@ Beyond the core app, we're extracting reusable components as open-source package
 
 *BIP39 mnemonic key management with HKDF derivation.*
 
-[Detailed planning](./docs/product/planning/packages/zero-knowledge-sync-package.md)
+[Detailed planning](./docs/plans/packages/zero-knowledge-sync-package.md)
 
 ```rust
 use skeleton_key::{generate_mnemonic, mnemonic_to_master_key, derive_key, encrypt};
@@ -712,7 +707,7 @@ let ciphertext = encrypt(&sync_key, plaintext)?;
 
 *Binary wire protocol for encrypted CRDT sync.*
 
-[Detailed planning](./docs/product/planning/packages/zero-knowledge-sync-package.md)
+[Detailed planning](./docs/plans/packages/zero-knowledge-sync-package.md)
 
 | Message | Code | Description |
 |---------|------|-------------|
@@ -732,7 +727,7 @@ let ciphertext = encrypt(&sync_key, plaintext)?;
 
 *Block-level diffing for BlockNote documents.*
 
-[Detailed planning](./docs/product/planning/packages/blocknote-diff-package.md)
+[Detailed planning](./docs/plans/packages/blocknote-diff-package.md)
 
 ```typescript
 import { computeContentDiff } from 'blocknote-diff';
@@ -754,7 +749,7 @@ const diff = computeContentDiff(historicalContent, currentContent);
 
 ## Feature Ideas (Backlog)
 
-Features we're considering but haven't scheduled. Vote on [GitHub Discussions](https://github.com/skeletor-js/skelenote/discussions).
+Features we're considering but haven't scheduled. Weigh in via [GitHub Issues](https://github.com/skeletor-js/skelenote/issues).
 
 | Feature | Description | Fits Ethos? |
 |---------|-------------|-------------|
@@ -775,10 +770,8 @@ Features we're considering but haven't scheduled. Vote on [GitHub Discussions](h
 
 Have feature requests or feedback?
 
-1. **Open an issue** on [GitHub](https://github.com/skeletor-js/skelenote/issues) with `feature-request` label
-2. **Vote on ideas** in [GitHub Discussions](https://github.com/skeletor-js/skelenote/discussions)
-3. **Join [Discord](https://discord.gg/4apsgSRB7D)** for real-time discussion
-4. **Check planning docs** in [`docs/product/planning/`](./docs/product/planning/) for detailed specs
+1. **Open an issue** on [GitHub](https://github.com/skeletor-js/skelenote/issues) with the `feature-request` label
+2. **Check planning docs** in [`docs/plans/`](./docs/plans/) for detailed specs
 
 ### Prioritization Framework
 
@@ -805,4 +798,4 @@ We prioritize based on:
 
 ---
 
-*Last updated: January 2026*
+*Last updated: July 2026*

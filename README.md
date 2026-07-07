@@ -1,161 +1,173 @@
 # Skelenote
 
-**The Permanent Operating System for Your Mind**
+A local-first, end-to-end encrypted note and task app. Your vault lives on your device, encrypted with keys only you hold. It runs offline, syncs directly between your own devices, and does semantic search on-device without sending anything to a server.
 
-A local-first, zero-knowledge private study. Your vault lives on your device, encrypted with keys only you control.
-
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux%20%7C%20iOS%20%7C%20Android-blue)](https://github.com/skeletor-js/skelenote/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.0-orange)](https://github.com/skeletor-js/skelenote/releases)
-[![Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?logo=discord&logoColor=white)](https://discord.gg/4apsgSRB7D)
-[![Encryption](https://img.shields.io/badge/encryption-XChaCha20--Poly1305-purple)](docs/user/about/security-privacy.md)
+[![Version](https://img.shields.io/badge/version-0.2.x-orange)](package.json)
+[![Encryption](https://img.shields.io/badge/encryption-XChaCha20--Poly1305-purple)](SECURITY.md)
 
----
+Built with Tauri 2, React, TypeScript, Loro CRDT, and BlockNote.
 
-## Download
+<!-- screenshot: add a screenshot of the editor + sidebar here -->
 
-**Desktop:**
+## Status
 
-- [macOS (Apple Silicon)](https://github.com/skeletor-js/skelenote/releases) - `.dmg`
-- [macOS (Intel)](https://github.com/skeletor-js/skelenote/releases) - `.dmg`
-- [Windows](https://github.com/skeletor-js/skelenote/releases) - `.exe`
-- [Linux](https://github.com/skeletor-js/skelenote/releases) - `.deb`, `.rpm`, `.AppImage`
+Skelenote is open source under Apache-2.0, currently at version 0.2.x, and actively maintained again as of July 2026.
 
-**Mobile:**
+There are no prebuilt binaries or app store listings yet. This is build-from-source only. If you want to run it, clone the repo and build it with the steps below. Mobile (iOS/Android) builds exist as Tauri targets but are experimental and not distributed anywhere, so you build those yourself too.
 
-- [iOS (TestFlight)](https://testflight.apple.com/join/skelenote) - Requires TestFlight app
-- [Android (APK)](https://github.com/skeletor-js/skelenote/releases) - Direct download
+## Features
 
-[View all releases](https://github.com/skeletor-js/skelenote/releases)
+Everything runs locally by default. Sync is optional and encrypted end-to-end.
 
----
+- **Rich block editor** built on BlockNote: headings, lists, checklists, tables, code blocks, images, @mentions, and backlinks.
+- **Tasks** with status, priority, due dates, and recurrence (daily, weekly, monthly, and more).
+- **Daily notes** with deterministic per-day IDs and optional templates.
+- **Loro CRDT storage with Time Machine.** Every object keeps a version history, and you can inspect or roll any object back to an earlier state. The same CRDT layer is what makes conflict-free sync possible.
+- **On-device semantic search.** Embeddings are computed locally with `@xenova/transformers` (Transformers.js). Nothing is sent to a cloud service. This runs alongside full-text and fuzzy search (Fuse.js) so you can match by meaning or by exact text.
+- **End-to-end encrypted device sync.** A 24-word BIP39 mnemonic (the Skeleton Key) derives your keys. Data is encrypted client-side with XChaCha20-Poly1305 before it ever leaves the device. Sync runs peer-to-peer over your local network (mDNS discovery) or through a relay you host. The relay only ever sees ciphertext.
+- **Import** from Notion, Obsidian, plain Markdown, and JSON backups. Structure (frontmatter, wiki-links, tags) is preserved where it maps cleanly.
+- **Export** to Markdown, HTML, JSON, and PDF, individually or as a full-vault ZIP.
+- **Keyboard-first navigation** with a command palette and configurable shortcuts.
+- **Light and dark themes.**
 
-## Why Skelenote?
+## Quickstart
 
-Skelenote is built for a quiet workspace you own, not a noisy service you visit.
+### Prerequisites
 
-### Core Principles
+- **Node.js 22**
+- **pnpm** ([install](https://pnpm.io/installation))
+- **Rust toolchain** (stable, via [rustup](https://rustup.rs/))
 
-- **Local. Encrypted. Yours.** - Your data never leaves your device unencrypted
-- **Zero-Knowledge Sync** - Even our servers can't read your notes
-- **No Lock-in** - Export everything as Markdown, HTML, JSON, or PDF anytime
-- **Free & Open Source** - Core app is 100% free, cloud sync optional ($8/mo)
+Platform-specific native dependencies are required to build the Tauri shell:
 
-### Key Features
+- **macOS**: `xcode-select --install`
+- **Windows**: Microsoft C++ Build Tools and WebView2 (WebView2 is usually preinstalled on Windows 10/11).
+- **Linux (Debian/Ubuntu)**:
+  ```bash
+  sudo apt update
+  sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
+    libssl-dev libayatana-appindicator3-dev librsvg2-dev
+  ```
 
-| Feature | Description |
-| ------- | ----------- |
-| **Object Graph** | Everything is connected - tasks, notes, projects, people |
-| **Local Sync** | Peer-to-peer sync on your local network |
-| **Cloud Sync** | Optional encrypted sync across the internet |
-| **Skeleton Key** | 24-word mnemonic you control - lose it, lose access |
-| **PARA Method** | Built-in Projects, Areas, Resources, Archives structure |
-| **Rich Editor** | BlockNote-powered with @mentions and backlinks |
-| **Full Export** | Markdown, HTML, JSON, Plain Text, PDF |
-| **Import** | Bring your data from Notion, Obsidian, or Markdown |
+### Run it
 
----
+```bash
+git clone <your-fork-or-clone-url> skelenote
+cd skelenote
+pnpm install
+pnpm tauri dev
+```
 
-## Alpha Testing
+`pnpm tauri dev` starts the Vite dev server and launches the native app with hot reload. React changes hot-reload; Rust changes require a restart.
 
-Skelenote is currently in **alpha**. We're looking for testers to help shape the app.
+### Build a release bundle
 
-**Want to help test?**
+```bash
+pnpm tauri build
+```
 
-1. Download from [Releases](https://github.com/skeletor-js/skelenote/releases)
-2. Read the [Getting Started Guide](docs/user/getting-started.md)
-3. Join our [Discord](https://discord.gg/4apsgSRB7D) for discussion
-4. Report bugs via [Linear](https://linear.app/skeletorjs/team/skelenote)
+Output lands in `src-tauri/target/release/bundle/`.
 
-**Alpha Resources:**
+### Test
 
-- [Known Issues](docs/user/known-issues.md)
-- [Troubleshooting](docs/user/troubleshooting.md)
-- [Testing Checklist](docs/user/test-plan.md)
+```bash
+pnpm test        # Vitest, watch mode
+pnpm test:run    # single run (CI mode)
+pnpm bench       # benchmarks
+```
 
----
+Frontend checks:
 
-## Platform Support
+```bash
+pnpm lint            # ESLint
+pnpm exec tsc --noEmit
+```
 
-| Platform | Status | Notes |
-| -------- | ------ | ----- |
-| macOS (Apple Silicon) | Stable | macOS 10.15+ |
-| macOS (Intel) | Stable | macOS 10.15+ |
-| Windows | Stable | Windows 10/11 |
-| Linux | Stable | .deb, .rpm, AppImage |
-| iOS | Beta | TestFlight |
-| Android | Beta | APK download |
+Rust checks:
 
----
+```bash
+cd src-tauri
+cargo test
+cargo fmt --check
+cargo clippy
+```
 
-## Roadmap
+## Architecture
 
-| Version | Codename | Theme | Status |
-| ------- | -------- | ----- | ------ |
-| **v0.1** | Foundation | Core productivity system | Shipped |
-| **v0.2** | Exodus | Data freedom & portability | Shipped |
-| **v0.3** | Pocket | Mobile apps & notifications | Shipped |
-| **v0.35** | Architect | Custom object types | Planned |
-| **v0.4** | Oracle | On-device AI | Planned |
-| **v0.5** | Sentinel | Security hardening | Planned |
+Skelenote is a Tauri 2 desktop app: a React/TypeScript frontend running in a system webview, with a Rust backend for crypto, networking, and platform integration. Application data lives in a Loro CRDT document; sync ships encrypted CRDT updates between devices.
 
-See [ROADMAP.md](ROADMAP.md) for the full plan.
+```
+skelenote/
+├── src/                    # React + TypeScript frontend
+│   ├── components/         # UI by feature (editor, sync, settings, import, ...)
+│   ├── contexts/           # React context providers
+│   ├── hooks/              # custom hooks
+│   ├── lib/                # core logic
+│   │   ├── loro/           # CRDT document store and queries
+│   │   ├── sync/           # sync client and protocol
+│   │   ├── crypto/         # frontend crypto wrapper
+│   │   ├── semantic/       # on-device embeddings + semantic search
+│   │   ├── search/         # full-text and fuzzy search
+│   │   ├── export/         # Markdown / HTML / JSON / PDF export
+│   │   ├── import/         # Notion / Obsidian / Markdown / JSON import
+│   │   ├── tasks/          # task and recurrence logic
+│   │   └── daily/          # daily notes
+│   ├── theme/              # Mantine theme
+│   └── styles/             # global CSS
+├── src-tauri/              # Rust backend
+│   ├── src/
+│   │   ├── crypto/         # BIP39, key derivation, XChaCha20-Poly1305
+│   │   ├── network/        # mDNS discovery, TCP transport, device pairing
+│   │   ├── mobile/         # mobile-specific glue
+│   │   └── lib.rs          # Tauri command handlers
+│   └── gen/                # generated iOS/Android platform projects (experimental)
+├── sync-relay/             # self-hosted sync relay (Node + Docker)
+├── workers/                # Cloudflare Worker variant of the relay
+└── docs/                   # documentation
+```
 
----
+**Tech stack:** Tauri 2 (Rust) shell, React 18 + TypeScript + Vite, Mantine 8 UI, BlockNote editor, Loro CRDT, `@xenova/transformers` for embeddings, Fuse.js for fuzzy search.
 
-## Documentation
+## Sync
 
-### User Guides
+Sync is optional and end-to-end encrypted. Two transports:
 
-- [Getting Started](docs/user/getting-started.md) - Your first day with Skelenote
-- [Mobile Guide](docs/user/guides/mobile-guide.md) - Using Skelenote on iOS/Android
-- [Export & Import](docs/user/guides/export-import.md) - Backups and data portability
-- [Local Sync](docs/user/guides/local-sync-guide.md) - P2P sync on your network
-- [Cloud Sync](docs/user/guides/cloud-sync-guide.md) - Relay server configuration
-- [Keyboard Shortcuts](docs/user/guides/keyboard-shortcuts.md) - Power user tips
+- **Local network (peer-to-peer):** devices discover each other over mDNS and exchange encrypted CRDT updates directly. No server involved.
+- **Relay:** for syncing when devices are not on the same network, you run your own relay. There is no hosted Skelenote sync service. The relay is a dumb pipe that stores and forwards ciphertext; it never has your keys and cannot read your data.
 
-### Design Documentation
+The self-hosted relay lives in [`sync-relay/`](sync-relay/) and ships with a Dockerfile and `docker-compose.yml`:
 
-- `docs/product/design/style-guide.md` - **Complete UI component specs**, colors, typography, spacing, Mantine config
-- `docs/product/design/skelenote-brand-bible.md` - Brand positioning, voice, strategic narrative
-- `docs/product/design/skelenote-feature-list.md` - Feature inventory and status
+```bash
+cd sync-relay
+docker compose up -d
+```
 
-### About Skelenote
+Then point Skelenote's sync settings at your relay URL (use `wss://` behind a TLS-terminating reverse proxy in production). See [`sync-relay/README.md`](sync-relay/README.md) for configuration, endpoints, and deployment notes.
 
-- [Philosophy & Manifesto](docs/user/about/philosophy-manifesto.md)
-- [Security & Privacy](docs/user/about/security-privacy.md)
-- [Ownership & Pricing](docs/user/about/ownership-pricing.md)
+## Mobile
 
-### For Contributors
+The repo includes iOS and Android Tauri targets under `src-tauri/gen/`. These are experimental and not shipped, so there is no TestFlight build, no App Store listing, and no APK download. To try mobile, build it yourself:
 
-- [Developer Documentation](docs/developer/README.md) - Tech stack, setup, architecture
-- [Contributing Guide](CONTRIBUTING.md) - How to contribute
-- [AGENTS.md](AGENTS.md) - AI assistant context
+```bash
+pnpm tauri ios dev       # requires Xcode + CocoaPods + iOS Rust targets
+pnpm tauri android dev   # requires Android Studio SDK/NDK + Android Rust targets
+```
 
----
+You need the corresponding native toolchains and Rust targets installed. Expect rough edges.
+
+## Security
+
+- Data at rest is encrypted with XChaCha20-Poly1305.
+- Keys are derived from a 24-word BIP39 mnemonic (the Skeleton Key). If you lose it, you lose access. There is no recovery backdoor, by design.
+- Sync data is encrypted client-side before transmission; relays and peers only see ciphertext.
+
+Skelenote has not been independently audited. See [SECURITY.md](SECURITY.md) for the security model, cryptographic primitives, and how to report a vulnerability.
+
+## Contributing
+
+Build from source with the Quickstart above, run the test and lint steps before opening a PR, and match the existing code style (Mantine components, `lucide-react` icons, path aliases via `@/`). See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
 
 ## License
 
-Skelenote is **open source** under the **Apache 2.0** license.
-
-- You **can** use, modify, and distribute Skelenote freely
-- You **can** fork and build your own version
-- You **can** use Skelenote for personal or commercial work
-- You **can** contribute back to the project
-
-See [LICENSE](LICENSE) for the full text.
-
-### Cloud Sync (Optional Paid Service)
-
-The core app is free. For cross-network sync, we offer an optional **encrypted cloud relay** at $8/month. This funds development while keeping the app sustainable.
-
-- **Free**: Full app functionality, P2P local sync
-- **$8/mo**: Encrypted cloud sync across all your devices
-
-You can also self-host your own sync relay if you prefer.
-
----
-
-<p align="center">
-  <strong>Local. Encrypted. Yours.</strong>
-</p>
+Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

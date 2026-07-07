@@ -4,10 +4,12 @@
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
-If you discover a security vulnerability in Skelenote, please report it privately:
+If you discover a security vulnerability in Skelenote, please report it privately through GitHub's private vulnerability reporting:
 
-1. **Email**: security@skelenote.com (or create a private security advisory on GitHub)
-2. **GitHub Security Advisory**: [Report a vulnerability](https://github.com/skeletor-js/skelenote/security/advisories/new)
+1. Go to the repository's **Security** tab
+2. Click **Report a vulnerability** to open a private advisory
+
+This keeps the report confidential until a fix is available.
 
 ### What to Include
 
@@ -30,9 +32,9 @@ We'll keep you informed throughout the process and credit you in the fix (unless
 
 | Version | Supported |
 |---------|-----------|
-| 0.1.x (alpha) | Yes |
+| 0.2.x | Yes |
 
-During alpha, all versions receive security updates. Once we reach stable releases, we'll define a formal support policy.
+Skelenote is build-from-source only. Security fixes land on the `main` branch; build from source to pick them up. Once there are tagged, distributed releases, we'll define a formal support policy.
 
 ---
 
@@ -87,7 +89,7 @@ Changes to these areas should:
 
 ## Audit Status
 
-**Current Status**: Not independently audited (alpha)
+**Current Status**: Not independently audited
 
 **Planned**:
 - Pre-beta: Internal security review

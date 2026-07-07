@@ -1,19 +1,20 @@
-# Ownership & Pricing
+# Ownership
 
-Skelenote is free. Not "free with limits"—free.
+Skelenote is free and open source. Not "free with limits"—free.
 
 ---
 
 ## What's Free (Everything)
 
-- Full desktop app (macOS, Windows, Linux)
-- Full mobile app (iOS, Android)
-- All features: encryption, AI, sync, export
+- Full desktop app (macOS, Windows, Linux), built from source
+- All features: encryption, on-device semantic search, sync, export
 - Local network sync across your devices
-- Cloud sync across the internet
+- Self-hosted relay sync across the internet (you run the relay)
 - Unlimited notes, tasks, projects
 - Full export (Markdown, JSON, HTML, PDF)
 - All future updates
+
+Mobile (iOS/Android) targets build from the same codebase via Tauri but are experimental and not distributed.
 
 ---
 

@@ -54,6 +54,6 @@ Skelenote records your vault's history. Revert any object—or your entire vault
 ## Core Principles
 
 - **Local. Encrypted. Yours.** — Your vault lives on your device. The Skeleton Key stays in your hands.
-- **Sync your way** — Local network sync works automatically. Cloud sync is available too. Same encryption either way.
+- **Sync your way** — Local network sync works automatically. Sync through a relay you host is available too. Same encryption either way.
 - **Offline-first** — Full functionality without internet.
 - **No lock-in** — Export to Markdown anytime. Walk away whenever you want.

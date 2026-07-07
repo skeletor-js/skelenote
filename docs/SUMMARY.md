@@ -11,7 +11,7 @@
 * [Keyboard Shortcuts](user/guides/keyboard-shortcuts.md)
 * [Mobile Guide](user/guides/mobile-guide.md)
 * [Local Sync](user/guides/local-sync-guide.md)
-* [Cloud Sync](user/guides/cloud-sync-guide.md)
+* [Self-Hosted Sync](user/guides/cloud-sync-guide.md)
 * [Export & Import](user/guides/export-import.md)
 * [Data Safety](user/guides/data-safety.md)
 * [Sharing Your Vault](user/guides/sharing-vault.md)
@@ -22,7 +22,7 @@
 * [Philosophy & Manifesto](user/about/philosophy-manifesto.md)
 * [Security & Privacy](user/about/security-privacy.md)
 * [Security FAQ](user/about/security-faq.md)
-* [Ownership & Pricing](user/about/ownership-pricing.md)
+* [Ownership](user/about/ownership-pricing.md)
 * [Origin Story](user/about/origin.md)
 
 ## Design System

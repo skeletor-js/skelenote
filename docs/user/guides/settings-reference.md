@@ -40,17 +40,17 @@ Sync with devices on your local network without any server.
 
 See [Local Sync Guide](local-sync-guide.md) for detailed setup.
 
-### Cloud Sync
+### Relay Sync
 
-Sync through an optional relay server for remote devices.
+Sync through a relay server you host yourself for remote devices. There is no hosted service.
 
 **Settings:**
 
-- **Enable Cloud Sync** - Connect to relay server
-- **Server URL** - Relay server address (default or self-hosted)
+- **Enable Relay Sync** - Connect to your relay server
+- **Server URL** - Relay server address (your self-hosted relay)
 - **Connection Status** - Shows connected/disconnected state
 
-See [Cloud Sync Guide](cloud-sync-guide.md) for server setup.
+See [Self-Hosted Sync Guide](cloud-sync-guide.md) for server setup.
 
 ### Device Management
 

@@ -4,26 +4,19 @@ Thank you for your interest in contributing to Skelenote! This guide will help y
 
 ## Ways to Contribute
 
-### Alpha Testing (No Code Required)
+There are no prebuilt binaries. Skelenote is build-from-source only, so trying it out means building it (see below).
 
-We're in alpha and actively seeking testers. This is one of the most valuable contributions right now:
+- **Report bugs** - [Open an issue](https://github.com/skeletor-js/skelenote/issues) with steps to reproduce
+- **Request features** - [Open an issue](https://github.com/skeletor-js/skelenote/issues) with your idea
+- **Contribute code** - continue reading below for setup and workflow
 
-1. **Test the app** - Download from [Releases](https://github.com/skeletor-js/skelenote/releases) and use it
-2. **Report bugs** - [File a bug](https://linear.app/skeletorjs/team/skelenote) with steps to reproduce
-3. **Request features** - [Request a feature](https://linear.app/skeletorjs/team/skelenote) with your ideas
-4. **Join [Discord](https://discord.gg/4apsgSRB7D)** - Chat with other testers and provide real-time feedback
-
-See the [Getting Started Guide](docs/user/getting-started.md) for detailed instructions.
-
-### Code Contributions
-
-For code contributions, continue reading below for setup and workflow.
+See the [Getting Started Guide](docs/user/getting-started.md) for build instructions.
 
 ## Prerequisites
 
 ### Required
 
-- **Node.js 18+** - [Download](https://nodejs.org/)
+- **Node.js 22** - [Download](https://nodejs.org/)
 - **Rust (latest stable)** - [Install via rustup](https://rustup.rs/)
 - **pnpm** - [Install pnpm](https://pnpm.io/installation)
 
@@ -186,14 +179,9 @@ docs: update contributing guide
 refactor: simplify object context provider
 ```
 
-## Project Management
-  
-  We use **Linear** for issue tracking and project management.
-  
-### Finding Work
-  
-  1. Check our [Linear Roadmap](https://linear.app/skeletorjs/team/skelenote)
-  2. Join our [Discord](https://discord.gg/4apsgSRB7D) to discuss what to work on
+## Finding Work
+
+We use [GitHub Issues](https://github.com/skeletor-js/skelenote/issues) for tracking bugs and feature requests. Browse open issues for something to pick up, and see [ROADMAP.md](ROADMAP.md) for planned direction.
 
 ## Pull Request Process
 
@@ -206,11 +194,7 @@ refactor: simplify object context provider
 7. Push to your fork
 8. Open a Pull Request against `main`
 
-GitHub Actions will automatically:
-
-- Run tests on Ubuntu
-- Run linting and type checking
-- Build for macOS (ARM + Intel), Windows, and Linux
+GitHub Actions runs linting, type checking, and tests on your PR. Run these locally first (see below) so you're not waiting on CI.
 
 ### PR Review Checklist
 
@@ -268,34 +252,14 @@ skelenote/
 - **Windows**: `%APPDATA%\com.skelenote.app\`
 - **Linux**: `~/.local/share/com.skelenote.app/`
 
-## CI/CD Pipeline
+## CI
 
-Skelenote uses GitHub Actions for continuous integration and deployment. See [docs/developer/ci-cd.md](docs/developer/ci-cd.md) for details.
-
-### Workflows
-
-- **Test** - Runs on every push and PR. Executes linting, frontend tests, and Rust tests.
-- **Build** - Runs on pushes to `main` and PRs. Builds binaries for all platforms (macOS, Windows, Linux).
-- **Release** - Runs on version tags (`v*`). Creates GitHub releases with signed binaries.
-
-### Cross-Platform Testing
-
-Skelenote is fully tested and supported on:
-
-- macOS (ARM64 and x86_64)
-- Windows (x86_64)
-- Linux (Ubuntu, Fedora, and other distros via AppImage)
-- iOS (via Tauri 2.0 mobile)
-- Android (via Tauri 2.0 mobile)
-
-The CI pipeline builds and tests on all platforms automatically.
+Skelenote uses GitHub Actions to run linting, type checking, and the test suite on pushes and PRs. See [docs/developer/ci-cd.md](docs/developer/ci-cd.md) for details. Desktop is developed and tested primarily on macOS and Linux; the mobile (iOS/Android) targets build via Tauri but are experimental and not covered by the same level of CI.
 
 ## Getting Help
 
-- **Bugs**: [File a bug](https://linear.app/skeletorjs/team/skelenote)
-- **Features**: [Request a feature](https://linear.app/skeletorjs/team/skelenote)
-- **Questions**: Join our [Discord](https://discord.gg/4apsgSRB7D)
-- Check [Linear Roadmap](https://linear.app/skeletorjs/team/skelenote) before creating new ones
+- **Bugs and features**: [GitHub Issues](https://github.com/skeletor-js/skelenote/issues)
+- Search existing issues before opening a new one
 
 ## License
 

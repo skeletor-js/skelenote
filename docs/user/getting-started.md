@@ -7,28 +7,26 @@
 
 ## Installation
 
-Download the latest release from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases).
+There are no prebuilt binaries. Skelenote is build-from-source only, so running it means building it yourself.
 
-### Desktop
+You'll need Node.js 22, pnpm, and the Rust toolchain, plus your platform's native build dependencies. See the [README](https://github.com/skeletor-js/skelenote#quickstart) for the full prerequisite list per platform.
 
-**macOS**: Open the `.dmg` and drag Skelenote to Applications.
+```bash
+git clone https://github.com/skeletor-js/skelenote.git
+cd skelenote
+pnpm install
+pnpm tauri dev      # run in dev mode with hot reload
+```
 
-**Windows**: Run the installer (`.exe`).
+To produce a local release bundle:
 
-**Linux**:
-
-- `.deb` for Debian/Ubuntu: `sudo dpkg -i skelenote_*.deb`
-- `.rpm` for Fedora/RHEL: `sudo rpm -i skelenote_*.rpm`
-- AppImage: `chmod +x Skelenote_*.AppImage && ./Skelenote_*.AppImage`
+```bash
+pnpm tauri build    # output lands in src-tauri/target/release/bundle/
+```
 
 ### Mobile
 
-**iOS** (TestFlight): Join our [Discord](https://discord.gg/4apsgSRB7D) for the invite link.
-
-**Android**: Download the `.apk` from [GitHub Releases](https://github.com/skeletor-js/skelenote/releases).
-
-> [!TIP]
-> See the [Mobile Guide](guides/mobile-guide.md) for QR pairing and mobile features.
+The iOS and Android targets build from the same codebase via Tauri but are experimental and not distributed anywhere (no TestFlight, App Store, Play Store, or APK). To try them, build them yourself. See the [Mobile Guide](guides/mobile-guide.md).
 
 ---
 
@@ -102,7 +100,7 @@ Every day gets its own object, created automatically. Use it for morning intenti
 ## Sync
 
 - **Local sync**: Devices on the same network sync automatically. [Guide](guides/local-sync-guide.md)
-- **Cloud sync**: Encrypted sync for remote devices. [Guide](guides/cloud-sync-guide.md)
+- **Self-hosted sync**: Encrypted sync for remote devices through a relay you run. [Guide](guides/cloud-sync-guide.md)
 - **Backup**: [Data safety guide](guides/data-safety.md)
 
 ---
@@ -113,11 +111,10 @@ Made a mistake? Skelenote records your vault's history. Restore any object to an
 
 ---
 
-## Community
+## Feedback
 
-- **Report Issues**: [Linear](https://linear.app/skeletorjs/team/skelenote)
-- **Discuss**: [Discord](https://discord.gg/4apsgSRB7D)
-- **Known Issues**: [Status](known-issues.md)
+- **Report issues or request features**: [GitHub Issues](https://github.com/skeletor-js/skelenote/issues)
+- **Known issues**: [Status](known-issues.md)
 
 ---
 

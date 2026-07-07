@@ -28,7 +28,7 @@ This document tracks known bugs and limitations. Check here before reporting an 
 
 | Issue | Status | Workaround |
 |-------|--------|------------|
-| AppImage requires executable permission | Expected | Run `chmod +x Skelenote_*.AppImage` or use native packages |
+| *No issues currently documented* | | |
 
 ---
 
@@ -40,11 +40,12 @@ This document tracks known bugs and limitations. Check here before reporting an 
 |-------|--------|------------|
 | *No issues currently documented* | | |
 
-### Cloud Sync
+### Relay Sync
 
 | Issue | Status | Workaround |
 |-------|--------|------------|
-| Hosted relay not yet available | Planned | Self-host using Docker (see [Cloud Sync Guide](../guides/cloud-sync-guide.md)) |
+| No hosted relay exists | By design | Run your own relay (see [Self-Hosted Sync Guide](../guides/cloud-sync-guide.md)) |
+| Sync uses whole-document snapshots | Known limitation | Concurrent edits to the *same* note merge coarsely; different notes reconcile cleanly |
 
 ---
 
@@ -77,7 +78,7 @@ These features are partially implemented or coming soon:
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Mobile apps | Beta | iOS via TestFlight, Android via APK |
+| Mobile (iOS/Android) | Experimental | Builds from source via Tauri; not distributed. See [Mobile Guide](./guides/mobile-guide.md) |
 | Graph view | Planned | Backlinks work; visualization later |
 
 ---
@@ -86,10 +87,10 @@ These features are partially implemented or coming soon:
 
 If your issue isn't listed here:
 
-1. Try the [Troubleshooting Guide](./TROUBLESHOOTING.md)
-2. Search [existing issues](https://linear.app/skeletorjs/team/skelenote)
-3. [File a bug report](https://linear.app/skeletorjs/team/skelenote)
+1. Try the [Troubleshooting Guide](./troubleshooting.md)
+2. Search [existing issues](https://github.com/skeletor-js/skelenote/issues)
+3. [File a bug report](https://github.com/skeletor-js/skelenote/issues)
 
 ---
 
-*Last updated: January 2026*
+*Last updated: July 2026*
