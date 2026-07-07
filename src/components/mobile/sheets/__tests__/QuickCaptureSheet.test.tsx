@@ -4,7 +4,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import { QuickCaptureSheet } from '../QuickCaptureSheet';
-import React from 'react';
 import { BuiltInTypeIds } from '@/lib/types';
 import { useObjects } from '@/contexts';
 import { useLinkToDaily, useReducedMotion } from '@/hooks';
