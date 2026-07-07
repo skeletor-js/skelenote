@@ -305,10 +305,8 @@ The `.claude/` directory contains:
 │   ├── git-workflow.md
 │   ├── code-quality.md
 │   ├── testing-standards.md
-│   ├── linear-workflow.md
 │   └── design-system.md
 ├── skills/                # Invocable skills (/skill-name)
-│   ├── linear/SKILL.md
 │   ├── commit/SKILL.md
 │   ├── security/SKILL.md
 │   └── ...
@@ -329,7 +327,6 @@ Rules in `.claude/rules/` are persistent instructions that apply to all conversa
 | `git-workflow.md` | Branch naming, commit format, PR workflow |
 | `code-quality.md` | TypeScript standards, imports, anti-patterns |
 | `testing-standards.md` | Vitest conventions, mock patterns |
-| `linear-workflow.md` | Linear integration, labels, cycles |
 | `design-system.md` | Mantine, colors, "cozy rationalism" aesthetic |
 
 ---
@@ -345,8 +342,6 @@ Skills in `.claude/skills/*/SKILL.md` are invoked with `/skill-name` or via the 
 **Development:** dev, check, lint, test, build
 
 **Code Generation:** component, hook, context, type, tauri-command, mobile, test-file
-
-**Linear & Project Management:** linear, issue, project, roadmap-sync
 
 **Agent Wrappers:** security, docs, architecture, ux, tests
 
@@ -367,7 +362,6 @@ Agents in `.claude/agents/*.md` are specialized assistants invoked via the Task 
 | `frontend-design-expert` | Opus | UI/UX with Mantine |
 | `ux-design-specialist` | Opus | User research, accessibility |
 | `tauri-engineer` | Opus | Rust backend, IPC, native |
-| `project-manager` | Opus | Linear project management |
 
 ---
 
@@ -377,7 +371,6 @@ Available MCP servers for this project:
 
 | Server | Purpose |
 |--------|---------|
-| **Linear** | Issue tracking via `mcp__linear-server__*` tools |
 | **Mantine** | UI component docs via `mcp__mantine__*` tools |
 | **Context7** | Library docs via `mcp__context7__*` tools |
 | **Playwright** | Browser automation via `mcp__playwright__*` tools |

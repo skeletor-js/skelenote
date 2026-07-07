@@ -285,8 +285,6 @@ Verify with `vite-plugin-visualizer` before/after.
 
 *One-time, time-bound, visually-verified device pairing.*
 
-[Detailed planning](./docs/product/planning/data-portability/05-secure-device-linking.md)
-
 **Problem:** Transferring 24-word mnemonic is risky (shoulder surfing, no expiration, no verification).
 
 **Solution:** Ephemeral key exchange protocol:
@@ -681,8 +679,6 @@ Beyond the core app, we're extracting reusable components as open-source package
 
 *BIP39 mnemonic key management with HKDF derivation.*
 
-[Detailed planning](./docs/plans/packages/zero-knowledge-sync-package.md)
-
 ```rust
 use skeleton_key::{generate_mnemonic, mnemonic_to_master_key, derive_key, encrypt};
 
@@ -707,8 +703,6 @@ let ciphertext = encrypt(&sync_key, plaintext)?;
 
 *Binary wire protocol for encrypted CRDT sync.*
 
-[Detailed planning](./docs/plans/packages/zero-knowledge-sync-package.md)
-
 | Message | Code | Description |
 |---------|------|-------------|
 | `HELLO` | `0x01` | Handshake with device ID, protocol version |
@@ -726,8 +720,6 @@ let ciphertext = encrypt(&sync_key, plaintext)?;
 ### `blocknote-diff` (npm)
 
 *Block-level diffing for BlockNote documents.*
-
-[Detailed planning](./docs/plans/packages/blocknote-diff-package.md)
 
 ```typescript
 import { computeContentDiff } from 'blocknote-diff';
@@ -771,7 +763,6 @@ Features we're considering but haven't scheduled. Weigh in via [GitHub Issues](h
 Have feature requests or feedback?
 
 1. **Open an issue** on [GitHub](https://github.com/skeletor-js/skelenote/issues) with the `feature-request` label
-2. **Check planning docs** in [`docs/plans/`](./docs/plans/) for detailed specs
 
 ### Prioritization Framework
 

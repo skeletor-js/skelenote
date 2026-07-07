@@ -119,7 +119,7 @@ Produces platform-specific binaries in `src-tauri/target/release/bundle/`.
 
 ### Design System
 
-Before making UI changes, review `docs/product/design/style-guide.md`. Key principles:
+Before making UI changes, review `docs/product/design/README.md`. Key principles:
 
 - Light and Dark modes (warm palette: ember, clay, sage, ochre, brick, slate)
 - No emojis in the interface
@@ -264,14 +264,3 @@ Skelenote uses GitHub Actions to run linting, type checking, and the test suite 
 ## License
 
 By contributing, you agree that your contributions will be licensed under the Apache 2.0 license.
-
-### Contributor License Agreement (CLA)
-
-Before we can accept your contribution, you must sign our CLA. This is a one-time process:
-
-1. Open a pull request
-2. The CLA bot will comment with instructions
-3. Sign by commenting "I have read the CLA and agree to its terms"
-4. Future PRs skip this step
-
-The CLA ensures you have the right to contribute and protects both you and the project. See [.github/CLA.md](.github/CLA.md) for the full agreement.

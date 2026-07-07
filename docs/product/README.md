@@ -5,7 +5,6 @@ Internal documentation for Skelenote's planning and design.
 ## Sections
 
 - **[Design System](design/README.md)**: UI/UX guidelines and brand.
-- **[Planning](../plans/)**: Feature specifications and release planning.
 
 ---
 

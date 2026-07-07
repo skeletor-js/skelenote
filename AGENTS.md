@@ -37,39 +37,6 @@ git checkout -b feature/descriptive-name
 - `refactor/` - Code improvements
 - `docs/` - Documentation updates
 
-## Project Management (Linear)
-
-Skelenote uses **Linear** for issue tracking and project management.
-
-### Structure
-
-- **Projects**: Maps to releases (e.g., `v0.2 - Exodus`, `v0.35 - Architect`).
-- **Epics**: Modeled as **Parent Issues** containing sub-issues. All "Epic" labeled issues MUST be parents.
-- **Cycles**: Active 2-week sprints to maintain momentum.
-- **Views**: Use shared team views for "Needs Triage" and "My Epics".
-
-### Key Labels
-
-| Label | Usage |
-|-------|-------|
-| `Feature` | New functionality (enhancements) |
-| `Bug` | Defect fixes |
-| `Improvement` | Technical debt, refactoring |
-| `competitive-gap` | Features present in competitor apps |
-| `package` | Candidates for extraction to OSS packages |
-
-### Workflow
-
-1. **Pick an issue**: Assign yourself to an issue in the current Cycle or Project.
-2. **Create a branch**: Use Linear's "Copy git branch name" (Cmd+Shift+.) or format `name/linear-id-title`.
-   - Example: `jordan/NOTE-123-add-pdf-export`
-3. **Link PR**: Add `Fixes NOTE-123` or `Closes NOTE-123` in PR description to auto-close.
-
-### Skills Available
-
-- `/linear` - Create or update Linear issues
-- `/issue` - Context-aware issue search
-
 ## CI/CD Pipeline
 
 Skelenote uses GitHub Actions for continuous integration and cross-platform builds. See `docs/developer/ci-cd.md` for complete details.
@@ -152,7 +119,6 @@ skelenote/
 │   │   ├── git-workflow.md
 │   │   ├── code-quality.md
 │   │   ├── testing-standards.md
-│   │   ├── linear-workflow.md
 │   │   └── design-system.md
 │   ├── skills/             # Invocable skills (/skill-name)
 │   └── agents/             # Specialized agents (via Task tool)
@@ -819,8 +785,6 @@ For complete design specs, see `docs/product/design/style-guide.md`.
 ### Design & Brand
 
 - `docs/product/design/style-guide.md` - **Complete UI component specs**, colors, typography, spacing, Mantine config
-- `docs/product/design/skelenote-brand-bible.md` - Brand positioning, voice, strategic narrative
-
 ### Developer Reference
 
 - `docs/developer/architecture.md` - System architecture and data flow
@@ -871,7 +835,6 @@ Rules in `.claude/rules/` are persistent instructions automatically loaded at se
 | **git-workflow.md** | Branch naming, commit format, PR workflow |
 | **code-quality.md** | TypeScript standards, path aliases, import patterns |
 | **testing-standards.md** | Vitest conventions, mock patterns, coverage expectations |
-| **linear-workflow.md** | Linear structure, labels, cycles, issue workflow |
 | **design-system.md** | "Cozy rationalism" aesthetic, Mantine patterns, colors |
 
 These rules formalize patterns from this file and are enforced automatically.
@@ -902,13 +865,11 @@ Specialized agents are available via the Task tool for complex tasks:
 | **frontend-design-expert** | For UI/UX design decisions and Mantine patterns |
 | **ux-design-specialist** | For user flow design and accessibility review |
 | **tauri-engineer** | For Rust backend, IPC, and native integrations |
-| **project-manager** | For Linear project and issue management |
 
 ## MCP Servers Available
 
 | Server | Purpose | Key Tools |
 |--------|---------|-----------|
-| **Linear** | Issue tracking | `create_issue`, `list_issues`, `list_cycles` |
 | **Mantine** | UI documentation | `get_component_docs`, `search_components` |
 | **Context7** | Library docs | `resolve-library-id`, `query-docs` |
 | **Playwright** | Browser automation | `browser_navigate`, `browser_click`, `browser_snapshot` |
@@ -941,13 +902,6 @@ Specialized agents are available via the Task tool for complex tasks:
 - `/tauri-command` - Tauri Rust + TS command
 - `/mobile` - Mobile-specific component
 - `/test-file` - Test file scaffolding
-
-### Linear & Project Management
-
-- `/linear` - Create/manage Linear issues
-- `/issue` - Issue operations
-- `/project` - View Linear projects
-- `/roadmap-sync` - Sync roadmap with Linear
 
 ### Agent Wrappers
 

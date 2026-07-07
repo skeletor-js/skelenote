@@ -33,7 +33,6 @@
 * [Components](product/design/components.md)
 * [Patterns](product/design/patterns.md)
 * [Mobile](product/design/mobile.md)
-* [Brand Bible](product/design/skelenote-brand-bible.md)
 
 ## For Developers
 

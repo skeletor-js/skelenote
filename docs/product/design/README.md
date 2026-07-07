@@ -13,10 +13,6 @@ The design system is split into focused files for easier navigation:
 - [Patterns](patterns.md) — Hover, focus, keyboard, accessibility
 - [Mobile](mobile.md) — iOS/Android patterns, gestures, safe areas
 
-## Brand
-
-- [Brand Bible](skelenote-brand-bible.md) — Voice, lexicon, strategic positioning, visual identity
-
 ## Product Planning
 
 - [ROADMAP.md](/ROADMAP.md) — Release-by-release feature plans and priorities
